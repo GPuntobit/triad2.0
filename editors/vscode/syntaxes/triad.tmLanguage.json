@@ -1,0 +1,158 @@
+{
+  "name": "Triad",
+  "scopeName": "source.triad",
+  "fileTypes": ["triad", "td"],
+  "patterns": [
+    { "include": "#shebang" },
+    { "include": "#comments" },
+    { "include": "#rule-operator" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#keywords" },
+    { "include": "#solve-options" },
+    { "include": "#logical-vars" },
+    { "include": "#symbols" },
+    { "include": "#macros" },
+    { "include": "#types" },
+    { "include": "#functions" },
+    { "include": "#operators" },
+    { "include": "#punctuation" }
+  ],
+  "repository": {
+    "shebang": {
+      "match": "^#!.*$",
+      "name": "comment.line.shebang.triad"
+    },
+    "comments": {
+      "patterns": [
+        {
+          "begin": "#=",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.comment.begin.triad" }
+          },
+          "end": "=#",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.comment.end.triad" }
+          },
+          "name": "comment.block.triad"
+        },
+        {
+          "match": "#.*$",
+          "name": "comment.line.number-sign.triad"
+        }
+      ]
+    },
+    "rule-operator": {
+      "match": ":-",
+      "name": "keyword.operator.rule.triad"
+    },
+    "strings": {
+      "begin": "\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.triad" }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.triad" }
+      },
+      "name": "string.quoted.double.triad",
+      "patterns": [
+        {
+          "match": "\\\\[nt\"\\\\$]",
+          "name": "constant.character.escape.triad"
+        },
+        {
+          "match": "\\$\\(",
+          "name": "punctuation.section.embedded.begin.triad"
+        },
+        {
+          "match": "\\$[A-Za-z_][A-Za-z0-9_]*",
+          "name": "variable.other.interpolated.triad"
+        }
+      ]
+    },
+    "numbers": {
+      "match": "\\b\\d[\\d_]*(\\.[0-9][\\d_]*)?([eE][+-]?\\d+)?\\b",
+      "name": "constant.numeric.triad"
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\b(function|struct|macro|end|if|elseif|else|for|in|while|let|begin|return|break|continue|fact|rule|solve|quote|try|catch|with|requires|ensures)\\b",
+          "name": "keyword.control.triad"
+        },
+        {
+          "match": "\\b(true|false)\\b",
+          "name": "constant.language.boolean.triad"
+        },
+        {
+          "match": "\\b(nothing)\\b",
+          "name": "constant.language.null.triad"
+        },
+        {
+          "match": "\\b(isa|is|not)\\b",
+          "name": "keyword.operator.word.triad"
+        }
+      ]
+    },
+    "solve-options": {
+      "match": "\\b(limit|depth|steps|trace)\\b",
+      "name": "keyword.other.solve-option.triad"
+    },
+    "logical-vars": {
+      "match": "\\?[A-Za-z_][A-Za-z0-9_]*",
+      "name": "variable.language.logical.triad"
+    },
+    "symbols": {
+      "patterns": [
+        {
+          "match": ":(?=[A-Za-z_])[A-Za-z_][A-Za-z0-9_!]*",
+          "name": "constant.other.symbol.triad"
+        },
+        {
+          "match": ":[+*/%^<>=!]+",
+          "name": "constant.other.symbol.operator.triad"
+        }
+      ]
+    },
+    "macros": {
+      "match": "@[A-Za-z_][A-Za-z0-9_]*",
+      "name": "entity.name.function.macro.triad"
+    },
+    "types": {
+      "patterns": [
+        {
+          "match": "\\b(Int|Float|Number|Bool|String|Symbol|Any|Nothing|Function|Expr|List|Term|LVar|Solution|Err|Type)\\b",
+          "name": "support.type.triad"
+        },
+        {
+          "match": "\\b[A-Z][A-Za-z0-9_]*\\b",
+          "name": "entity.name.type.triad"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "match": "\\b(function|macro)\\s+([A-Za-z_][A-Za-z0-9_!]*)",
+          "captures": {
+            "1": { "name": "keyword.control.triad" },
+            "2": { "name": "entity.name.function.triad" }
+          }
+        },
+        {
+          "match": "\\b([A-Za-z_][A-Za-z0-9_!]*)\\s*(?=\\()",
+          "name": "entity.name.function.call.triad"
+        }
+      ]
+    },
+    "operators": {
+      "match": ":-|->|==|!=|<=|>=|&&|\\|\\||\\+=|-=|\\*=|\\?|[+\\-*/%^<>=!$]",
+      "name": "keyword.operator.triad"
+    },
+    "punctuation": {
+      "match": "[(){}\\[\\],;.]",
+      "name": "punctuation.separator.triad"
+    }
+  }
+}

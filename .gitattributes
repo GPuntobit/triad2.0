@@ -1,0 +1,38 @@
+# Normalizza i fine riga: il contratto di conformità è byte-per-byte.
+* text=auto
+
+# Sorgenti Triad: .triad è canonica, .td è l'alias storico.
+# linguist-language prepara il riconoscimento su GitHub (vedi editors/linguist/).
+*.triad  text eol=lf linguist-language=Triad
+*.td     text eol=lf linguist-language=Triad
+*.jl     text eol=lf
+*.md     text eol=lf
+*.cmd    text eol=crlf
+*.sh     text eol=lf
+*.vim    text eol=lf
+*.json   text eol=lf
+*.yml    text eol=lf
+*.js     text eol=lf
+*.hex    text eol=lf
+*.exe    binary
+
+conformance/**/expected.out  text eol=lf
+conformance/**/expected.code text eol=lf
+conformance/**/args.txt      text eol=lf
+
+# ---------------------------------------------------------------------------
+# Forzatura esplicita LF per i sorgenti testo senza estensione o per cartella.
+# Ridondante rispetto alle regole per estensione, ma rende il contratto
+# esplicito: impedisce che un checkout Windows introduca CRLF nei sorgenti.
+# ---------------------------------------------------------------------------
+bin/triad          text eol=lf
+editors/**         text eol=lf
+
+# ---------------------------------------------------------------------------
+# Artefatti del seed: NON vanno mai normalizzati (fonte canonica byte-per-byte).
+# seed.exe è binario; il dump .hex è trattato come binario (-diff) così le
+# conversioni EOL cross-platform non ne alterano i byte né producono diff rumor.
+# Queste regole sono poste in fondo per prevalere su "*.hex text eol=lf".
+# ---------------------------------------------------------------------------
+seed/**/seed.exe   binary
+seed/**/*.hex      binary -diff

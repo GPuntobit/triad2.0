@@ -1,0 +1,55 @@
+# Artefatti generati localmente
+# NOTA: non aggiungere una regola ".gitignore": questo file deve essere committato.
+
+## Seed: l'eseguibile si decodifica dal dump .hex committato (vedi seed/README.md)
+seed/**/seed.exe
+seed/**/seed
+
+## Build standalone (PackageCompiler, bin/build_standalone.jl)
+bin/triad-native
+bin/triad-native.exe
+bin/_precompile_triad.jl
+bin/lib/
+bin/*.ji
+
+## Julia (eventuale ambiente Pkg / artefatti runtime)
+Manifest.toml
+*.ji
+*.jm
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+/deps/deps.jl
+.julia/
+
+## triad-vm (lane Rust, se presente)
+/target/
+**/*.rs.bk
+Cargo.lock
+
+## Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
+
+## Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.~lock.*#
+
+## Log e temporanei
+*.log
+tmp/
+node_modules/
+
+## Script di debug usa-e-getta (root, artefatti scratch non committati)
+/_probe.jl
+/_probe2.jl
+/_probe3.jl
+/_qc.jl
+/_smoke.jl

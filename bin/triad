@@ -1,0 +1,119 @@
+#!/bin/sh
+# =====================================================================
+#  triad — launcher POSIX per il linguaggio Triad
+#
+#  Cerca un runtime Triad in questo ordine:
+#    1. bin/triad-native  (eseguibile standalone, creato da build_standalone.jl)
+#    2. Variabile d'ambiente TRIAD_JULIA
+#    3. julia nel PATH
+#    4. Posizioni standard di Julia su Linux / macOS / WSL
+#
+#  Uso:  triad [opzioni] [file.td [argomenti...]]
+#        triad --help          tutte le opzioni
+#        triad --build         crea l'eseguibile standalone (richiede PackageCompiler)
+#
+#  Per usarlo da ovunque: aggiungere questa cartella al PATH, oppure
+#  creare un link simbolico in ~/.local/bin/triad.
+#
+#  I file .td possono essere resi eseguibili direttamente:
+#    chmod +x programma.td
+#    ./programma.td arg1 arg2
+#  purché la prima riga sia:  #!/usr/bin/env triad
+# =====================================================================
+
+set -e
+
+# --- Risoluzione del path reale dello script (segue i symlink) --------
+self="$0"
+while [ -L "$self" ]; do
+    link=$(readlink "$self")
+    case $link in
+        /*) self="$link" ;;
+        *)  self="$(dirname "$self")/$link" ;;
+    esac
+done
+TRIAD_HOME="$(cd "$(dirname "$self")/.." && pwd)"
+
+# --- Modalità --build: crea l'eseguibile standalone -------------------
+if [ "${1:-}" = "--build" ]; then
+    shift
+    JULIA="${TRIAD_JULIA:-julia}"
+    if ! command -v "$JULIA" >/dev/null 2>&1; then
+        echo "triad --build: Julia non trovato. Imposta TRIAD_JULIA o aggiungi julia al PATH." >&2
+        exit 2
+    fi
+    echo "==> Compilazione eseguibile standalone..."
+    exec "$JULIA" --startup-file=no "$TRIAD_HOME/bin/build_standalone.jl" "$@"
+fi
+
+# --- Ricerca del runtime ----------------------------------------------
+RUNTIME=""
+
+# 1. Eseguibile standalone (nessuna dipendenza da Julia)
+if [ -x "$TRIAD_HOME/bin/triad-native" ]; then
+    RUNTIME="standalone"
+elif [ -x "$TRIAD_HOME/bin/triad-native.exe" ]; then
+    RUNTIME="standalone-exe"
+fi
+
+# 2-4. Runtime Julia
+if [ -z "$RUNTIME" ]; then
+    JULIA=""
+
+    # 2. Variabile d'ambiente
+    if [ -n "${TRIAD_JULIA:-}" ] && [ -x "$TRIAD_JULIA" ]; then
+        JULIA="$TRIAD_JULIA"
+    fi
+
+    # 3. PATH
+    if [ -z "$JULIA" ] && command -v julia >/dev/null 2>&1; then
+        JULIA="julia"
+    fi
+
+    # 4. Posizioni standard
+    if [ -z "$JULIA" ]; then
+        for candidate in \
+            /usr/local/bin/julia \
+            /usr/bin/julia \
+            /opt/julia/bin/julia \
+            "$HOME/.juliaup/bin/julia" \
+            "$HOME/AppData/Local/Programs/Julia-1.13.1/bin/julia.exe" \
+            "$HOME/AppData/Local/juliaup/bin/julia" \
+            "/c/Users/$USER/AppData/Local/Programs/Julia-1.13.1/bin/julia.exe" \
+            /mnt/c/Users/*/AppData/Local/Programs/Julia-*/bin/julia.exe \
+        ; do
+            if [ -x "$candidate" ]; then
+                JULIA="$candidate"
+                break
+            fi
+        done
+    fi
+
+    if [ -n "$JULIA" ]; then
+        RUNTIME="julia"
+    fi
+fi
+
+# --- Esecuzione -------------------------------------------------------
+case "$RUNTIME" in
+    standalone)
+        exec "$TRIAD_HOME/bin/triad-native" "$@"
+        ;;
+    standalone-exe)
+        exec "$TRIAD_HOME/bin/triad-native.exe" "$@"
+        ;;
+    julia)
+        exec "$JULIA" --startup-file=no "$TRIAD_HOME/triad.jl" "$@"
+        ;;
+    *)
+        echo "triad: runtime non trovato." >&2
+        echo "" >&2
+        echo "Opzioni:" >&2
+        echo "  1. Crea uno standalone:   triad --build" >&2
+        echo "  2. Installa Julia e aggiungilo al PATH" >&2
+        echo "  3. Imposta TRIAD_JULIA=/path/to/julia" >&2
+        echo "" >&2
+        echo "Scarica Julia da https://julialang.org/downloads/" >&2
+        exit 1
+        ;;
+esac

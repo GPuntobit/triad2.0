@@ -1,0 +1,16 @@
+# Voce pronta per github-linguist/linguist (lib/linguist/languages.yml).
+# Non è ancora parte di Linguist: va proposta con una PR.
+#
+# Nota: .td è già assegnata a TableGen (LLVM); per questo la voce usa .triad come
+# estensione canonica. Le heuristics di Linguist possono in futuro aggiungere .td solo
+# con un discriminatore affidabile: per ora non lo facciamo (evita falsi positivi).
+Triad:
+  type: programming
+  color: "#2f6f9f"
+  extensions:
+    - ".triad"
+  aliases:
+    - triad
+  tm_scope: source.triad
+  ace_mode: text
+  language_id: 0  # linguist assegna un id univoco nella PR

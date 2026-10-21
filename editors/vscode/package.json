@@ -1,0 +1,43 @@
+{
+  "name": "triad",
+  "displayName": "Triad",
+  "description": "Supporto editor per il linguaggio Triad: sintassi, commenti, parentesi",
+  "version": "0.2.0",
+  "publisher": "triad-lang",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "triad",
+    "language",
+    "prolog",
+    "lisp",
+    "julia"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "triad",
+        "aliases": [
+          "Triad",
+          "triad"
+        ],
+        "extensions": [
+          ".triad",
+          ".td"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "triad",
+        "scopeName": "source.triad",
+        "path": "./syntaxes/triad.tmLanguage.json"
+      }
+    ]
+  }
+}

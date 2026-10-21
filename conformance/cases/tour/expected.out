@@ -1,0 +1,28 @@
+|p| = 5.0
+p + q = (4.0, 6.0)
+dispatch: area(1) = intero, area(1.5) = numero
+dividi(7, 2) = 3.5
+contratto violato -> contract (clausola requires)
+  valore 2
+  errore domain
+destrutturazione con arità sbagliata -> bounds
+rotte da roma (limit 6):
+  milano a 60 minuti
+  parigi a 180 minuti
+  parigi a 150 minuti
+  londra a 230 minuti
+  londra a 260 minuti
+roma -> londra costa 230 minuti
+senza voli in partenza: [:londra]
+x + y = 42
+  alfa -> 1
+  beta -> 2
+  gamma -> 3
+totale = 6
+macro: 2 non è maggiore di 3
+polinomio p(2) = 17
+budget esaurito -> budget
+fib(5) = 5 (30 eventi tracciati)
+ciao, Triad!
+effetto non dichiarato -> effect
+imparato: [:gatto]

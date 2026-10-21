@@ -1,0 +1,5 @@
+call
+(call + (dot a x) (call f b 2))
+49
+if x > 0; :pos; else; :neg; end
+non maggiore

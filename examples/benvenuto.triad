@@ -1,0 +1,8 @@
+#!/usr/bin/env triad
+# benvenuto.triad — file col nome canonico dell'estensione (.triad).
+# Esegui con:  triad examples/benvenuto.triad  (oppure ./benvenuto.triad)
+
+println("Triad, standard ", 0.2)
+
+fact saluta(:mondo)
+println((solve saluta(?x))[1].x)

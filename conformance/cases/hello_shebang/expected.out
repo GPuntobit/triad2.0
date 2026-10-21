@@ -1,0 +1,7 @@
+=== File .td eseguibile ===
+ARGS = ["Ada", "Bob"]
+Ciao, Ada! Benvenuto in Triad.
+Ciao, Bob! Benvenuto in Triad.
+
+Query logica: grandparent(:alice, ?who)
+Risultato: [{who = :charlie}]

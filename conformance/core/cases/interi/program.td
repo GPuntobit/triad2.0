@@ -1,0 +1,7 @@
+# Triad-Core: interi, precedenza e parentesi (primo incremento dell'interprete)
+println(1 + 2 * 3)
+println((1 + 2) * 3)
+println(10 - 4)
+println(-5 + 2)
+println(2 + 3)
+println(7)

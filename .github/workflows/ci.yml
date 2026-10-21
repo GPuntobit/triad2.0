@@ -1,0 +1,49 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  conformance:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1'
+      - name: Conformance Triad-Full
+        run: julia --startup-file=no conformance/run.jl
+      - name: Conformance Triad-Core
+        run: julia --startup-file=no conformance/run.jl --cases conformance/core/cases
+      - name: Test suite
+        run: julia --startup-file=no test/runtests.jl
+  seed-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode seed
+        shell: pwsh
+        run: |
+          Remove-Item seed/windows-x86_64/seed.exe -ErrorAction SilentlyContinue
+          certutil -decodehex seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
+      - name: Seed conformance cases
+        shell: pwsh
+        run: |
+          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni','aritmetica','begin_block','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if')
+          foreach ($c in $cases) {
+            $out = Join-Path $env:TEMP "$c.out"
+            Remove-Item $out -ErrorAction SilentlyContinue
+            $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "conformance\core\cases\$c\program.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
+            if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for $c" }
+            $got = Get-Content $out -Raw
+            $exp = Get-Content "conformance\core\cases\$c\expected.out" -Raw
+            if ($got -ne $exp) { throw "output mismatch for $c" }
+          }
+      - name: Hash check
+        shell: pwsh
+        run: |
+          $h = (Get-FileHash seed/windows-x86_64/seed.hex -Algorithm SHA256).Hash
+          if ($h -ne 'ECF1F483F7FAB783102B6FA695193ECEC4EFFEE3C4D5B0D25AD35231F527BDC4') { throw "hash mismatch: $h" }
