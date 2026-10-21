@@ -47,3 +47,21 @@ jobs:
         run: |
           $h = (Get-FileHash seed/windows-x86_64/seed.hex -Algorithm SHA256).Hash
           if ($h -ne 'ECF1F483F7FAB783102B6FA695193ECEC4EFFEE3C4D5B0D25AD35231F527BDC4') { throw "hash mismatch: $h" }
+  seed-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode ELF
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xxd || sudo apt-get install -y vim-common
+          xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
+          chmod +x seed/linux-x86_64/seed
+      - name: Run E0
+        run: |
+          out=$(./seed/linux-x86_64/seed)
+          test "$out" = "Triad seed Linux OK"
+      - name: Hash check
+        run: |
+          h=$(sha256sum seed/linux-x86_64/seed.hex | cut -d' ' -f1)
+          test "$h" = "AD4C9F08176D9964D5BE17D44C72230184434025980447395E7A3250F63CA5EA"

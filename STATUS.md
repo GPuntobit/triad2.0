@@ -27,7 +27,7 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 | `controllo` (`elseif`) | manca `elseif`; il resto è pronto |
 | S1 (Triad in Triad-Core) | non iniziato |
 | S2–S3 (compilatore nativo, self-hosting) | non iniziati |
-| S4 / M7 (parità, Linux ELF) | non iniziato; CI pronta per test Linux |
+| S4 / M7 (parità, Linux ELF) | **E0 ✅** ELF Linux minimale; E1/E2/E3 e parità da fare |
 
 ## Comandi di verifica
 

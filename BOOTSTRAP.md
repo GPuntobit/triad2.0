@@ -103,7 +103,7 @@ Il seed implementa **solo** Triad-Core; S1 usa Triad-Core per implementare il re
 | Piattaforma | Stato | Motivo |
 |---|---|---|
 | Windows x86-64 (PE) | **prima**, testabile qui | unica piattaforma eseguibile in questo ambiente; nessun compilatore installato |
-| Linux x86-64 (ELF) | dopo | serve un ambiente Linux per testare (WSL/CI): **bloccante da risolvere** |
+| Linux x86-64 (ELF) | in corso: **E0 ✅** (ELF minimale testato su CachyOS); E1/E2/E3 dopo | ambiente Linux disponibile (CachyOS nativo) |
 | macOS/ARM | dopo | dipende dalle prime due |
 
 La logica del seed è per la gran parte indipendente dall'OS: si cambia solo il layer
@@ -167,7 +167,7 @@ poi committati: da quel momento sono il contratto e Julia non serve più per ver
 | Rischio | Mitigazione |
 |---|---|
 | Scrivere a mano un interprete in codice macchina è lentissimo e fragile | Triad-Core minimale; milestone M1/M2 verificabili subito; annotazioni byte per byte; niente GC all'inizio |
-| Nessun ambiente Linux per testare ELF | decidere prima del port se attivare WSL/CI su Linux; nel frattempo Windows PE |
+| Nessun ambiente Linux per testare ELF | risolto: CachyOS su secondo disco; E0 verificato, CI Linux in arrivo |
 | Divergenza tra stage0 e implementazione indipendente | conformance golden come unico contratto; oracle stage0 solo per rigenerare i golden |
 | Seed troppo legato a Windows | M2 usa ancora `KERNEL32` direttamente: isolare le chiamate in routine `os_*` prima di M3/M7 |
 | Aspettative sui tempi | il seed è un progetto plurisettimanale: M0-M2 sono le tappe intermedie da verificare |
@@ -186,6 +186,6 @@ poi committati: da quel momento sono il contratto e Julia non serve più per ver
 - [ ] **M3** (in corso) — `SPEC-CORE.md` ✅ e `conformance/core/` ✅ pronti;
   **M3b1** ✅ interi; **M3b2a** ✅ variabili; **M3b2b1** ✅ funzioni; **M3b2b2** ✅
   confronti/ternario/ricorsione; **M3b2b3a-e** ✅ Bool, operatori, `if`, `while`, lambda;
-  **M3b2b3f** ⚠️ cattura instabile. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ corpo multi-istruzione; **M3b2b3j** ✅ frame lessicali e `let`; **M3b2b3k** ✅ chiusure; **M3b2b3l** ✅ `begin`/`end` e **CI**; **M3b2b3m** ✅ stringhe heap base; **M3b2b3n** ✅ `nothing` (`.github/workflows/ci.yml`, conformance su Linux/Windows e seed su Windows). Serve AST/bytecode per cattura multi-binding, `elseif`, liste/stringhe.
+  **M3b2b3f** ⚠️ cattura instabile. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ corpo multi-istruzione; **M3b2b3j** ✅ frame lessicali e `let`; **M3b2b3k** ✅ chiusure; **M3b2b3l** ✅ `begin`/`end` e **CI**; **M3b2b3m** ✅ stringhe heap base; **M3b2b3n** ✅ `nothing`; **M3b2b3o/p/q** ✅ concat/simboli/coverage; **M7/E0** ✅ ELF Linux minimale. Serve AST/bytecode per cattura multi-binding, `elseif`, liste/stringhe; poi E1/E2 del seed Linux.
   Prossimo: **M3b2b3g** — cattura lessicale completa/multi-binding, `elseif`/`begin`/`let`;
   poi liste e stringhe (M3b3).

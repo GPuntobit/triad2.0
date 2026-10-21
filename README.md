@@ -159,7 +159,8 @@ test/runtests.jl            test dell'implementazione di riferimento
 test/oracles/oracle_tests.jl confronto opzionale, solo sviluppo, con interpreti esterni
 conformance/                suite golden: contratto eseguibile delle implementazioni
 ai/                         benchmark di generazione LLM + verificatore (strumento di sviluppo)
-seed/                       seed S0 in codice macchina (M3b2b3p: PE x86-64, simboli)
+seed/                       seed S0 in codice macchina (PE Windows + ELF Linux E0)
+seed/linux-x86_64/          primo ELF Linux (E0): syscall write/exit, "Triad seed Linux OK"
 editors/                    VS Code, Vim/Neovim e voce Linguist
 examples/*.triad, *.td      esempi Triad (.triad canonica, .td alias storico)
 BOOTSTRAP.md                piano di indipendenza da Julia e da ogni altro linguaggio
