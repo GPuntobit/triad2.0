@@ -47,6 +47,9 @@ ehthumbs.db
 tmp/
 node_modules/
 
+## AI benchmark: le soluzioni generate dai modelli non si committano
+ai/tasks/*/solution.triad
+
 ## Script di debug usa-e-getta (root, artefatti scratch non committati)
 /_probe.jl
 /_probe2.jl

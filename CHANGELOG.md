@@ -9,6 +9,8 @@ il comportamento, i golden di `conformance/`.
   dall'implementazione (stato, normatività, profili di conformità e versionamento in §16).
 - **Conformità eseguibile**: aggiunta `conformance/` con 12 casi golden (stdout + exit code)
   e un runner di sviluppo basato sullo stage0; la suite è parte dello standard.
+- **AI benchmark** (strumento di sviluppo): `ai/` con prompt di sistema, 5 task Triad-Core e
+  `ai/verify.jl` per generare codice con un LLM e verificarlo contro i golden.
 - **Estensione canonica**: `.triad`; `.td` resta supportata come alias storico.
 - **Indipendenza**: piano di bootstrap senza linguaggi ospiti in `BOOTSTRAP.md`.
 - **Tooling editor**: grammatiche di sintassi per VS Code e Vim/Neovim (`editors/`) e

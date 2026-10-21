@@ -24,6 +24,8 @@ Sono parte del linguaggio, non di una libreria: errori come dati (`Err`), contra
   [CHANGELOG.md](CHANGELOG.md).
 - **Conformità:** [conformance/](conformance/README.md) — golden che ogni implementazione
   deve passare.
+- **AI:** [ai/](ai/README.md) — benchmark per generazione di codice Triad da LLM, con
+  prompt di sistema e verificatore automatico.
 - **Implementazione:** oggi `triad.jl` + `syntax.jl` su Julia, transitoria per il bootstrap;
   il piano per un Triad senza linguaggi ospiti è in [BOOTSTRAP.md](BOOTSTRAP.md).
 - **Editor:** [editors/](editors/README.md) — VS Code, Vim/Neovim e voce Linguist per GitHub.
@@ -156,13 +158,15 @@ bin/build_standalone.jl     packaging standalone (PackageCompiler)
 test/runtests.jl            test dell'implementazione di riferimento
 test/oracles/oracle_tests.jl confronto opzionale, solo sviluppo, con interpreti esterni
 conformance/                suite golden: contratto eseguibile delle implementazioni
+ai/                         benchmark di generazione LLM + verificatore (strumento di sviluppo)
 seed/                       seed S0 in codice macchina (M3b2b3p: PE x86-64, simboli)
 editors/                    VS Code, Vim/Neovim e voce Linguist
 examples/*.triad, *.td      esempi Triad (.triad canonica, .td alias storico)
 BOOTSTRAP.md                piano di indipendenza da Julia e da ogni altro linguaggio
 SPEC.md                     standard Triad: specifica normativa (0.2.0)
 SPEC-CORE.md                profilo Triad-Core (normativo, per il bootstrap self-hosted)
-STATUS.md                    stato di avanzamento e roadmap del bootstrap`nVERSION / CHANGELOG.md      versione e storia dello standard
+STATUS.md                   stato di avanzamento e roadmap del bootstrap
+VERSION / CHANGELOG.md      versione e storia dello standard
 TUTORIAL.md                 tutorial completo d'uso
 ```
 
