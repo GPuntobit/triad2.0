@@ -24,7 +24,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: AV exclusion (PE generato dal dump: falso positivo noto)
+      - name: "AV exclusion (PE generato dal dump: falso positivo noto)"
         shell: pwsh
         continue-on-error: true
         run: Add-MpPreference -ExclusionPath "${{ github.workspace }}\seed\windows-x86_64"
