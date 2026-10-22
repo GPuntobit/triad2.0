@@ -1164,12 +1164,48 @@ cmpByteRsiImm(')'); jne('fail'); incRsi();
 movRdxRax(); andRdxImm3(); cmpEdxImm3(); jne('fail');
 andRaxImmFc(); movRcxMemRax8(); movRaxRcx(); shlRax1(); ret();
 
+L('pf_builtin_string');
+incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws');
+cmpByteRsiImm(')'); jne('fail'); incRsi();
+movRdxRax(); andRdxImm3(); cmpEdxImm3(); je('pbs_str');  // stringa: identity
+testAlImm(0); jz('pbs_int');  // Int: conversione decimale
+jmp('fail');  // Bool/Symbol/Nothing non supportati per ora
+
+L('pbs_str');
+ret();
+
+L('pbs_int');
+// Int in decimale: usa buffer stack per conversione, poi copia in heap
+pushRbp(); movRbpRsp(); subRsp(0x20);
+sarRax1(); B(0x48, 0x8d, 0x7d, 0xf0); xorR8d(); testRax(); jns('pbs_pos');
+negRax(); movR8d(1);
+L('pbs_pos');
+movEcx(10); B(0x4c, 0x8d, 0x55, 0xf8);
+L('pbs_loop');
+xorEdx(); divRcx(); addDlImm(0x30); decR10(); movByteR10Dl(); testRax(); jnz('pbs_loop');
+testR8d(); je('pbs_neg'); decR10(); movByteR10Imm(0x2d);
+L('pbs_neg');
+B(0x48, 0x8d, 0x7d, 0xf0); subRdiR10(); movRcxRdi();  // cx = len
+// Alloca stringa heap
+leaRdxR14(0x30000); movRaxMemRdx(); leaRdiR14(0x30008); addRdiRax();
+movMemRdiImm32(0, 1); movMemRdiRcx8(); leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); movMemRdxRax();
+leaR9Rdi16(); B(0x4c, 0x8d, 0x55, 0xf0);  // r10 = buffer source
+L('pbs_copy');
+testRcx(); jz('pbs_done'); movDlMemR10(); movMemR9Dl(); incR10(); incR9(); decRcx(); jmp('pbs_copy');
+L('pbs_done');
+movRaxRdi(); orRaxImm3(); movRspRbp(); popRbp(); ret();
+
 L('pf_call');
 cmpR9Imm(6); jne('pfc_norm');
-movEaxMemR8(); cmpEaxImm32(0x676e656c); jne('pfc_norm');
-cmpByteR8DispImm(4, 't'); jne('pfc_norm');
-cmpByteR8DispImm(5, 'h'); jne('pfc_norm');
+movEaxMemR8(); cmpEaxImm32(0x676e656c); jne('pfc_str');
+cmpByteR8DispImm(4, 't'); jne('pfc_str');
+cmpByteR8DispImm(5, 'h'); jne('pfc_str');
 jmp('pf_builtin_length');
+L('pfc_str');
+movEaxMemR8(); cmpEaxImm32(0x69727473); jne('pfc_norm');
+cmpByteR8DispImm(4, 'n'); jne('pfc_norm');
+cmpByteR8DispImm(5, 'g'); jne('pfc_norm');
+jmp('pf_builtin_string');
 L('pfc_norm');
 callL('fn_find');
 testRdx(); jnz('pf_call_entry');
