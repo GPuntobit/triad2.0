@@ -12,16 +12,16 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 - **Conformance**: runner indipendente; 12 casi Triad-Full e 29 casi Triad-Core, tutti verdi sullo stage0 Julia; `conformance/README.md`.
 - **Estensione canonica**: `.triad` (`.td` alias storico), grammatiche VS Code/Vim e voce Linguist preparata.
 - **Seed S0** (Windows PE, nessun runtime/compilatore): interprete Triad-Core con
-  25/29 casi coperti — interi, variabili, funzioni (forma breve e `function … end` multi-istruzione),
+  26/29 casi coperti — interi, variabili, funzioni (forma breve e `function … end` multi-istruzione),
   ricorsione, Bool, operatori (`% ^ ! && || +=`), `if`/`else`, `while`, `let`, `begin`,
-  lambda, chiusure con cattura per valore, stringhe base + concatenazione, `nothing`, simboli.
+  lambda, chiusure con cattura per valore, stringhe base + concatenazione + `string()`, `nothing`, simboli.
 - **CI**: `.github/workflows/ci.yml` — conformance Full/Core su Ubuntu e Windows, casi del seed su Windows, hash check.
 
 ## Cosa manca
 
 | area | stato |
 |---|---|
-| `stringhe` (`string()`) | non stabile: implementazione tentata e ritirata |
+| `stringhe` (`string()`) | implementato (Int/String; Bool/Symbol/Nothing da aggiungere) |
 | `liste` | non implementate |
 | `valori` (liste/simboli/stringhe insieme) | parziale (simboli/nothing ok) |
 | `controllo` (`elseif`) | manca `elseif`; il resto è pronto |
@@ -39,7 +39,7 @@ julia --startup-file=no conformance/run.jl --cases conformance/core/cases
 Windows, seed:
 
 ```powershell
-certutil -decodehex seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
+certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 .\seed\windows-x86_64\seed.exe conformance\core\cases\closure\program.td
 ```
 
@@ -51,15 +51,14 @@ certutil -decodehex seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 - eventuale registrazione del linguaggio/standard.
 ## Verifica finale (round 30)
 
-- Seed S0 Windows: PE 8704 byte, hash `ECF1F483F7FAB783102B6FA695193ECEC4EFFEE3C4D5B0D25AD35231F527BDC4`, dump riproducibile.
-- Casi Core supportati: **25/29**, tutti con stdout/exit code byte-esatti; suite Core sul seed `0` errori; exit 2 senza argomento, 1 file mancante.
+- Seed S0 Windows: PE 9728 byte, hash `11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C`, dump riproducibile.
+- Casi Core supportati: **26/29**, tutti con stdout/exit code byte-esatti; suite Core sul seed `0` errori; exit 2 senza argomento, 1 file mancante.
 - Stage0: **Triad-Core 29/29**, **Triad-Full 12/12**.
 - CI: hash del seed allineato, matrice Ubuntu/Windows per conformance e job Windows per il seed.
 
 ### Casi Core non ancora coperti dal seed
 
 - `controllo`: manca `elseif` (il resto — while/let/begin — è pronto).
-- `stringhe`: manca `string()` (concatenazione e `length` funzionano).
 - `liste`: non implementate.
 - `valori`: mancano liste e stringhe complete (simboli e `nothing` ci sono).
 

@@ -178,7 +178,7 @@ poi committati: da quel momento sono il contratto e Julia non serve più per ver
 - [x] Piano S0→S4 e milestone.
 - [x] `SPEC-CORE.md` — sottoinsieme Triad-Core normativo (tipi, forme, primitive,
   primitivi di bootstrap, conformità).
-- [x] `conformance/` — 12 casi Full + 8 casi Core, verdi sullo stage0.
+- [x] `conformance/` — 12 casi Full + 29 casi Core, verdi sullo stage0.
 - [x] **M1** — seed "Triad seed OK" in codice macchina: Windows x86-64 PE da 1024 byte,
   `seed/windows-x86_64/`, costruito solo decodificando un dump esadecimale.
 - [x] **M2** — seed con I/O: legge il file dal primo argomento e ne scrive i byte su stdout
@@ -186,6 +186,5 @@ poi committati: da quel momento sono il contratto e Julia non serve più per ver
 - [ ] **M3** (in corso) — `SPEC-CORE.md` ✅ e `conformance/core/` ✅ pronti;
   **M3b1** ✅ interi; **M3b2a** ✅ variabili; **M3b2b1** ✅ funzioni; **M3b2b2** ✅
   confronti/ternario/ricorsione; **M3b2b3a-e** ✅ Bool, operatori, `if`, `while`, lambda;
-  **M3b2b3f** ⚠️ cattura instabile. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ corpo multi-istruzione; **M3b2b3j** ✅ frame lessicali e `let`; **M3b2b3k** ✅ chiusure; **M3b2b3l** ✅ `begin`/`end` e **CI**; **M3b2b3m** ✅ stringhe heap base; **M3b2b3n** ✅ `nothing`; **M3b2b3o/p/q** ✅ concat/simboli/coverage; **M7/E0** ✅ ELF Linux minimale. Serve AST/bytecode per cattura multi-binding, `elseif`, liste/stringhe; poi E1/E2 del seed Linux.
-  Prossimo: **M3b2b3g** — cattura lessicale completa/multi-binding, `elseif`/`begin`/`let`;
-  poi liste e stringhe (M3b3).
+  **M3b2b3f** ⚠️ cattura instabile. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ corpo multi-istruzione; **M3b2b3j** ✅ frame lessicali e `let`; **M3b2b3k** ✅ chiusure; **M3b2b3l** ✅ `begin`/`end` e **CI**; **M3b2b3m** ✅ stringhe heap base; **M3b2b3n** ✅ `nothing`; **M3b2b3o/p/q** ✅ concat/simboli/coverage; **M7/E0** ✅ ELF Linux minimale. Serve AST/bytecode per cattura multi-binding, `elseif`, liste; poi E1/E2 del seed Linux.
+  Prossimo: `elseif` (caso `controllo`), liste (casi `liste` e `valori`), cattura multi-binding; poi E1/E2 del seed Linux.

@@ -1,6 +1,6 @@
 # S0 / Windows x86-64 — seed con interprete Triad-Core: simboli (M3b2b3p)
 
-Eseguibile PE32+ da **8704 byte**, senza runtime e senza libc: importa solo `KERNEL32.dll`.
+Eseguibile PE32+ da **9728 byte**, senza runtime e senza libc: importa solo `KERNEL32.dll`.
 Legge il file indicato dal primo argomento e interpreta un sottoinsieme di Triad-Core:
 
 - statement `println(expr)`, `NAME = expr`, funzioni `f(x, y) = expr` e forma blocco `function f(x) … end` con **corpo a più istruzioni**, `if`/`else`/`end`, `while`/`end`, **`let name = expr … end`**;
@@ -8,20 +8,21 @@ Legge il file indicato dal primo argomento e interpreta un sottoinsieme di Triad
 - espressioni con interi, variabili, chiamate, `+ - * % ^`, parentesi, `-` unario,
   confronti, ternario, letterali `true`/`false` e **lambda a un parametro** `x -> expr`;
 - lambda a un parametro, anche passate come argomento e restituite da funzioni; cattura delle chiusure rimandata;
-- `!`, `&&`, `||` (bitwise sui tag Bool) e assegnamento composto `+=`;`n- valori taggati a 2 bit: `Int=n<<2`, `Bool false=1`/`true=5`, `chiusura=ptr|2`; `println`
-  stampa `true`/`false` e `fun`.
+- `!`, `&&`, `||` (bitwise sui tag Bool) e assegnamento composto `+=`; `string(x)` conversione in stringa;
+- valori taggati a 2 bit: `Int=n<<2`, `Bool false=1`/`true=5`, `chiusura=ptr|2`; `println`
+  stampa interi, Bool, stringhe heap e `nothing`.
 
 Il dump esadecimale è [`seed.hex`](seed.hex).
 
 - **Uso:** `seed.exe FILE`
-- **Output:** per ogni `println(expr)` il valore in decimale + newline
+- **Output:** per ogni `println(expr)` il valore in decimale/stringa + newline
 - **Exit:** `0` successo; `1` errore (sintassi, variabile/funzione non definita, arità,
   lettura); `2` senza argomento
 - **Entry point:** RVA `0x1000`
-- **Sezione:** `.text`, RVA `0x1000`, file offset `0x200`, 8192 byte, caratteristiche `0xE0000020`
-- **Immagine:** base `0x140000000`, `SizeOfImage` `0x3000`, header `0x200`, subsystem console, ASLR disattivata
-- **Codice:** 6866 byte
-- **sha256 di `seed.hex`:** `ECF1F483F7FAB783102B6FA695193ECEC4EFFEE3C4D5B0D25AD35231F527BDC4`
+- **Sezione:** `.text`, RVA `0x1000`, file offset `0x200`, 9216 byte, caratteristiche `0xE0000020`
+- **Immagine:** base `0x140000000`, `SizeOfImage` `0x3400`, header `0x200`, subsystem console, ASLR disattivata
+- **Codice:** 7163 byte
+- **sha256 di `seed.hex`:** `11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C`
 
 ## Layout del file
 
@@ -32,8 +33,8 @@ Il dump esadecimale è [`seed.hex`](seed.hex).
 | `0x044` | COFF: machine `0x8664`, 1 sezione, `SizeOfOptionalHeader = 0xF0`, caratteristiche `0x0022` |
 | `0x058` | optional header PE32+, entry `0x1000`, base `0x140000000` |
 | `0x0D0` | data directory import: RVA `0x2CA0`, size `0x28` |
-| `0x148` | section header `.text` (VirtualSize/RawSize `0x2000`) |
-| file `0x200` / RVA `0x1000` | codice (6866 byte) |
+| `0x148` | section header `.text` (VirtualSize/RawSize `0x2400`) |
+| file `0x200` / RVA `0x1000` | codice (7163 byte) |
 | RVA `0x2C00` (file `0x1E00`) | IAT, 8 slot + null |
 | RVA `0x2C50` (file `0x1E50`) | ILT, 8 slot + null |
 | RVA `0x2CA0` (file `0x1EA0`) | import descriptor + terminatore |
@@ -129,14 +130,14 @@ $p.ExitCode                                                       # 0
 .\seed.exe non_esiste.td ; $LASTEXITCODE                          # 1
 ```
 
-Verificati anche: `stringhe_concat`, `nothing_base`, `stringhe_base`, `begin_block`, `closure`, `chiusure`, `scope`, `funzioni_blocco`, `funzioni`, `aritmetica`, `lambda`, `while_loop`, `if_else`, `operatori`, `confronti`, `ricorsione`
+Verificati anche: `stringhe`, `stringhe_concat`, `nothing_base`, `stringhe_base`, `begin_block`, `closure`, `chiusure`, `scope`, `funzioni_blocco`, `funzioni`, `aritmetica`, `lambda`, `while_loop`, `if_else`, `operatori`, `confronti`, `ricorsione`
 (120/55), `funzioni_semplici`, `variabili`, `interi`; chiusura che cattura il parametro
 (`f=crea(10); f(5)=15`) e due chiusure indipendenti (`g=crea(100)`); errore di arità → exit 1.
 
-## Limiti di M3b2b3f (prossimo M3b2b3g)
+## Limiti attuali
 
-- la **cattura delle chiusure non è ancora stabile**: il caso closure passa sullo stage0 ma non sul seed; serve AST/bytecode o frame catturati;
-- lambda solo a **un parametro**; mancano `elseif` e i blocchi-espressione (`begin`/`let`);
-- body di una funzione: una sola espressione; massimo 4 parametri;
-- niente liste/stringhe (M3b3);
+- cattura delle chiusure: copre l'ultimo binding del frame; la cattura multi-binding resta da fare (AST/bytecode);
+- lambda solo a **un parametro**; body di una funzione: massimo 4 parametri;
+- mancano `elseif` (caso `controllo`) e le liste (casi `liste` e `valori`);
+- `string()` copre Int e String; Bool/Symbol/Nothing da aggiungere;
 - solo Windows PE; `os_*` ed ELF sono del port M7.

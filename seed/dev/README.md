@@ -15,10 +15,10 @@ descrizione delle strutture PE; produce `seed.hex` e ne stampa etichette e dimen
 node seed/dev/gen_seed.js seed/windows-x86_64/seed.hex
 ```
 
-Output corrente: PE da **8704 byte**, codice **6866 byte**, sha256 di `seed.hex`:
+Output corrente: PE da **9728 byte**, codice **7163 byte**, sha256 di `seed.hex`:
 
 ```
-ECF1F483F7FAB783102B6FA695193ECEC4EFFEE3C4D5B0D25AD35231F527BDC4
+11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C
 ```
 
 ## `gen_seed_linux.js`

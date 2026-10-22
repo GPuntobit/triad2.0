@@ -141,6 +141,7 @@ const movAlMemR10 = () => B(0x41, 0x8a, 0x02);
 const cmpAlMemR11 = () => B(0x41, 0x3a, 0x03);
 const incR10 = () => B(0x49, 0xff, 0xc2);
 const incR11 = () => B(0x49, 0xff, 0xc3);
+const decR10 = () => B(0x49, 0xff, 0xca);
 const incRbx = () => B(0x48, 0xff, 0xc3);
 const leaRdxRdi3 = () => B(0x48, 0x8d, 0x14, 0x7f);
 const leaRdxRbx3 = () => B(0x48, 0x8d, 0x14, 0x5b);
@@ -290,6 +291,7 @@ const leaR10R9_16 = () => B(0x4d, 0x8d, 0x51, 0x10);
 const movMemR9Imm32 = v => { B(0x49, 0xc7, 0x01); B32(v); };
 const movMemR9Rcx8 = () => B(0x49, 0x89, 0x4f, 0x08);
 const movDlMemR8 = () => B(0x41, 0x8a, 0x10);
+const movDlMemR10 = () => B(0x41, 0x8a, 0x12);
 const movMemR9Dl = () => B(0x41, 0x88, 0x11);
 const movMemRaxImm32 = v => { B(0xc7, 0x00); B32(v); };
 const movR10R8 = () => B(0x4d, 0x89, 0xc2);
@@ -357,7 +359,7 @@ const addRsp8 = v => { B(0x48, 0x83, 0xc4, v & 255); };
 // ---------------------------------------------------------------- PE/data layout
 const IAT = 0x2C00;
 const DATA = 0x2700;                    // qword statico (maschera di stop dei blocchi)
-const SEC_RAW = 0x2000;                 // .text 8192 byte, RVA 0x1000..0x3000
+const SEC_RAW = 0x2400;                 // .text 9216 byte, RVA 0x1000..0x3400
 const HEADERS = 0x200, FILESZ = HEADERS + SEC_RAW;
 
 // ---------------------------------------------------------------- main
@@ -1175,21 +1177,20 @@ L('pbs_str');
 ret();
 
 L('pbs_int');
-// Int in decimale: usa buffer stack per conversione, poi copia in heap
+// Int in decimale: usa buffer stack, poi alloca heap
 pushRbp(); movRbpRsp(); subRsp(0x20);
-sarRax1(); B(0x48, 0x8d, 0x7d, 0xf0); xorR8d(); testRax(); jns('pbs_pos');
+sarRax1(); B(0x48, 0x8d, 0x7d, 0xf0); B(0x45, 0x31, 0xc0); testRax(); jns('pbs_pos');
 negRax(); movR8d(1);
 L('pbs_pos');
 movEcx(10); B(0x4c, 0x8d, 0x55, 0xf8);
 L('pbs_loop');
-xorEdx(); divRcx(); addDlImm(0x30); decR10(); movByteR10Dl(); testRax(); jnz('pbs_loop');
-testR8d(); je('pbs_neg'); decR10(); movByteR10Imm(0x2d);
+xorEdx(); divRcx(); addDlImm(0x30); decR10(); B(0x41, 0x88, 0x12); testRax(); jnz('pbs_loop');  // mov [r10], dl (store della cifra)
+testR8d(); je('pbs_neg'); decR10(); B(0x41, 0xc6, 0x02, 0x2d);
 L('pbs_neg');
-B(0x48, 0x8d, 0x7d, 0xf0); subRdiR10(); movRcxRdi();  // cx = len
-// Alloca stringa heap
+B(0x48, 0x8d, 0x7d, 0xf8); B(0x4c, 0x29, 0xd7); B(0x48, 0x89, 0xf9);  // rdi=rbp-8; sub rdi,r10; mov rcx,rdi (len)
 leaRdxR14(0x30000); movRaxMemRdx(); leaRdiR14(0x30008); addRdiRax();
 movMemRdiImm32(0, 1); movMemRdiRcx8(); leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); movMemRdxRax();
-leaR9Rdi16(); B(0x4c, 0x8d, 0x55, 0xf0);  // r10 = buffer source
+leaR9Rdi16(); B(0x4c, 0x8d, 0x55, 0xf8); B(0x49, 0x29, 0xca);  // r10 = (rbp-8)-len = inizio cifre
 L('pbs_copy');
 testRcx(); jz('pbs_done'); movDlMemR10(); movMemR9Dl(); incR10(); incR9(); decRcx(); jmp('pbs_copy');
 L('pbs_done');
@@ -1465,7 +1466,7 @@ u32(0x6c, 0x1000);
 u64(0x70, 0x140000000);
 u32(0x78, 0x1000); u32(0x7c, 0x200);
 u16(0x80, 6); u16(0x88, 6);
-u32(0x90, 0x3000);
+u32(0x90, 0x3400);
 u32(0x94, 0x200);
 u16(0x9c, 3);
 u64(0xa0, 0x100000); u64(0xa8, 0x1000);
@@ -1473,7 +1474,7 @@ u64(0xb0, 0x100000); u64(0xb8, 0x1000);
 u32(0xc4, 16);
 u32(0xd0, 0x2ca0); u32(0xd4, 0x28);
 str(0x148, '.text');
-u32(0x150, SEC_RAW); u32(0x154, 0x1000); u32(0x158, SEC_RAW); u32(0x15c, HEADERS);
+u32(0x150, SEC_RAW); u32(0x154, 0x1000); u32(0x158, SEC_RAW); u32(0x15c, HEADERS);  // VirtualSize=RawSize=SEC_RAW
 u32(0x16c, 0xe0000020);
 img.set(Buffer.from(code), HEADERS);
 

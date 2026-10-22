@@ -75,7 +75,7 @@ con risorse limitate. Non incollare output non verificato in produzione.
 
 ## Limiti attuali
 
-- Il seed S0 copre 25/29 casi Core; il verificatore usa lo **stage0 Julia**, che
+- Il seed S0 copre 26/29 casi Core; il verificatore usa lo **stage0 Julia**, che
   è più completo del seed.
-- Mancano liste, `string()` e `elseif` completi: i task evitano queste feature.
+- Mancano liste e `elseif` completi; `string()` copre Int e String: i task evitano queste feature.
 - Il `.triad` è l'estensione canonica; `.td` resta accettato come alias.

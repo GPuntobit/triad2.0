@@ -24,6 +24,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: AV exclusion (PE generato dal dump: falso positivo noto)
+        shell: pwsh
+        continue-on-error: true
+        run: Add-MpPreference -ExclusionPath "${{ github.workspace }}\seed\windows-x86_64"
       - name: Decode seed
         shell: pwsh
         run: |
@@ -32,7 +36,7 @@ jobs:
       - name: Seed conformance cases
         shell: pwsh
         run: |
-          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni','aritmetica','begin_block','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if')
+          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni','aritmetica','begin_block','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if')
           foreach ($c in $cases) {
             $out = Join-Path $env:TEMP "$c.out"
             Remove-Item $out -ErrorAction SilentlyContinue
@@ -46,7 +50,7 @@ jobs:
         shell: pwsh
         run: |
           $h = (Get-FileHash seed/windows-x86_64/seed.hex -Algorithm SHA256).Hash
-          if ($h -ne 'ECF1F483F7FAB783102B6FA695193ECEC4EFFEE3C4D5B0D25AD35231F527BDC4') { throw "hash mismatch: $h" }
+          if ($h -ne '11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C') { throw "hash mismatch: $h" }
   seed-linux:
     runs-on: ubuntu-latest
     steps:

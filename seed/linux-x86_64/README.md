@@ -58,7 +58,7 @@ e non fa parte della catena S0→S4.
 ## Prossimi passi
 
 - **E1:** `_start` con argc/argv, `openat`/`read`/`write` per leggere un file.
-- **E2:** port dell'interprete Triad-Core; obiettivo i 25 casi Core supportati dal seed
+- **E2:** port dell'interprete Triad-Core; obiettivo i 26 casi Core supportati dal seed
   Windows.
 - **E3:** job CI Linux nativo senza Wine.
 
