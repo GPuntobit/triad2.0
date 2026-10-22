@@ -15,6 +15,8 @@ rem
 rem  Per usarlo da ovunque: aggiungere questa cartella al PATH.
 rem =====================================================================
 
+setlocal DisableDelayedExpansion
+
 set "TRIAD_HOME=%~dp0.."
 
 rem --- Modalità --build ------------------------------------------------

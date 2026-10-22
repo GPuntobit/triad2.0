@@ -113,9 +113,16 @@ eseguendo codice e test e confrontandoli con la specifica.
   `bin/triad.cmd`.
 - [ ] **Seed Linux e Windows** — Ricostruire gli artefatti dai rispettivi sorgenti/generatori,
   confrontare hash e output con i golden e ripetere i casi CI su entrambi i sistemi.
+  Verificato: entrambi i generatori riproducono i dump esadecimali; decodificando i dump
+  in memoria si ottengono byte identici ai PE/ELF versionati. Restano da eseguire i casi
+  Windows (Defender ha quarantinato il PE rigenerato in `%TEMP%`) e l'ELF su Linux
+  (WSL è presente ma non ha distribuzioni installate).
 - [ ] **CI Windows** — Verificare che decodifica, esclusione antivirus facoltativa e casi
   del seed funzionino anche quando l'esclusione non è disponibile; chiarire quali errori
-  sono tollerati da `continue-on-error`.
+  sono tollerati da `continue-on-error`. Nel workflow il flag si applica solo al passo
+  `Add-MpPreference`: decodifica, casi e hash restano bloccanti. In locale Defender ha
+  quarantinato il PE non escluso; la lane Windows hosted va quindi verificata senza
+  presumere che l'esclusione riesca.
 - [ ] **CI multipiattaforma** — Eseguire o controllare tutte le lane definite in
   `.github/workflows/ci.yml` su Windows e Linux; verificare che le istruzioni Julia e i
   comandi usati localmente coincidano con quelli CI.
