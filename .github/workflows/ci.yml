@@ -64,4 +64,4 @@ jobs:
       - name: Hash check
         run: |
           h=$(sha256sum seed/linux-x86_64/seed.hex | cut -d' ' -f1)
-          test "$h" = "AD4C9F08176D9964D5BE17D44C72230184434025980447395E7A3250F63CA5EA"
+          test "$h" = "ad4c9f08176d9964d5be17d44c72230184434025980447395e7a3250f63ca5ea"
