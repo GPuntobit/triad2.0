@@ -111,18 +111,19 @@ eseguendo codice e test e confrontandoli con la specifica.
 - [x] **Launcher Windows** — Verificati ricerca PATH contro l'alias `WindowsApps`, override
   `TRIAD_JULIA`, modalità `-v` e inoltro di argomenti contenenti `!` attraverso
   `bin/triad.cmd`.
-- [ ] **Seed Linux e Windows** — Ricostruire gli artefatti dai rispettivi sorgenti/generatori,
-  confrontare hash e output con i golden e ripetere i casi CI su entrambi i sistemi.
-  Verificato: entrambi i generatori riproducono i dump esadecimali; decodificando i dump
-  in memoria si ottengono byte identici ai PE/ELF versionati. Restano da eseguire i casi
-  Windows (Defender ha quarantinato il PE rigenerato in `%TEMP%`) e l'ELF su Linux
-  (WSL è presente ma non ha distribuzioni installate).
-- [ ] **CI Windows** — Verificare che decodifica, esclusione antivirus facoltativa e casi
-  del seed funzionino anche quando l'esclusione non è disponibile; chiarire quali errori
-  sono tollerati da `continue-on-error`. Nel workflow il flag si applica solo al passo
-  `Add-MpPreference`: decodifica, casi e hash restano bloccanti. In locale Defender ha
-  quarantinato il PE non escluso; la lane Windows hosted va quindi verificata senza
-  presumere che l'esclusione riesca.
+- [x] **Riproducibilità degli artefatti seed** — I generatori Linux e Windows ricreano
+  esattamente i rispettivi dump esadecimali; i byte decodificati coincidono con i file
+  PE/ELF versionati.
+- [ ] **Esecuzione dei seed Linux e Windows** — Eseguire i casi CI nativi sui due sistemi.
+  Restano da eseguire i casi Windows (Defender ha quarantinato il PE rigenerato in `%TEMP%`)
+  e l'ELF su Linux (WSL è presente ma non ha distribuzioni installate).
+- [x] **Ambito di `continue-on-error` nella CI Windows** — Verificato in
+  `.github/workflows/ci.yml`: l'opzione tollera solo il fallimento di `Add-MpPreference`;
+  decodifica, casi del seed e verifica hash restano bloccanti.
+- [ ] **Esecuzione della lane seed Windows** — Verificare che decodifica, casi e hash
+  funzionino anche quando l'esclusione antivirus facoltativa non è disponibile. Defender
+  ha quarantinato il PE non escluso nella prova locale; resta da verificare la lane hosted
+  senza presumere che l'esclusione riesca.
 - [ ] **CI multipiattaforma** — Eseguire o controllare tutte le lane definite in
   `.github/workflows/ci.yml` su Windows e Linux; verificare che le istruzioni Julia e i
   comandi usati localmente coincidano con quelli CI.
