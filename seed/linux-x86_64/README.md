@@ -51,9 +51,9 @@ objdump -d seed      # write(1,msg,20); exit(0)
 node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex
 ```
 
-Il file ELF prodotto **non** viene committato (`seed/**/seed` è in `.gitignore`); viene
-committato solo il dump. Il generatore è uno strumento di sviluppo e non fa parte della
-catena S0→S4.
+Il dump è la fonte canonica e riproducibile; l'ELF prodotto può essere committato
+insieme a esso (non è più in `.gitignore`). Il generatore è uno strumento di sviluppo
+e non fa parte della catena S0→S4.
 
 ## Prossimi passi
 

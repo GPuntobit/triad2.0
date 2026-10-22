@@ -20,7 +20,7 @@ Sono parte del linguaggio, non di una libreria: errori come dati (`Err`), contra
 
 ## Standard e riconoscimento
 
-- **Specifica:** [SPEC.md](SPEC.md) — normativa, versione in [`STATUS.md                    stato di avanzamento e roadmap del bootstrap`nVERSION`](STATUS.md                    stato di avanzamento e roadmap del bootstrap`nVERSION); storia in
+- **Specifica:** [SPEC.md](SPEC.md) — normativa, versione in [`VERSION`](VERSION); storia in
   [CHANGELOG.md](CHANGELOG.md).
 - **Conformità:** [conformance/](conformance/README.md) — golden che ogni implementazione
   deve passare.
@@ -169,6 +169,8 @@ SPEC-CORE.md                profilo Triad-Core (normativo, per il bootstrap self
 STATUS.md                   stato di avanzamento e roadmap del bootstrap
 VERSION / CHANGELOG.md      versione e storia dello standard
 TUTORIAL.md                 tutorial completo d'uso
+LICENSE                     licenza MIT (open source)
+docs/                       note e documenti di supporto
 ```
 
 ## Requisiti
@@ -180,6 +182,10 @@ TUTORIAL.md                 tutorial completo d'uso
   ([BOOTSTRAP.md](BOOTSTRAP.md)).
 - **Test oracle:** opzionali e solo per lo sviluppo (SWI-Prolog, SBCL); non servono per
   usare Triad né per la conformità.
+
+## Licenza
+
+Distribuito sotto licenza **MIT** — vedi [`LICENSE`](LICENSE).
 
 ---
 

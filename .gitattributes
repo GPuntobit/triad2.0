@@ -35,4 +35,5 @@ editors/**         text eol=lf
 # Queste regole sono poste in fondo per prevalere su "*.hex text eol=lf".
 # ---------------------------------------------------------------------------
 seed/**/seed.exe   binary
+seed/**/seed       binary
 seed/**/*.hex      binary -diff

@@ -45,7 +45,7 @@ certutil -decodehex seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 
 ## Riconoscimento esterno (richiede il maintainer)
 
-- scelta e aggiunta di `LICENSE`;
+- `LICENSE` aggiunta (MIT, 2026-10-22);
 - PR a GitHub Linguist con `editors/linguist/languages.yml`;
 - pubblicazione delle estensioni VS Code / Open VSX e Vim;
 - eventuale registrazione del linguaggio/standard.
@@ -68,5 +68,5 @@ certutil -decodehex seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 L'obiettivo **non è completo**:
 - S0 è un interprete in codice macchina, ma **S1 (Triad in Triad-Core) non è iniziato**, quindi non c'è ancora self-hosting;
 - S2–S3 (compilatore nativo in Triad, fixed point) non iniziati;
-- S4/M7 (parità conformance, port Linux ELF) non iniziati; la CI è pronta ma manca l'artefatto ELF;
-- riconoscimento esterno: LICENSE non scelta, PR Linguist e pubblicazione estensioni richiedono il maintainer.
+- S4/M7 (parità conformance, port Linux ELF) non iniziati; l'artefatto E0 esiste (`seed/linux-x86_64/seed.hex`), la CI è pronta ma la parità non è iniziata;
+- riconoscimento esterno: LICENSE MIT scelta; PR Linguist e pubblicazione estensioni richiedono il maintainer.

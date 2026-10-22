@@ -1,9 +1,8 @@
 # Artefatti generati localmente
 # NOTA: non aggiungere una regola ".gitignore": questo file deve essere committato.
-
-## Seed: l'eseguibile si decodifica dal dump .hex committato (vedi seed/README.md)
-seed/**/seed.exe
-seed/**/seed
+# Policy open-source: si pubblicano anche i binari del seed e i lockfile (Manifest.toml,
+# Cargo.lock); restano ignorati solo cache/build locali, file di sistema/editor e
+# output del benchmark AI.
 
 ## Build standalone (PackageCompiler, bin/build_standalone.jl)
 bin/triad-native
@@ -12,8 +11,7 @@ bin/_precompile_triad.jl
 bin/lib/
 bin/*.ji
 
-## Julia (eventuale ambiente Pkg / artefatti runtime)
-Manifest.toml
+## Julia: artefatti runtime (il Manifest.toml va committato per build riproducibili)
 *.ji
 *.jm
 *.jl.cov
@@ -22,10 +20,9 @@ Manifest.toml
 /deps/deps.jl
 .julia/
 
-## triad-vm (lane Rust, se presente)
+## triad-vm (lane Rust, se presente; il Cargo.lock va committato)
 /target/
 **/*.rs.bk
-Cargo.lock
 
 ## Sistema operativo
 .DS_Store

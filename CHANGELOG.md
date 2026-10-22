@@ -3,6 +3,12 @@
 Le modifiche normative aggiornano anche `VERSION`, la specifica (`SPEC.md`) e, se cambia
 il comportamento, i golden di `conformance/`.
 
+## Non rilasciato — 2026-10-22
+
+- **Open source**: aggiunta `LICENSE` MIT; inclusi nel repository i binari del seed
+  (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) e i lockfile
+  (`Manifest.toml`, `Cargo.lock`); `.gitignore` e `.gitattributes` aggiornati.
+
 ## 0.2.0 — 2026-10-20
 
 - **Standard Triad v0.2.0**: `SPEC.md` diventa un documento normativo indipendente
