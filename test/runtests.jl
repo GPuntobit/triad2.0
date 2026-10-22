@@ -27,6 +27,7 @@ ptop(src) = T.parse_program(src).args[1]
     @test ptop("x = 1 + 2 * 3") == N(:assign, :x, N(:call, :+, 1, N(:call, :*, 2, 3)))
     @test ptop("-x^2") == N(:call, :-, N(:call, :^, :x, 2))
     @test ptop("1:n") == N(:call, Symbol(":"), 1, :n)
+    @test err("1: 2").kind === :syntax
     @test ptop("f(:a, ?x, ?_)").args[2] == N(:sym, :a)
     @test ptop("f(:a, ?x)").args[3] == T.TVar(:x)
     @test ptop("a.x != b.x || c") ==
@@ -37,6 +38,14 @@ ptop(src) = T.parse_program(src).args[1]
     @test ptop("[h | t]") == N(:cons, N(:list, :h), :t)
     @test ptop("[x for x in xs if x > 1]").head === :comprehension
     @test ptop("\"a \$x b \$(y + 1)\"") == N(:string, "a ", :x, " b ", N(:call, :+, :y, 1))
+    quoted_paren = "x = \"value \$(" * "\")\"" * ")\""
+    @test val(quoted_paren) == "value )"
+    multiline_interpolation = "x = \"" * '$' * "(1 +\n 2)\"\ny = 3"
+    @test T.parse_toplevel(multiline_interpolation)[2] == [1, 3]
+    e = err("x = \"" * '$' * "(1 + )\"")
+    @test e.kind === :syntax && e.data.line == 1 && e.data.col == 12
+    e = err("x = \"" * '$' * "(1 +\n )\"")
+    @test e.kind === :syntax && e.data.line == 2 && e.data.col == 2
     f = ptop("function f(a::Int, b)::Float !io\n a\nend")
     @test f.head === :function && f.args[1] === :f && f.args[3] === :Float
     @test f.args[2] == N(:tuple, N(:typed, :a, :Int), :b)
@@ -92,6 +101,31 @@ end
     @test val("function fact_(n::Int)::Int\n if n <= 1\n return 1\n end\n n * fact_(n - 1)\nend; fact_(10)") == 3628800
 end
 
+@testset "scope e closure mutabili" begin
+    @test val("""
+        x = 1
+        function f()
+            x = 2
+            x
+        end
+        f()
+        x
+        """) == 1
+    @test val("""
+        function make_counter()
+            count = 0
+            function next()
+                count += 1
+                count
+            end
+            next
+        end
+        counter = make_counter()
+        [counter(), counter()]
+        """) == Any[1, 2]
+    @test err("for i in [1]; end\ni").kind === :undef
+end
+
 @testset "destrutturazione" begin
     @test val("(a, b) = [1, 2]; [a, b]") == Any[1, 2]
     @test val("(a, b) = [1, 2]; a") == 1
@@ -122,9 +156,11 @@ end
     @test val(base * "area(Point(1, 2))") === :point
     @test val(base * "typeof(Point(1, 2)) == Point") === true
     @test val(base * "Point(1, 2) isa Point") === true
+    @test val("f(x::Int) = :old\nf(x::Int) = :new\nf(1)") === :new
     @test err(base * "area(:x)").kind === :method
     @test err(base * "Point(\"a\", 2)").kind === :type
     @test err(base * "Point(1, 2).z").kind === :field
+    @test err("struct P\n x::Int\n x::Int\nend").kind === :type
     amb = "g(a::Int, b::Any) = 1\ng(a::Any, b::Int) = 2\ng(1, 1)"
     @test err(amb).kind === :ambiguous
     # operatori ridefinibili; fallback al builtin per i numeri
@@ -152,6 +188,10 @@ end
     @test [s.who for s in r] == [:dave, :erin]
     @test val(fam * "length(solve ancestor(:alice, ?d))") == 4
     @test val(fam * "length(solve ancestor(:alice, ?d) limit 2)") == 2
+    @test val("fact p(:a)\nsolve p(:a) depth 0") == Any[]
+    @test length(val("fact p(:a)\nsolve p(:a) depth 1")) == 1
+    @test val("fact p(:a)\nrule q(?x) :- p(?x)\nsolve q(?x) depth 0") == Any[]
+    @test length(val("fact p(:a)\nrule q(?x) :- p(?x)\nsolve q(?x) depth 2")) == 1
     @test val(fam * "[s.x for s in solve father(?x, :dave)]") == Any[:bob]
     @test val(fam * "solve parent(:alice, ?_)") == Any[T.Solution(Symbol[], Any[]), T.Solution(Symbol[], Any[])]
     @test val(fam * "solve parent(:zed, ?x)") == Any[]
@@ -202,6 +242,9 @@ end
     @test err("y = ?z").kind === :syntax          # variabile logica fuori dalla logica
     # occurs-check
     @test val("solve ?x = f(?x)") == Any[]
+    budgeted_negations = "fact p(:a)\nfact q(:a)\nsolve not(p(:z)) && not(q(:z)) steps "
+    @test err(budgeted_negations * "5").kind === :budget
+    @test length(val(budgeted_negations * "6")) == 1
     # fatti con valori calcolati via \$
     @test val("fact sq(3, \$(3 * 3))\n(solve sq(3, ?v))[1].v") == 9
 end
@@ -303,6 +346,12 @@ end
     @test t.fields.result[1].x == 2
     ports = [e.fields.port for e in t.fields.trace]
     @test ports[1] === :call && :exit in ports && :redo in ports
+    t = val("fact p(:a)\nsolve not(p(:z)) trace")
+    ports = [e.fields.port for e in t.fields.trace]
+    @test :call in ports && :fail in ports
+    t = val("fact p(:a)\nsolve not(p(:a)) trace")
+    ports = [e.fields.port for e in t.fields.trace]
+    @test :call in ports && :exit in ports
     t = val("sq(x) = x * x\nf(x) = sq(x) + 1\nwith trace\n f(3)\nend")
     @test t.fields.result == 10
     @test [(e.fields.port, e.fields.fn) for e in t.fields.trace] ==

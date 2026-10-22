@@ -35,6 +35,67 @@ function value_end(t::Tok)
     false
 end
 
+function interpolation_end(cs::Vector{Char}, open::Int, n::Int)
+    contexts = Symbol[:code]
+    depths = Int[1]
+    i = open + 1
+    while i <= n
+        c = cs[i]
+        if contexts[end] === :string
+            if c == '\\'
+                i += 2
+            elseif c == '"'
+                pop!(contexts)
+                i += 1
+            elseif c == '$' && i < n && cs[i+1] == '('
+                push!(contexts, :code)
+                push!(depths, 1)
+                i += 2
+            else
+                i += 1
+            end
+        elseif c == '"'
+            push!(contexts, :string)
+            i += 1
+        elseif c == '#'
+            if i < n && cs[i+1] == '='
+                comment_depth = 1
+                i += 2
+                while i <= n && comment_depth > 0
+                    if i < n && cs[i] == '#' && cs[i+1] == '='
+                        comment_depth += 1
+                        i += 2
+                    elseif i < n && cs[i] == '=' && cs[i+1] == '#'
+                        comment_depth -= 1
+                        i += 2
+                    else
+                        i += 1
+                    end
+                end
+            else
+                while i <= n && cs[i] != '\n'
+                    i += 1
+                end
+            end
+        elseif c == '('
+            depths[end] += 1
+            i += 1
+        elseif c == ')'
+            depths[end] -= 1
+            if depths[end] == 0
+                pop!(depths)
+                pop!(contexts)
+                isempty(contexts) && return i
+            else
+                i += 1
+            end
+        else
+            i += 1
+        end
+    end
+    nothing
+end
+
 function lex(src::AbstractString)
     cs = collect(src)
     n = length(cs)
@@ -139,14 +200,17 @@ function lex(src::AbstractString)
                 elseif d == '$' && j < n && (cs[j+1] == '(' || isidstart(cs[j+1]))
                     buf.size > 0 && push!(parts, String(take!(buf)))
                     if cs[j+1] == '('
-                        k = j + 1; lvl = 0
-                        while k <= n
-                            cs[k] == '(' && (lvl += 1)
-                            cs[k] == ')' && (lvl -= 1; lvl == 0 && break)
-                            k += 1
+                        expr_line = line
+                        expr_col = j + 2 - linestart + 1
+                        k = interpolation_end(cs, j + 1, n)
+                        k === nothing && syntax_error("\$( non chiusa nella stringa", tl, tc; incomplete = true)
+                        for q in j+2:k-1
+                            if cs[q] == '\n'
+                                line += 1
+                                linestart = q + 1
+                            end
                         end
-                        k > n && syntax_error("\$( non chiusa nella stringa", tl, tc; incomplete = true)
-                        push!(parts, (:expr, String(cs[j+2:k-1]), line))
+                        push!(parts, (:expr, String(cs[j+2:k-1]), expr_line, expr_col))
                         j = k + 1
                     else
                         s, k = read_ident(j + 1)
@@ -503,6 +567,9 @@ function parse_expr(p::Parser, minprec::Int = 0)
         t = pk(p)
         bi = binop_info(t)
         bi === nothing && break
+        if t.val == ":" && p.toks[p.i+1].kind ∉ (:eof, :nl) && p.toks[p.i+1].spc
+            break
+        end
         prec, right = bi
         prec < minprec && break
         next!(p)
@@ -618,6 +685,9 @@ function string_node(t::Tok)
     for x in t.val
         if x isa Tuple
             sub = Parser(lex(x[2]))
+            sub.toks = Tok[Tok(tok.kind, tok.val, x[3] + tok.line - 1,
+                                tok.line == 1 ? x[4] + tok.col - 1 : tok.col, tok.spc)
+                           for tok in sub.toks]
             e = parse_expr(sub)
             pk(sub).kind === :eof || perr(sub, pk(sub), "espressione non valida in \$( )")
             push!(parts, e)

@@ -432,7 +432,8 @@ function solve_goal(w::World, goal, s::Store = Store(); limit::Int = typemax(Int
                     maxdepth::Int = typemax(Int), steps::Int = DEFAULT_SOLVE_STEPS,
                     trace::Union{Nothing,Vector{Any}} = nothing,
                     qvars::Vector{Symbol} = collect_vars!(Symbol[], goal),
-                    each::Union{Nothing,Function} = nothing)
+                    each::Union{Nothing,Function} = nothing,
+                    counter::Base.RefValue{Int} = Ref(0))
     # each(sol, more): se c'è, riceve le soluzioni una alla volta invece di accumularle
     # (more = restano punti di scelta); se restituisce false la ricerca si ferma.
     # La usa la query interattiva del REPL.
@@ -440,14 +441,14 @@ function solve_goal(w::World, goal, s::Store = Store(); limit::Int = typemax(Int
     limit <= 0 && return sols
     base = mark(s)
     stack = State[State(GL(goal, 0, nothing), base, 0)]
-    n = 0; nfound = 0
+    nfound = 0
     try
         while !isempty(stack)
             st = pop!(stack)
             undo!(s, st.mark)
-            n += 1
-            n > steps && raise(:budget, "solve: superato il limite di $steps passi",
-                               info(owner = 0, steps = steps, solutions = nfound))
+            counter[] += 1
+            counter[] > steps && raise(:budget, "solve: superato il limite di $steps passi",
+                                       info(owner = 0, steps = steps, solutions = nfound))
             tick!(w)
             gl = st.goals
             if gl === nothing
@@ -479,7 +480,7 @@ function solve_goal(w::World, goal, s::Store = Store(); limit::Int = typemax(Int
                 push!(stack, State(GL(g.args[1], d, rest), here, 0))
             elseif f === :not && ar == 1
                 inner = solve_goal(w, g.args[1], s; limit = 1, maxdepth = maxdepth,
-                                   steps = steps - n, qvars = Symbol[])
+                                   steps = steps, trace = trace, qvars = Symbol[], counter = counter)
                 isempty(inner) && push!(stack, State(rest, here, 0))
             elseif f === Symbol("=") && ar == 2
                 try_unify!(g.args[1], g.args[2], s) && push!(stack, State(rest, mark(s), 0))
@@ -1307,6 +1308,11 @@ function define_struct(x::Node, w::World)
     name = x.args[1]
     fields, types = split_params(x.args[2])
     name in PRIM_TYPES && raise(:type, "$name è un tipo predefinito")
+    seen = Set{Symbol}()
+    for field in fields
+        field in seen && raise(:type, "campo duplicato $field nella struct $name")
+        push!(seen, field)
+    end
     for T in types
         (known_type(w, T) || T === name) || raise(:type, "tipo sconosciuto $T nel campo di $name")
     end

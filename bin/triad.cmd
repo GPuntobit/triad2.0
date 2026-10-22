@@ -15,26 +15,14 @@ rem
 rem  Per usarlo da ovunque: aggiungere questa cartella al PATH.
 rem =====================================================================
 
-setlocal enabledelayedexpansion
-
 set "TRIAD_HOME=%~dp0.."
 
 rem --- Modalità --build ------------------------------------------------
-if "%~1"=="--build" (
-    set "JULIA=julia"
-    if defined TRIAD_JULIA set "JULIA=!TRIAD_JULIA!"
-    where /q "!JULIA!" >nul 2>&1
-    if errorlevel 1 (
-        echo triad --build: Julia non trovato. Imposta TRIAD_JULIA o aggiungi julia al PATH. >&2
-        exit /b 2
-    )
-    echo ==^> Compilazione eseguibile standalone...
-    "!JULIA!" --startup-file=no "%TRIAD_HOME%\bin\build_standalone.jl" %*
-    exit /b %errorlevel%
-)
+if "%~1"=="--build" goto :build
 
 rem --- Ricerca del runtime ---------------------------------------------
 set "RUNTIME="
+set "JULIA="
 
 rem 1. Eseguibile standalone
 if exist "%TRIAD_HOME%\bin\triad-native.exe" (
@@ -44,17 +32,18 @@ if exist "%TRIAD_HOME%\bin\triad-native.exe" (
 
 rem 2. Variabile d'ambiente TRIAD_JULIA
 if defined TRIAD_JULIA (
-    if exist "!TRIAD_JULIA!" (
-        set "JULIA=!TRIAD_JULIA!"
+    if exist "%TRIAD_JULIA%" (
+        set "JULIA=%TRIAD_JULIA%"
         set "RUNTIME=julia"
         goto :run
     )
 )
 
-rem 3. PATH
-where /q julia >nul 2>&1
-if not errorlevel 1 (
-    set "JULIA=julia"
+rem 3. PATH; ignore the Windows app-execution alias, which can shadow Julia.
+for /f "delims=" %%J in ('where julia 2^>nul ^| findstr /i /v "WindowsApps"') do (
+    if not defined JULIA set "JULIA=%%J"
+)
+if defined JULIA (
     set "RUNTIME=julia"
     goto :run
 )
@@ -90,11 +79,31 @@ exit /b 1
 
 rem --- Esecuzione ------------------------------------------------------
 :run
-if "%RUNTIME%"=="standalone" (
-    "%TRIAD_HOME%\bin\triad-native.exe" %*
-    exit /b %errorlevel%
+if "%RUNTIME%"=="standalone" goto :run_standalone
+if "%RUNTIME%"=="julia" goto :run_julia
+exit /b 1
+
+:run_standalone
+"%TRIAD_HOME%\bin\triad-native.exe" %*
+exit /b %errorlevel%
+
+:run_julia
+"%JULIA%" --startup-file=no "%TRIAD_HOME%\triad.jl" %*
+exit /b %errorlevel%
+
+:build
+set "JULIA="
+if defined TRIAD_JULIA set "JULIA=%TRIAD_JULIA%"
+if not defined JULIA (
+    for /f "delims=" %%J in ('where julia 2^>nul ^| findstr /i /v "WindowsApps"') do (
+        if not defined JULIA set "JULIA=%%J"
+    )
 )
-if "%RUNTIME%"=="julia" (
-    "!JULIA!" --startup-file=no "%TRIAD_HOME%\triad.jl" %*
-    exit /b %errorlevel%
-)
+if not defined JULIA goto :build_not_found
+echo ==^> Compilazione eseguibile standalone...
+"%JULIA%" --startup-file=no "%TRIAD_HOME%\bin\build_standalone.jl" %*
+exit /b %errorlevel%
+
+:build_not_found
+echo triad --build: Julia non trovato. Imposta TRIAD_JULIA o aggiungi julia al PATH. >&2
+exit /b 2
