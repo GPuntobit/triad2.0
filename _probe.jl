@@ -604,7 +604,7 @@ function load_program(src::String)
             j = findnext(cc -> cc == '"', chars, pos + 1)
             j === nothing && error("triad: stringa non chiusa")
             s = String(chars[pos + 1 : j - 1])
-            pos = j
+            pos = j + 1
             return s
         elseif c == ';'
             while pos <= n && chars[pos] != '\n'
@@ -662,10 +662,7 @@ end
 for src in ["(a \"b\")",
             "\n(fact parent(alice bob))\n(println \"x=\" 1)\n",
             "(x \"abc def\")"]
-    try
-        fs = load_program(src)
-        println("OK: ", fs)
-    catch e
-        println("ERR: ", sprint(showerror, e))
-    end
+    forms = load_program(src)
+    @assert !isempty(forms)
+    println("OK: ", forms)
 end
