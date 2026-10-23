@@ -436,6 +436,8 @@ end
     # commenti #= annidati (SPEC §1)
     @test val("#= a #= b =# c =#\n41 + 1") == 42
     @test val("#= #= x =# =#\n1") == 1
+    @test val("x = 1 #= commento\n=# y = 2; x + y") == 3
+    @test val("x = (#= commento\n=# 1 + 2); x") == 3
     e = err("#= a #= b =#\n1")
     @test e.kind === :syntax && e.data.incomplete === true
 

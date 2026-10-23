@@ -139,7 +139,12 @@ function lex(src::AbstractString)
                     elseif cs[j] == '=' && cs[j+1] == '#'
                         depth -= 1; j += 2
                     else
-                        cs[j] == '\n' && (line += 1; linestart = j + 1)
+                        if cs[j] == '\n'
+                            (isempty(toks) || toks[end].kind !== :nl) &&
+                                push!(toks, Tok(:nl, "\n", line, j - linestart + 1, true))
+                            line += 1
+                            linestart = j + 1
+                        end
                         j += 1
                     end
                 end

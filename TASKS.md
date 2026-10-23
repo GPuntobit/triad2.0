@@ -6,10 +6,9 @@ averlo riprodotto, indicando il comando o i passaggi, il risultato atteso e quel
 
 ## Mappa del progetto
 
-La mappa Graphify interrogabile più recente descrive il commit `98e3fdb` (indice del
-22 ottobre 2026): 650 nodi, 1.497 relazioni e 21 comunità. Il repository locale è avanzato
-al commit `31bd7fd` con modifiche non ancora indicizzate; usare il grafo per orientare
-l'indagine e verificare sempre i risultati sul codice attuale.
+La mappa Graphify interrogabile più recente descrive il commit `c0b6688` (indice del
+23 ottobre 2026): 678 nodi, 1.546 relazioni e 26 comunità. L'indice include la correzione
+del `!` negli identificatori; le modifiche locali successive vanno verificate direttamente.
 
 - `syntax.jl`: lexer, parser Pratt e costruzione degli alberi `Node`; tra i nodi mappati:
   `parse_toplevel`, `parse_stmt`, `parse_function`, `parse_list`, `parse_args` e `parse_for`.
@@ -40,12 +39,12 @@ eseguendo codice e test e confrontandoli con la specifica.
    implementazione e conformità.
 5. **P2 — Ecosistema:** controllare integrazioni editor e strumenti AI.
 
-**Attività iniziale svolta:** Graphify mappa `parse_expr` (`syntax.jl`) come snodo centrale,
-con chiamanti che includono parser di istruzioni, liste/comprehension, regole, solve, blocchi
-e interpolazione. `graphify_tests_for` non ha restituito test collegati a `parse_expr` o
-`syntax.jl`; tuttavia il repository contiene il testset parser in `test/runtests.jl`, quindi
-questo risultato indica copertura incompleta delle relazioni del grafo, non assenza dei test.
-La query Graphify è sullo snapshot `98e3fdb`, non sul codice locale corrente.
+**Diagnosi Graphify:** `lex` è chiamato da `parse_toplevel` e `string_node`, ed è collegato
+a `interpolation_end`, `isidstart` e `syntax_error`; `parse_expr` è chiamato dai parser di
+istruzioni, liste/comprehension, regole, solve e blocchi. `graphify_tests_for` non ha
+restituito test per `lex`, `parse_expr` o `syntax.jl`, anche se il repository contiene test
+parser in `test/runtests.jl`: è una lacuna dei collegamenti del grafo, non prova dell'assenza
+di test. L'indice è sul commit `c0b6688`.
 
 ## Problema confermato
 
@@ -65,6 +64,11 @@ La query Graphify è sullo snapshot `98e3fdb`, non sul codice locale corrente.
   tokenizzato come un unico identificatore e produceva un errore `:undef` in valutazione,
   invece di essere rifiutato dal parser. Ora `!` è ammesso solo come suffisso finale;
   aggiunto test di regressione.
+- [x] **A capo dentro commenti multilinea** — Corretto in `syntax.jl`: i newline in
+  `#= ... =#` aggiornano riga/colonna ma non venivano conservati come separatori, quindi
+  `x = 1 #= commento\n=# y = 2` falliva con errore di sintassi. Ora il lexer emette il
+  separatore mantenendo gli a capo dentro le parentesi ignorati dal parser; aggiunti test
+  per entrambi i casi.
 - [x] **Campi duplicati nelle `struct`** — Corretto in `triad.jl`: una definizione con nomi
   di campo duplicati arrivava al costruttore, che restituiva un errore host. La definizione
   ora restituisce subito `Err(:type)` con il nome del campo; aggiunto test di regressione.
@@ -90,7 +94,8 @@ La query Graphify è sullo snapshot `98e3fdb`, non sul codice locale corrente.
   degli errori. Aggiunti test AST per assegnamento e operatori associativi, lambda e ternario
   destri, precedenza logica/unaria/postfissa, continuazione a capo, regole con virgola
   iniziale e identificatori Unicode/`!`. Corretto anche il `!` interno, vietato dalla
-  grammatica; suite a 273/273. L'audit completo contro la specifica rimane aperto.
+  grammatica e il newline perso nei commenti multilinea; suite a 275/275. L'audit completo
+  contro la specifica rimane aperto.
 - [x] **Valutazione e scope** — Verificati assegnamento locale senza alterare i globali,
   cattura e mutazione di variabili nelle closure, e visibilità locale del binding del ciclo.
   Aggiunti test di regressione in `test/runtests.jl`; suite (251 test) e conformità Core
@@ -118,7 +123,7 @@ La query Graphify è sullo snapshot `98e3fdb`, non sul codice locale corrente.
 
 ### Test e conformità
 
-- [x] **Suite completa** — `julia --startup-file=no test/runtests.jl` passa (273 test);
+- [x] **Suite completa** — `julia --startup-file=no test/runtests.jl` passa (275 test);
   `julia --startup-file=no conformance/run.jl` passa tutti i casi.
 - [x] **Profilo Triad-Core** — `julia --startup-file=no conformance/run.jl --cases
   conformance/core/cases` passa tutti i casi.
