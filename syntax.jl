@@ -313,8 +313,11 @@ function next!(p::Parser)
     t.kind === :eof || (p.i += 1)
     t
 end
-skipnl!(p::Parser) = while p.toks[p.i].kind === :nl
-    p.i += 1
+function skipnl!(p::Parser)
+    n = length(p.toks)
+    while p.i <= n && p.toks[p.i].kind === :nl
+        p.i += 1
+    end
 end
 
 isop(t::Tok, v) = t.kind === :op && t.val == v

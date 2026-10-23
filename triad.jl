@@ -1413,6 +1413,7 @@ function assert_clause(x::Node, env::Env, w::World)
 end
 
 function run_solve(x::Node, env::Env, w::World)
+    length(x.args) >= 1 || raise(:syntax, ":solve richiede almeno un argomento (il goal)")
     goal = build_goal(x.args[1], env, w)
     opts = solve_opts(x, env, w)
     tr = opts[:trace] ? Any[] : nothing
@@ -1423,9 +1424,11 @@ end
 
 "Le opzioni `limit depth steps trace` di un nodo :solve, valutate."
 function solve_opts(x::Node, env::Env, w::World)
+    length(x.args) >= 2 || raise(:syntax, ":solve richiede il goal e le opzioni `(…)`")
     opts = Dict{Symbol,Any}(:limit => typemax(Int), :depth => typemax(Int),
                             :steps => DEFAULT_SOLVE_STEPS, :trace => false)
     for o in x.args[2].args
+        length(o.args) == 2 || raise(:syntax, "opzione solve malformata: atteso `nome = valore`")
         v = ev(o.args[2], env, w)
         if o.args[1] === :trace
             opts[:trace] = v
