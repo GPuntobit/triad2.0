@@ -103,11 +103,15 @@ function lex(src::AbstractString)
     i = 1; line = 1; linestart = 1
     spc = true
 
-    # legge un identificatore da j; '!' finale ammesso (push!) se non seguito da '='
+    # legge un identificatore da j; '!' e' ammesso solo come suffisso finale, non prima di '='
     function read_ident(j)
         k = j
-        while k <= n && (isletter(cs[k]) || isdigit(cs[k]) || cs[k] == '_' ||
-                         (cs[k] == '!' && !(k < n && cs[k+1] == '=')))
+        while k <= n && (isletter(cs[k]) || isdigit(cs[k]) || cs[k] == '_')
+            k += 1
+        end
+        if k <= n && cs[k] == '!' &&
+           !(k < n && (isletter(cs[k+1]) || isdigit(cs[k+1]) ||
+                       cs[k+1] == '_' || cs[k+1] == '='))
             k += 1
         end
         return String(cs[j:k-1]), k

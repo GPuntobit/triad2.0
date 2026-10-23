@@ -40,6 +40,7 @@ ptop(src) = T.parse_program(src).args[1]
     @test ptop("rule p(?x) :- a(?x)\n, b(?x)").args[3] == N(:call, :b, T.TVar(:x))
     @test ptop("età + push!(xs, 1)") ==
           N(:call, :+, :età, N(:call, Symbol("push!"), :xs, 1))
+    @test err("foo!bar").kind === :syntax
     @test ptop("1:n") == N(:call, Symbol(":"), 1, :n)
     @test err("1: 2").kind === :syntax
     @test ptop("f(:a, ?x, ?_)").args[2] == N(:sym, :a)

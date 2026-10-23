@@ -61,6 +61,10 @@ La query Graphify è sullo snapshot `98e3fdb`, non sul codice locale corrente.
 - [x] **Range con spazi non conformi** — Corretto in `syntax.jl`: `a: b` veniva accettato
   nonostante la grammatica normativa richieda il range `a:b` senza spazi. Aggiunto un test
   che richiede un errore di sintassi per `1: 2`.
+- [x] **`!` interno agli identificatori** — Corretto in `syntax.jl`: `foo!bar` veniva
+  tokenizzato come un unico identificatore e produceva un errore `:undef` in valutazione,
+  invece di essere rifiutato dal parser. Ora `!` è ammesso solo come suffisso finale;
+  aggiunto test di regressione.
 - [x] **Campi duplicati nelle `struct`** — Corretto in `triad.jl`: una definizione con nomi
   di campo duplicati arrivava al costruttore, che restituiva un errore host. La definizione
   ora restituisce subito `Err(:type)` con il nome del campo; aggiunto test di regressione.
@@ -85,8 +89,8 @@ La query Graphify è sullo snapshot `98e3fdb`, non sul codice locale corrente.
   degli operatori, delimitatori annidati, stringhe, commenti, errori di sintassi e posizioni
   degli errori. Aggiunti test AST per assegnamento e operatori associativi, lambda e ternario
   destri, precedenza logica/unaria/postfissa, continuazione a capo, regole con virgola
-  iniziale e identificatori Unicode/`!`; suite a 272/272. L'audit completo contro la
-  specifica rimane aperto.
+  iniziale e identificatori Unicode/`!`. Corretto anche il `!` interno, vietato dalla
+  grammatica; suite a 273/273. L'audit completo contro la specifica rimane aperto.
 - [x] **Valutazione e scope** — Verificati assegnamento locale senza alterare i globali,
   cattura e mutazione di variabili nelle closure, e visibilità locale del binding del ciclo.
   Aggiunti test di regressione in `test/runtests.jl`; suite (251 test) e conformità Core
@@ -114,7 +118,7 @@ La query Graphify è sullo snapshot `98e3fdb`, non sul codice locale corrente.
 
 ### Test e conformità
 
-- [x] **Suite completa** — `julia --startup-file=no test/runtests.jl` passa (272 test);
+- [x] **Suite completa** — `julia --startup-file=no test/runtests.jl` passa (273 test);
   `julia --startup-file=no conformance/run.jl` passa tutti i casi.
 - [x] **Profilo Triad-Core** — `julia --startup-file=no conformance/run.jl --cases
   conformance/core/cases` passa tutti i casi.
