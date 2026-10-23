@@ -6,8 +6,10 @@ averlo riprodotto, indicando il comando o i passaggi, il risultato atteso e quel
 
 ## Mappa del progetto
 
-La mappa è stata ricostruita con Graphify sul commit `b4fb8ae` (indice del 22 ottobre 2026):
-649 nodi, 1.494 relazioni e 21 comunità.
+La mappa Graphify interrogabile più recente descrive il commit `98e3fdb` (indice del
+22 ottobre 2026): 650 nodi, 1.497 relazioni e 21 comunità. Il repository locale è avanzato
+al commit `31bd7fd` con modifiche non ancora indicizzate; usare il grafo per orientare
+l'indagine e verificare sempre i risultati sul codice attuale.
 
 - `syntax.jl`: lexer, parser Pratt e costruzione degli alberi `Node`; tra i nodi mappati:
   `parse_toplevel`, `parse_stmt`, `parse_function`, `parse_list`, `parse_args` e `parse_for`.
@@ -25,6 +27,25 @@ La mappa è stata ricostruita con Graphify sul commit `b4fb8ae` (indice del 22 o
 Graphify descrive relazioni e simboli indicizzati; non certifica la correttezza semantica,
 la copertura dei test o l'assenza di bug. Le verifiche seguenti vanno quindi confermate
 eseguendo codice e test e confrontandoli con la specifica.
+
+## Priorità di completamento
+
+1. **P0 — Parser e specifica:** chiudere la verifica di `syntax.jl` rispetto a `SPEC.md`,
+   quindi mappare i requisiti normativi ai test e coprire le lacune reali.
+2. **P0 — Rilascio multipiattaforma:** verificare la lane CI Windows e l'esecuzione del
+   seed PE, inclusi decodifica, casi conformi e hash.
+3. **P1 — Distribuibilità e integrità:** verificare packaging standalone, riproducibilità
+   dei file generati e protezione degli artefatti versionati.
+4. **P1 — Documentazione:** confrontare esempi, stato dichiarato e comandi con
+   implementazione e conformità.
+5. **P2 — Ecosistema:** controllare integrazioni editor e strumenti AI.
+
+**Attività iniziale svolta:** Graphify mappa `parse_expr` (`syntax.jl`) come snodo centrale,
+con chiamanti che includono parser di istruzioni, liste/comprehension, regole, solve, blocchi
+e interpolazione. `graphify_tests_for` non ha restituito test collegati a `parse_expr` o
+`syntax.jl`; tuttavia il repository contiene il testset parser in `test/runtests.jl`, quindi
+questo risultato indica copertura incompleta delle relazioni del grafo, non assenza dei test.
+La query Graphify è sullo snapshot `98e3fdb`, non sul codice locale corrente.
 
 ## Problema confermato
 
@@ -60,10 +81,12 @@ eseguendo codice e test e confrontandoli con la specifica.
 
 ### Parser e semantica
 
-- [ ] **Lexer, parser e AST** — Verificare token, precedenza e associatività degli
-  operatori, delimitatori annidati, stringhe, commenti, errori di sintassi e posizioni
-  degli errori. La suite corrente passa; confronto completo con `SPEC.md` e casi limite
-  ancora da completare.
+- [ ] **[P0, IN CORSO] Lexer, parser e AST** — Verificare token, precedenza e associatività
+  degli operatori, delimitatori annidati, stringhe, commenti, errori di sintassi e posizioni
+  degli errori. Aggiunti test AST per assegnamento e operatori associativi, lambda e ternario
+  destri, precedenza logica/unaria/postfissa, continuazione a capo, regole con virgola
+  iniziale e identificatori Unicode/`!`; suite a 272/272. L'audit completo contro la
+  specifica rimane aperto.
 - [x] **Valutazione e scope** — Verificati assegnamento locale senza alterare i globali,
   cattura e mutazione di variabili nelle closure, e visibilità locale del binding del ciclo.
   Aggiunti test di regressione in `test/runtests.jl`; suite (251 test) e conformità Core
@@ -91,14 +114,16 @@ eseguendo codice e test e confrontandoli con la specifica.
 
 ### Test e conformità
 
-- [x] **Suite completa** — `julia --startup-file=no test/runtests.jl` passa (261 test);
+- [x] **Suite completa** — `julia --startup-file=no test/runtests.jl` passa (272 test);
   `julia --startup-file=no conformance/run.jl` passa tutti i casi.
 - [x] **Profilo Triad-Core** — `julia --startup-file=no conformance/run.jl --cases
   conformance/core/cases` passa tutti i casi.
 - [ ] **Copertura dei requisiti** — Collegare ogni requisito normativo di `SPEC.md` e
   `SPEC-CORE.md` a uno o più test; creare casi minimi per i requisiti non coperti.
-- [x] **Oracle opzionali** — `julia --startup-file=no test/oracles/oracle_tests.jl` passa:
-  confronti con SWI-Prolog, SBCL e Julia.
+- [x] **Oracle opzionali** — La suite ora individua Julia, SWI-Prolog e SBCL dal `PATH`
+  (con override `TRIAD_ORACLE_*`); in Debian tutti i confronti passano: SWI-Prolog 2/2,
+  SBCL 1/1 e Julia 1/1. Gli errori di esecuzione dei processi oracle non vengono più
+  convertiti silenziosamente in output vuoto.
 
 ### CLI, piattaforme e distribuzione
 

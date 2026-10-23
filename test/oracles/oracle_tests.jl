@@ -3,19 +3,12 @@ using Test
 include(joinpath(@__DIR__, "..", "..", "triad.jl"))
 using .Triad
 
-const JULIA_FALLBACK = raw"C:\Users\xbos\AppData\Local\Programs\Julia-1.13.1\bin\julia.exe"
-const SWIPL_EXE      = raw"C:\Program Files\swipl\bin\swipl.exe"
-const SBCL_EXE       = raw"C:\Users\xbos\portacle\win\sbcl\bin\sbcl.exe"
-const SBCL_HOME      = raw"C:\Users\xbos\portacle\win\sbcl\lib\sbcl"
-
-const JULIA_EXE = JULIA_FALLBACK
+const JULIA_EXE = get(ENV, "TRIAD_ORACLE_JULIA", something(Sys.which("julia"), ""))
+const SWIPL_EXE = get(ENV, "TRIAD_ORACLE_SWIPL", something(Sys.which("swipl"), ""))
+const SBCL_EXE = get(ENV, "TRIAD_ORACLE_SBCL", something(Sys.which("sbcl"), ""))
 
 function run_cmd(cmd; input::String="")
-    try
-        isempty(input) ? read(cmd, String) : read(pipeline(cmd, stdin=IOBuffer(input)), String)
-    catch
-        ""
-    end
+    isempty(input) ? read(cmd, String) : read(pipeline(cmd, stdin=IOBuffer(input)), String)
 end
 
 function normalize(s::AbstractString)
@@ -81,39 +74,29 @@ end
 
 if isfile(SBCL_EXE)
     @testset "Oracle: SBCL vs Triad (closure / lambda)" begin
-        old_sbcl_home = get(ENV, "SBCL_HOME", nothing)
-        ENV["SBCL_HOME"] = SBCL_HOME
-        try
-            lispfile = tempname()
-            write(lispfile, """
-            (defun mk (a b) (+ a b))
-            (format t "~a~%" (mk 10 20))
-            (defun fattorial (n) (if (<= n 1) 1 (* n (fattorial (- n 1)))))
-            (format t "~a~%" (fattorial 10))
-            (quit)
-            """)
-            lisp_out = normalize(run_cmd(`$SBCL_EXE --noinform --load $lispfile`))
+        lispfile = tempname()
+        write(lispfile, """
+        (defun mk (a b) (+ a b))
+        (format t "~a~%" (mk 10 20))
+        (defun fattorial (n) (if (<= n 1) 1 (* n (fattorial (- n 1)))))
+        (format t "~a~%" (fattorial 10))
+        (quit)
+        """)
+        lisp_out = normalize(run_cmd(`$SBCL_EXE --noinform --load $lispfile`))
 
-            td_src = """
-            mk = (a, b) -> a + b
-            println(mk(10, 20))
-            function fattorial(n::Int)
-                if n <= 1
-                    return 1
-                end
-                n * fattorial(n - 1)
+        td_src = """
+        mk = (a, b) -> a + b
+        println(mk(10, 20))
+        function fattorial(n::Int)
+            if n <= 1
+                return 1
             end
-            println(fattorial(10))
-            """
-            td_out, _ = triad_run(td_src)
-            @test normalize(td_out) == lisp_out
-        finally
-            if old_sbcl_home === nothing
-                delete!(ENV, "SBCL_HOME")
-            else
-                ENV["SBCL_HOME"] = old_sbcl_home
-            end
+            n * fattorial(n - 1)
         end
+        println(fattorial(10))
+        """
+        td_out, _ = triad_run(td_src)
+        @test normalize(td_out) == lisp_out
     end
 else
     @testset "Oracle: SBCL vs Triad (saltato)" begin

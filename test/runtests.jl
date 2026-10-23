@@ -26,6 +26,20 @@ ptop(src) = T.parse_program(src).args[1]
 @testset "lessico e parser" begin
     @test ptop("x = 1 + 2 * 3") == N(:assign, :x, N(:call, :+, 1, N(:call, :*, 2, 3)))
     @test ptop("-x^2") == N(:call, :-, N(:call, :^, :x, 2))
+    @test ptop("a = b = c") == N(:assign, :a, N(:assign, :b, :c))
+    @test ptop("a - b - c") == N(:call, :-, N(:call, :-, :a, :b), :c)
+    @test ptop("a ^ b ^ c") == N(:call, :^, :a, N(:call, :^, :b, :c))
+    @test ptop("a -> b -> c") ==
+          N(:lambda, N(:tuple, :a), N(:lambda, N(:tuple, :b), :c))
+    @test ptop("a ? b : c ? d : e") ==
+          N(:if, :a, :b, N(:if, :c, :d, :e))
+    @test ptop("a || b && c") == N(:or, :a, N(:and, :b, :c))
+    @test ptop("-a ^ b") == N(:call, :-, N(:call, :^, :a, :b))
+    @test ptop("f(x)[i].field") == N(:dot, N(:index, N(:call, :f, :x), :i), :field)
+    @test ptop("x +\ny") == N(:call, :+, :x, :y)
+    @test ptop("rule p(?x) :- a(?x)\n, b(?x)").args[3] == N(:call, :b, T.TVar(:x))
+    @test ptop("età + push!(xs, 1)") ==
+          N(:call, :+, :età, N(:call, Symbol("push!"), :xs, 1))
     @test ptop("1:n") == N(:call, Symbol(":"), 1, :n)
     @test err("1: 2").kind === :syntax
     @test ptop("f(:a, ?x, ?_)").args[2] == N(:sym, :a)
