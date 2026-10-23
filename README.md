@@ -56,9 +56,11 @@ Il launcher cerca in ordine:
 1. `bin/triad-native` — eseguibile standalone (se compilato)
 2. Variabile d'ambiente `TRIAD_JULIA`
 3. `julia` nel `PATH`
-4. Posizioni standard di Julia (Linux/macOS/Windows)
+4. Posizioni standard di Julia per Linux/macOS
 
-Su Windows usare `triad.cmd` (funziona analogamente).
+Su Windows usare `triad.cmd` (funziona analogamente). Su WSL il launcher POSIX richiede
+Julia per Linux; non usa il `julia.exe` installato in Windows, perché i percorsi e i file
+passati dal filesystem Linux non sono compatibili con quel runtime.
 
 ### 2. File .triad eseguibili direttamente (shebang)
 

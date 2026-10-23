@@ -105,18 +105,23 @@ eseguendo codice e test e confrontandoli con la specifica.
 - [x] **CLI e caricamento file** — Verificati opzioni, valutazione, codici di uscita,
   `ARGS`, shebang, risoluzione file, errori e REPL nei test dell'implementazione e nella
   conformità.
-- [ ] **Launcher POSIX** — Verificare `bin/triad`: ricerca di Julia, percorsi con spazi,
-  inoltro degli argomenti, shebang e comportamento coerente. Su questa macchina Windows
-  non è disponibile una shell POSIX utilizzabile per l'esecuzione.
+- [x] **Launcher POSIX** — In Debian verificati sintassi shell, risoluzione symlink,
+  percorsi e argomenti con spazi, `!` negli argomenti, ricerca via `PATH`, override
+  `TRIAD_JULIA`, `--build`, CLI reale e shebang. Corretto il fallback WSL che selezionava
+  `julia.exe` Windows e falliva passando percorsi Linux; ora il launcher richiede Julia
+  nativa Linux e rifiuta esplicitamente un override `.exe`.
 - [x] **Launcher Windows** — Verificati ricerca PATH contro l'alias `WindowsApps`, override
   `TRIAD_JULIA`, modalità `-v` e inoltro di argomenti contenenti `!` attraverso
   `bin/triad.cmd`.
 - [x] **Riproducibilità degli artefatti seed** — I generatori Linux e Windows ricreano
   esattamente i rispettivi dump esadecimali; i byte decodificati coincidono con i file
   PE/ELF versionati.
-- [ ] **Esecuzione dei seed Linux e Windows** — Eseguire i casi CI nativi sui due sistemi.
-  Restano da eseguire i casi Windows (Defender ha quarantinato il PE rigenerato in `%TEMP%`)
-  e l'ELF su Linux (WSL è presente ma non ha distribuzioni installate).
+- [x] **Esecuzione seed Linux (E0)** — In Debian x86-64 eseguito il seed ELF: stampa
+  `Triad seed Linux OK` ed esce con successo; hash ELF verificato.
+- [x] **Probe portabili** — `_probe.jl`, `_probe2.jl`, `_probe3.jl`, `_qc.jl` e
+  `_smoke.jl` eseguiti con Julia nativa su Debian; tutti completano correttamente.
+- [ ] **Esecuzione seed Windows** — Restano da eseguire i casi CI nativi; Defender ha
+  quarantinato il PE rigenerato in `%TEMP%` durante la prova locale.
 - [x] **Ambito di `continue-on-error` nella CI Windows** — Verificato in
   `.github/workflows/ci.yml`: l'opzione tollera solo il fallimento di `Add-MpPreference`;
   decodifica, casi del seed e verifica hash restano bloccanti.
@@ -126,7 +131,9 @@ eseguendo codice e test e confrontandoli con la specifica.
   senza presumere che l'esclusione riesca.
 - [ ] **CI multipiattaforma** — Eseguire o controllare tutte le lane definite in
   `.github/workflows/ci.yml` su Windows e Linux; verificare che le istruzioni Julia e i
-  comandi usati localmente coincidano con quelli CI.
+  comandi usati localmente coincidano con quelli CI. In Debian passano la suite completa
+  (261 test), la conformità Full e Triad-Core; restano da verificare le lane Windows
+  nell'ambiente CI.
 - [ ] **Packaging standalone** — Provare `bin/build_standalone.jl` in un ambiente pulito e
   verificare dipendenze, layout e avvio senza Julia. Il README segnala che il packaging
   attuale richiede ancora di completare il layout `Project.toml`/`src`: confermare lo
