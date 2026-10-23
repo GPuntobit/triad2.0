@@ -18,15 +18,15 @@ Questo tutorial copre: installazione/avvio, CLI e REPL, sintassi, funzioni e mul
 Dalla cartella del progetto:
 
 ```sh
-julia triad.jl                   # REPL
-julia triad.jl file.td a b       # esegue file.td, ARGS == ["a", "b"]
-julia triad.jl -l file.td        # carica file e apre il REPL
-julia triad.jl -i file.td        # esegue file e poi apre il REPL
-julia triad.jl --tree file.td    # stampa albero uniforme (S-expression)
-julia triad.jl -e 'codice'       # esegue una stringa
-julia triad.jl -E 'codice'       # esegue e stampa il valore
-julia triad.jl --help            # tutte le opzioni
-julia triad.jl --version
+julia --startup-file=no triad.jl          # REPL
+julia --startup-file=no triad.jl file.td a b  # esegue file.td, ARGS == ["a", "b"]
+julia --startup-file=no triad.jl -l file.td     # carica file e apre il REPL
+julia --startup-file=no triad.jl -i file.td     # esegue file e poi apre il REPL
+julia --startup-file=no triad.jl --tree file.td # stampa albero uniforme (S-expression)
+julia --startup-file=no triad.jl -e 'codice'    # esegue una stringa
+julia --startup-file=no triad.jl -E 'codice'    # esegue e stampa il valore
+julia --startup-file=no triad.jl --help         # tutte le opzioni
+julia --startup-file=no triad.jl --version
 ```
 
 Launcher (se `bin/` è nel `PATH`): `triad`, `triad.cmd` (Windows).

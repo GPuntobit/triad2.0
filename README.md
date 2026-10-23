@@ -83,19 +83,21 @@ chmod +x programma.triad
 
 Lo shebang `#!` viene rimosso automaticamente prima del parsing.
 
-### 3. Imballaggio standalone (implementazione attuale)
+### 3. Packaging standalone (non ancora disponibile)
 
-L'implementazione di riferimento può essere impacchettata con PackageCompiler in un
-eseguibile che non richiede Julia installato:
+`bin/build_standalone.jl` e `triad --build` sono prototipi, non una procedura di
+distribuzione funzionante. In una prova pulita su Windows con Julia 1.13.1, il builder ha
+installato PackageCompiler 2.4.5 in un ambiente temporaneo ma si è fermato con un errore di
+tipo sull'argomento `c_driver_program`; non è stato prodotto alcun eseguibile. Inoltre il
+repository non ha ancora il layout di pacchetto `Project.toml`/`src/Triad.jl` richiesto dal
+builder e lo script di precompilazione presuppone `using Triad`. Il packaging resta quindi
+da completare e verificare prima di poter usare `bin/triad-native`.
 
-```sh
-triad --build                   # crea bin/triad-native
-bin/triad-native file.triad     # esegue senza Julia
-```
-
-Questo è un imballaggio, **non** l'indipendenza da Julia: il runtime resta Julia. La strada
-per un Triad senza linguaggi ospiti è in [BOOTSTRAP.md](BOOTSTRAP.md); il packaging attuale
-va inoltre completato (layout di pacchetto `Project.toml`/`src`).
+Per usare Triad oggi, serve Julia installato: usare il launcher `triad`/`triad.cmd` oppure
+`julia --startup-file=no triad.jl ...`. Un eventuale eseguibile creato in futuro potrà
+includere il runtime Julia senza richiedere un'installazione separata di Julia; non sarà
+però un'implementazione indipendente da Julia. La strada per un Triad senza linguaggi
+ospiti è in [BOOTSTRAP.md](BOOTSTRAP.md).
 
 ### Fallback diretto
 

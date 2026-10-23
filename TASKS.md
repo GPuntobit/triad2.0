@@ -6,8 +6,8 @@ averlo riprodotto, indicando il comando o i passaggi, il risultato atteso e quel
 
 ## Mappa del progetto
 
-La mappa Graphify interrogabile più recente descrive il commit `c0b6688` (indice del
-23 ottobre 2026): 678 nodi, 1.546 relazioni e 26 comunità. L'indice include la correzione
+La mappa Graphify interrogabile più recente descrive il commit `e201a3e` (indice del
+23 ottobre 2026): 678 nodi, 1.547 relazioni e 26 comunità. L'indice include la correzione
 del `!` negli identificatori; le modifiche locali successive vanno verificate direttamente.
 
 - `syntax.jl`: lexer, parser Pratt e costruzione degli alberi `Node`; tra i nodi mappati:
@@ -44,7 +44,7 @@ a `interpolation_end`, `isidstart` e `syntax_error`; `parse_expr` è chiamato da
 istruzioni, liste/comprehension, regole, solve e blocchi. `graphify_tests_for` non ha
 restituito test per `lex`, `parse_expr` o `syntax.jl`, anche se il repository contiene test
 parser in `test/runtests.jl`: è una lacuna dei collegamenti del grafo, non prova dell'assenza
-di test. L'indice è sul commit `c0b6688`.
+di test. L'indice aggiornato è sul commit `e201a3e`.
 
 ## Problema confermato
 
@@ -165,13 +165,16 @@ di test. L'indice è sul commit `c0b6688`.
   senza presumere che l'esclusione riesca.
 - [ ] **CI multipiattaforma** — Eseguire o controllare tutte le lane definite in
   `.github/workflows/ci.yml` su Windows e Linux; verificare che le istruzioni Julia e i
-  comandi usati localmente coincidano con quelli CI. In Debian passano la suite completa
-  (261 test), la conformità Full e Triad-Core; restano da verificare le lane Windows
-  nell'ambiente CI.
+  comandi usati localmente coincidano con quelli CI. Su Windows locale la suite attuale
+  passa 275/275 test e la conformità Full/Core passa; in Debian la verifica precedente
+  passava con 261 test. Restano da verificare tutte le lane hosted su Windows e Linux.
 - [ ] **Packaging standalone** — Provare `bin/build_standalone.jl` in un ambiente pulito e
-  verificare dipendenze, layout e avvio senza Julia. Il README segnala che il packaging
-  attuale richiede ancora di completare il layout `Project.toml`/`src`: confermare lo
-  stato e aggiornare la documentazione in base al risultato.
+  verificare dipendenze, layout e avvio senza Julia. Prova isolata Windows (Julia 1.13.1):
+  PackageCompiler 2.4.5 si installa nel depot temporaneo, poi la build termina con
+  `TypeError` su `c_driver_program` (`nothing` dove è richiesto `String`); nessun eseguibile
+  viene prodotto. Mancano inoltre `Project.toml` e `src/Triad.jl`, necessari al layout
+  atteso dal builder. README aggiornato per dichiarare il prototipo non disponibile;
+  rendere la build funzionante e provarne l'avvio resta aperto.
 
 ### Editor, strumenti e documentazione
 
@@ -181,10 +184,16 @@ di test. L'indice è sul commit `c0b6688`.
   di `ai/jev_audit.mjs` e `ai/verify.jl`, senza includere output generati nel repository.
 - [ ] **Documentazione coerente** — Confrontare esempi e comandi in `README.md`,
   `TUTORIAL.md`, `SPEC.md`, `SPEC-CORE.md`, `BOOTSTRAP.md` e `STATUS.md` con il
-  comportamento effettivo e con i test.
-- [ ] **Repository e artefatti** — Controllare `.gitignore`, `.gitattributes`, hash dei
-  seed e file generati per assicurare che test e build non modifichino accidentalmente
-  golden o artefatti versionati.
+  comportamento effettivo e con i test. Tutti i file `examples/*.td` e `*.triad` sono
+  stati eseguiti con Julia; il README ora dichiara esplicitamente il limite del packaging.
+  La revisione completa di tutorial, specifica e stato del bootstrap resta da fare.
+- [x] **Repository e artefatti** — Verificati `.gitignore` (binari standalone/cache ignorati)
+  e `.gitattributes` (seed binari e dump esadecimali non normalizzati come testo). I
+  generatori riproducono entrambi i dump: Windows SHA-256
+  `11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C`, Linux
+  `AD4C9F08176D9964D5BE17D44C72230184434025980447395E7A3250F63CA5EA`; i byte decodificati
+  coincidono con PE/ELF versionati. Nessun artefatto del repository è stato modificato
+  dalle verifiche.
 
 ## Come registrare un nuovo bug
 
