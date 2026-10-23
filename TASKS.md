@@ -185,8 +185,10 @@ di test. L'indice aggiornato è sul commit `e201a3e`.
 - [ ] **Documentazione coerente** — Confrontare esempi e comandi in `README.md`,
   `TUTORIAL.md`, `SPEC.md`, `SPEC-CORE.md`, `BOOTSTRAP.md` e `STATUS.md` con il
   comportamento effettivo e con i test. Tutti i file `examples/*.td` e `*.triad` sono
-  stati eseguiti con Julia; il README ora dichiara esplicitamente il limite del packaging.
-  La revisione completa di tutorial, specifica e stato del bootstrap resta da fare.
+  stati eseguiti con Julia; verificati anche i comandi CLI `--version`, `-E` e `--help`.
+  Corretto nel tutorial il testo sui fallback distinti dei launcher POSIX/Windows. Il README
+  dichiara il limite del packaging; la revisione completa di tutorial, specifica e stato del
+  bootstrap resta da fare.
 - [x] **Repository e artefatti** — Verificati `.gitignore` (binari standalone/cache ignorati)
   e `.gitattributes` (seed binari e dump esadecimali non normalizzati come testo). I
   generatori riproducono entrambi i dump: Windows SHA-256

@@ -29,10 +29,12 @@ julia --startup-file=no triad.jl --help         # tutte le opzioni
 julia --startup-file=no triad.jl --version
 ```
 
-Launcher (se `bin/` è nel `PATH`): `triad`, `triad.cmd` (Windows).
-Entrambi risolvono l'eseguibile `julia` prima da `PATH`, poi con fallback a
-`C:\Users\xbos\AppData\Local\Programs\Julia-1.13.1\bin\julia.exe` (Windows) se `julia`
-non è raggiungibile. Esempio:
+Launcher (se `bin/` è nel `PATH`): `triad`, `triad.cmd` (Windows). Entrambi preferiscono
+un eventuale `bin/triad-native`; altrimenti rispettano `TRIAD_JULIA` e cercano Julia nel
+`PATH`. I fallback successivi sono specifici della piattaforma: `triad` controlla alcune
+posizioni standard Linux/macOS, mentre `triad.cmd` controlla installazioni Windows note
+(incluso un percorso locale specifico della macchina di sviluppo). Il launcher POSIX non
+usa un eseguibile Julia Windows; su WSL richiede Julia nativa Linux. Esempio:
 
 ```sh
 triad examples/assaggio.td      # esegue assaggio.td
