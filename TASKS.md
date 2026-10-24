@@ -101,16 +101,14 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
   supporta qui liste di interi; indexing standard, `length` e iterazione restano assenti.
   La matrice seed locale passa 29/30 casi (resta `if_else`, exit `1`); i 33 casi Core
   passano con il runtime Julia.
-- [ ] **Self-host S1: `selfhost/main.td` termina senza output sul seed** — Riprodotto
-  `seed/windows-x86_64/seed.exe selfhost/main.td`: exit code `1`, stdout vuoto, senza crash
-  nativo. La parte `make_env`/`env_set` funziona isolatamente; `env_lookup` usa `get` nel
-  corpo di una funzione e `return`, forme che il seed non supporta in quel contesto.
-  Anche lo stage0 Julia rifiuta il file con `:undef` per `get`, che non è una primitiva
-  Triad-Core. Per renderlo eseguibile occorre implementare l'indicizzazione Core nel seed
-  e riscrivere il prototipo usando `env[i]`/un'espressione di blocco senza `return`, oppure
-  definire esplicitamente un helper compatibile con entrambe le implementazioni. Graphify
-  non include ancora `selfhost/` nell'indice; la diagnosi è stata verificata direttamente
-  sul sorgente e con probe isolati del seed e dello stage0.
+- [x] **Self-host seed smoke test: `selfhost/main.td` stampa una lista** — Riprodotto il
+  problema: la versione precedente terminava con exit code `1` e stdout vuoto perché
+  `env_lookup` usava `get` nel corpo di una funzione e `return`, non supportati dal seed in
+  quel contesto. Sostituito il programma con una prova compatibile di `push!` che deve
+  stampare `[10, 20]`, e aggiunta una verifica dedicata alla CI Windows. Questo verifica
+  la lista nel seed, non il completamento dell'interprete self-hosted: `get` e `return`
+  nelle funzioni restano da implementare. Graphify non include ancora `selfhost/` nel
+  grafo indicizzato.
 
 ## Problema confermato
 

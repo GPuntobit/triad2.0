@@ -54,6 +54,14 @@ jobs:
           if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for test_get.td" }
           $got = Get-Content $out -Raw
           if ($got -cne "20`n") { throw "unexpected output for test_get.td: $got" }
+      - name: Self-host list smoke test
+        shell: pwsh
+        run: |
+          $out = Join-Path $env:TEMP "selfhost-main.out"
+          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "selfhost\main.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
+          if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for selfhost\main.td" }
+          $got = (Get-Content $out -Raw).Trim()
+          if ($got -cne "[10, 20]") { throw "unexpected output for selfhost\main.td: $got" }
       - name: Hash check
         shell: pwsh
         run: |
