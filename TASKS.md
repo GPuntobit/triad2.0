@@ -163,11 +163,15 @@ di test. L'indice aggiornato è sul commit `e201a3e`.
   funzionino anche quando l'esclusione antivirus facoltativa non è disponibile. Defender
   ha quarantinato il PE non escluso nella prova locale; resta da verificare la lane hosted
   senza presumere che l'esclusione riesca.
-- [ ] **CI multipiattaforma** — Eseguire o controllare tutte le lane definite in
-  `.github/workflows/ci.yml` su Windows e Linux; verificare che le istruzioni Julia e i
-  comandi usati localmente coincidano con quelli CI. Su Windows locale la suite attuale
-  passa 275/275 test e la conformità Full/Core passa; in Debian la verifica precedente
-  passava con 261 test. Restano da verificare tutte le lane hosted su Windows e Linux.
+- [x] **CI multipiattaforma** — Verificate le lane definite in
+  `.github/workflows/ci.yml` su Windows e Linux. Su Windows locale la suite passa
+  275/275 test e la conformità Full/Core passa. In Debian 13 su WSL, conformità Full/Core e
+  suite Julia passano (275/275); il seed Linux decodificato in un file temporaneo si avvia
+  e restituisce l'output atteso, e l'hash del dump coincide. La
+  [run GitHub Actions #21](https://github.com/GPuntobit/triad2.0/actions/runs/39983981561)
+  (`5e8ca470`, 2026-10-23) è riuscita su tutte le quattro job: conformance Ubuntu/Windows
+  e seed Linux/Windows.
+  Non è necessario registrare WSL come runner self-hosted.
 - [ ] **Packaging standalone** — Provare `bin/build_standalone.jl` in un ambiente pulito e
   verificare dipendenze, layout e avvio senza Julia. Prova isolata Windows (Julia 1.13.1):
   PackageCompiler 2.4.5 si installa nel depot temporaneo, poi la build termina con
