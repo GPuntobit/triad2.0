@@ -1,12 +1,17 @@
-# S1 v0.7: Primitive base + ambiente semplice
+# S1 v1.3: Ambiente semplice senza while
 
-# Primitive aritmetiche
-add(a, b) = a + b
-sub(a, b) = a - b
-mul(a, b) = a * b
+function make_env()
+  []
+end
 
-# Test
-println("S1 v0.7")
-println("Add: " * string(add(10, 5)))
-println("Sub: " * string(sub(10, 5)))
-println("Mul: " * string(mul(3, 4)))
+function env_lookup(env, name)
+  nothing
+end
+
+function env_set(env, name, value)
+  env
+end
+
+# Test base
+env = make_env()
+println("Env created")
