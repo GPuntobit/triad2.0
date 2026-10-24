@@ -46,11 +46,19 @@ jobs:
             $exp = Get-Content "conformance\core\cases\$c\expected.out" -Raw
             if ($got -ne $exp) { throw "output mismatch for $c" }
           }
+      - name: Seed get probe
+        shell: pwsh
+        run: |
+          $out = Join-Path $env:TEMP "test_get.out"
+          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "test_get.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
+          if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for test_get.td" }
+          $got = Get-Content $out -Raw
+          if ($got -cne "20`n") { throw "unexpected output for test_get.td: $got" }
       - name: Hash check
         shell: pwsh
         run: |
           $h = (Get-FileHash seed/windows-x86_64/seed.hex -Algorithm SHA256).Hash
-          if ($h -ne '1B88C89A9D3EACD0D05594BC2CECFAA3A4B56A0B76553F904CB96339F4B3CE65') { throw "hash mismatch: $h" }
+          if ($h -ne 'EF8EB3D7DB47B55E2C455B8D79A45351EC80F1BBA01CA8918951FF1F15D7A802') { throw "hash mismatch: $h" }
   seed-linux:
     runs-on: ubuntu-latest
     steps:

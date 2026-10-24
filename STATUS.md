@@ -23,7 +23,7 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 | area | stato |
 |---|---|
 | `stringhe` (`string()`) | ✅ implementato (Int/String); Bool/Symbol/Nothing crashano |
-| `liste` | costruzione e stampa di liste di interi implementate; indici, `push!`, lunghezza e iterazione non supportati dal seed |
+| `liste` | costruzione/stampa e helper seed `get(xs, i)` implementati; indicizzazione standard, `push!`, lunghezza e iterazione non supportati dal seed |
 | `valori` (liste/simboli/stringhe insieme) | parziale; liste solo intere, senza operazioni o valori misti |
 | `controllo` (`elseif`) | ✅ implementato |
 | S1 (Triad in Triad-Core) | in corso |
@@ -81,3 +81,14 @@ L'obiettivo **non è completo**:
 - Il job locale Windows passa 28/29 casi inclusa la nuova regressione; `if_else` resta
   l'unico fallimento noto (exit `1`). La suite Julia della nuova conformance passa.
 - PE rigenerato: 25.088 byte; SHA-256 del dump: `1B88C89A9D3EACD0D05594BC2CECFAA3A4B56A0B76553F904CB96339F4B3CE65`.
+
+## Probe `get` seed Windows (round 33)
+
+- Il generatore conteneva già il corpo di `get`, ma il dispatcher delle chiamate non
+  riconosceva il nome; inoltre il corpo leggeva gli argomenti dallo stack in ordine errato.
+- Aggiunto il dispatch e corretto l'accesso 0-based con controlli su tipo lista, tipo indice
+  e limiti. `test_get.td` ora stampa `20` ed esce con codice `0`; il probe è verificato
+  anche nel job CI Windows.
+- `get(xs, i)` è un helper extra del seed e non una primitiva definita da Triad-Core.
+  L'indicizzazione standard `xs[i]` resta 1-based e non è ancora implementata dal seed.
+- Dump HEX riproducibile: SHA-256 `EF8EB3D7DB47B55E2C455B8D79A45351EC80F1BBA01CA8918951FF1F15D7A802`.

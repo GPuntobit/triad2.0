@@ -87,6 +87,12 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
   `liste_base` alla conformance Core e al job CI Windows. La verifica locale successiva
   passa tutti i casi elencati tranne `if_else` (exit `1`, problema preesistente); il nuovo
   hash del seed è registrato nella CI.
+- [x] **Seed Windows: il probe `get(lst, 1)` non veniva dispatchato** — Il generatore
+  conteneva il parser del primitivo `get` ma `pf_call` non lo riconosceva; il seed usciva
+  con codice `1` senza output. Aggiunto il dispatch e corretto il recupero degli argomenti
+  e il controllo dei limiti, con indice zero-based come richiesto dal probe. Il seed stampa
+  `20` per `test_get.td`; il probe è incluso nel job CI Windows. `get` resta un'estensione
+  del seed, non una primitiva normativa Triad-Core (`xs[i]` è l'accesso standard 1-based).
 
 ## Problema confermato
 
