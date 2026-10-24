@@ -1237,6 +1237,18 @@ movRdxRax(); andRdxImm3(); cmpEdxImm3(); je('pbs_str');  // stringa: identity
 testAlImm(0); jz('pbs_int');  // Int conversion
 jmp('fail');  // Bool/Symbol/Nothing non supportati per ora
 
+L('pf_builtin_get');
+incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws'); pushRax();
+cmpByteRsiImm(','); jne('fail'); incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws');
+cmpByteRsiImm(')'); jne('fail'); incRsi();
+popRcx(); popRax();
+andRaxImmFc(); B(0x48,0x83,0xfa,0x02); jne('fail');
+B(0x48,0x8b,0x10); B(0x48,0x83,0xfa,0x02); jne('fail');
+B(0x48, 0x8b, 0x40, 0x08);
+B(0x48, 0x83, 0xf9, 64); jae('fail');
+sarRcx1(); B(0x48, 0x8b, 0x44, 0xc8, 0x10);
+ret();
+
 L('pbs_str');
 ret();
 

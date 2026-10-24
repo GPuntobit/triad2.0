@@ -21,8 +21,8 @@ Il dump esadecimale è [`seed.hex`](seed.hex).
 - **Entry point:** RVA `0x1000`
 - **Sezione:** `.text`, RVA `0x1000`, file offset `0x200`, 24576 byte, caratteristiche `0xE0000020`
 - **Immagine:** base `0x140000000`, `SizeOfImage` `0x7000`, header `0x200`, subsystem console, ASLR disattivata
-- **Codice:** 7462 byte
-- **sha256 di `seed.hex`:** `445CB428EFF44B39C2103DF776E6D9A1D1B5BDD8904C2C93D661950321C4ED60`
+- **Codice:** 7925 byte
+- **sha256 di `seed.hex`:** `1B88C89A9D3EACD0D05594BC2CECFAA3A4B56A0B76553F904CB96339F4B3CE65`
 
 ## Layout del file
 
