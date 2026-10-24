@@ -241,6 +241,7 @@ const movMemRdiR9_40 = () => B(0x4c, 0x89, 0x4f, 0x28);
 const addRaxImm128 = () => B(0x48, 0x05, 0x80, 0x00, 0x00, 0x00);
 const orRaxImm2 = () => B(0x48, 0x83, 0xc8, 0x02);
 const andRaxImmFc = () => B(0x48, 0x83, 0xe0, 0xfc);
+const andRdiImmFc = () => B(0x48, 0x83, 0xe7, 0xfc);
 const andRdxImmFc = () => B(0x48, 0x83, 0xe2, 0xfc);
 const movRdxRax = () => B(0x48, 0x89, 0xc2);
 const movRaxRdi = () => B(0x48, 0x89, 0xf8);
@@ -455,6 +456,7 @@ leaRdxR14(0x30000); xorEax(); movMemRdxRax(); // heap chiusure: bump = 0
 movRsiR14();
 maskStoreImm(0);                        // maschera di stop dei blocchi
 flagStoreImm(0);                        // dentro una funzione/chiusura?
+leaRdxR14(0xF028); movMemRdxImm32(0, 0); // modalità di stampa inline
 callL('parse_program');
 xorEcx(); callIat(6, IAT);
 
@@ -1040,12 +1042,41 @@ movRaxR8(); shlRax1(); pushRax(); jmp('ppow_loop');
 
 L('parse_primary');
 callL('skip_ws');
+cmpByteRsiImm('['); je('pf_list');
 cmpByteRsiImm(':'); je('pf_symbol');
 cmpByteRsiImm('"'); je('pf_string');
 cmpByteRsiImm('('); je('pf_paren');
 cmpByteRsiImm('0'); jb('pf_ident');
 cmpByteRsiImm('9'); jbe('pf_number');
 jmp('pf_ident');
+L('pf_list');
+incRsi(); callL('skip_ws');
+leaRdxR14(0x30000); movRaxMemRdx();
+leaRdiR14(0x30008); addRdiRax();
+movMemRdiImm32(0, 2); movMemRdiImm32(8, 0);
+B(0x48, 0x05, 0x10, 0x02, 0x00, 0x00); // 64 valori da 8 byte + header
+leaRdxR14(0x30000); movMemRdxRax();
+movRaxRdi(); orRaxImm3(); pushRax();
+cmpByteRsiImm(']'); je('pf_list_empty');
+L('pf_list_loop');
+callL('parse_expr');
+pushRax();
+B(0x48, 0x8b, 0x7c, 0x24, 0x08); // header lista sotto il valore
+andRdiImmFc();
+movRcxMemRdiDisp(8);
+B(0x48, 0x83, 0xf9, 64); jae('fail');
+popRax();
+B(0x48, 0x89, 0x44, 0xcf, 0x10); // [header + 16 + index*8] = valore
+incRcx(); movMemRdiRcx8();
+callL('skip_ws');
+cmpByteRsiImm(']'); je('pf_list_done');
+cmpByteRsiImm(','); jne('fail');
+incRsi(); callL('skip_ws'); jmp('pf_list_loop');
+L('pf_list_done');
+incRsi(); popRax(); ret();
+L('pf_list_empty');
+incRsi(); popRax();
+ret();
 L('pf_number');
 xorEcxEcx();
 L('pf_num_loop');
@@ -1440,6 +1471,9 @@ testR8d(); je('pi_sign_done');
 decRdi(); movByteRdiImm(0x2d);          // '-'
 L('pi_sign_done');
 leaRsp('r8', 0x50); movR9R8(); subR9Rdi();
+leaRdxR14(0xF028); movRaxMemRdx(); testRax(); jz('pi_int_write');
+B(0x49, 0xff, 0xc9);
+L('pi_int_write');
 movRcxR12(); movRdxRdi(); movR8dR9d();
 movMemRspImm(0x20, 0);
 leaRspR9(0x28);
@@ -1451,11 +1485,38 @@ movByteRspImm(0x33, 10);
 movR8d(4); jmp('pi_bool_write');
 L('pi_object');
 andRaxImmFc();
-movRdxMemRax(); B(0x48,0x83,0xfa,0x04); je('pi_nothing');
+B(0x48,0x8b,0x10); B(0x48,0x83,0xfa,0x04); je('pi_nothing');
+B(0x48,0x83,0xfa,0x02); je('pi_list');
 B(0x48,0x83,0xfa,0x01); jne('fail');
 movR8MemRax8(); leaRdxRax16();
 movRcxR12(); leaRspR9(0x28); movMemRspImm(0x20, 0); callIat(4, IAT);
 movByteRspImm(0x30,10); movRcxR12(); leaRsp('rdx',0x30); movR8d(1); leaRspR9(0x28); movMemRspImm(0x20,0); callIat(4, IAT);
+movRspRbp(); popRbp(); ret();
+L('pi_list');
+B(0x48, 0x89, 0x45, 0xf8);                // header pointer
+movRcxMemRax8(); B(0x48, 0x89, 0x4d, 0xf0); // list length
+B(0x48, 0xc7, 0x45, 0xe8, 0, 0, 0, 0);   // index = 0
+movByteRspImm(0x30, '[');
+movRcxR12(); leaRsp('rdx', 0x30); movR8d(1); leaRspR9(0x28);
+movMemRspImm(0x20, 0); callIat(4, IAT);
+L('pi_list_loop');
+B(0x48, 0x8b, 0x4d, 0xe8); B(0x48, 0x3b, 0x4d, 0xf0); jae('pi_list_done');
+testRcx(); je('pi_list_item');
+movByteRspImm(0x30, ','); movByteRspImm(0x31, ' ');
+movRcxR12(); leaRsp('rdx', 0x30); movR8d(2); leaRspR9(0x28);
+movMemRspImm(0x20, 0); callIat(4, IAT);
+L('pi_list_item');
+B(0x48, 0x8b, 0x55, 0xf8); B(0x48, 0x8b, 0x4d, 0xe8);
+B(0x48, 0x8b, 0x44, 0xca, 0x10);          // valore all'indice corrente
+testAlImm(3); jne('fail');                 // elementi interi nel seed
+leaRdxR14(0xF028); movMemRdxImm32(0, 1);
+callL('print_int');
+leaRdxR14(0xF028); movMemRdxImm32(0, 0);
+B(0x48, 0xff, 0x45, 0xe8); jmp('pi_list_loop');
+L('pi_list_done');
+movByteRspImm(0x30, ']'); movByteRspImm(0x31, 10);
+movRcxR12(); leaRsp('rdx', 0x30); movR8d(2); leaRspR9(0x28);
+movMemRspImm(0x20, 0); callIat(4, IAT);
 movRspRbp(); popRbp(); ret();
 L('pi_nothing');
 movByteRspImm(0x30,'n'); movByteRspImm(0x31,'o'); movByteRspImm(0x32,'t'); movByteRspImm(0x33,'h');

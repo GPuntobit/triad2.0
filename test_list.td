@@ -1,3 +1,2 @@
-lst = []
-lst = lst * 10
+lst = [1, 2, 3]
 println(lst)
