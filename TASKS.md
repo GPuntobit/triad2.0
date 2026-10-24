@@ -68,7 +68,7 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
   Triad `f1() = 10` e il corpo a blocco; entrambi terminano con exit `0`.
 - [x] **Seed Windows: artefatti rigenerati e allineati** — `gen_seed.js` genera
   25.088 byte; `seed.exe` è stato decodificato da `seed.hex`, SHA-256
-  `1B88C89A9D3EACD0D05594BC2CECFAA3A4B56A0B76553F904CB96339F4B3CE65`.
+  `76FC146BA7E070522A5445B5CC0810997E035CBC3135911F62B9C6E6B3CB255F`.
 - [ ] **Seed Windows: `string()` non copre Bool e Symbol** — Il generatore attuale
   gestisce stringhe e interi, ma manda al percorso di errore `string(false)`,
   `string(true)` e `string(:simbolo)`. Implementare e verificare questi casi di
@@ -93,6 +93,14 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
   e il controllo dei limiti, con indice zero-based come richiesto dal probe. Il seed stampa
   `20` per `test_get.td`; il probe è incluso nel job CI Windows. `get` resta un'estensione
   del seed, non una primitiva normativa Triad-Core (`xs[i]` è l'accesso standard 1-based).
+- [x] **Seed Windows: `push!` non veniva dispatchato** — Il corpo del builtin era già
+  presente ma non raggiungibile da `pf_call`; inoltre l'identificatore del seed non
+  consumava il suffisso `!`. Aggiunto il dispatch di `push!`, parsing del suffisso finale,
+  append mutabile con limite di 64 elementi e ritorno della lista. `test_push.td` stampa
+  `[10, 20]`; aggiunto il caso Core `liste_push` e registrato nella CI Windows. Il seed
+  supporta qui liste di interi; indexing standard, `length` e iterazione restano assenti.
+  La matrice seed locale passa 29/30 casi (resta `if_else`, exit `1`); i 33 casi Core
+  passano con il runtime Julia.
 
 ## Problema confermato
 

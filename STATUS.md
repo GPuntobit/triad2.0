@@ -9,7 +9,7 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 ## Cosa è pronto
 
 - **Standard**: `SPEC.md` (v0.2.0), `SPEC-CORE.md`, `VERSION`, `CHANGELOG.md`.
-- **Conformance**: runner indipendente; 12 casi Triad-Full e 32 casi Triad-Core, tutti verdi sullo stage0 Julia; `conformance/README.md`.
+- **Conformance**: runner indipendente; 12 casi Triad-Full e 33 casi Triad-Core, tutti verdi sullo stage0 Julia; `conformance/README.md`.
 - **Estensione canonica**: `.triad` (`.td` alias storico), grammatiche VS Code/Vim e voce Linguist preparata.
 - **Seed S0** (Windows PE, nessun runtime/compilatore): interprete Triad-Core con
   supporto per interi, variabili, funzioni (forma breve e `function … end` multi-istruzione),
@@ -23,7 +23,7 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 | area | stato |
 |---|---|
 | `stringhe` (`string()`) | ✅ implementato (Int/String); Bool/Symbol/Nothing crashano |
-| `liste` | costruzione/stampa e helper seed `get(xs, i)` implementati; indicizzazione standard, `push!`, lunghezza e iterazione non supportati dal seed |
+| `liste` | costruzione/stampa e `push!` di liste di interi implementati; indicizzazione standard, `length` e iterazione non supportati dal seed |
 | `valori` (liste/simboli/stringhe insieme) | parziale; liste solo intere, senza operazioni o valori misti |
 | `controllo` (`elseif`) | ✅ implementato |
 | S1 (Triad in Triad-Core) | in corso |
@@ -59,8 +59,8 @@ certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 
 ### Casi Core non ancora coperti dal seed
 
-- `liste`: il seed copre solo costruzione e stampa di liste di interi; indici, `push!`,
-  `length` e iterazione restano da implementare.
+- `liste`: il seed copre costruzione, stampa e `push!` di liste di interi; indicizzazione
+  standard, `length`, iterazione e valori misti restano da implementare.
 - `valori`: supporto parziale; mancano valori misti e gestione completa delle stringhe.
 
 ### Distanza dall'obiettivo
@@ -92,3 +92,16 @@ L'obiettivo **non è completo**:
 - `get(xs, i)` è un helper extra del seed e non una primitiva definita da Triad-Core.
   L'indicizzazione standard `xs[i]` resta 1-based e non è ancora implementata dal seed.
 - Dump HEX riproducibile: SHA-256 `EF8EB3D7DB47B55E2C455B8D79A45351EC80F1BBA01CA8918951FF1F15D7A802`.
+
+## Probe `push!` seed Windows (round 34)
+
+- Collegato il builtin `push!` al dispatcher, aggiunto il suffisso `!` al parsing degli
+  identificatori e corretto l'append: la lista mutata viene restituita, con limite seed di
+  64 elementi.
+- `test_push.td` e il nuovo caso Core `liste_push` stampano `[10, 20]`; entrambi escono con
+  codice `0`. `liste_push` è incluso nella CI Windows.
+- L'implementazione seed resta limitata a liste di interi; indicizzazione Core, `length`,
+  iterazione e stampa di valori misti non sono implementati.
+- La matrice locale seed Windows passa 29/30 casi; `if_else` è l'unico caso ancora fallito
+  (exit `1`). Tutti i 33 casi Core passano sul runtime Julia.
+- PE: 25.088 byte; SHA-256 del dump: `76FC146BA7E070522A5445B5CC0810997E035CBC3135911F62B9C6E6B3CB255F`.

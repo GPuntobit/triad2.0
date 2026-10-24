@@ -26,7 +26,7 @@ Regole:
 ## Profili
 
 - **Triad-Full** — `cases/` (12 casi): tutto il linguaggio di `SPEC.md`.
-- **Triad-Core** — `core/cases/` (29 casi): solo il sottoinsieme normativo di
+- **Triad-Core** — `core/cases/` (33 casi): solo il sottoinsieme normativo di
   [`SPEC-CORE.md`](../SPEC-CORE.md), condiviso con Triad-Full; i primitivi di bootstrap non
   sono coperti da questa suite.
 
@@ -59,6 +59,8 @@ senza Julia né altri linguaggi.
 | `tour` | tutti i paradigmi in un programma unico |
 | `hello_shebang` | shebang, ARGS, effetti dichiarati |
 | `valori` | valori, aritmetica, stringhe, liste, comprehension |
+| `liste_base` | costruzione e stampa seed di liste di interi |
+| `liste_push` | `push!` su liste di interi |
 | `dispatch` | struct, operatori-funzione, dispatch, errori come dati |
 | `prolog` | regole ricorsive, liste stile Prolog, `solve` |
 | `destruttura` | `(a, b) = ...`, `for (k, v) in ...`, errore di arità |
