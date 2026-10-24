@@ -1,6 +1,6 @@
-# S0 / Windows x86-64 — seed con interprete Triad-Core: simboli (M3b2b3p)
+# S0 / Windows x86-64 — seed con interprete Triad-Core: elseif (M3b2b3q)
 
-Eseguibile PE32+ da **9728 byte**, senza runtime e senza libc: importa solo `KERNEL32.dll`.
+Eseguibile PE32+ da **25088 byte**, senza runtime e senza libc: importa solo `KERNEL32.dll`.
 Legge il file indicato dal primo argomento e interpreta un sottoinsieme di Triad-Core:
 
 - statement `println(expr)`, `NAME = expr`, funzioni `f(x, y) = expr` e forma blocco `function f(x) … end` con **corpo a più istruzioni**, `if`/`else`/`end`, `while`/`end`, **`let name = expr … end`**;
@@ -19,10 +19,10 @@ Il dump esadecimale è [`seed.hex`](seed.hex).
 - **Exit:** `0` successo; `1` errore (sintassi, variabile/funzione non definita, arità,
   lettura); `2` senza argomento
 - **Entry point:** RVA `0x1000`
-- **Sezione:** `.text`, RVA `0x1000`, file offset `0x200`, 9216 byte, caratteristiche `0xE0000020`
-- **Immagine:** base `0x140000000`, `SizeOfImage` `0x3400`, header `0x200`, subsystem console, ASLR disattivata
-- **Codice:** 7163 byte
-- **sha256 di `seed.hex`:** `11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C`
+- **Sezione:** `.text`, RVA `0x1000`, file offset `0x200`, 24576 byte, caratteristiche `0xE0000020`
+- **Immagine:** base `0x140000000`, `SizeOfImage` `0x7000`, header `0x200`, subsystem console, ASLR disattivata
+- **Codice:** 7440 byte
+- **sha256 di `seed.hex`:** `[da calcolare dopo test]`
 
 ## Layout del file
 
@@ -130,7 +130,7 @@ $p.ExitCode                                                       # 0
 .\seed.exe non_esiste.td ; $LASTEXITCODE                          # 1
 ```
 
-Verificati anche: `stringhe`, `stringhe_concat`, `nothing_base`, `stringhe_base`, `begin_block`, `closure`, `chiusure`, `scope`, `funzioni_blocco`, `funzioni`, `aritmetica`, `lambda`, `while_loop`, `if_else`, `operatori`, `confronti`, `ricorsione`
+Verificati anche: `stringhe`, `stringhe_concat`, `nothing_base`, `stringhe_base`, `begin_block`, `closure`, `chiusure`, `scope`, `funzioni_blocco`, `funzioni`, `aritmetica`, `lambda`, `while_loop`, `if_else`, `controllo` (elseif), `operatori`, `confronti`, `ricorsione`
 (120/55), `funzioni_semplici`, `variabili`, `interi`; chiusura che cattura il parametro
 (`f=crea(10); f(5)=15`) e due chiusure indipendenti (`g=crea(100)`); errore di arità → exit 1.
 
@@ -138,6 +138,7 @@ Verificati anche: `stringhe`, `stringhe_concat`, `nothing_base`, `stringhe_base`
 
 - cattura delle chiusure: copre l'ultimo binding del frame; la cattura multi-binding resta da fare (AST/bytecode);
 - lambda solo a **un parametro**; body di una funzione: massimo 4 parametri;
-- mancano `elseif` (caso `controllo`) e le liste (casi `liste` e `valori`);
-- `string()` copre Int e String; Bool/Symbol/Nothing da aggiungere;
+- mancano le liste (casi `liste` e `valori`);
+- `string()` copre Int e String; Bool/Symbol/Nothing crashano quando implementati;
+- `elseif` ✅ implementato;
 - solo Windows PE; `os_*` ed ELF sono del port M7.

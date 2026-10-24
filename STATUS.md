@@ -21,11 +21,11 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 
 | area | stato |
 |---|---|
-| `stringhe` (`string()`) | ✅ implementato (Int/String); Bool/Symbol/Nothing rimandati a S1 |
+| `stringhe` (`string()`) | ✅ implementato (Int/String); Bool/Symbol/Nothing crashano |
 | `liste` | rimandato a S1 |
 | `valori` (liste/simboli/stringhe insieme) | parziale (simboli/nothing ok) |
-| `controllo` (`elseif`) | rimandato a S1 |
-| S1 (Triad in Triad-Core) | 🚀 in corso |
+| `controllo` (`elseif`) | ✅ implementato |
+| S1 (Triad in Triad-Core) | in corso |
 | S2–S3 (compilatore nativo, self-hosting) | non iniziati |
 | S4 / M7 (parità, Linux ELF) | **E0 ✅** ELF Linux minimale; E1/E2/E3 e parità da fare |
 
