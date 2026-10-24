@@ -55,14 +55,11 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
 
 ## Problemi e modifiche recenti (dal `5e8ca470` al `d75e31a`)
 
-- [ ] **Guardie per AST malformati (commit `e201a3e`) senza test di regressione** — Aggiornate
-  le guardie di `skipnl!` (`syntax.jl` L316), `run_solve` (`triad.jl` L1415: `length(x.args) >= 1`)
-  e `solve_opts` (`triad.jl` L1426: `length(x.args) >= 2` e ogni opzione con esattamente 2 campi).
-  `graphify_tests_for` non ha collegato test a `skipnl!` (0 test); per `run_solve`/`solve_opts`
-  restituisce solo `test/runtests.jl` e `test/oracles/oracle_tests.jl` (match per nome). Mancano
-  test che costruiscano un `Node` deformato (ad es. `Node(:solve)` con 0 argomenti) e verifichino
-  che le guardie restituiscono `Err(:syntax)` senza eccezioni host. Da aggiungere in
-  `test/runtests.jl`.
+- [x] **Guardie per AST malformati (commit `e201a3e`)** — Aggiunte regressioni in
+  `test/runtests.jl` per `skipnl!` al limite del vettore di token, per `run_solve` con
+  zero argomenti, per `solve_opts` senza opzioni e per un'opzione priva del valore.
+  I casi malformati restituiscono errori Triad `:syntax` senza eccezioni host; suite
+  Julia: 281/281 test superati.
 - [x] **Seed Windows: artefatti rigenerati e allineati** — `gen_seed.js` genera
   9.728 byte; il suo output coincide con `seed/windows-x86_64/seed.hex`
   (SHA-256 `11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C`,

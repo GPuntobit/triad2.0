@@ -36,7 +36,7 @@ jobs:
       - name: Seed conformance cases
         shell: pwsh
         run: |
-          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni','aritmetica','begin_block','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if')
+          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni','aritmetica','begin_block','formula','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if')
           foreach ($c in $cases) {
             $out = Join-Path $env:TEMP "$c.out"
             Remove-Item $out -ErrorAction SilentlyContinue

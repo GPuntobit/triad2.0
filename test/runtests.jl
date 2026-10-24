@@ -18,12 +18,24 @@ function err(src)
     @assert v isa T.Err "atteso un Err, ottenuto $(T.tshow(v))"
     v
 end
+raises_syntax(f) = try
+    f()
+    false
+catch ex
+    ex isa T.TriadError && ex.err.kind === :syntax
+end
 N(h, xs...) = T.Node(h, Any[xs...])
 ptop(src) = T.parse_program(src).args[1]
 
 @testset "Triad" begin
 
 @testset "lessico e parser" begin
+    p = T.Parser(T.Tok[T.Tok(:nl, nothing, 1, 1, false)])
+    T.skipnl!(p)
+    @test p.i == 2
+    @test_nowarn T.skipnl!(p)
+    @test p.i == 2
+
     @test ptop("x = 1 + 2 * 3") == N(:assign, :x, N(:call, :+, 1, N(:call, :*, 2, 3)))
     @test ptop("-x^2") == N(:call, :-, N(:call, :^, :x, 2))
     @test ptop("a = b = c") == N(:assign, :a, N(:assign, :b, :c))
@@ -217,6 +229,15 @@ end
     @test val(fam * "who = :bob\nlength(solve parent(who, ?c))") == 1   # identificatori = valori host
     @test err(fam * "solve parent(alice, ?c)").kind === :undef
     @test err("solve nessuno(?x)").kind === :undef
+end
+
+@testset "Prolog: AST solve malformato" begin
+    world = T.World(out = IOBuffer())
+    @test raises_syntax(() -> T.run_solve(N(:solve), world.globals, world))
+    @test raises_syntax(() -> T.solve_opts(N(:solve, :goal), world.globals, world))
+
+    malformed_option = N(:solve, :goal, N(:tuple, N(:assign, :limit)))
+    @test raises_syntax(() -> T.solve_opts(malformed_option, world.globals, world))
 end
 
 @testset "Prolog: aritmetica, liste, struct, fusione" begin
