@@ -68,7 +68,7 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
   Triad `f1() = 10` e il corpo a blocco; entrambi terminano con exit `0`.
 - [x] **Seed Windows: artefatti rigenerati e allineati** — `gen_seed.js` genera
   25.088 byte; `seed.exe` è stato decodificato da `seed.hex`, SHA-256
-  `445CB428EFF44B39C2103DF776E6D9A1D1B5BDD8904C2C93D661950321C4ED60`.
+  `1B88C89A9D3EACD0D05594BC2CECFAA3A4B56A0B76553F904CB96339F4B3CE65`.
 - [ ] **Seed Windows: `string()` non copre Bool e Symbol** — Il generatore attuale
   gestisce stringhe e interi, ma manda al percorso di errore `string(false)`,
   `string(true)` e `string(:simbolo)`. Implementare e verificare questi casi di
@@ -78,6 +78,15 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
   esattamente `stringhe/expected.out` (`ciao Triad`, `5`, `42`). Dei 28 casi del job CI
   Windows, 27 passano localmente; `if_else` termina con exit `1` e richiede verifica
   separata (anche il PE precedente non superava questo caso).
+- [x] **Seed Windows: crash su liste e stringhe dopo la generazione** — Con il generatore
+  locale, `test_list.td` e anche un caso di stringhe terminavano con
+  `STATUS_ILLEGAL_INSTRUCTION`; l'Application Error indicava RVA `0x2ce6`. L'area dei nomi
+  import PE iniziava a RVA `0x2cde` e sovrascriveva il codice macchina cresciuto fino a
+  quell'indirizzo. Spostati i nomi import a RVA `0x5000`; il seed generato stampa ora
+  `[1, 2, 3]` e il caso `stringhe` con exit code `0`. Aggiunto il caso di regressione
+  `liste_base` alla conformance Core e al job CI Windows. La verifica locale successiva
+  passa tutti i casi elencati tranne `if_else` (exit `1`, problema preesistente); il nuovo
+  hash del seed è registrato nella CI.
 
 ## Problema confermato
 

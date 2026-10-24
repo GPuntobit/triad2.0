@@ -9,12 +9,13 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 ## Cosa è pronto
 
 - **Standard**: `SPEC.md` (v0.2.0), `SPEC-CORE.md`, `VERSION`, `CHANGELOG.md`.
-- **Conformance**: runner indipendente; 12 casi Triad-Full e 29 casi Triad-Core, tutti verdi sullo stage0 Julia; `conformance/README.md`.
+- **Conformance**: runner indipendente; 12 casi Triad-Full e 32 casi Triad-Core, tutti verdi sullo stage0 Julia; `conformance/README.md`.
 - **Estensione canonica**: `.triad` (`.td` alias storico), grammatiche VS Code/Vim e voce Linguist preparata.
 - **Seed S0** (Windows PE, nessun runtime/compilatore): interprete Triad-Core con
-  26/29 casi coperti — interi, variabili, funzioni (forma breve e `function … end` multi-istruzione),
+  supporto per interi, variabili, funzioni (forma breve e `function … end` multi-istruzione),
   ricorsione, Bool, operatori (`% ^ ! && || +=`), `if`/`else`, `while`, `let`, `begin`,
-  lambda, chiusure con cattura per valore, stringhe base + concatenazione + `string()`, `nothing`, simboli.
+  lambda, chiusure con cattura per valore, stringhe base + concatenazione + `string()`,
+  `nothing`, simboli e costruzione/stampa di liste di interi.
 - **CI**: `.github/workflows/ci.yml` — conformance Full/Core su Ubuntu e Windows, casi del seed su Windows, hash check.
 
 ## Cosa manca
@@ -22,8 +23,8 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 | area | stato |
 |---|---|
 | `stringhe` (`string()`) | ✅ implementato (Int/String); Bool/Symbol/Nothing crashano |
-| `liste` | rimandato a S1 |
-| `valori` (liste/simboli/stringhe insieme) | parziale (simboli/nothing ok) |
+| `liste` | costruzione e stampa di liste di interi implementate; indici, `push!`, lunghezza e iterazione non supportati dal seed |
+| `valori` (liste/simboli/stringhe insieme) | parziale; liste solo intere, senza operazioni o valori misti |
 | `controllo` (`elseif`) | ✅ implementato |
 | S1 (Triad in Triad-Core) | in corso |
 | S2–S3 (compilatore nativo, self-hosting) | non iniziati |
@@ -49,7 +50,7 @@ certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 - PR a GitHub Linguist con `editors/linguist/languages.yml`;
 - pubblicazione delle estensioni VS Code / Open VSX e Vim;
 - eventuale registrazione del linguaggio/standard.
-## Verifica finale (round 31)
+## Verifica finale (round 31; baseline precedente)
 
 - Seed S0 Windows: PE 25088 byte, hash `445CB428EFF44B39C2103DF776E6D9A1D1B5BDD8904C2C93D661950321C4ED60`, dump riproducibile.
 - Stage0: **Triad-Core 31/31**, **Triad-Full 12/12**.
@@ -58,8 +59,9 @@ certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 
 ### Casi Core non ancora coperti dal seed
 
-- `liste`: non implementate.
-- `valori`: supporto parziale; mancano liste e gestione completa delle stringhe.
+- `liste`: il seed copre solo costruzione e stampa di liste di interi; indici, `push!`,
+  `length` e iterazione restano da implementare.
+- `valori`: supporto parziale; mancano valori misti e gestione completa delle stringhe.
 
 ### Distanza dall'obiettivo
 
@@ -68,3 +70,14 @@ L'obiettivo **non è completo**:
 - S2–S3 (compilatore nativo in Triad, fixed point) non iniziati;
 - S4/M7 (parità conformance, port Linux ELF) non iniziati; l'artefatto E0 esiste (`seed/linux-x86_64/seed.hex`), la CI è pronta ma la parità non è iniziata;
 - riconoscimento esterno: LICENSE MIT scelta; PR Linguist e pubblicazione estensioni richiedono il maintainer.
+
+## Verifica seed Windows (round 32)
+
+- Corretto il crash causato dalla sovrapposizione dei nomi import PE con il codice macchina:
+  il generatore collocava i nomi a RVA `0x2cde`, dentro il codice che era cresciuto oltre
+  tale offset. Ora i nomi iniziano a RVA `0x5000`.
+- Aggiunto `liste_base`: costruzione e stampa `[1, 2, 3]`; il seed esce con codice `0`.
+  Restano non supportati indexing, `push!`, `length`, iterazione e liste con elementi non interi.
+- Il job locale Windows passa 28/29 casi inclusa la nuova regressione; `if_else` resta
+  l'unico fallimento noto (exit `1`). La suite Julia della nuova conformance passa.
+- PE rigenerato: 25.088 byte; SHA-256 del dump: `1B88C89A9D3EACD0D05594BC2CECFAA3A4B56A0B76553F904CB96339F4B3CE65`.

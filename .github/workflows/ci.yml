@@ -36,7 +36,7 @@ jobs:
       - name: Seed conformance cases
         shell: pwsh
         run: |
-          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni_io','funzioni','aritmetica','begin_block','formula','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if')
+          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni_io','funzioni','aritmetica','begin_block','formula','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if','liste_base')
           foreach ($c in $cases) {
             $out = Join-Path $env:TEMP "$c.out"
             Remove-Item $out -ErrorAction SilentlyContinue
@@ -50,7 +50,7 @@ jobs:
         shell: pwsh
         run: |
           $h = (Get-FileHash seed/windows-x86_64/seed.hex -Algorithm SHA256).Hash
-          if ($h -ne '445CB428EFF44B39C2103DF776E6D9A1D1B5BDD8904C2C93D661950321C4ED60') { throw "hash mismatch: $h" }
+          if ($h -ne '1B88C89A9D3EACD0D05594BC2CECFAA3A4B56A0B76553F904CB96339F4B3CE65') { throw "hash mismatch: $h" }
   seed-linux:
     runs-on: ubuntu-latest
     steps:

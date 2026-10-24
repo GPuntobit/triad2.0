@@ -1576,7 +1576,7 @@ const fo = rva => HEADERS + (rva - 0x1000);
 const ilt = 0x4050, desc = 0x40a0, dll = 0x40d0;
 const entries = ['GetStdHandle', 'GetCommandLineA', 'CreateFileA', 'ReadFile', 'WriteFile', 'CloseHandle', 'ExitProcess', 'VirtualAlloc'];
 const hints = [];
-let rva = 0x2cde;
+let rva = 0x5000;
 for (const n of entries) { hints.push(rva); rva += 2 + n.length + 1; if (rva & 1) rva++; }
 for (let i = 0; i < entries.length; i++) { u64(fo(IAT + i * 8), hints[i]); u64(fo(ilt + i * 8), hints[i]); }
 u32(fo(desc), ilt); u32(fo(desc + 12), dll); u32(fo(desc + 16), IAT);
