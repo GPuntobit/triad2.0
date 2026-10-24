@@ -49,18 +49,17 @@ certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 - PR a GitHub Linguist con `editors/linguist/languages.yml`;
 - pubblicazione delle estensioni VS Code / Open VSX e Vim;
 - eventuale registrazione del linguaggio/standard.
-## Verifica finale (round 30)
+## Verifica finale (round 31)
 
-- Seed S0 Windows: PE 9728 byte, hash `11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C`, dump riproducibile.
-- Casi Core supportati: **26/29**, tutti con stdout/exit code byte-esatti; suite Core sul seed `0` errori; exit 2 senza argomento, 1 file mancante.
-- Stage0: **Triad-Core 29/29**, **Triad-Full 12/12**.
-- CI: hash del seed allineato, matrice Ubuntu/Windows per conformance e job Windows per il seed.
+- Seed S0 Windows: PE 25088 byte, hash `445CB428EFF44B39C2103DF776E6D9A1D1B5BDD8904C2C93D661950321C4ED60`, dump riproducibile.
+- Stage0: **Triad-Core 31/31**, **Triad-Full 12/12**.
+- Seed Windows: nuova regressione `funzioni_io` verificata con stdout byte-esatto; 27/28 casi elencati nel job CI passano localmente. `if_else` termina con exit `1` (anche col PE precedente); la verifica CI ospitata resta necessaria.
+- CI: hash del seed aggiornato; matrice Ubuntu/Windows per conformance e job Windows per il seed.
 
 ### Casi Core non ancora coperti dal seed
 
-- `controllo`: manca `elseif` (il resto — while/let/begin — è pronto).
 - `liste`: non implementate.
-- `valori`: mancano liste e stringhe complete (simboli e `nothing` ci sono).
+- `valori`: supporto parziale; mancano liste e gestione completa delle stringhe.
 
 ### Distanza dall'obiettivo
 

@@ -3,7 +3,7 @@
 Eseguibile PE32+ da **25088 byte**, senza runtime e senza libc: importa solo `KERNEL32.dll`.
 Legge il file indicato dal primo argomento e interpreta un sottoinsieme di Triad-Core:
 
-- statement `println(expr)`, `NAME = expr`, funzioni `f(x, y) = expr` e forma blocco `function f(x) … end` con **corpo a più istruzioni**, `if`/`else`/`end`, `while`/`end`, **`let name = expr … end`**;
+- statement `println(expr)`, `NAME = expr`, funzioni `f(x, y) = expr` e forma blocco `function f(x) … end` con **corpo a più istruzioni**, annotazione `!io` ignorata dal seed, `if`/`else`/`end`, `while`/`end`, **`let name = expr … end`**;
   `while`/`end` (annidati);
 - espressioni con interi, variabili, chiamate, `+ - * % ^`, parentesi, `-` unario,
   confronti, ternario, letterali `true`/`false` e **lambda a un parametro** `x -> expr`;
@@ -21,8 +21,8 @@ Il dump esadecimale è [`seed.hex`](seed.hex).
 - **Entry point:** RVA `0x1000`
 - **Sezione:** `.text`, RVA `0x1000`, file offset `0x200`, 24576 byte, caratteristiche `0xE0000020`
 - **Immagine:** base `0x140000000`, `SizeOfImage` `0x7000`, header `0x200`, subsystem console, ASLR disattivata
-- **Codice:** 7440 byte
-- **sha256 di `seed.hex`:** `[da calcolare dopo test]`
+- **Codice:** 7422 byte
+- **sha256 di `seed.hex`:** `445CB428EFF44B39C2103DF776E6D9A1D1B5BDD8904C2C93D661950321C4ED60`
 
 ## Layout del file
 
@@ -34,7 +34,7 @@ Il dump esadecimale è [`seed.hex`](seed.hex).
 | `0x058` | optional header PE32+, entry `0x1000`, base `0x140000000` |
 | `0x0D0` | data directory import: RVA `0x2CA0`, size `0x28` |
 | `0x148` | section header `.text` (VirtualSize/RawSize `0x2400`) |
-| file `0x200` / RVA `0x1000` | codice (7163 byte) |
+| file `0x200` / RVA `0x1000` | codice (7422 byte) |
 | RVA `0x2C00` (file `0x1E00`) | IAT, 8 slot + null |
 | RVA `0x2C50` (file `0x1E50`) | ILT, 8 slot + null |
 | RVA `0x2CA0` (file `0x1EA0`) | import descriptor + terminatore |
@@ -130,7 +130,7 @@ $p.ExitCode                                                       # 0
 .\seed.exe non_esiste.td ; $LASTEXITCODE                          # 1
 ```
 
-Verificati anche: `stringhe`, `stringhe_concat`, `nothing_base`, `stringhe_base`, `begin_block`, `closure`, `chiusure`, `scope`, `funzioni_blocco`, `funzioni`, `aritmetica`, `lambda`, `while_loop`, `if_else`, `controllo` (elseif), `operatori`, `confronti`, `ricorsione`
+Verificati anche: `stringhe`, `stringhe_concat`, `nothing_base`, `stringhe_base`, `begin_block`, `closure`, `chiusure`, `scope`, `funzioni_blocco`, `funzioni_io`, `funzioni`, `aritmetica`, `lambda`, `while_loop`, `controllo` (elseif), `operatori`, `confronti`, `ricorsione`
 (120/55), `funzioni_semplici`, `variabili`, `interi`; chiusura che cattura il parametro
 (`f=crea(10); f(5)=15`) e due chiusure indipendenti (`g=crea(100)`); errore di arità → exit 1.
 
@@ -138,6 +138,7 @@ Verificati anche: `stringhe`, `stringhe_concat`, `nothing_base`, `stringhe_base`
 
 - cattura delle chiusure: copre l'ultimo binding del frame; la cattura multi-binding resta da fare (AST/bytecode);
 - lambda solo a **un parametro**; body di una funzione: massimo 4 parametri;
+- il seed non verifica staticamente gli effetti: `!io` è accettato per eseguire output nei corpi funzione;
 - mancano le liste (casi `liste` e `valori`);
 - `string()` copre Int e String; Bool/Symbol/Nothing crashano quando implementati;
 - `elseif` ✅ implementato;

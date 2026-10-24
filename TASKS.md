@@ -60,18 +60,24 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
   zero argomenti, per `solve_opts` senza opzioni e per un'opzione priva del valore.
   I casi malformati restituiscono errori Triad `:syntax` senza eccezioni host; suite
   Julia: 281/281 test superati.
+- [x] **Seed Windows: espressioni in funzioni a blocco** — Il parser del seed separava
+  il percorso delle espressioni autonome da quello che salva i registri dell'identificatore;
+  un letterale nel corpo (ad es. `20`) corrompeva lo stack della chiamata. Corretto il
+  percorso e aggiunta la conformità `funzioni_io`, che verifica `!io`, output nel corpo
+  e valore dell'ultima espressione. Verificati anche `test_short_func.td` nella forma
+  Triad `f1() = 10` e il corpo a blocco; entrambi terminano con exit `0`.
 - [x] **Seed Windows: artefatti rigenerati e allineati** — `gen_seed.js` genera
-  9.728 byte; il suo output coincide con `seed/windows-x86_64/seed.hex`
-  (SHA-256 `11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C`,
-  lo stesso hash richiesto dalla CI). Il file PE è stato decodificato dal HEX.
+  25.088 byte; `seed.exe` è stato decodificato da `seed.hex`, SHA-256
+  `445CB428EFF44B39C2103DF776E6D9A1D1B5BDD8904C2C93D661950321C4ED60`.
 - [ ] **Seed Windows: `string()` non copre Bool e Symbol** — Il generatore attuale
   gestisce stringhe e interi, ma manda al percorso di errore `string(false)`,
   `string(true)` e `string(:simbolo)`. Implementare e verificare questi casi di
   conformità nel seed PE se sono richiesti dalla specifica.
 - [x] **Seed Windows: caso Core `stringhe`** — Dopo la rigenerazione e la decodifica
-  del PE da 9.728 byte, `stringhe/program.td` termina con exit code `0` e produce
-  esattamente `stringhe/expected.out` (`ciao Triad`, `5`, `42`). Gli altri casi Core
-  Windows restano da verificare tramite la lane CI.
+  del PE da 25.088 byte, `stringhe/program.td` termina con exit code `0` e produce
+  esattamente `stringhe/expected.out` (`ciao Triad`, `5`, `42`). Dei 28 casi del job CI
+  Windows, 27 passano localmente; `if_else` termina con exit `1` e richiede verifica
+  separata (anche il PE precedente non superava questo caso).
 
 ## Problema confermato
 
@@ -224,10 +230,10 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
 - [x] **Repository e artefatti** — Verificati `.gitignore` (binari standalone/cache ignorati)
   e `.gitattributes` (seed binari e dump esadecimali non normalizzati come testo). I
   generatori riproducono entrambi i dump: Windows SHA-256
-  `11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C`, Linux
+  `445CB428EFF44B39C2103DF776E6D9A1D1B5BDD8904C2C93D661950321C4ED60`, Linux
   `AD4C9F08176D9964D5BE17D44C72230184434025980447395E7A3250F63CA5EA`; i byte decodificati
-  coincidono con PE/ELF versionati. Nessun artefatto del repository è stato modificato
-  dalle verifiche.
+  coincidono con PE/ELF versionati. Il PE Windows è stato aggiornato intenzionalmente
+  insieme al generatore e al relativo controllo hash CI.
 
 ## Come registrare un nuovo bug
 

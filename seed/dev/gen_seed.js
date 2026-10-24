@@ -535,8 +535,8 @@ jmp('pp_loop');
 L('stmt_assign');
 pushRsi();                        // inizio statement (per expression statement)
 cmpByteRsiImm('_'); je('st_name');
-cmpByteRsiImm('a'); jb('st_expr');
-cmpByteRsiImm('z'); ja('st_expr');
+cmpByteRsiImm('a'); jb('st_expr_plain');
+cmpByteRsiImm('z'); ja('st_expr_plain');
 L('st_name');
 callL('parse_ident');
 pushR8(); pushR9();
@@ -564,6 +564,11 @@ jmp('pp_loop');
 
 L('st_expr');
 popR9(); popR8(); popRsi();
+callL('parse_expr');
+blockStoreRax();
+jmp('pp_loop');
+L('st_expr_plain');
+popRsi();
 callL('parse_expr');
 blockStoreRax();
 jmp('pp_loop');
@@ -774,7 +779,12 @@ incRsi(); callL('skip_ws'); jmp('sf_param');
 L('sf_params_end');
 incRsi();
 callL('skip_ws');
-cmpByteRsiImm('='); je('sf_short_form');
+cmpByteRsiImm('!'); jne('sf_no_effect');
+L('sf_effect');
+incRsi(); callL('skip_ws'); callL('parse_ident'); callL('skip_ws');
+cmpByteRsiImm(','); jne('sf_no_effect');
+incRsi(); callL('skip_ws'); jmp('sf_effect');
+L('sf_no_effect');
 movRdxMemRsp(); movMemRdxRsi24();
 shrRdi4(); orRdiImm32(0x100); movRdxMemRsp(); movMemRdxRdi16();
 popRdx();
@@ -786,21 +796,6 @@ cmpByteRsiImm(0); je('sf_done');
 cmpByteRsiImm(0x0a); je('sf_done');
 cmpByteRsiImm(0x3b); je('sf_done');
 incRsi(); jmp('sf_skip');
-L('sf_short_form');
-incRsi(); callL('skip_ws'); callL('parse_expr');
-callL('skip_ws');
-cmpByteRsiImm(0); je('sf_short_done');
-cmpByteRsiImm(0x0a); je('sf_short_done');
-cmpByteRsiImm(0x3b); je('sf_short_done');
-incRsi(); jmp('sf_short_form');
-L('sf_short_done');
-popR9(); popR8();
-movRdxMemRsp(); movMemRdxRsi24();  // body ptr in function entry
-shrRdi4(); orRdiImm32(0x100); movRdxMemRsp(); movMemRdxRdi16();  // param count
-popRdx();
-incQwordR13();
-addRspImm8();
-jmp('pp_loop');
 L('sf_done');
 jmp('pp_loop');
 
