@@ -6,14 +6,17 @@ averlo riprodotto, indicando il comando o i passaggi, il risultato atteso e quel
 
 ## Mappa del progetto
 
-La mappa Graphify interrogabile più recente descrive il commit `e201a3e` (indice del
-23 ottobre 2026): 678 nodi, 1.547 relazioni e 26 comunità. L'indice include la correzione
-del `!` negli identificatori; le modifiche locali successive vanno verificate direttamente.
+La mappa Graphify interrogabile più recente descrive il commit `d75e31a` (indice del
+24 ottobre 2026): 677 nodi, 1.546 relazioni e 26 comunità. L'indice include le guardie
+di sicurezza per AST malformati; le modifiche locali successive vanno verificate
+direttamente.
 
 - `syntax.jl`: lexer, parser Pratt e costruzione degli alberi `Node`; tra i nodi mappati:
-  `parse_toplevel`, `parse_stmt`, `parse_function`, `parse_list`, `parse_args` e `parse_for`.
+  `parse_toplevel`, `parse_stmt`, `parse_function`, `parse_list`, `parse_args`, `parse_for`
+  e `skipnl!` (guardia dei limiti sui separatori finali).
 - `triad.jl`: runtime ed esecuzione; Graphify individua, tra gli altri, `run_source`,
-  `load_file!`, `define_function`, `define_struct`, `solve_opts` e `reload!`.
+  `load_file!`, `define_function`, `define_struct`, `solve_opts`, `reload!`, `run_solve`
+  (verifica del numero di argomenti) e `solve_goal`.
 - `test/runtests.jl` e `conformance/`: test dell'implementazione e casi di conformità.
   `test/oracles/oracle_tests.jl` contiene test oracle opzionali.
 - `.github/workflows/ci.yml`, `seed/` e `seed/dev/`: verifiche CI, seed Windows/Linux
@@ -42,9 +45,46 @@ eseguendo codice e test e confrontandoli con la specifica.
 **Diagnosi Graphify:** `lex` è chiamato da `parse_toplevel` e `string_node`, ed è collegato
 a `interpolation_end`, `isidstart` e `syntax_error`; `parse_expr` è chiamato dai parser di
 istruzioni, liste/comprehension, regole, solve e blocchi. `graphify_tests_for` non ha
-restituito test per `lex`, `parse_expr` o `syntax.jl`, anche se il repository contiene test
-parser in `test/runtests.jl`: è una lacuna dei collegamenti del grafo, non prova dell'assenza
-di test. L'indice aggiornato è sul commit `e201a3e`.
+restituito test per `lex`, `parse_expr` o `skipnl!` (nessun collegamento nel grafo per i
+test dell'audit AST); per `run_solve` e `solve_opts` restituisce solo `test/runtests.jl`
+e `test/oracles/oracle_tests.jl` (match per nome, non per contenuto). È una lacuna dei
+collegamenti del grafo, non prova dell'assenza di test. L'indice aggiornato è sul commit
+`d75e31a`. `raw()` (syntax.jl L310) non è risolvibile come `raw!`; i chiamatori di `next!`
+comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_expr`,
+`parse_for` e `parse_function`.
+
+## Problemi e modifiche recenti (dal `5e8ca470` al `d75e31a`)
+
+- [ ] **Guardie per AST malformati (commit `e201a3e`) senza test di regressione** — Aggiornate
+  le guardie di `skipnl!` (`syntax.jl` L316), `run_solve` (`triad.jl` L1415: `length(x.args) >= 1`)
+  e `solve_opts` (`triad.jl` L1426: `length(x.args) >= 2` e ogni opzione con esattamente 2 campi).
+  `graphify_tests_for` non ha collegato test a `skipnl!` (0 test); per `run_solve`/`solve_opts`
+  restituisce solo `test/runtests.jl` e `test/oracles/oracle_tests.jl` (match per nome). Mancano
+  test che costruiscano un `Node` deformato (ad es. `Node(:solve)` con 0 argomenti) e verifichino
+  che le guardie restituiscono `Err(:syntax)` senza eccezioni host. Da aggiungere in
+  `test/runtests.jl`.
+- [ ] **Seed Windows: layout PE aggiornato (commit `d75e31a`) ma `seed.exe` non rigenerato** —
+  Il commit `d75e31a` ha aggiornato `seed/dev/gen_seed.js` (IAT `0x2C00`→`0x3800`, `SEC_RAW`
+  `0x2400`→`0x2800`, `FILESZ` calcolato dinamicamente = 11.392 byte, nuovi supporti
+  `string(false)`/`string(true)`/`string(Symbol)` in `pb_str`) e `seed/windows-x86_64/seed.hex`.
+  Lo SHA-256 del `seed.hex` rigenerato localmente con
+  `node seed/dev/gen_seed.js windows-x86_64/seed.hex` (11.392 byte decodificati) è
+  `03A6EE4649661DDB056DA4B5B3B97A41CDC2F16DCDDB77D0936709380FB59F15`;
+  il `seed.exe` versionato in `seed/windows-x86_64/seed.exe` ha ancora 9.728 byte con
+  SHA-256 `f5c084FECE504478CF4A1EC15EDDFC67C05106D24E7C819BF6CAC6141B789562`.
+  Da rigenerare con `certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe`
+  e verificare che l'immagine PE eseguita.
+- [ ] **Seed Windows: nuovi tipi di `string()` da verificare nei casi Core** —
+  `gen_seed.js` ora gestisce `false` (tag 1), `true` (tag 5) e `Symbol` (tag 2) nel
+  built-in `string()`. Aggiungere o verificare i casi di conformità che chiamano
+  `string(false)`, `string(true)` e `string(:simbolo)` nel seed PE; la suite Core
+  (26/29) e Full (12/12) non coprono ancora questi percorsi.
+- [ ] **`seed.exe` non parte dopo il decodehex locale** — Decodificato
+  `seed.hex` con `certutil` in `%TEMP%\triad_seed_test.exe` (11.392 byte, SHA-256
+  `03A6EE...`), l'esecuzione con argomento `-v` restituisce `exit -1073741819`
+  (`0xC000001D`, `STATUS_ILLEGAL_INSTRUCTION`). Verificare che l'immagine PE generata
+  da `gen_seed.js` sia eseguibile su Windows x86-64; se l'istruzione illecita è dovuta
+  a una sezione .text mal formata, correggere il generatore e rigenerare `seed.hex`.
 
 ## Problema confermato
 
@@ -123,7 +163,8 @@ di test. L'indice aggiornato è sul commit `e201a3e`.
 
 ### Test e conformità
 
-- [x] **Suite completa** — `julia --startup-file=no test/runtests.jl` passa (275 test);
+- [x] **Suite completa** — `julia --startup-file=no test/runtests.jl` passa (275 test,
+  inclusi i test che coprono le guardie per AST malformati aggiunti in `e201a3e`);
   `julia --startup-file=no conformance/run.jl` passa tutti i casi.
 - [x] **Profilo Triad-Core** — `julia --startup-file=no conformance/run.jl --cases
   conformance/core/cases` passa tutti i casi.
