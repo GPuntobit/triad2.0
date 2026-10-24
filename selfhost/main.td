@@ -1,34 +1,25 @@
-# S1 v1.5: Ambiente funzionante con get (senza while)
+# S1 v1.8: Ambiente senza length
 
 function make_env()
   []
 end
 
-function env_lookup(env, name)
-  # Controlla primi 4 entry (8 elementi della lista piatta)
-  # [key1, val1, key2, val2, key3, val3, key4, val4]
-  i = 0
-  if i < length(env)
-    if get(env, i) == name
-      return get(env, i + 1)
-    end
-  end
-  i = 2
-  if i < length(env)
-    if get(env, i) == name
-      return get(env, i + 1)
-    end
+function env_set(env, name_id, value)
+  env = push!(env, name_id)
+  env = push!(env, value)
+  env
+end
+
+function env_lookup(env, name_id)
+  # Controlla solo la prima entry (i=0)
+  if get(env, 0) == name_id
+    return get(env, 1)
   end
   nothing
 end
 
-function env_set(env, name, value)
-  # Aggiunge alla fine
-  env
-end
-
-# Test
+# Test (1 = "x")
 env = make_env()
-env = env_set(env, "x", 10)
-println("Env created")
-println(env_lookup(env, "x"))
+env = env_set(env, 1, 10)
+val = env_lookup(env, 1)
+println("Value: " * string(val))
