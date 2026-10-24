@@ -357,9 +357,9 @@ const subRsp8 = v => { B(0x48, 0x83, 0xec, v & 255); };
 const addRsp8 = v => { B(0x48, 0x83, 0xc4, v & 255); };
 
 // ---------------------------------------------------------------- PE/data layout
-const IAT = 0x2C00;
+const IAT = 0x4000;
 const DATA = 0x2700;                    // qword statico (maschera di stop dei blocchi)
-const SEC_RAW = 0x2400;                 // .text 9216 byte, RVA 0x1000..0x3400
+const SEC_RAW = 0x6000;                 // .text 24576 byte, RVA 0x1000..0x7000
 const HEADERS = 0x200, FILESZ = HEADERS + SEC_RAW;
 
 // ---------------------------------------------------------------- main
@@ -674,12 +674,34 @@ movRsiRdi();
 maskLoad(); pushRax(); maskStoreImm(3);
 callL('parse_program');
 popRax(); maskStoreRax();
+L('st_if_elseif_loop');
 cmpByteRsiImm('e'); jne('st_if_true_end');
 cmpByteRsiDispImm(1, 'l'); jne('st_if_true_end');
+cmpByteRsiDispImm(2, 's'); jne('st_if_true_end');
+cmpByteRsiDispImm(3, 'e'); jne('st_if_true_end');  // elseif
+addRsiImm(6); callL('skip_ws');
+callL('parse_expr'); callL('skip_ws');  // condizione elseif
+pushRax(); pushRsi(); movR9dImm(1); callL('scan_end');
+popRdi(); popRax();
+cmpRaxImm32(5); jne('st_elseif_false');
+movRsiRdi();
+maskLoad(); pushRax(); maskStoreImm(3);
+callL('parse_program');
+popRax(); maskStoreRax();
+jmp('st_if_elseif_loop');
+L('st_elseif_false');
+addRsiImm(4); callL('skip_ws');
+maskLoad(); pushRax(); maskStoreImm(1);
+callL('parse_program');
+popRax(); maskStoreRax();
+jmp('st_if_done');
+L('st_if_true_end');
+cmpByteRsiImm('e'); jne('st_if_true_noelse');
+cmpByteRsiDispImm(1, 'l'); jne('st_if_true_noelse');
 addRsiImm(4); callL('skip_ws');
 movR9dImm(0); callL('scan_end');
 addRsiImm(3); jmp('st_if_done');
-L('st_if_true_end');
+L('st_if_true_noelse');
 addRsiImm(3); jmp('st_if_done');
 L('st_if_false');
 cmpByteRsiImm('e'); jne('st_if_false_end');
@@ -1466,20 +1488,20 @@ u32(0x6c, 0x1000);
 u64(0x70, 0x140000000);
 u32(0x78, 0x1000); u32(0x7c, 0x200);
 u16(0x80, 6); u16(0x88, 6);
-u32(0x90, 0x3400);
+u32(0x90, 0x7000);
 u32(0x94, 0x200);
 u16(0x9c, 3);
 u64(0xa0, 0x100000); u64(0xa8, 0x1000);
 u64(0xb0, 0x100000); u64(0xb8, 0x1000);
 u32(0xc4, 16);
-u32(0xd0, 0x2ca0); u32(0xd4, 0x28);
+u32(0xd0, 0x40a0); u32(0xd4, 0x28);
 str(0x148, '.text');
 u32(0x150, SEC_RAW); u32(0x154, 0x1000); u32(0x158, SEC_RAW); u32(0x15c, HEADERS);  // VirtualSize=RawSize=SEC_RAW
 u32(0x16c, 0xe0000020);
 img.set(Buffer.from(code), HEADERS);
 
 const fo = rva => HEADERS + (rva - 0x1000);
-const ilt = 0x2c50, desc = 0x2ca0, dll = 0x2cd0;
+const ilt = 0x4050, desc = 0x40a0, dll = 0x40d0;
 const entries = ['GetStdHandle', 'GetCommandLineA', 'CreateFileA', 'ReadFile', 'WriteFile', 'CloseHandle', 'ExitProcess', 'VirtualAlloc'];
 const hints = [];
 let rva = 0x2cde;
