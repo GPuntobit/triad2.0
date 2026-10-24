@@ -1,3 +1,17 @@
+# Task Triad 2.0
+
+## Obiettivo
+Completare Triad 2.0 come linguaggio autonomo e riconosciuto con standard proprio, conformance suite, estensione `.triad`, tooling editor, bootstrap senza linguaggi ospiti e self-hosting.
+
+## Stato attuale
+- **Seed S0 (Windows):** 8237 byte, hash `76FC146BA7E070522A5445B5CC0810997E035CBC3135911F62B9C6E6B3CB255F`
+  - Supporto: interi, variabili, funzioni (forma breve e blocco), ricorsione, Bool, operatori, if/else, while, let, begin, lambda, chiusure, stringhe base, nothing, simboli, liste complete (costruzione, stampa, push!, get)
+  - Conformance: 29/30 casi Windows, 33/33 Core Julia
+- **S1 (Interprete Triad in Triad-Core):** Ambiente inline funzionante con liste, primitive base complete
+- **S2-S4:** Non iniziati
+
+---
+
 # Backlog: errori e verifiche
 
 Questo file raccoglie i problemi confermati e le verifiche ancora da fare sul progetto.
@@ -49,7 +63,7 @@ restituito test per `lex`, `parse_expr` o `skipnl!` (nessun collegamento nel gra
 test dell'audit AST); per `run_solve` e `solve_opts` restituisce solo `test/runtests.jl`
 e `test/oracles/oracle_tests.jl` (match per nome, non per contenuto). È una lacuna dei
 collegamenti del grafo, non prova dell'assenza di test. L'indice aggiornato è sul commit
-`d75e31a`. `raw()` (syntax.jl L310) non è risolvibile come `raw!`; i chiamatori di `next!`
+`d75e31a`. `raw()` (syntax.jl L310) non è risolvibile come `raw!`; i chiamanti di `next!`
 comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_expr`,
 `parse_for` e `parse_function`.
 
@@ -215,7 +229,7 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
 - [x] **Riproducibilità degli artefatti seed** — I generatori Linux e Windows ricreano
   esattamente i rispettivi dump esadecimali; i byte decodificati coincidono con i file
   PE/ELF versionati.
-- [x] **Esecuzione seed Linux (E0)** — In Debian x86-64 eseguito il seed ELF: stampa
+- [x] **Esecuzione seed Linux (E0)** — In Debian x86_64 eseguito il seed ELF: stampa
   `Triad seed Linux OK` ed esce con successo; hash ELF verificato.
 - [x] **Probe portabili** — `_probe.jl`, `_probe2.jl`, `_probe3.jl`, `_qc.jl` e
   `_smoke.jl` eseguiti con Julia nativa su Debian; tutti completano correttamente.
@@ -274,3 +288,188 @@ Per ogni problema riprodotto, aggiungere una voce con:
 2. comando o passaggi minimi per riprodurlo;
 3. risultato attuale e risultato atteso (riferimento alla specifica, se applicabile);
 4. test aggiunto o aggiornato che impedisce la regressione.
+
+---
+
+# Task S1 (Interprete Triad in Triad-Core)
+
+### S1.3: Sistema di valori taggati
+**Descrizione:** Implementare encoding/decoding per distinguere Int, Bool, String, Nothing, List in S1.
+
+**Dettagli:**
+- Usare encoding del seed (Int: shifted/tagged, Bool: 1/5, String: heap object, List: heap object)
+- Implementare funzioni per check tipo (is_int, is_bool, is_string, is_list)
+- Implementare funzioni per encoding/decoding (int_value, bool_value, etc.)
+- Testare con valori misti in ambiente
+
+**Output:** S1 può distinguere e manipolare correttamente tutti i tipi Triad-Core
+
+---
+
+### S1.4: Parser/tokenizer inline
+**Descrizione:** Leggere sorgente, tokenizzare e riconoscere numeri, identificatori, operatori in S1.
+
+**Dettagli:**
+- Leggere stringa sorgente (input hardcoded o da file)
+- Tokenizzare: numeri, identificatori, operatori (+, -, *, ==, <, >), delimiteri (, (, ), ;, newline)
+- Riconoscere keyword (if, else, while, function, let, begin, end)
+- Memorizzare token in lista per parsing
+
+**Output:** S1 può tokenizzare un programma Triad-Core
+
+---
+
+### S1.5: Eval espressioni base
+**Descrizione:** Valutare Int, Bool, String con ambiente inline in S1.
+
+**Dettagli:**
+- Implementare eval per interi (aritmetica base)
+- Implementare eval per Bool (operatori logici)
+- Implementare eval per String (concatenazione, string())
+- Usare ambiente inline per lookup variabili
+- Testare con espressioni complesse
+
+**Output:** S1 può valutare espressioni base con ambiente
+
+---
+
+### S1.8: Variabili con let
+**Descrizione:** Estendere ambiente per supportare binding locali con scope in S1.
+
+**Dettagli:**
+- Implementare let con scope locale (shadowing)
+- Gestire ambiente come stack di frame
+- Supportare nested let con scope corretto
+- Testare con scope multipli
+
+**Output:** S1 supporta variabili con let e scope locale
+
+---
+
+### S1.11: Parser completo
+**Descrizione:** Supportare if/else, while, function e tutti i costrutti Triad-Core in S1.
+
+**Dettagli:**
+- Implementare parsing di if/else
+- Implementare parsing di while
+- Implementare parsing di function (forma breve e blocco)
+- Implementare parsing di let/begin
+- Generare AST o struttura intermedia inline
+
+**Output:** S1 può parsare tutti i costrutti Triad-Core
+
+---
+
+### S1.12: Eval programmi completi
+**Descrizione:** Valutare statement sequenziali con ambiente in S1.
+
+**Dettagli:**
+- Implementare eval di statement sequenziali
+- Gestire ambiente persistente tra statement
+- Supportare esecuzione completa di programmi
+- Testare con programmi con più statement
+
+**Output:** S1 può eseguire programmi completi Triad-Core
+
+---
+
+### S1.13: Funzioni e chiamate
+**Descrizione:** Definire funzioni, parametri, return e invocazione in S1.
+
+**Dettagli:**
+- Implementare definizione funzioni
+- Implementare chiamata funzioni con parametri
+- Gestire return esplicito e implicito
+- Supportare funzioni ricorsive base
+
+**Output:** S1 supporta definizione e chiamata funzioni
+
+---
+
+### S1.14: Chiusure e ricorsione
+**Descrizione:** Supportare funzioni che catturano ambiente in S1.
+
+**Dettagli:**
+- Implementare cattura ambiente nelle chiusure
+- Supportare ricorsione completa
+- Gestire scope corretto in chiusure
+- Testare con lambda e higher-order functions
+
+**Output:** S1 supporta chiusure e ricorsione completa
+
+---
+
+### S1.15: Test conformance
+**Descrizione:** Eseguire S1 su tutti i casi Core e verificare output.
+
+**Dettagli:**
+- Eseguire S1 su tutti i 33 casi Core
+- Verificare output atteso per ogni caso
+- Fix bug in S1 se necessario
+- Documentare casi passati/falliti
+
+**Output:** S1 passa la conformance suite Core completa
+
+---
+
+## Task Bootstrap (S2-S4)
+
+### S2: Compilatore nativo
+**Descrizione:** Progettare architettura per compilare Triad a machine code.
+
+**Dettagli:**
+- Progettare IR intermedio per Triad
+- Implementare codegen x86-64
+- Generare PE/ELF eseguibili
+- Testare su Windows e Linux
+
+**Output:** Compilatore nativo S2 che genera machine code
+
+---
+
+### S3: Self-hosting
+**Descrizione:** Implementare compilatore Triad scritto in Triad.
+
+**Dettagli:**
+- Riscrivere S2 in Triad
+- Compilare S2 con S2 (bootstrap)
+- Verificare fixed point
+- Testare self-hosting completo
+
+**Output:** Compilatore self-hosted S3
+
+---
+
+### S4: Runtime completo
+**Descrizione:** Implementare REPL, CLI, tooling, parità Linux.
+
+**Dettagli:**
+- Implementare REPL interattivo
+- Implementare CLI per esecuzione file
+- Aggiungere tooling per sviluppo
+- Portare seed Linux ELF
+- Verificare parità conformance Linux/Windows
+
+**Output:** Runtime completo S4 con parità Linux/Windows
+
+---
+
+## Priorità
+
+1. S1.3 (valori taggati) - fondamento per S1
+2. S1.4 (parser/tokenizer) - necessario per eseguire programmi
+3. S1.5 (eval base) - base per interprete
+4. S1.8 (variabili con let) - scope e binding
+5. S1.11 (parser completo) - tutti i costrutti
+6. S1.12 (eval programmi) - esecuzione completa
+7. S1.13 (funzioni) - potenza linguaggio
+8. S1.14 (chiusure) - completezza funzionale
+9. S1.15 (test conformance) - verifica S1
+10. S2-S4 (bootstrap) - fase finale
+
+## Note
+
+- S1 deve essere implementato inline (senza funzioni helper) a causa delle limitazioni del seed
+- Le liste nel seed supportano solo interi - usare convenzioni per altri tipi
+- L'ambiente S1 usa interi come chiavi (1="x", 2="y", ecc.)
+- Tutte le task S1 devono essere testate su Windows con il seed attuale
