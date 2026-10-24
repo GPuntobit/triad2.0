@@ -720,6 +720,86 @@ filter(x -> x % 2 == 0, 1:6)           # [2, 4, 6]
 [x^2 for x in 1:4 if x > 2]            # [9, 16]
 xs = [1, 2, 3]; xs[end]                # 3
 x = 3; x > 2 ? :big : :small           # :big
+
+---
+
+## 20. Bootstrap: Seed S0 e S1
+
+### 20.1 Cos'è il seed S0
+
+Il **seed S0** è un interprete Triad-Core scritto in machine code x86-64, completamente indipendente da linguaggi ospiti come Julia. Serve come base per il bootstrap Triad (vedi [`BOOTSTRAP.md`](BOOTSTRAP.md)).
+
+**Disponibilità:**
+- Windows PE: `seed/windows-x86_64/seed.exe` (25.088 byte, hash `76FC146BA7E070522A5445B5CC0810997E035CBC3135911F62B9C6E6B3CB255F`)
+- Linux ELF: `seed/linux-x86_64/seed.hex` (in sviluppo)
+
+**Funzionalità S0 (Windows):**
+- Interi, variabili, funzioni (forma breve `f() = expr` e blocco `function f() ... end`)
+- Ricorsione, Bool, operatori (`% ^ ! && || +=`)
+- `if`/`else`/`elseif`, `while`, `let`, `begin`
+- Lambda, chiusure con cattura per valore
+- Stringhe base + concatenazione + `string()` (Int/String)
+- `nothing`, simboli
+- **Liste complete:** costruzione `[1, 2, 3]`, stampa, `push!`, helper `get(xs, i)`
+- Conformance: 29/30 casi Core (Windows), 33/33 con runtime Julia
+
+**Uso del seed Windows:**
+```powershell
+seed\windows-x86_64\seed.exe file.td
+seed\windows-x86_64\seed.exe conformance\core\cases\stringhe\program.td
+```
+
+Codici di uscita: `0` ok, `1` errore.
+
+**Limitazioni attuali del seed:**
+- `string()` con Bool/Symbol/Nothing non supportato (crash)
+- Indicizzazione standard `xs[i]` non implementata (usare `get(xs, i)` zero-based)
+- `length` e iterazione su liste non implementate
+- Liste supportano solo interi (non valori misti)
+
+### 20.2 Cos'è S1
+
+**S1** è un interprete Triad-Core completo scritto in Triad-Core, eseguito dal seed S0. Questo è il passo chiave del bootstrap: il linguaggio viene usato per implementare se stesso.
+
+**Stato attuale S1:**
+- Ambiente inline funzionante con liste
+- Primitive base complete (+, -, *, eq, lt, gt)
+- `string()` completo (Bool, Nothing, Int, String)
+- If/else funzionante
+- Funzioni semplici funzionanti
+- Liste e `push!`/`get` disponibili dal seed
+
+**Da completare in S1:**
+- Sistema di valori taggati (tipo sistema)
+- Parser/tokenizer inline
+- Eval di espressioni base
+- Variabili con let e scope
+- Parser completo per tutti i costrutti
+- Eval di programmi completi
+- Funzioni e chiamate con chiusure
+- Test conformance suite
+
+Vedi [`TASK.md`](TASK.md) per il piano dettagliato delle task S1 rimanenti.
+
+### 20.3 Piano di bootstrap (S0 → S4)
+
+Il bootstrap Triad segue questo percorso:
+
+1. **S0 (seed):** Interprete Triad-Core in machine code (completato su Windows)
+2. **S1 (interprete):** Interprete Triad in Triad-Core (in corso)
+3. **S2 (compilatore):** Compilatore nativo in Triad-Core
+4. **S3 (self-hosting):** Compilatore self-hosted (S2 compilato da S2)
+5. **S4 (runtime):** Runtime completo con REPL, CLI, tooling, parità Linux
+
+Vedi [`BOOTSTRAP.md`](BOOTSTRAP.md) per dettagli architetturali e [`STATUS.md`](STATUS.md) per lo stato corrente.
+
+### 20.4 Contribuire al bootstrap
+
+Se vuoi contribuire al bootstrap:
+1. Completa le task S1 in [`TASK.md`](TASK.md)
+2. Testa il seed su Windows: `seed\windows-x86_64\seed.exe conformance\core\cases\*`
+3. Verifica il hash del seed: `certutil -hashfile seed\windows-x86_64\seed.hex SHA256`
+4. Aggiorna STATUS.md con i progressi
 f(n) = n < 2 ? n : f(n - 1) + f(n - 2); f(10)   # 55
 function fact_(n::Int)::Int
     if n <= 1; return 1; end
