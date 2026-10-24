@@ -63,28 +63,18 @@ comprendono `expect_ident!`, `expect_kw!`, `expect_op!`, `parse_args`, `parse_ex
   test che costruiscano un `Node` deformato (ad es. `Node(:solve)` con 0 argomenti) e verifichino
   che le guardie restituiscono `Err(:syntax)` senza eccezioni host. Da aggiungere in
   `test/runtests.jl`.
-- [ ] **Seed Windows: layout PE aggiornato (commit `d75e31a`) ma `seed.exe` non rigenerato** —
-  Il commit `d75e31a` ha aggiornato `seed/dev/gen_seed.js` (IAT `0x2C00`→`0x3800`, `SEC_RAW`
-  `0x2400`→`0x2800`, `FILESZ` calcolato dinamicamente = 11.392 byte, nuovi supporti
-  `string(false)`/`string(true)`/`string(Symbol)` in `pb_str`) e `seed/windows-x86_64/seed.hex`.
-  Lo SHA-256 del `seed.hex` rigenerato localmente con
-  `node seed/dev/gen_seed.js windows-x86_64/seed.hex` (11.392 byte decodificati) è
-  `03A6EE4649661DDB056DA4B5B3B97A41CDC2F16DCDDB77D0936709380FB59F15`;
-  il `seed.exe` versionato in `seed/windows-x86_64/seed.exe` ha ancora 9.728 byte con
-  SHA-256 `f5c084FECE504478CF4A1EC15EDDFC67C05106D24E7C819BF6CAC6141B789562`.
-  Da rigenerare con `certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe`
-  e verificare che l'immagine PE eseguita.
-- [ ] **Seed Windows: nuovi tipi di `string()` da verificare nei casi Core** —
-  `gen_seed.js` ora gestisce `false` (tag 1), `true` (tag 5) e `Symbol` (tag 2) nel
-  built-in `string()`. Aggiungere o verificare i casi di conformità che chiamano
-  `string(false)`, `string(true)` e `string(:simbolo)` nel seed PE; la suite Core
-  (26/29) e Full (12/12) non coprono ancora questi percorsi.
-- [ ] **`seed.exe` non parte dopo il decodehex locale** — Decodificato
-  `seed.hex` con `certutil` in `%TEMP%\triad_seed_test.exe` (11.392 byte, SHA-256
-  `03A6EE...`), l'esecuzione con argomento `-v` restituisce `exit -1073741819`
-  (`0xC000001D`, `STATUS_ILLEGAL_INSTRUCTION`). Verificare che l'immagine PE generata
-  da `gen_seed.js` sia eseguibile su Windows x86-64; se l'istruzione illecita è dovuta
-  a una sezione .text mal formata, correggere il generatore e rigenerare `seed.hex`.
+- [x] **Seed Windows: artefatti rigenerati e allineati** — `gen_seed.js` genera
+  9.728 byte; il suo output coincide con `seed/windows-x86_64/seed.hex`
+  (SHA-256 `11ADCCCAA092C5C39ECD4DB7C21926BAF4BB536FB740E0B115F2B2BC4433289C`,
+  lo stesso hash richiesto dalla CI). Il file PE è stato decodificato dal HEX.
+- [ ] **Seed Windows: `string()` non copre Bool e Symbol** — Il generatore attuale
+  gestisce stringhe e interi, ma manda al percorso di errore `string(false)`,
+  `string(true)` e `string(:simbolo)`. Implementare e verificare questi casi di
+  conformità nel seed PE se sono richiesti dalla specifica.
+- [x] **Seed Windows: caso Core `stringhe`** — Dopo la rigenerazione e la decodifica
+  del PE da 9.728 byte, `stringhe/program.td` termina con exit code `0` e produce
+  esattamente `stringhe/expected.out` (`ciao Triad`, `5`, `42`). Gli altri casi Core
+  Windows restano da verificare tramite la lane CI.
 
 ## Problema confermato
 

@@ -357,10 +357,10 @@ const subRsp8 = v => { B(0x48, 0x83, 0xec, v & 255); };
 const addRsp8 = v => { B(0x48, 0x83, 0xc4, v & 255); };
 
 // ---------------------------------------------------------------- PE/data layout
-const IAT = 0x3800;
+const IAT = 0x2C00;
 const DATA = 0x2700;                    // qword statico (maschera di stop dei blocchi)
-const SEC_RAW = 0x2800;                 // .text 10240 byte, RVA 0x1000..0x3800
-const HEADERS = 0x200, FILESZ = HEADERS + SEC_RAW + 0x280;  // headers + section + IAT/import data
+const SEC_RAW = 0x2400;                 // .text 9216 byte, RVA 0x1000..0x3400
+const HEADERS = 0x200, FILESZ = HEADERS + SEC_RAW;
 
 // ---------------------------------------------------------------- main
 subRsp(0x1408);                          // path [rsp+0x100], locals; il sorgente e' su VirtualAlloc
@@ -1170,34 +1170,11 @@ L('pf_builtin_string');
 incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws');
 cmpByteRsiImm(')'); jne('fail'); incRsi();
 movRdxRax(); andRdxImm3(); cmpEdxImm3(); je('pbs_str');  // stringa: identity
-testAlImm(0); jz('pbs_int');  // Int: conversione decimale
-cmpRaxImm32(1); je('pbs_false');  // Bool false
-cmpRaxImm32(5); je('pbs_true');   // Bool true
-movRdxRax(); andRdxImm3(); B(0x83, 0xfa, 0x02); je('pbs_sym');  // Symbol: tag 2
-jmp('fail');  // Nothing non supportato per ora
+testAlImm(0); jz('pbs_int');  // Int conversion
+jmp('fail');  // Bool/Symbol/Nothing non supportati per ora
 
 L('pbs_str');
 ret();
-
-L('pbs_false');
-// "false"
-pushRbp(); movRbpRsp(); subRsp(0x20);
-leaRdxR14(0x30000); movRaxMemRdx(); leaRdiR14(0x30008); addRdiRax();
-movMemRdiImm32(0, 1); movMemRdiImm32(4, 5); B(0x49, 0xc7, 0xc2, 0x20, 0x00, 0x00, 0x00); andR10ImmNeg16(); addRaxR10(); movMemRdxRax();
-leaR9Rdi16(); B(0x49, 0xc7, 0x01); B32(0x736c6166); B(0x41, 0xc6, 0x41, 0x04, 0x65); B(0x41, 0xc6, 0x41, 0x05, 0x00);
-movRaxRdi(); orRaxImm3(); movRspRbp(); popRbp(); ret();
-
-L('pbs_true');
-// "true"
-pushRbp(); movRbpRsp(); subRsp(0x20);
-leaRdxR14(0x30000); movRaxMemRdx(); leaRdiR14(0x30008); addRdiRax();
-movMemRdiImm32(0, 1); movMemRdiImm32(4, 4); B(0x49, 0xc7, 0xc2, 0x20, 0x00, 0x00, 0x00); andR10ImmNeg16(); addRaxR10(); movMemRdxRax();
-leaR9Rdi16(); B(0x49, 0xc7, 0x01); B32(0x65757274); B(0x41, 0xc6, 0x41, 0x04, 0x00);
-movRaxRdi(); orRaxImm3(); movRspRbp(); popRbp(); ret();
-
-L('pbs_sym');
-// Symbol: il valore è la stringa heap del nome (già tag 3), converti tag 2->3
-B(0x48, 0x83, 0xe0, 0xfc); orRaxImm3(); ret();  // and rax, ~3; or rax, 3
 
 L('pbs_int');
 // Int in decimale: usa buffer stack, poi alloca heap
@@ -1489,20 +1466,20 @@ u32(0x6c, 0x1000);
 u64(0x70, 0x140000000);
 u32(0x78, 0x1000); u32(0x7c, 0x200);
 u16(0x80, 6); u16(0x88, 6);
-u32(0x90, 0x3800);
+u32(0x90, 0x3400);
 u32(0x94, 0x200);
 u16(0x9c, 3);
 u64(0xa0, 0x100000); u64(0xa8, 0x1000);
 u64(0xb0, 0x100000); u64(0xb8, 0x1000);
 u32(0xc4, 16);
-u32(0xd0, 0x38a0); u32(0xd4, 0x28);
+u32(0xd0, 0x2ca0); u32(0xd4, 0x28);
 str(0x148, '.text');
 u32(0x150, SEC_RAW); u32(0x154, 0x1000); u32(0x158, SEC_RAW); u32(0x15c, HEADERS);  // VirtualSize=RawSize=SEC_RAW
 u32(0x16c, 0xe0000020);
 img.set(Buffer.from(code), HEADERS);
 
 const fo = rva => HEADERS + (rva - 0x1000);
-const ilt = 0x3850, desc = 0x38a0, dll = 0x38d0;
+const ilt = 0x2c50, desc = 0x2ca0, dll = 0x2cd0;
 const entries = ['GetStdHandle', 'GetCommandLineA', 'CreateFileA', 'ReadFile', 'WriteFile', 'CloseHandle', 'ExitProcess', 'VirtualAlloc'];
 const hints = [];
 let rva = 0x2cde;
