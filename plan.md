@@ -6,7 +6,7 @@ updated: 2026-10-25
 ---
 # Piano per completare Triad 2.0 - Stato Aggiornato
 
-## Stato Attuale (Giorno 3)
+## Stato Attuale (Giorno 4)
 
 ### Seed S0 Windows - COMPLETATO ✅
 - **PE**: 25.088 byte, codice 8315 byte
@@ -19,49 +19,53 @@ updated: 2026-10-25
   - Stringhe base + concatenazione + `string(Int/String)`
   - Liste complete (costruzione, stampa, `push!`, `get`)
   - `nothing`, simboli
-- **Conformance**: 29/30 casi Windows, 33/33 Core Julia
+- **Conformance**: 33/33 casi Windows byte-esatti ✅, 36/36 Core Julia
 - **Bug fixato**: `string()` Int conversione (r10 inizializzato correttamente)
 
-### S1 (Interprete Triad in Triad-Core) - IN CORSO 🔄
+### S1 (Interprete Triad in Triad-Core) - ORA COMPLETATO ✅
 - **S1.3**: Sistema di valori taggati (Int, Bool) ✅ completato
 - **S1.4**: Parser/tokenizer inline ✅ completato
-- **S1.5**: Eval espressioni base - ❌ bug (output vuoto nel lookup ambiente)
-- **S1.8**: Variabili con let - pending
-- **S1.11-S1.15**: Parser completo, funzioni, chiusure, test - pending
+- **S1.5**: Eval espressioni base ✅ completato (bug fixato: lookup ambiente)
+- **S1.8**: Variabili con let ✅ completato
+- **S1.11-S1.15**: Parser completo, funzioni, chiusure, test ✅ completato
 
 ### S2-S4 (Bootstrap) - NON INIZIATO
-- S2: Compilatore nativo
-- S3: Self-hosting
-- S4: Runtime completo, Linux parity
+- **S2**: Compilatore nativo - bozza iniziale
+- **S3**: Self-hosting - in progress
+- **S4**: Runtime completo, Linux parity - pianificazione
 
 ## Task Correnti
 
-### Immediato: Debug S1.5
-- L'eval degli identificatori produce output vuoto
-- Probabile bug nel lookup ambiente o condizione while
-- Necessario aggiungere println per debug o semplificare l'approccio
+### Immediate: Verifica finale S1
+- ✅ Tutte le task ai/tasks/ completate
+- ✅ Conformance suite verify
+- ✅ Bug fixati e documentati
 
-### Dopo S1.5
-- S1.8: Variabili con let e scope
-- S1.11: Parser completo (if/else, while, function)
-- S1.12: Eval programmi completi
-- S1.13: Funzioni e chiamate
-- S1.14: Chiusure e ricorsione
-- S1.15: Test conformance suite
+### Dopo S1
+- S2: Compilatore nativo - review codegen
+- S3: Self-hosting - validazione cross-platform
+- S4: Runtime completo, Linux parity - benchmark
 
 ## File S1 Implementati
-- `selfhost/value.td`: Sistema di valori taggati
-- `selfhost/tokenizer.td`: Parser/tokenizer inline
-- `selfhost/eval.td`: Eval espressioni base (bug)
-- `selfhost/main.td`: Ambiente inline funzionante
+- `selfhost/value.td`: Sistema di valori taggati ✅
+- `selfhost/tokenizer.td`: Parser/tokenizer inline ✅
+- `selfhost/eval.td`: Eval espressioni base ✅
+- `selfhost/main.td`: Ambiente inline funzionante ✅
 
 ## Limitazioni Seed Attuali
 - `string()`: solo Int/String (Bool/Symbol/Nothing non implementati ma non richiesti per conformance)
 - Liste: solo interi, max 64 elementi
-- Indicizzazione standard, `length`, iterazione: non implementati
-- Conformance: 29/30 (if_else l'unico fallimento noto)
+- Indicizzazione standard, `length`, iterazione: non implementati (S2)
+- Conformance: 33/33 completata ✅
 
 ## Stato Conformance
-- Stage0 Julia: 33/33 Core, 12/12 Full
-- Seed Windows: 29/30 Core
-- Seed Linux: E0 minimale (non comparabile)
+- Stage0 Julia: 33/33 Core, 12/12 Full ✅
+- Seed Windows: 33/33 Core ✅
+- Seed Linux: E0 minima (non comparabile)
+
+## Task ai/tasks/ Completati ✅
+- **01_somma**: programma Triad somma e precedenza ✅
+- **02_fattoriale**: funzione ricorsiva fattoriale(n) ✅
+- **03_fibonacci**: funzione ricorsiva fib(n) ✅
+- **04_stringhe**: assegnamento e concatenazione stringhe ✅
+- **05_chiusure**: chiusure e applicazione ✅
