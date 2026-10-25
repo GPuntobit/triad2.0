@@ -1,5 +1,8 @@
 /**
- * Minimal MCP (streamable HTTP) client for the Graphify control plane.
+ * Graphify client for the webcmd plugin.
+ *
+ * Talks to the Graphify control plane over MCP streamable HTTP
+ * (https://api.graphify.com/v1/mcp) and turns tool results into CLI rows.
  *
  * Credentials are resolved at runtime and never logged:
  *   1. GRAPHIFY_TOKEN / GRAPHIFY_API_KEY environment variable
@@ -13,7 +16,7 @@ import { join } from 'node:path';
 
 const MCP_ENDPOINT = process.env.GRAPHIFY_MCP_URL ?? 'https://api.graphify.com/v1/mcp';
 
-const CLIENT_INFO = { name: 'webcmd-graphify', version: '0.1.0' };
+const CLIENT_INFO = { name: 'webcmd-graphify', version: '1.0.0' };
 
 function resolveToken() {
   const fromEnv = process.env.GRAPHIFY_TOKEN ?? process.env.GRAPHIFY_API_KEY;
@@ -37,15 +40,12 @@ function resolveToken() {
 /** Parse an SSE payload into its JSON-RPC messages. */
 function parseSse(body) {
   const messages = [];
-  const events = body.split(/\r?\n\r?\n/);
-
-  for (const event of events) {
+  for (const event of body.split(/\r?\n\r?\n/)) {
     const data = event
       .split(/\r?\n/)
       .filter((line) => line.startsWith('data:'))
       .map((line) => line.slice(5).trim())
       .join('');
-
     if (!data || data === '[DONE]') continue;
     try {
       messages.push(JSON.parse(data));
@@ -53,15 +53,14 @@ function parseSse(body) {
       // ignore non-JSON keep-alive frames
     }
   }
-
   return messages;
 }
 
 function firstText(result) {
   const content = result?.content;
   if (Array.isArray(content)) {
-    const textBlock = content.find((item) => item?.type === 'text' && typeof item.text === 'string');
-    if (textBlock) return textBlock.text;
+    const block = content.find((item) => item?.type === 'text' && typeof item.text === 'string');
+    if (block) return block.text;
   }
   return '';
 }
@@ -98,9 +97,7 @@ export async function mcpCall(toolName, args = {}) {
     }),
   });
 
-  if (!initialize.ok) {
-    throw new Error(`Graphify initialize failed: HTTP ${initialize.status}`);
-  }
+  if (!initialize.ok) throw new Error(`Graphify initialize failed: HTTP ${initialize.status}`);
 
   const sessionId = initialize.headers.get('mcp-session-id');
   await initialize.text();
@@ -183,9 +180,9 @@ export function compactRow(row) {
     else if (Array.isArray(value)) {
       const primitive = value.every((item) => ['string', 'number', 'boolean'].includes(typeof item));
       out[key] = primitive
-        ? value.slice(0, 10).map((item) => (typeof item === 'string' ? truncate(item, 200) : item))
-        : truncate(JSON.stringify(value), 1500);
-    } else out[key] = truncate(JSON.stringify(value), 1500);
+        ? value.slice(0, 12).map((item) => (typeof item === 'string' ? truncate(item, 200) : item))
+        : truncate(JSON.stringify(value), 2000);
+    } else out[key] = truncate(JSON.stringify(value), 2000);
   }
   return out;
 }
@@ -217,4 +214,61 @@ export function rowsFrom(payload, mapper, keys = []) {
     }
     return flat;
   });
+}
+
+/* ---------- shared argument helpers ---------- */
+
+/** Collect the optional repository id from CLI kwargs. */
+export function repoArg(kwargs) {
+  return kwargs.repo ? { repository_id: String(kwargs.repo) } : {};
+}
+
+/** Parse a comma-separated or repeated list into an array of strings. */
+export function listArg(value) {
+  if (value === undefined || value === null || value === '') return undefined;
+  const items = Array.isArray(value) ? value : String(value).split(',');
+  const cleaned = items.map((item) => String(item).trim()).filter(Boolean);
+  return cleaned.length ? cleaned : undefined;
+}
+
+/* ---------- shared row mappers ---------- */
+
+export function symbolRow(row) {
+  return {
+    symbol: row.symbol ?? row.label ?? row.name,
+    file: row.file ?? row.src ?? row.path,
+    loc: row.loc,
+    kind: row.kind ?? row.file_type ?? row.type,
+    sig: row.sig ?? row.signature,
+    id: row.id,
+  };
+}
+
+export function fileRow(row) {
+  return {
+    file: row.file ?? row.path ?? row.src,
+    score: row.score ?? row.relevance,
+    nodes: row.n_nodes ?? row.nodeCount,
+    seeds: row.seeds,
+  };
+}
+
+export function nodeRow(row) {
+  return {
+    symbol: row.symbol ?? row.label ?? row.name,
+    file: row.file ?? row.src ?? row.path,
+    loc: row.loc,
+    kind: row.kind ?? row.type,
+    text: row.text ?? row.body ?? row.source ?? row.content,
+  };
+}
+
+export function memoryRow(row) {
+  return {
+    id: row.id ?? row.record_id,
+    subject: row.subject ?? row.title,
+    kind: row.kind ?? row.type,
+    text: row.text ?? row.content ?? row.body,
+    date: row.recorded_at ?? row.observed_at ?? row.date,
+  };
 }

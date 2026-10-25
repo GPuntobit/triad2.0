@@ -11,7 +11,7 @@
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
-import { mcpCall, unwrap, freshnessOf } from './client.js';
+import { mcpCall, unwrap, freshnessOf } from './lib/client.js';
 
 const NODE_PATTERN = /^NODE (.+?) \[src=(.+?) loc=(.+?)\]\r?\n\s*summary: (.*)\r?\n```\r?\n([\s\S]*?)\r?\n```/gm;
 
@@ -45,11 +45,13 @@ cli({
   ],
   columns: ['symbol', 'file', 'loc', 'summary', 'commit'],
   func: async (kwargs) => {
-    const args = { question: String(kwargs.question ?? '') };
-    if (kwargs.repo) args.repository_id = String(kwargs.repo);
-    if (kwargs.budget !== undefined) args.budget = Number(kwargs.budget);
-    if (kwargs.k !== undefined) args.k = Number(kwargs.k);
-    if (kwargs.skeleton !== undefined) args.skeleton = Boolean(kwargs.skeleton);
+    const args = {
+      question: String(kwargs.question ?? ''),
+      ...(kwargs.repo ? { repository_id: String(kwargs.repo) } : {}),
+      ...(kwargs.budget !== undefined ? { budget: Number(kwargs.budget) } : {}),
+      ...(kwargs.k !== undefined ? { k: Number(kwargs.k) } : {}),
+      ...(kwargs.skeleton !== undefined ? { skeleton: Boolean(kwargs.skeleton) } : {}),
+    };
 
     const payload = await mcpCall('query_graph', args);
     const data = unwrap(payload);

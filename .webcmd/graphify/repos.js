@@ -1,9 +1,9 @@
 /**
- * graphify repos — list the codebases indexed by Graphify.
+ * graphify repos — List repositories indexed by Graphify with index readiness
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
-import { mcpCall, rowsFrom } from './client.js';
+import { mcpCall, rowsFrom, listArg } from './lib/client.js';
 
 cli({
   site: 'graphify',
@@ -12,9 +12,12 @@ cli({
   access: 'read',
   strategy: Strategy.LOCAL,
   browser: false,
-  columns: ['fullName', 'repositoryId', 'status', 'queryable', 'nodeCount', 'provider', 'defaultBranch'],
-  func: async () => {
-    const payload = await mcpCall('list_repositories', {});
+  args: [],
+  columns: ["fullName","repositoryId","status","queryable","nodeCount","provider","defaultBranch"],
+  func: async (kwargs) => {
+    const args = {};
+
+    const payload = await mcpCall('list_repositories', args);
     return rowsFrom(payload, (row) => ({
       fullName: row.fullName,
       repositoryId: row.repositoryId,
@@ -23,6 +26,6 @@ cli({
       nodeCount: row.nodeCount,
       provider: row.provider,
       defaultBranch: row.defaultBranch,
-    }));
+    }), []);
   },
 });

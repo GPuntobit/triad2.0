@@ -1,7 +1,7 @@
 {
   "name": "graphify",
-  "version": "0.1.0",
-  "description": "Graphify code-graph access via the control-plane MCP API",
+  "version": "1.0.0",
+  "description": "Graphify code-graph access for agents: find, query, trace, impact, test coverage and workspace memory",
   "webcmd": ">=0.8.4",
   "author": {
     "name": "Scorpion",

@@ -1,8 +1,8 @@
 {
   "name": "webcmd-plugin-graphify",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
-  "description": "Graphify code-graph access via the control-plane MCP API",
+  "description": "Graphify code-graph access for agents: find, query, trace, impact, test coverage and workspace memory",
   "peerDependencies": {
     "@agentrhq/webcmd": ">=0.8.4"
   }

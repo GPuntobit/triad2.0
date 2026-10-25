@@ -1,6 +1,6 @@
 # webcmd-plugin-graphify
 
-Access the Graphify code graph from the command line via webcmd.
+Access the Graphify code graph from the command line through webcmd.
 
 The plugin talks to the Graphify control plane over the MCP streamable-HTTP
 endpoint (`https://api.graphify.com/v1/mcp`) and exposes each Graphify
@@ -9,7 +9,7 @@ operation as a deterministic CLI command.
 ## Install
 
 ```bash
-# Local development (symlinked, changes reflect immediately)
+# Local development (symlinked: changes reflect immediately)
 webcmd plugin install file://C:\Users\xbos\Documents\progetti\triad2.0\.webcmd\graphify
 
 # Verify registration
@@ -18,22 +18,61 @@ webcmd list | Select-String graphify
 
 ## Commands
 
+### Orientation
+
 | Command | Graphify tool | Description |
 |---------|---------------|-------------|
-| `webcmd graphify repos` | `list_repositories` | Indexed repositories, status and node counts |
-| `webcmd graphify query "<question>"` | `query_graph` | Natural-language question over the code graph |
-| `webcmd graphify find <term>` | `graphify_find` | Where a symbol is defined |
-| `webcmd graphify stats` | `graph_stats` | Node/edge counts and languages |
+| `webcmd graphify repos` | `list_repositories` | Indexed repositories, readiness and node counts |
+| `webcmd graphify stats` | `graph_stats` | Node/edge/community counts, embedding model, index freshness |
+| `webcmd graphify files` | `graphify_rank_files` | Indexed source files, ranked by relevance |
+| `webcmd graphify query "<question>"` | `query_graph` | Natural-language question, one row per returned node |
+
+### Code navigation
+
+| Command | Graphify tool | Description |
+|---------|---------------|-------------|
+| `webcmd graphify find <symbol>` | `graphify_find` | Where a symbol is defined |
+| `webcmd graphify node <symbol>` | `graphify_node` | Definition body plus immediate neighbours |
+| `webcmd graphify callers <symbol>` | `graphify_callers` | Who calls a symbol |
+| `webcmd graphify callees <symbol>` | `graphify_callees` | What a symbol calls |
+| `webcmd graphify references <symbol>` | `graphify_references` | Non-call references to a symbol |
+| `webcmd graphify trace <src> --tgt <tgt>` | `graphify_trace` | Directed call paths between two symbols |
+| `webcmd graphify path <src> --tgt <tgt>` | `shortest_path` | Most confident connecting path |
+| `webcmd graphify search <term>` | `search` | Search definitions across the workspace |
+| `webcmd graphify fetch <id>` | `fetch` | Read a search result body by node id |
+| `webcmd graphify expand <ids>` | `graphify_expand` | Materialize node handles into definitions |
+| `webcmd graphify subgraph <seeds>` | `graphify_render_subgraph` | Render-shaped neighbourhood |
+| `webcmd graphify neighbors <file>` | `graphify_file_neighbors` | A file's dependencies and dependents |
+
+### Change impact
+
+| Command | Graphify tool | Description |
+|---------|---------------|-------------|
+| `webcmd graphify impact <target>` | `graphify_impact` | Blast radius of changing a symbol or file |
+| `webcmd graphify risk <target>` | `impact_and_risk` | Impact hotspots ranked by linked test coverage |
+| `webcmd graphify tests <target>` | `graphify_tests_for` | Tests linked to a symbol or file |
+
+### Workspace memory
+
+| Command | Graphify tool | Description |
+|---------|---------------|-------------|
+| `webcmd graphify recall "<query>"` | `recall` | Workspace decisions, constraints and gotchas |
+| `webcmd graphify memories <target>` | `graphify_memories_about` | What is remembered about a file or symbol |
+| `webcmd graphify remember "<note>"` | `remember` | Save a durable note (write access) |
 
 Common flags: `--repo <id|owner/name>`, `-f json|yaml|md|csv`, `--help`.
 
-Examples:
+## Examples
 
 ```bash
 webcmd graphify repos -f json
-webcmd graphify query "where is the web fetch implemented" --repo SEIS0-official/triad2.0
-webcmd graphify find "fetch" --limit 10
-webcmd graphify stats
+webcmd graphify query "where is the CLI entrypoint defined" --repo SEIS0-official/triad2.0
+webcmd graphify find interpolation_end --repo SEIS0-official/triad2.0
+webcmd graphify callers command! --repo SEIS0-official/triad2.0
+webcmd graphify impact triad.jl --repo SEIS0-official/triad2.0
+webcmd graphify risk triad.jl --repo SEIS0-official/triad2.0
+webcmd graphify tests triad.jl --repo SEIS0-official/triad2.0
+webcmd graphify neighbors syntax.jl --repo SEIS0-official/triad2.0
 ```
 
 ## Credentials
@@ -48,9 +87,14 @@ The endpoint can be overridden with `GRAPHIFY_MCP_URL`.
 
 ## Notes
 
-- Commands are plain ESM JavaScript (`.js`): the host transpiles only `.ts`
-  files, and esbuild is not required at install time.
-- `client.js` is the shared MCP transport: `initialize` →
+- Commands are plain ESM JavaScript: the host transpiles only `.ts` files, and
+  esbuild is not required at install time.
+- `lib/client.js` is the shared MCP transport: `initialize` →
   `notifications/initialized` → `tools/call`, parsing the SSE response frames.
 - `structuredContent` from the MCP response is preferred; text payloads are
   parsed as JSON when possible, otherwise returned as a single row.
+- Rows carry index freshness (`commit`, `indexedAt`, `age`) whenever the
+  payload exposes it, so a stale index is visible in the output.
+- The whole command surface is generated by `gen.mjs` from one declarative
+  table: keep the generator and the plugin in sync instead of hand-editing
+  twenty files.

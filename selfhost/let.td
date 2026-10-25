@@ -10,7 +10,9 @@ end
 # Lookup variabile nell'ambiente
 function env_lookup(env, key)
   pos = 0
-  while pos < get(env, 0)
+  # Environment stores [key1, value1, key2, value2, ...]
+  # Use length(env) not get(env, 0) which returns first element
+  while pos + 1 < length(env)
     if get(env, pos) == key
       return get(env, pos + 1)
     end

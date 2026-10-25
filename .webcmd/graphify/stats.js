@@ -1,9 +1,9 @@
 /**
- * graphify stats — node/edge counts and languages for an indexed repository.
+ * graphify stats — Show Graphify index statistics for a repository
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
-import { mcpCall, rowsFrom } from './client.js';
+import { mcpCall, rowsFrom, listArg } from './lib/client.js';
 
 cli({
   site: 'graphify',
@@ -12,8 +12,13 @@ cli({
   access: 'read',
   strategy: Strategy.LOCAL,
   browser: false,
-  args: [{ name: 'repo', help: 'Repository id or owner/name (defaults to the connected repo)' }],
-  columns: ['nodes', 'edges', 'communities', 'model', 'commit', 'indexedAt'],
+  args: [
+    {
+      "name": "repo",
+      "help": "Repository id or owner/name (defaults to the connected repo)"
+    }
+  ],
+  columns: ["nodes","edges","communities","model","commit","indexedAt"],
   func: async (kwargs) => {
     const args = {};
     if (kwargs.repo) args.repository_id = String(kwargs.repo);
@@ -24,6 +29,6 @@ cli({
       edges: row.n_edges,
       communities: row.n_communities,
       model: row.model,
-    }));
+    }), []);
   },
 });

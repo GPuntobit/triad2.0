@@ -16,7 +16,9 @@ type_id = get(token_id, 0)
 if type_id == 2  # IDENTIFIER
   name_start = get(token_id, 1)
   pos = 0
-  while pos < get(env, 0)
+  # Environment stores [name1, value1, name2, value2, ...]
+  # Loop while there are still pairs to check (use length, not first element)
+  while pos + 1 < length(env)
     if get(env, pos) == name_start
       result_id = get(env, pos + 1)
       println("eval(x): " * string(result_id))
