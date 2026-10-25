@@ -1,5 +1,5 @@
 /**
- * graphify memories — Show what Graphify remembers about a specific file or symbol
+ * graphify memories â€” Show what Graphify remembers about a specific file or symbol
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';

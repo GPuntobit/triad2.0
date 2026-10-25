@@ -1,5 +1,5 @@
 /**
- * graphify callers — List the callers of a symbol in the indexed codebase
+ * graphify callers â€” List the callers of a symbol in the indexed codebase
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
@@ -41,14 +41,14 @@ cli({
     if (kwargs.repo) args.repository_id = String(kwargs.repo);
     if (kwargs.symbol !== undefined) args.symbol = String(kwargs.symbol);
     if (kwargs.limit !== undefined) args.limit = Number(kwargs.limit);
-    if (kwargs.strict-calls !== undefined) args.strict_calls = Boolean(kwargs.strict-calls);
+    if (kwargs['strict-calls'] !== undefined) args.strict_calls = Boolean(kwargs['strict-calls']);
 
     const payload = await mcpCall('graphify_callers', args);
     return rowsFrom(payload, (row) => ({
       symbol: row.symbol ?? row.label ?? row.caller,
       file: row.file ?? row.src ?? row.from_file,
       loc: row.loc,
-      kind: row.kind ?? row.type,
+      kind: row.rel ?? row.kind ?? row.type,
     }), ["callers","results","matches"]);
   },
 });

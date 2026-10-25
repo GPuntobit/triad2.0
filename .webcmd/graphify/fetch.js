@@ -1,5 +1,5 @@
 /**
- * graphify fetch — Read a search result body by its node id
+ * graphify fetch â€” Read a search result body by its node id
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';

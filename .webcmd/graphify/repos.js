@@ -1,5 +1,5 @@
 /**
- * graphify repos — List repositories indexed by Graphify with index readiness
+ * graphify repos â€” List repositories indexed by Graphify with index readiness
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';

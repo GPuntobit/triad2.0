@@ -1,5 +1,5 @@
 /**
- * graphify find — Find where a symbol, function or class is defined in the indexed codebase
+ * graphify find â€” Find where a symbol, function or class is defined in the indexed codebase
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
@@ -41,7 +41,7 @@ cli({
     if (kwargs.repo) args.repository_id = String(kwargs.repo);
     if (kwargs.term !== undefined) args.term = String(kwargs.term);
     if (kwargs.limit !== undefined) args.limit = Number(kwargs.limit);
-    if (kwargs.code-only !== undefined) args.code_only = Boolean(kwargs.code-only);
+    if (kwargs['code-only'] !== undefined) args.code_only = Boolean(kwargs['code-only']);
 
     const payload = await mcpCall('graphify_find', args);
     return rowsFrom(payload, (row) => ({

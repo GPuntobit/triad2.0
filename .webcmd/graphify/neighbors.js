@@ -1,5 +1,5 @@
 /**
- * graphify neighbors — Map the dependencies and dependents of a file in the indexed codebase
+ * graphify neighbors â€” Map the dependencies and dependents of a file in the indexed codebase
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
@@ -30,7 +30,7 @@ cli({
       "help": "Maximum number of neighbors per side"
     }
   ],
-  columns: ["file","direction","symbol","commit"],
+  columns: ["file","direction","symbol","loc","commit"],
   func: async (kwargs) => {
     const args = {};
     if (kwargs.repo) args.repository_id = String(kwargs.repo);
@@ -40,8 +40,9 @@ cli({
     const payload = await mcpCall('graphify_file_neighbors', args);
     return rowsFrom(payload, (row) => ({
       file: row.file ?? row.path ?? row.src,
-      direction: row.direction ?? row.relation ?? row.kind,
+      direction: row.direction ?? row.rel ?? row.relation ?? row.kind,
       symbol: row.symbol ?? row.label,
-    }), ["neighbors","results","files"]);
+      loc: row.loc,
+    }), ["symbols","neighbor_files","files","results"]);
   },
 });

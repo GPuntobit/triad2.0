@@ -1,5 +1,5 @@
 /**
- * graphify files — List the indexed source files of a repository, ranked by relevance
+ * graphify files â€” List the indexed source files of a repository, ranked by relevance
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';

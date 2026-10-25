@@ -207,7 +207,7 @@ export function rowsFrom(payload, mapper, keys = []) {
   const meta = freshnessOf(data);
 
   return rows.map((row) => {
-    const mapped = mapper ? mapper(row) : compactRow(row);
+    const mapped = mapper ? mapper(row, data) : compactRow(row);
     const flat = compactRow(mapped);
     for (const [key, value] of Object.entries(meta)) {
       if (value !== undefined && flat[key] === undefined) flat[key] = value;

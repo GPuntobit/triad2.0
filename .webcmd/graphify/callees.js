@@ -1,5 +1,5 @@
 /**
- * graphify callees — List the functions and symbols called by a symbol
+ * graphify callees â€” List the functions and symbols called by a symbol
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
@@ -41,14 +41,14 @@ cli({
     if (kwargs.repo) args.repository_id = String(kwargs.repo);
     if (kwargs.symbol !== undefined) args.symbol = String(kwargs.symbol);
     if (kwargs.limit !== undefined) args.limit = Number(kwargs.limit);
-    if (kwargs.strict-calls !== undefined) args.strict_calls = Boolean(kwargs.strict-calls);
+    if (kwargs['strict-calls'] !== undefined) args.strict_calls = Boolean(kwargs['strict-calls']);
 
     const payload = await mcpCall('graphify_callees', args);
     return rowsFrom(payload, (row) => ({
       symbol: row.symbol ?? row.label ?? row.callee,
       file: row.file ?? row.src ?? row.to_file,
       loc: row.loc,
-      kind: row.kind ?? row.type,
+      kind: row.rel ?? row.kind ?? row.type,
     }), ["callees","results","matches"]);
   },
 });

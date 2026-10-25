@@ -1,5 +1,5 @@
 /**
- * graphify impact — Show the blast radius of changing a symbol or file
+ * graphify impact â€” Show the blast radius of changing a symbol or file
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
@@ -36,19 +36,19 @@ cli({
       "help": "Number of seed nodes to fan out from"
     }
   ],
-  columns: ["symbol","file","kind","commit"],
+  columns: ["file","nodes","symbol","commit"],
   func: async (kwargs) => {
     const args = {};
     if (kwargs.repo) args.repository_id = String(kwargs.repo);
     if (kwargs.target !== undefined) args.target = String(kwargs.target);
     if (kwargs.limit !== undefined) args.limit = Number(kwargs.limit);
-    if (kwargs.max-seeds !== undefined) args.max_seeds = Number(kwargs.max-seeds);
+    if (kwargs['max-seeds'] !== undefined) args.max_seeds = Number(kwargs['max-seeds']);
 
     const payload = await mcpCall('graphify_impact', args);
     return rowsFrom(payload, (row) => ({
-      symbol: row.symbol ?? row.label,
-      file: row.file ?? row.src ?? row.path,
-      kind: row.kind ?? row.type,
-    }), ["impacted","nodes","results"]);
+      file: row.src ?? row.file ?? row.path,
+      nodes: row.nodes?.length ?? row.n_nodes,
+      symbol: row.label ?? row.symbol,
+    }), ["files","seeds","contained"]);
   },
 });

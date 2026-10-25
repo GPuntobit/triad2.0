@@ -1,5 +1,5 @@
 /**
- * graphify node — Show a symbol definition with its immediate graph neighbours
+ * graphify node â€” Show a symbol definition with its immediate graph neighbours
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';

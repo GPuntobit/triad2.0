@@ -1,5 +1,5 @@
 /**
- * graphify trace — Trace the directed call paths between two symbols
+ * graphify trace â€” Trace the directed call paths between two symbols
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
@@ -47,7 +47,7 @@ cli({
     if (kwargs.src !== undefined) args.src = String(kwargs.src);
     if (kwargs.tgt !== undefined) args.tgt = String(kwargs.tgt);
     if (kwargs.paths !== undefined) args.k_paths = Number(kwargs.paths);
-    if (kwargs.strict-calls !== undefined) args.strict_calls = Boolean(kwargs.strict-calls);
+    if (kwargs['strict-calls'] !== undefined) args.strict_calls = Boolean(kwargs['strict-calls']);
 
     const payload = await mcpCall('graphify_trace', args);
     return rowsFrom(payload, (row) => ({

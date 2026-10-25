@@ -1,5 +1,5 @@
 /**
- * graphify remember — Save a durable note (decision, constraint, gotcha) for the workspace
+ * graphify remember â€” Save a durable note (decision, constraint, gotcha) for the workspace
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';

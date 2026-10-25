@@ -1,5 +1,5 @@
 /**
- * graphify tests — List the tests linked to a symbol or file in the indexed codebase
+ * graphify tests â€” List the tests linked to a symbol or file in the indexed codebase
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
@@ -30,7 +30,7 @@ cli({
       "help": "Maximum number of linked tests"
     }
   ],
-  columns: ["test","file","kind","commit"],
+  columns: ["test","file","loc","via","match","commit"],
   func: async (kwargs) => {
     const args = {};
     if (kwargs.repo) args.repository_id = String(kwargs.repo);
@@ -39,9 +39,11 @@ cli({
 
     const payload = await mcpCall('graphify_tests_for', args);
     return rowsFrom(payload, (row) => ({
-      test: row.test ?? row.symbol ?? row.name ?? row.label,
+      test: row.test ?? row.label ?? row.symbol ?? row.name,
       file: row.file ?? row.src ?? row.path,
-      kind: row.kind ?? row.type,
+      loc: row.loc,
+      via: row.via,
+      match: row.match,
     }), ["tests","results","matches"]);
   },
 });

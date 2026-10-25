@@ -1,9 +1,12 @@
 /**
- * graphify search — Search the indexed codebases for definitions matching a term
+ * graphify search — search the indexed codebases for a symbol name.
+ *
+ * `search` returns its own envelope ({results}) with items shaped
+ * {id, title, url, source_file, source_location, ...}.
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
-import { mcpCall, rowsFrom, listArg } from './lib/client.js';
+import { mcpCall, unwrap } from './lib/client.js';
 
 cli({
   site: 'graphify',
@@ -13,29 +16,27 @@ cli({
   strategy: Strategy.LOCAL,
   browser: false,
   args: [
-    {
-      "name": "query",
-      "positional": true,
-      "required": true,
-      "help": "Symbol name fragment"
-    },
-    {
-      "name": "repo",
-      "help": "Repository id or owner/name (defaults to the connected repo)"
-    }
+    { name: 'query', positional: true, required: true, help: 'Symbol name fragment' },
+    { name: 'repo', help: 'Repository id or owner/name (defaults to the connected repo)' },
   ],
-  columns: ["id","symbol","file","loc","commit"],
+  columns: ['id', 'symbol', 'file', 'loc', 'url'],
   func: async (kwargs) => {
-    const args = {};
-    if (kwargs.repo) args.repository_id = String(kwargs.repo);
-    if (kwargs.query !== undefined) args.query = String(kwargs.query);
+    const args = {
+      query: String(kwargs.query ?? ''),
+      ...(kwargs.repo ? { repository_id: String(kwargs.repo) } : {}),
+    };
 
     const payload = await mcpCall('search', args);
-    return rowsFrom(payload, (row) => ({
+    const data = unwrap(payload);
+    const results = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+
+    return results.map((row) => ({
       id: row.id,
-      symbol: row.symbol ?? row.label ?? row.name,
-      file: row.file ?? row.src ?? row.path,
-      loc: row.loc,
-    }), ["results","matches","definitions"]);
+      symbol: row.symbol ?? (row.title ? String(row.title).split(' -- ')[0] : undefined),
+      file: row.source_file ?? row.file ?? row.src ?? row.path,
+      loc: row.source_location ?? row.loc,
+      url: row.url,
+      title: row.title,
+    }));
   },
 });

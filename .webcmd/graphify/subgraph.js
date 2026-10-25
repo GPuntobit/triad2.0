@@ -1,5 +1,5 @@
 /**
- * graphify subgraph — Render the graph neighbourhood around one or more seed nodes
+ * graphify subgraph â€” Render the graph neighbourhood around one or more seed nodes
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
@@ -41,7 +41,7 @@ cli({
       "help": "Maximum number of edges to return"
     }
   ],
-  columns: ["id","symbol","file","kind","commit"],
+  columns: ["id","symbol","file","loc","kind","commit"],
   func: async (kwargs) => {
     const args = {
       seeds: listArg(kwargs.seeds) ?? [],
@@ -55,8 +55,9 @@ cli({
     return rowsFrom(payload, (row) => ({
       id: row.id,
       symbol: row.symbol ?? row.label ?? row.name,
-      file: row.file ?? row.src ?? row.path,
-      kind: row.kind ?? row.type,
+      file: row.source_file ?? row.file ?? row.src ?? row.path,
+      loc: row.source_location ?? row.loc,
+      kind: row.file_type ?? row.kind ?? row.type,
     }), ["nodes","results"]);
   },
 });

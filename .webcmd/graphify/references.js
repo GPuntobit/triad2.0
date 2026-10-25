@@ -1,5 +1,5 @@
 /**
- * graphify references — List non-call references (reads, mentions, uses) of a symbol
+ * graphify references â€” List non-call references (reads, mentions, uses) of a symbol
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';

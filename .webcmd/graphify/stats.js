@@ -1,5 +1,5 @@
 /**
- * graphify stats — Show Graphify index statistics for a repository
+ * graphify stats â€” Show Graphify index statistics for a repository
  */
 
 import { cli, Strategy } from '@agentrhq/webcmd/registry';
