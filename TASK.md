@@ -4,9 +4,9 @@
 Completare Triad 2.0 come linguaggio autonomo e riconosciuto con standard proprio, conformance suite, estensione `.triad`, tooling editor, bootstrap senza linguaggi ospiti e self-hosting.
 
 ## Stato attuale
-- **Seed S0 (Windows):** 8237 byte, hash `76FC146BA7E070522A5445B5CC0810997E035CBC3135911F62B9C6E6B3CB255F`
-  - Supporto: interi, variabili, funzioni (forma breve e blocco), ricorsione, Bool, operatori, if/else, while, let, begin, lambda, chiusure, stringhe base, nothing, simboli, liste complete (costruzione, stampa, push!, get)
-  - Conformance: 29/30 casi Windows, 33/33 Core Julia
+- **Seed S0 (Windows):** 8315 byte, hash `9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822`
+  - Supporto: interi, variabili, funzioni (forma breve e blocco),   ricorsione, Bool, operatori, if/elseif/else, while, let, begin, lambda, chiusure, stringhe base, nothing, simboli, liste complete (costruzione, stampa, push!, get)
+  - Conformance: 33/33 casi Windows byte-esatti, 36/36 Core Julia
 - **S1 (Interprete Triad in Triad-Core):** Ambiente inline funzionante con liste, primitive base complete
 - **S2-S4:** Non iniziati
 
@@ -498,20 +498,22 @@ codice, la specifica e i risultati riprodotti qui.
 
 ## P0 — Ripristinare una baseline verificabile
 
-- [ ] **A01 — Allineare lo smoke test self-hosted alla CI**
+- [x] **A01 — Allineare lo smoke test self-hosted alla CI**
   - **File:** `selfhost/main.td`, `.github/workflows/ci.yml`.
-  - **Lavoro:** decidere se il caso deve verificare l'ambiente oppure `push!`; rendere
-    programma e golden coerenti, senza dichiarare che lo smoke test equivale a S1.
-  - **Accettazione:** il seed produce esattamente l'output atteso ed esce `0`; il job
-    `seed-windows` non contiene più un fallimento deterministico.
+  - **Lavoro:** il caso verifica il lookup dell'ambiente; il golden CI è stato allineato
+    all'output effettivo `Value: 10\n`, confrontato byte per byte. Il nome del passo chiarisce
+    che questo smoke test non equivale alla conformance di S1.
+  - **Verifica:** seed Windows locale: exit `0`, stdout esatto `Value: 10\n`, stderr vuoto;
+    il passo CI controlla exit code e byte attesi.
 
-- [ ] **A02 — Correggere `if_else` nel seed Windows**
+- [x] **A02 — Correggere `if_else` nel seed Windows**
   - **File:** `seed/dev/gen_seed.js`, caso `conformance/core/cases/if_else/`, CI e dump PE.
-  - **Lavoro:** diagnosticare la valutazione/scansione dei rami `if`/`elseif`/`else`; il
-    risultato osservato è stdout `100` e exit `1`.
-  - **Accettazione:** output byte-esatto ed exit `0` per `if_else`, più regressioni per
-    rami annidati, `elseif` multipli, condizioni false e assenza di `else`; dump e hash
-    rigenerati.
+  - **Lavoro:** distinguere `elseif` da `else` durante la scansione, valutare le condizioni
+    `elseif` in sequenza e saltare i rami successivi dopo il primo ramo selezionato.
+  - **Verifica:** `if_else`, `if_elseif`, `if_nested` e `if_no_else` passano byte per byte
+    sul PE rigenerato; exit `0`. Conformance Core Julia: tutti i casi passano.
+  - **Artefatto:** PE 25088 byte, codice 8315 byte, SHA-256 di `seed.hex`:
+    `9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822`.
 
 - [ ] **A03 — Eliminare i moduli S1 non validi o ricorsivi**
   - **File:** `selfhost/ast.td`, `selfhost/eval.td`, `selfhost/main.td`.

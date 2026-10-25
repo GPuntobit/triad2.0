@@ -1,6 +1,6 @@
 # Stato di Triad e del bootstrap S0
 
-Aggiornato al round 27.
+Aggiornato dopo la verifica A02.
 
 ## Obiettivo
 
@@ -9,11 +9,11 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 ## Cosa è pronto
 
 - **Standard**: `SPEC.md` (v0.2.0), `SPEC-CORE.md`, `VERSION`, `CHANGELOG.md`.
-- **Conformance**: runner indipendente; 12 casi Triad-Full e 33 casi Triad-Core, tutti verdi sullo stage0 Julia; `conformance/README.md`.
+- **Conformance**: runner indipendente; 12 casi Triad-Full e 36 casi Triad-Core, tutti verdi sullo stage0 Julia; `conformance/README.md`.
 - **Estensione canonica**: `.triad` (`.td` alias storico), grammatiche VS Code/Vim e voce Linguist preparata.
 - **Seed S0** (Windows PE, nessun runtime/compilatore): interprete Triad-Core con
   supporto per interi, variabili, funzioni (forma breve e `function … end` multi-istruzione),
-  ricorsione, Bool, operatori (`% ^ ! && || +=`), `if`/`else`, `while`, `let`, `begin`,
+  ricorsione, Bool, operatori (`% ^ ! && || +=`), `if`/`elseif`/`else`, `while`, `let`, `begin`,
   lambda, chiusure con cattura per valore, stringhe base + concatenazione + `string()`,
   `nothing`, simboli e costruzione/stampa di liste di interi.
 - **CI**: `.github/workflows/ci.yml` — conformance Full/Core su Ubuntu e Windows, casi del seed su Windows, hash check.
@@ -105,3 +105,14 @@ L'obiettivo **non è completo**:
 - La matrice locale seed Windows passa 29/30 casi; `if_else` è l'unico caso ancora fallito
   (exit `1`). Tutti i 33 casi Core passano sul runtime Julia.
 - PE: 25.088 byte; SHA-256 del dump: `76FC146BA7E070522A5445B5CC0810997E035CBC3135911F62B9C6E6B3CB255F`.
+
+## Seed Windows: condizionali Triad-Core (A02)
+
+- Corretto il dispatch di `if`/`elseif`/`else`: le condizioni `elseif` vengono valutate
+  in ordine, i rami annidati sono delimitati correttamente e viene eseguito solo il primo
+  ramo selezionato.
+- Aggiunti i casi Core `if_elseif`, `if_nested` e `if_no_else`; il seed passa questi e
+  `if_else` con output byte-esatto ed exit `0`. La conformance Core Julia passa tutti i
+  casi.
+- PE rigenerato: 25.088 byte, codice 8315 byte; SHA-256 di `seed.hex`:
+  `9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822`.

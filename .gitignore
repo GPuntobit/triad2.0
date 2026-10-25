@@ -38,6 +38,12 @@ ehthumbs.db
 *~
 .~lock.*#
 
+## GitHub Copilot ECC installation
+/.github/agents/
+/.github/skills/
+/.github/ecc/
+/.github/ecc-install-state.json
+
 ## Log e temporanei
 *.log
 tmp/

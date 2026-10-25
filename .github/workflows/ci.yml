@@ -36,7 +36,7 @@ jobs:
       - name: Seed conformance cases
         shell: pwsh
         run: |
-          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni_io','funzioni','aritmetica','begin_block','formula','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if','liste_base','liste_push')
+          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','if_elseif','if_nested','if_no_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni_io','funzioni','aritmetica','begin_block','formula','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if','liste_base','liste_push')
           foreach ($c in $cases) {
             $out = Join-Path $env:TEMP "$c.out"
             Remove-Item $out -ErrorAction SilentlyContinue
@@ -54,19 +54,22 @@ jobs:
           if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for test_get.td" }
           $got = Get-Content $out -Raw
           if ($got -cne "20`n") { throw "unexpected output for test_get.td: $got" }
-      - name: Self-host list smoke test
+      - name: Self-hosted environment smoke test (not S1 conformance)
         shell: pwsh
         run: |
           $out = Join-Path $env:TEMP "selfhost-main.out"
           $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "selfhost\main.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
           if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for selfhost\main.td" }
-          $got = (Get-Content $out -Raw).Trim()
-          if ($got -cne "[10, 20]") { throw "unexpected output for selfhost\main.td: $got" }
+          $got = [System.IO.File]::ReadAllBytes($out)
+          $expected = [System.Text.Encoding]::ASCII.GetBytes("Value: 10`n")
+          if ([BitConverter]::ToString($got) -cne [BitConverter]::ToString($expected)) {
+            throw "unexpected byte output for selfhost\main.td: $([System.Text.Encoding]::ASCII.GetString($got))"
+          }
       - name: Hash check
         shell: pwsh
         run: |
           $h = (Get-FileHash seed/windows-x86_64/seed.hex -Algorithm SHA256).Hash
-          if ($h -ne '76FC146BA7E070522A5445B5CC0810997E035CBC3135911F62B9C6E6B3CB255F') { throw "hash mismatch: $h" }
+          if ($h -ne '9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822') { throw "hash mismatch: $h" }
   seed-linux:
     runs-on: ubuntu-latest
     steps:

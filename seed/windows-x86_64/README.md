@@ -3,7 +3,7 @@
 Eseguibile PE32+ da **25088 byte**, senza runtime e senza libc: importa solo `KERNEL32.dll`.
 Legge il file indicato dal primo argomento e interpreta un sottoinsieme di Triad-Core:
 
-- statement `println(expr)`, `NAME = expr`, funzioni `f(x, y) = expr` e forma blocco `function f(x) … end` con **corpo a più istruzioni**, annotazione `!io` ignorata dal seed, `if`/`else`/`end`, `while`/`end`, **`let name = expr … end`**;
+- statement `println(expr)`, `NAME = expr`, funzioni `f(x, y) = expr` e forma blocco `function f(x) … end` con **corpo a più istruzioni**, annotazione `!io` ignorata dal seed, `if`/`elseif`/`else`/`end`, `while`/`end`, **`let name = expr … end`**;
   `while`/`end` (annidati);
 - espressioni con interi, variabili, chiamate, `+ - * % ^`, parentesi, `-` unario,
   confronti, ternario, letterali `true`/`false` e **lambda a un parametro** `x -> expr`;
@@ -21,8 +21,8 @@ Il dump esadecimale è [`seed.hex`](seed.hex).
 - **Entry point:** RVA `0x1000`
 - **Sezione:** `.text`, RVA `0x1000`, file offset `0x200`, 24576 byte, caratteristiche `0xE0000020`
 - **Immagine:** base `0x140000000`, `SizeOfImage` `0x7000`, header `0x200`, subsystem console, ASLR disattivata
-- **Codice:** 8237 byte
-- **sha256 di `seed.hex`:** `76FC146BA7E070522A5445B5CC0810997E035CBC3135911F62B9C6E6B3CB255F`
+- **Codice:** 8315 byte
+- **sha256 di `seed.hex`:** `9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822`
 
 ## Layout del file
 
@@ -32,14 +32,14 @@ Il dump esadecimale è [`seed.hex`](seed.hex).
 | `0x040` | firma `PE\0\0` |
 | `0x044` | COFF: machine `0x8664`, 1 sezione, `SizeOfOptionalHeader = 0xF0`, caratteristiche `0x0022` |
 | `0x058` | optional header PE32+, entry `0x1000`, base `0x140000000` |
-| `0x0D0` | data directory import: RVA `0x2CA0`, size `0x28` |
+| `0x0D0` | data directory import: RVA `0x40A0`, size `0x28` |
 | `0x148` | section header `.text` (VirtualSize/RawSize `0x2400`) |
-| file `0x200` / RVA `0x1000` | codice (7422 byte) |
-| RVA `0x2C00` (file `0x1E00`) | IAT, 8 slot + null |
-| RVA `0x2C50` (file `0x1E50`) | ILT, 8 slot + null |
-| RVA `0x2CA0` (file `0x1EA0`) | import descriptor + terminatore |
-| RVA `0x2CD0` (file `0x1ED0`) | `KERNEL32.dll` |
-| RVA `0x2CDE` (file `0x1EDE`) | hint/name delle 8 funzioni |
+| file `0x200` / RVA `0x1000` | codice (8315 byte) |
+| RVA `0x4000` (file `0x3200`) | IAT, 8 slot + null |
+| RVA `0x4050` (file `0x3250`) | ILT, 8 slot + null |
+| RVA `0x40A0` (file `0x32A0`) | import descriptor + terminatore |
+| RVA `0x40D0` (file `0x32D0`) | `KERNEL32.dll` |
+| RVA `0x5000` (file `0x4200`) | hint/name delle 8 funzioni |
 
 Mappatura della sezione: `file offset = 0x200 + (RVA - 0x1000)`.
 
@@ -73,31 +73,31 @@ al ritorno; in questo modo un ciclo aggiorna le variabili invece di creare una e
 | `0x000` | — | prologo, `GetStdHandle`, `GetCommandLineA`, parsing path |
 | `0xEE` | `path_check` | path vuoto → exit 2 |
 | — | — | `CreateFileA`; `VirtualAlloc(0,0x40000,…)`; `ReadFile`; `CloseHandle`; NUL; inizializza ambiente, funzioni e heap chiusure |
-| `0x211` | `parse_program` | ciclo statement: `println`, assegnamento, funzione, `if`, `while` |
-| `0x3FE` | `stmt_assign` | nome; `=` → assegnamento, `(` → funzione |
-| `0x4C0` | `st_func` | definizione: entry, parametri (max 4), `=`, body, salta a fine riga |
-| `0x574` | `st_func_skip` | avanza fino a LF/`;`/EOF dopo il body |
-| `0x5A0` | `scan_end` | scansione a profondità: trova `else`/`end` (annidamento `if`/`while`) |
-| `0x726` | `st_if` | `if cond … [else …] end`: sceglie/esegue un ramo, salta l'altro |
-| `0x810` | `st_while` | `while cond … end`: rivaluta la condizione, esegue il corpo |
-| `0x896` | `st_function` | `function f(x) <espressione> end`: definizione con corpo a una espressione |
-| `0xA9A` | `pp_eof` | EOF: errore se dentro un blocco (maschera ≠ 0) |
-| `0xAAE` | `skip_ws` | spazi, tab, LF, CR, `;`, commenti `#` |
-| `0xB6E` | `parse_cmp` | confronti, risultato Bool |
-| `0xCB5` | `parse_ternary` | `cmp ? a : b` con scansione del ramo non scelto |
-| `0xE30` | `parse_sum` | `term { (+\|-) term }` |
-| `0xE8E` | `parse_term` | `factor { (*\|%) factor }` |
-| `0xEF5` | `parse_factor` | unario `-` o potenza |
-| `0xF91` | `parse_primary` | intero, Bool, variabile, chiamata, `( expr )` |
-| `0x1109` | `pf_lambda` | `x -> expr`: record chiusura + cattura (1 binding) |
-| `0x11AD` | `skip_text` | salta il corpo della lambda fino a un delimitatore |
-| `0x129B` | `pf_call` | chiamata nominata o di chiusura, argomenti, cattura, binding, body |
-| `0x1398` | `pf_call_nocap` | prosegue senza cattura |
-| `0x149A` | `fn_find` | cerca una funzione per nome |
-| `0x14F6` | `parse_ident` | identificatore |
-| `0x1554` | `env_find` | cerca una variabile (dalla più recente) |
-| `0x15C3` | `env_store` | aggiunge un parametro/variabile nuova |
-| `0x15DD` | `env_assign` | aggiorna la variabile più recente (o la crea) |
+| `0x220` | `parse_program` | ciclo statement: `println`, assegnamento, funzione, `if`, `while` |
+| `0x40D` | `stmt_assign` | nome; `=` → assegnamento, `(` → funzione |
+| `0x4E4` | `st_func` | definizione: entry, parametri (max 4), `=`, body, salta a fine riga |
+| `0x598` | `st_func_skip` | avanza fino a LF/`;`/EOF dopo il body |
+| `0x5C4` | `scan_end` | scansione a profondità: trova `elseif`/`else`/`end` con annidamento |
+| `0x7A7` | `st_if` | seleziona il primo ramo vero tra `if`/`elseif`, altrimenti `else` |
+| `0x8E5` | `st_while` | `while cond … end`: rivaluta la condizione, esegue il corpo |
+| `0x96B` | `st_function` | `function f(x) <espressione> end`: definizione con corpo a una espressione |
+| `0xBA0` | `pp_eof` | EOF: errore se dentro un blocco (maschera ≠ 0) |
+| `0xBB4` | `skip_ws` | spazi, tab, LF, CR, `;`, commenti `#` |
+| `0xC74` | `parse_cmp` | confronti, risultato Bool |
+| `0xDBB` | `parse_ternary` | `cmp ? a : b` con scansione del ramo non scelto |
+| `0xF36` | `parse_sum` | `term { (+\|-) term }` |
+| `0xF94` | `parse_term` | `factor { (*\|%) factor }` |
+| `0x10F6` | `parse_factor` | unario `-` o potenza |
+| `0x1192` | `parse_primary` | intero, Bool, variabile, chiamata, `( expr )` |
+| `0x14BD` | `pf_lambda` | `x -> expr`: record chiusura + cattura (1 binding) |
+| `0x1561` | `skip_text` | salta il corpo della lambda fino a un delimitatore |
+| `0x185D` | `pf_call` | chiamata nominata o di chiusura, argomenti, cattura, binding, body |
+| `0x19F9` | `pf_call_nocap` | prosegue senza cattura |
+| `0x1AFB` | `fn_find` | cerca una funzione per nome |
+| `0x1B57` | `parse_ident` | identificatore |
+| `0x1BC3` | `env_find` | cerca una variabile (dalla più recente) |
+| `0x1C32` | `env_store` | aggiunge un parametro/variabile nuova |
+| `0x1C4C` | `env_assign` | aggiorna la variabile più recente (o la crea) |
 | `0x164D` | `print_int` | Int decimale, `true`/`false`, `fun` |
 | `0x11BD` … | `fail`, `read_fail`, `open_fail`, `usage` | uscite |
 
@@ -112,7 +112,7 @@ variabili, `r12` = stdout, `r14` = base VirtualAlloc.
 ## Import
 
 `GetStdHandle`, `GetCommandLineA`, `CreateFileA`, `ReadFile`, `WriteFile`, `CloseHandle`,
-`ExitProcess`, `VirtualAlloc` (indici IAT 0–7; IAT a RVA `0x2C00`).
+`ExitProcess`, `VirtualAlloc` (indici IAT 0–7; IAT a RVA `0x4000`).
 
 ## Build e verifica
 

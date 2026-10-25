@@ -730,7 +730,7 @@ x = 3; x > 2 ? :big : :small           # :big
 Il **seed S0** è un interprete Triad-Core scritto in machine code x86-64, completamente indipendente da linguaggi ospiti come Julia. Serve come base per il bootstrap Triad (vedi [`BOOTSTRAP.md`](BOOTSTRAP.md)).
 
 **Disponibilità:**
-- Windows PE: `seed/windows-x86_64/seed.exe` (25.088 byte, hash `76FC146BA7E070522A5445B5CC0810997E035CBC3135911F62B9C6E6B3CB255F`)
+- Windows PE: `seed/windows-x86_64/seed.exe` (25.088 byte, SHA-256 `160912BACD0A5C1C6F5FD3CF9B9F62398C05CB2103EA153E0B25D767C7316B27`; dump `seed.hex`: `9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822`)
 - Linux ELF: `seed/linux-x86_64/seed.hex` (in sviluppo)
 
 **Funzionalità S0 (Windows):**
@@ -741,7 +741,7 @@ Il **seed S0** è un interprete Triad-Core scritto in machine code x86-64, compl
 - Stringhe base + concatenazione + `string()` (Int/String)
 - `nothing`, simboli
 - **Liste complete:** costruzione `[1, 2, 3]`, stampa, `push!`, helper `get(xs, i)`
-- Conformance: 29/30 casi Core (Windows), 33/33 con runtime Julia
+- Conformance: 33/33 casi Core byte-esatti (Windows), 36/36 con runtime Julia
 
 **Uso del seed Windows:**
 ```powershell
@@ -1196,4 +1196,3 @@ Fine del tutorial.
 
 Scritto e mantenuto da **Kilo** — agente software engineer per il progetto Triad 2.0.
 Ultimo aggiornamento: include la destrutturazione (`(a, b) = lista`, `for (k, v) in lista_di_liste`, parametri `(a, b)`) e i test oracle.
-
