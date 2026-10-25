@@ -1,36 +1,47 @@
-# S1 Evaluator diretto (senza AST completo)
+# S1.5: Eval espressioni base semplice
+# Valuta espressioni Int con ambiente inline (identificatori -> valori)
 
-# Ambiente semplice
-function eval_expr(expr, env)
-  # Per ora, ritorna l'espressione stessa
-  expr
+# Valuta un token NUMBER
+function eval_number(token)
+  get(token, 1)
 end
 
-# Builtin principale
-function string(x)
-  # Implementazione S1 di string()
-  # Per ora, usa il builtin del seed
-  # Nota: il seed supporta solo Int e String
-  if typeof(x) == Int
-    # Conversione Int -> stringa
-    # Implementazione manuale in Triad-Core
-    str = ""
-    n = x
-    if n < 0
-      str = str * "-"
-      n = -n
+# Valuta un identificatore con lookup nell'ambiente
+function eval_identifier(token, env)
+  name_start = get(token, 1)
+  # Cerca nell'ambiente: env = [key1, val1, key2, val2, ...]
+  pos = 0
+  while pos < get(env, 0)
+    if get(env, pos) == name_start
+      return get(env, pos + 1)
     end
-    while n > 0
-      digit = n % 10
-      str = string(digit) * str
-      n = n / 10
-    end
-    str
+    pos = pos + 2
+  end
+  0  # Non trovato, restituisce 0
+end
+
+# Valuta espressione semplice (solo NUMBER o IDENTIFIER)
+function eval_expr(token, env)
+  type = get(token, 0)
+  if type == 1  # NUMBER
+    eval_number(token)
+  else if type == 2  # IDENTIFIER
+    eval_identifier(token, env)
   else
-    x  # identity per stringhe
+    0
   end
 end
 
-# Test
-println(string(42))
-println(string("hello"))
+# Test eval
+# Ambiente: 1="x", 10
+env = [1, 10]
+
+# Sorgente simulato: "42" -> [1, 42, 2]
+token_num = [1, 42, 2]
+result = eval_expr(token_num, env)
+println("eval(42): " * string(result))
+
+# Sorgente simulato: "x" -> [2, 0, 1] (name_start=0)
+token_id = [2, 0, 1]
+result = eval_expr(token_id, env)
+println("eval(x): " * string(result))

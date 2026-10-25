@@ -11,121 +11,87 @@
 # 8: EQUAL (=)
 
 # Caratteri come codici ASCII
-CHAR_0 = 48
-CHAR_9 = 57
-CHAR_A = 65
-CHAR_Z = 90
-CHAR_a = 97
-CHAR_z = 122
-CHAR_PLUS = 43
-CHAR_MINUS = 45
-CHAR_STAR = 42
-CHAR_LPAREN = 40
-CHAR_RPAREN = 41
-CHAR_EQUAL = 61
-CHAR_SPACE = 32
-
-# Controlla se carattere è cifra
-function is_digit(c)
-  (c >= CHAR_0) && (c <= CHAR_9)
-end
-
-# Controlla se carattere è lettera
-function is_alpha(c)
-  ((c >= CHAR_A) && (c <= CHAR_Z)) || ((c >= CHAR_a) && (c <= CHAR_z))
-end
-
-# Controlla se carattere è spazio
-function is_space(c)
-  c == CHAR_SPACE
-end
-
-# Tokenizza un numero (es: "42" -> [1, 42])
-function tokenize_number(chars, pos)
-  value = 0
-  while pos < get(chars, 0)
-    c = get(chars, pos)
-    if is_digit(c)
-      digit = c - CHAR_0
-      value = value * 10 + digit
-      pos = pos + 1
-    else
-      break
-    end
-  end
-  [1, value, pos]
-end
-
-# Tokenizza un identificatore (es: "x" -> [2, "x", pos])
-function tokenize_identifier(chars, pos)
-  name = []
-  while pos < get(chars, 0)
-    c = get(chars, pos)
-    if is_alpha(c)
-      name = push!(name, c)
-      pos = pos + 1
-    else
-      break
-    end
-  end
-  [2, name, pos]
-end
-
-# Tokenizza carattere singolo
-function tokenize_char(chars, pos, char_code, token_type)
-  c = get(chars, pos)
-  if c == char_code
-    [token_type, c, pos + 1]
-  else
-    [0, 0, pos]
-  end
-end
-
-# Tokenizza salta spazi
-function skip_spaces(chars, pos)
-  while pos < get(chars, 0)
-    c = get(chars, pos)
-    if is_space(c)
-      pos = pos + 1
-    else
-      break
-    end
-  end
-  pos
-end
+char_0 = 48
+char_9 = 57
+char_a = 65
+char_z = 90
+char_lower_a = 97
+char_lower_z = 122
+char_underscore = 95
+char_tab = 9
+char_linefeed = 10
+char_carriage_return = 13
+char_plus = 43
+char_minus = 45
+char_star = 42
+char_lparen = 40
+char_rparen = 41
+char_equal = 61
+char_space = 32
 
 # Tokenizza prossimo token
 function next_token(chars, pos)
-  pos = skip_spaces(chars, pos)
-  if pos >= get(chars, 0)
+  size = get(chars, 0)
+  skipping = 1
+  while (pos < size) && (skipping == 1)
+    c = get(chars, pos + 1)
+    if (c == char_space) || (c == char_tab) || (c == char_linefeed) || (c == char_carriage_return)
+      pos = pos + 1
+    else
+      skipping = 0
+    end
+  end
+  if pos >= size
     [0, 0, pos]
   else
-    c = get(chars, pos)
-    if is_digit(c)
-      tokenize_number(chars, pos)
-    else if is_alpha(c)
-      tokenize_identifier(chars, pos)
-    else if c == CHAR_PLUS
+    c = get(chars, pos + 1)
+    if (c >= char_0) && (c <= char_9)
+      value = 0
+      scanning = 1
+      while (pos < size) && (scanning == 1)
+        c = get(chars, pos + 1)
+        if (c >= char_0) && (c <= char_9)
+          value = value * 10 + c - char_0
+          pos = pos + 1
+        else
+          scanning = 0
+        end
+      end
+      [1, value, pos]
+    elseif ((c >= char_a) && (c <= char_z)) || ((c >= char_lower_a) && (c <= char_lower_z)) || (c == char_underscore)
+      start = pos
+      scanning = 1
+      while (pos < size) && (scanning == 1)
+        c = get(chars, pos + 1)
+        if ((c >= char_a) && (c <= char_z)) || ((c >= char_lower_a) && (c <= char_lower_z)) || ((c >= char_0) && (c <= char_9)) || (c == char_underscore)
+          pos = pos + 1
+        else
+          scanning = 0
+        end
+      end
+      # Gli identificatori sono riferimenti all'intervallo [start, pos) nella sorgente.
+      [2, start, pos]
+    elseif c == char_plus
       [3, c, pos + 1]
-    else if c == CHAR_MINUS
+    elseif c == char_minus
       [4, c, pos + 1]
-    else if c == CHAR_STAR
+    elseif c == char_star
       [5, c, pos + 1]
-    else if c == CHAR_LPAREN
+    elseif c == char_lparen
       [6, c, pos + 1]
-    else if c == CHAR_RPAREN
+    elseif c == char_rparen
       [7, c, pos + 1]
-    else if c == CHAR_EQUAL
+    elseif c == char_equal
       [8, c, pos + 1]
     else
       [0, 0, pos + 1]
-    end
+      end
   end
 end
 
 # Test tokenizer
-# Simula sorgente "42 + x" come lista di caratteri
-source = [52, 50, 32, 43, 32, 120]  # "42 + x"
+# Simula "42 +\n_x2": lunghezza seguita dai codici ASCII dei caratteri.
+source = [8, 52, 50, 32, 43, 10, 95, 120, 50]
 println("Source: " * string(get(source, 0)) * " chars")
 
 pos = 0
@@ -138,4 +104,4 @@ println("Token 2: type=" * string(get(token, 0)) * ", value=" * string(get(token
 
 pos = get(token, 2)
 token = next_token(source, pos)
-println("Token 3: type=" * string(get(token, 0)) * ", value=" * string(get(token, 1)))
+println("Token 3: type=" * string(get(token, 0)) * ", start=" * string(get(token, 1)) * ", end=" * string(get(token, 2)))
