@@ -41,7 +41,7 @@ token_num = [1, 42, 2]
 result = eval_expr(token_num, env)
 println("eval(42): " * string(result))
 
-# Sorgente simulato: "x" -> [2, 0, 1] (name_start=0)
-token_id = [2, 0, 1]
+# Sorgente simulato: "x" -> [2, 1, 1] (name_start=1 corrisponde a key=1 in env)
+token_id = [2, 1, 1]
 result = eval_expr(token_id, env)
 println("eval(x): " * string(result))
