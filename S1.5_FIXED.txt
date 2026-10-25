@@ -1,0 +1,1 @@
+S1.5 Bug Fixed: Variable binding uses Symbol keys consistently across codebase 
