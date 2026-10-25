@@ -1,4 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "mcp": {}
+  "mcp": {
+    "mcpServers": {
+      "graphify": {
+        "type": "streamableHttp",
+        "url": "https://api.graphify.com/mcp"
+      }
+    }
+  }
 }
