@@ -2,7 +2,7 @@
 agent: devin-local
 session: mire-aardwolf
 created: 2026-10-22T18:16:39Z
-updated: 2026-10-25
+updated: 2026-10-26
 ---
 # Piano per completare Triad 2.0 - Stato Aggiornato
 
@@ -61,7 +61,7 @@ updated: 2026-10-25
 ## Stato Conformance
 - Stage0 Julia: 33/33 Core, 12/12 Full ✅
 - Seed Windows: 33/33 Core ✅
-- Seed Linux: E0 minima (non comparabile)
+- Seed Linux: E0 minima (non comparabile) - in avvio test cross‑platform per parity
 
 ## Task ai/tasks/ Completati ✅
 - **01_somma**: programma Triad somma e precedenza ✅
