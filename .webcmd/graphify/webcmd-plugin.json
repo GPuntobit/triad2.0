@@ -1,0 +1,10 @@
+{
+  "name": "graphify",
+  "version": "0.1.0",
+  "description": "Graphify code-graph access via the control-plane MCP API",
+  "webcmd": ">=0.8.4",
+  "author": {
+    "name": "Scorpion",
+    "handle": "xbos"
+  }
+}
