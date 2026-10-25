@@ -140,6 +140,6 @@ Verificati anche: `stringhe`, `stringhe_concat`, `nothing_base`, `stringhe_base`
 - lambda solo a **un parametro**; body di una funzione: massimo 4 parametri;
 - il seed non verifica staticamente gli effetti: `!io` è accettato per eseguire output nei corpi funzione;
 - mancano le liste (casi `liste` e `valori`);
-- `string()` copre Int e String; Bool/Symbol/Nothing crashano quando implementati;
+- `string()` copre Int e String; Bool/Symbol/Nothing non implementati;
 - `elseif` ✅ implementato;
 - solo Windows PE; `os_*` ed ELF sono del port M7.

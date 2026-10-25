@@ -1275,7 +1275,7 @@ pushRbp(); movRbpRsp(); subRsp(0x20);
 sarRax1(); B(0x48, 0x8d, 0x7d, 0xf0); B(0x45, 0x31, 0xc0); testRax(); jns('pbs_pos');
 negRax(); movR8d(1);
 L('pbs_pos');
-movEcx(10); B(0x4c, 0x8d, 0x55, 0xf8);
+movEcx(10); B(0x4c, 0x8d, 0x55, 0xf8);  // lea r10, [rbp-8] - inizializza r10 PRIMA del loop
 L('pbs_loop');
 xorEdx(); divRcx(); addDlImm(0x30); decR10(); B(0x41, 0x88, 0x12); testRax(); jnz('pbs_loop');  // mov [r10], dl (store della cifra)
 testR8d(); je('pbs_neg'); decR10(); B(0x41, 0xc6, 0x02, 0x2d);

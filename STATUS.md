@@ -22,7 +22,7 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 
 | area | stato |
 |---|---|
-| `stringhe` (`string()`) | ✅ implementato (Int/String); Bool/Symbol/Nothing crashano |
+| `stringhe` (`string()`) | ✅ implementato (Int/String); Bool/Symbol/Nothing non implementati |
 | `liste` | costruzione/stampa e `push!` di liste di interi implementati; indicizzazione standard, `length` e iterazione non supportati dal seed |
 | `valori` (liste/simboli/stringhe insieme) | parziale; liste solo intere, senza operazioni o valori misti |
 | `controllo` (`elseif`) | ✅ implementato |
@@ -116,3 +116,13 @@ L'obiettivo **non è completo**:
   casi.
 - PE rigenerato: 25.088 byte, codice 8315 byte; SHA-256 di `seed.hex`:
   `9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822`.
+
+## Seed Windows: fix `string()` Int conversion (A03)
+
+- Corretto bug in `pbs_int` (conversione Int→stringa): r10 veniva usato nel loop
+  per scrivere le cifre PRIMA di essere inizializzato, causando access violation (0xC0000005).
+- Spostato l'inizializzazione di r10 (`lea r10, [rbp-8]`) PRIMA del loop per garantire
+  che punti sempre al buffer stack valido.
+- Testato: `string(42)`, `string(0)`, `string(-5)`, `string("ciao")` funzionano correttamente.
+- Conformance `stringhe` passa con output corretto: `ciao Triad\n5\n42`.
+- Bool/Symbol/Nothing rimangono non implementati (crashavano anche prima; ora restituiscono fail).
