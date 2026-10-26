@@ -9,6 +9,10 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 if [ ! -d "$TRIAD_HOME/cli/node_modules" ]; then
     echo "triad-cli: installo le dipendenze (npm install in cli/)..." >&2
-    (cd "$TRIAD_HOME/cli" && npm install --silent) >&2
+    if ! (cd "$TRIAD_HOME/cli" && npm install --silent) >&2; then
+        echo "triad-cli: npm install fallito." >&2
+        rm -rf "$TRIAD_HOME/cli/node_modules"
+        exit 1
+    fi
 fi
 TRIAD_HOME="$TRIAD_HOME" exec node "$TRIAD_HOME/cli/triad-cli.mjs" "$@"
