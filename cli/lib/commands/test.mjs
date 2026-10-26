@@ -1,100 +1,56 @@
-import { runJulia, projectPath, fileExists } from '../utils.mjs';
+import { runNode, projectPath, fileExists } from '../utils.mjs';
 
 /**
- * Esegue i test unitari
- */
-export async function runTests(options = {}) {
-  const testScript = projectPath('test', 'runtests.jl');
-
-  if (!fileExists(testScript)) {
-    console.warn(`⚠ Script runtests.jl non trovato: ${testScript}`);
-    console.warn('  I test unitari potrebbero non essere ancora implementati in questo progetto.');
-    console.warn('  Verifica che la directory test/ esistae contenga runtests.jl');
-    return false;
-  }
-
-  console.log('==> Esecuzione test unitari...');
-  console.log(`    Script: ${testScript}`);
-
-  const result = await runJulia(testScript, []);
-
-  if (!result.success) {
-    console.error('✗ Test falliti');
-    if (result.stderr) {
-      console.error(result.stderr);
-    }
-    return false;
-  }
-
-  console.log('✓ Test completati con successo');
-  if (result.stdout) {
-    console.log(result.stdout);
-  }
-
-  return true;
-}
-
-/**
- * Esegue la conformance suite
+ * Esegue la conformance suite (via seed, senza Julia)
  */
 export async function runConformance(options = {}) {
-  const conformanceScript = projectPath('conformance', 'run.jl');
+  const runner = projectPath('conformance', 'run.mjs');
 
-  if (!fileExists(conformanceScript)) {
-    throw new Error(`Script conformance/run.jl non trovato: ${conformanceScript}`);
+  if (!fileExists(runner)) {
+    throw new Error(`Runner conformance/run.mjs non trovato: ${runner}`);
   }
 
   console.log('==> Esecuzione conformance suite...');
-  console.log(`    Script: ${conformanceScript}`);
+  console.log(`    Runner: ${runner}`);
 
   const args = [];
+  const cases = options.cases || projectPath('conformance', 'core', 'cases');
+  args.push('--cases', cases);
   if (options.update) {
     args.push('--update');
-    console.log('    Modalità: update (rigenera golden)');
+    console.log("    Modalita': update (rigenera golden)");
   }
-  if (options.cases) {
-    args.push('--cases', options.cases);
-    console.log(`    Cases: ${options.cases}`);
-  }
+  if (options.skip) args.push('--skip', options.skip);
+  else args.push('--skip', 'liste');
+  console.log(`    Cases: ${cases}`);
 
-  const result = await runJulia(conformanceScript, args);
+  const result = await runNode(runner, args);
 
   if (!result.success) {
-    console.error('✗ Conformance fallita');
-    if (result.stderr) {
-      console.error(result.stderr);
-    }
+    console.error('X Conformance fallita');
+    if (result.stderr) console.error(result.stderr);
     return false;
   }
-
-  console.log('✓ Conformance completata con successo');
-  if (result.stdout) {
-    console.log(result.stdout);
-  }
-
+  console.log('V Conformance completata con successo');
+  if (result.stdout) console.log(result.stdout);
   return true;
 }
 
 /**
- * Handler comando test run
+ * Esegue i test unitari (sostituiti dalla conformance Core via seed)
  */
-export async function handleTestRun(options) {
-  try {
-    return await runTests(options);
-  } catch (error) {
-    console.error(`Errore durante l'esecuzione dei test: ${error.message}`);
-    return false;
-  }
+export async function runTests(options = {}) {
+  console.log('==> Test unitari: usare la conformance Core (seed) al posto di test/runtests.jl');
+  return await runConformance({ ...options, cases: options.cases || projectPath('conformance', 'core', 'cases'), skip: 'liste' });
 }
 
-/**
- * Handler comando test conformance
- */
-export async function handleTestConformance(options) {
-  try {
-    return await runConformance(options);
-  } catch (error) {
-    console.error(`Errore durante la conformance: ${error.message}`);
-    return false;
-  }
+export async function handleTestRun(options) {
+  try { return await runTests(options); }
+  catch (error) { console.error(`Errore durante i test: ${error.message}`); return false; }
 }
+
+export async function handleTestConformance(options) {
+  try { return await runConformance(options); }
+  catch (error) { console.error(`Errore durante la conformance: ${error.message}`); return false; }
+}
+

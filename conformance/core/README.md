@@ -11,8 +11,8 @@ di Triad-Full: saranno coperti dai test del seed.
 ## Esecuzione
 
 ```sh
-julia --startup-file=no conformance/run.jl --cases conformance/core/cases          # verifica
-julia --startup-file=no conformance/run.jl --cases conformance/core/cases --update # golden
+node conformance/run.mjs --cases conformance/core/cases          # verifica
+node conformance/run.mjs --cases conformance/core/cases --update # golden
 ```
 
 ## Casi

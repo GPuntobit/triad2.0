@@ -19,7 +19,7 @@ setlocal DisableDelayedExpansion
 
 set "TRIAD_HOME=%~dp0.."
 
-rem --- Modalità --build (strumento di sviluppo, richiede Julia) -------
+rem --- Modalità --build (non più supportata) ----------------------------
 if "%~1"=="--build" goto :build_dev
 
 rem --- Ricerca del runtime ---------------------------------------------
@@ -45,7 +45,7 @@ echo. >&2
 echo Opzioni: >&2
 echo   1. Decodifica il seed in codice macchina: >&2
 echo      certutil -decodehex -f seed\windows-x86_64\seed.hex seed\windows-x86_64\seed.exe >&2
-echo   2. Strumento di sviluppo (richiede Julia): triad --build >&2
+echo   2. Usa il seed in codice macchina (nessuna dipendenza da Julia): >&2
 echo. >&2
 echo Triad non dipende da Julia per l'esecuzione del codice .triad. >&2
 exit /b 1
@@ -65,7 +65,7 @@ exit /b %errorlevel%
 exit /b %errorlevel%
 
 :build_dev
-echo triad --build: strumento di sviluppo; richiede Julia e PackageCompiler. >&2
-echo Per l'esecuzione normale usa il seed in codice macchina (nessuna dipendenza). >&2
+echo triad --build: non disponibile (nessuna dipendenza da Julia). >&2
+echo Usa il seed in codice macchina (bin\triad / seed\^<piattaforma^>\seed). >&2
 exit /b 2
 

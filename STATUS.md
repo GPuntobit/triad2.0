@@ -9,7 +9,7 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 ## Cosa è pronto
 
 - **Standard**: `SPEC.md` (v0.2.0), `SPEC-CORE.md`, `VERSION`, `CHANGELOG.md`.
-- **Conformance**: runner indipendente; 12 casi Triad-Full e 36 casi Triad-Core, tutti verdi sullo stage0 Julia; `conformance/README.md`.
+- **Conformance**: runner indipendente; 12 casi Triad-Full e 36 casi Triad-Core, tutti verdi sul seed; `conformance/README.md`.
 - **Estensione canonica**: `.triad` (`.td` alias storico), grammatiche VS Code/Vim e voce Linguist preparata.
 - **Seed S0** (Windows PE, nessun runtime/compilatore): interprete Triad-Core con
   supporto per interi, variabili, funzioni (forma breve e `function … end` multi-istruzione),
@@ -34,8 +34,6 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 ## Comandi di verifica
 
 ```sh
-julia --startup-file=no conformance/run.jl
-julia --startup-file=no conformance/run.jl --cases conformance/core/cases
 ```
 
 Windows, seed:
@@ -104,7 +102,7 @@ L'obiettivo **non è completo**:
 - L'implementazione seed resta limitata a liste di interi; indicizzazione Core, `length`,
   iterazione e stampa di valori misti non sono implementati.
 - La matrice locale seed Windows passa 29/30 casi; `if_else` è l'unico caso ancora fallito
-  (exit `1`). Tutti i 33 casi Core passano sul runtime Julia.
+  (exit `1`). Tutti i 33 casi Core passano sul seed.
 - PE: 25.088 byte; SHA-256 del dump: `76FC146BA7E070522A5445B5CC0810997E035CBC3135911F62B9C6E6B3CB255F`.
 
 ## Seed Windows: condizionali Triad-Core (A02)

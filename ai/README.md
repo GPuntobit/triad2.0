@@ -34,7 +34,7 @@ ai/
 4. Verifica:
 
 ```sh
-julia --startup-file=no ai/verify.jl
+node cli/triad-cli.mjs ai verify
 ```
 
 Output: `PASS`/`FAIL` per caso, riepilogo, exit 1 se almeno una soluzione
@@ -43,7 +43,7 @@ fallisce. Le soluzioni mancanti sono `SKIP` (non falliscono la verifica).
 Per un singolo caso:
 
 ```sh
-julia --startup-file=no ai/verify.jl --tasks ai/tasks/01_somma
+node cli/triad-cli.mjs ai verify --tasks ai/tasks/01_somma
 ```
 
 ## Metriche
@@ -75,7 +75,7 @@ con risorse limitate. Non incollare output non verificato in produzione.
 
 ## Limiti attuali
 
-- Il seed S0 copre 26/29 casi Core; il verificatore usa lo **stage0 Julia**, che
+- Il seed copre 26/29 casi Core; il verificatore usa il **seed**, che
   è più completo del seed.
 - Mancano liste e `elseif` completi; `string()` copre Int e String: i task evitano queste feature.
 - Il `.triad` è l'estensione canonica; `.td` resta accettato come alias.

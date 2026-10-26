@@ -34,11 +34,11 @@ while [ -L "$self" ]; do
 done
 TRIAD_HOME="$(cd "$(dirname "$self")/.." && pwd)"
 
-# --- Modalità --build (strumento di sviluppo, richiede Julia) -------
+# --- Modalità --build (non più supportata) -----------------------------
 if [ "${1:-}" = "--build" ]; then
     shift
-    echo "triad --build: strumento di sviluppo; richiede Julia e PackageCompiler." >&2
-    echo "Per l'esecuzione normale usa il seed in codice macchina (nessuna dipendenza)." >&2
+    echo "triad --build: non disponibile (nessuna dipendenza da Julia)." >&2
+    echo "Usa il seed in codice macchina (bin/triad / seed/<piattaforma>/seed)." >&2
     exit 2
 fi
 
@@ -77,7 +77,7 @@ case "$RUNTIME" in
         echo "Opzioni:" >&2
         echo "  1. Decodifica il seed in codice macchina:" >&2
         echo "     Linux:  xxd -r -p seed/linux-x86_64/seed.hex > seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed" >&2
-        echo "  2. Compila uno standalone (strumento di sviluppo): triad --build (richiede Julia)" >&2
+        echo "  2. Usa il seed in codice macchina (nessuna dipendenza da Julia)" >&2
         echo "" >&2
         echo "Triad non dipende da Julia per l'esecuzione del codice .triad." >&2
         exit 1

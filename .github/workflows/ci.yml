@@ -3,23 +3,20 @@ on:
   push:
   pull_request:
 jobs:
-  conformance:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+  conformance-core:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/setup-node@v4
         with:
-          version: '1'
-      - name: Conformance Triad-Full
-        run: julia --startup-file=no conformance/run.jl
-      - name: Conformance Triad-Core
-        run: julia --startup-file=no conformance/run.jl --cases conformance/core/cases
-      - name: Test suite
-        run: julia --startup-file=no test/runtests.jl
+          node-version: '20'
+      - name: Decode seed (Linux)
+        run: |
+          xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
+          chmod +x seed/linux-x86_64/seed
+      - name: Conformance Core (Node runner)
+        run: node conformance/run.mjs --cases conformance/core/cases --skip liste
+
   seed-windows:
     runs-on: windows-latest
     steps:

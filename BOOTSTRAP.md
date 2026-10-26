@@ -133,8 +133,7 @@ verificare** serve però qualcosa che esegua i test mentre il seed non esiste an
 - i golden sono file di testo committati: da M3 in poi nessun test richiede Julia;
 - il runner di conformità definitivo è `triad --conformance DIR`, implementato in Triad
   (S1/M4). Fino ad allora si usa `conformance/run.jl` come strumento temporaneo;
-- materializzare il seed dai byte committati usa solo strumenti di sistema (decodifica
-  esadecimale, `certutil`/`xxd`), non compilatori o interpreti;
+- materializzare il seed dai byte committati usa solo strumenti di sistema (decodifica esadecimale, `certutil`/`xxd`), non compilatori o interpreti; - il runner di conformance e' `conformance/run.mjs` (Node).
 - il generatore del seed (`seed/dev/gen_seed.js`, Node) è uno strumento di **sola
   manutenzione**: produce il dump, non è richiesto per costruire/usare il seed e non fa parte
   di S0–S4. È versionato perché il codice macchina altrimenti non sarebbe più estendibile
@@ -159,8 +158,7 @@ Un'implementazione passa la suite se, eseguendo `program.td` come script con `AR
 `args.txt`, produce `expected.out` e `expected.code`. La suite è indipendente dal
 linguaggio dell'implementazione: la eseguiranno il seed, S1 e il compilatore nativo.
 
-I golden sono generati una tantum con lo stage0 Julia (`conformance/run.jl --update`) e
-poi committati: da quel momento sono il contratto e Julia non serve più per verificarli.
+I golden sono generati una tantum con lo stage0 (`conformance/run.mjs --update`) e poi committati: da quel momento sono il contratto e il runner Node basta per verificarli.
 
 ## 9. Rischi
 

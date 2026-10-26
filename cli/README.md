@@ -71,7 +71,6 @@ Compila l'eseguibile standalone di Triad:
 triad-cli build standalone
 ```
 
-Questo comando richiede Julia e PackageCompiler installati. L'output sarà in `bin/triad-native` (o `triad-native.exe` su Windows).
 
 ### Test
 
@@ -98,8 +97,6 @@ Opzioni:
 
 - **Node.js** ≥ 18.0.0
 - **Seed** in codice macchina (runtime predefinito per `.triad`)
-- **Julia** ≥ 1.6 (solo sviluppo: test, conformance, build standalone)
-- **PackageCompiler** (installato automaticamente dal comando build standalone)
 
 ## Architettura
 
@@ -128,5 +125,4 @@ cli/
 
 ## Note
 
-- I comandi di sviluppo che wrappano script Julia richiedono Julia installato
 - Il runtime per eseguire programmi Triad è il seed in codice macchina (o `bin/triad-native`); usa `triad`/`triad.cmd` o `triad-cli` per le operazioni di sviluppo

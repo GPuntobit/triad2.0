@@ -34,16 +34,15 @@ Regole:
 
 - Definitivo (dalla milestone M4): `triad --conformance DIR`, implementato in
   Triad, eseguito dall'implementazione sotto test.
-- Temporaneo (fase 0): `run.jl`, usa lo stage0 Julia solo per generare e
-  verificare i golden finché il seed non esiste:
+- Temporaneo (fase 0): `run.mjs`, runner Node che usa il seed in codice macchina:
 
 ```sh
-julia --startup-file=no conformance/run.jl --update   # rigenera expected.*
-julia --startup-file=no conformance/run.jl            # verifica (profilo Full)
+node conformance/run.mjs --update   # rigenera expected.*
+node conformance/run.mjs            # verifica (profilo Full)
 
 # profilo Core
-julia --startup-file=no conformance/run.jl --cases conformance/core/cases
-julia --startup-file=no conformance/run.jl --cases conformance/core/cases --update
+node conformance/run.mjs --cases conformance/core/cases
+node conformance/run.mjs --cases conformance/core/cases --update
 ```
 
 `run.jl` è uno strumento di sviluppo: da M3 in poi la suite deve poter girare
@@ -68,5 +67,4 @@ senza Julia né altri linguaggi.
 | `macro_eval` | quote, sexpr, parse/unparse, macro |
 | `errore` | errore non gestito: stdout vuoto, exit code 1 |
 
-I golden sono stati generati dallo stage0 Julia il 2026-10-20 e sono congelati:
-da qui in poi sono loro il contratto, non l'implementazione Julia.
+I golden sono stati generati dallo stage0 il 2026-10-20 e sono congelati: da qui in poi sono loro il contratto.

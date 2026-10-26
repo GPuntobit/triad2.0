@@ -28,8 +28,7 @@ Sono parte del linguaggio, non di una libreria: errori come dati (`Err`), contra
   deve passare.
 - **AI:** [ai/](ai/README.md) â€” benchmark per generazione di codice Triad da LLM, con
   prompt di sistema e verificatore automatico.
-- **Implementazione:** oggi `triad.jl` + `syntax.jl` su Julia, transitoria per il bootstrap;
-  il piano per un Triad senza linguaggi ospiti Ã¨ in [BOOTSTRAP.md](BOOTSTRAP.md).
+- **Implementazione:** il runtime di riferimento e' il seed in codice macchina (S0); il piano per un Triad senza linguaggi ospiti e' in [BOOTSTRAP.md](BOOTSTRAP.md).
 - **Editor:** [editors/](editors/README.md) â€” VS Code, Vim/Neovim e voce Linguist per GitHub.
 - **Estensione:** `.triad` (canonica), `.td` (alias storico).
 
@@ -145,11 +144,8 @@ println("primo: ", result[1].who) # :dave
 ## Test
 
 ```sh
-# test dell'implementazione di riferimento
-julia --startup-file=no test/runtests.jl
-
-# confronto opzionale con interpreti esterni (solo sviluppo)
-julia --startup-file=no test/oracles/oracle_tests.jl
+# test dell'implementazione di riferimento (conformance Core via seed)
+node conformance/run.mjs --cases conformance/core/cases --skip liste
 ```
 
 ## ConformitÃ  e indipendenza
@@ -160,15 +156,15 @@ Triad-Core, compilatore nativo). Vedi [BOOTSTRAP.md](BOOTSTRAP.md) per il piano 
 Triad a non dipendere da Julia nÃ© da altri linguaggi ospiti.
 
 ```sh
-julia --startup-file=no conformance/run.jl           # verifica (strumento di sviluppo)
-julia --startup-file=no conformance/run.jl --update  # rigenera i golden (solo stage0)
+node conformance/run.mjs           # verifica (runner Node)
+node conformance/run.mjs --update  # rigenera i golden
 ```
 
 ## Struttura del progetto
 
 ```
-triad.jl                    implementazione di riferimento (kernel e interprete)
-syntax.jl                   lessico e parser Pratt (albero Node)
+triad.jl                    implementazione di riferimento (kernel e interprete)  [rimosso]
+syntax.jl                   lessico e parser Pratt (albero Node)  [rimosso]
 bin/triad                   launcher POSIX (sh)
 bin/triad.cmd               launcher Windows (cmd)
 bin/build_standalone.jl     packaging standalone (PackageCompiler)
@@ -194,9 +190,7 @@ docs/                       note e documenti di supporto
 
 - **Standard Triad:** nessuna dipendenza; Ã¨ definito da questo repository (`SPEC.md` +
   `conformance/`).
-- **Implementazione di riferimento:** Julia â‰¥ 1.6 (testato con 1.13.1), zero pacchetti
-  esterni; Ã¨ transitoria e sarÃ  sostituita dall'implementazione self-hosted
-  ([BOOTSTRAP.md](BOOTSTRAP.md)).
+- **Runtime:** seed in codice macchina (S0); nessuna dipendenza da Julia o altri linguaggi ospiti.
 - **Test oracle:** opzionali e solo per lo sviluppo (SWI-Prolog, SBCL); non servono per
   usare Triad nÃ© per la conformitÃ .
 
