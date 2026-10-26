@@ -41,3 +41,6 @@ node_modules/
 
 # Delta generated files
 .delta/
+# Conformance golden outputs (must be versioned)
+!conformance/**/expected.out
+!conformance/**/expected.code
