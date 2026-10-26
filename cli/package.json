@@ -8,7 +8,8 @@
     "triad-cli": "./triad-cli.mjs"
   },
   "scripts": {
-    "test": "node triad-cli.mjs test run"
+    "test": "node triad-cli.mjs test run",
+    "build:exe": "node build-exe.mjs"
   },
   "keywords": [
     "triad",
@@ -24,5 +25,9 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "postject": "^1.0.0-alpha.6"
   }
 }

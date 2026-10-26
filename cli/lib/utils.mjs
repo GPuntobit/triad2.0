@@ -3,9 +3,31 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const PROJECT_ROOT = path.join(__dirname, '..', '..');
+function moduleDir() {
+  try { return path.dirname(fileURLToPath(import.meta.url)); } catch { return null; }
+}
+
+function isProjectRoot(dir) {
+  return fs.existsSync(path.join(dir, 'conformance', 'run.mjs')) && fs.existsSync(path.join(dir, 'seed'));
+}
+
+// Root del repository: TRIAD_HOME, poi risalendo dal modulo, dall'eseguibile
+// (triad-cli.exe standalone) e dalla cartella corrente.
+function findProjectRoot() {
+  const starts = [process.env.TRIAD_HOME, moduleDir(), path.dirname(process.execPath), process.cwd()];
+  for (const start of starts.filter(Boolean)) {
+    let dir = path.resolve(start);
+    for (;;) {
+      if (isProjectRoot(dir)) return dir;
+      const parent = path.dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  }
+  return process.cwd();
+}
+
+const PROJECT_ROOT = findProjectRoot();
 
 /**
  * Trova il seed in codice macchina (nessuna dipendenza da Julia)

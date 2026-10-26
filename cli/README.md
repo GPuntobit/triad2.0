@@ -9,11 +9,25 @@ cd cli
 npm install
 ```
 
-Per usare la CLI da qualsiasi directory:
+Per usare la CLI da qualsiasi directory, aggiungi `bin/` al PATH e usa i launcher
+`bin/triad-cli` (POSIX) o `bin\triad-cli.cmd` (Windows): al primo avvio eseguono
+`npm install` in `cli/` se manca `node_modules`. In alternativa `npm link` (Linux/macOS).
+
+### Eseguibile standalone
+
+`triad-cli.exe` (Windows) e `triad-cli` (Linux) sono allegati alla release beta: contengono
+Node.js e la CLI, quindi non serve `npm install`. Copiali nella root del repository o in
+`bin/` (oppure imposta `TRIAD_HOME`): la CLI trova il progetto risalendo da `TRIAD_HOME`,
+dalla posizione dell'eseguibile e dalla cartella corrente. `test`, `seed generate`
+richiedono comunque `node` nel PATH, perché eseguono `conformance/run.mjs` e `seed/dev/*.js`.
+
+Per ricostruirli (Node.js >= 20; il binario Node passato decide la piattaforma):
 
 ```bash
-npm link    # Linux/macOS
-# oppure aggiungi cli/ al PATH
+cd cli
+npm install
+npm run build:exe                         # eseguibile per la piattaforma corrente
+node build-exe.mjs path/to/win/node.exe   # triad-cli.exe per Windows (anche da Linux)
 ```
 
 ## Comandi

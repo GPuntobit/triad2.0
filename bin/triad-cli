@@ -1,0 +1,14 @@
+#!/bin/sh
+# triad-cli — launcher POSIX della CLI di sviluppo (richiede Node.js >= 18).
+# Uso: triad-cli <comando> [opzioni]   (es. triad-cli status)
+set -e
+TRIAD_HOME=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+if ! command -v node >/dev/null 2>&1; then
+    echo "triad-cli: Node.js non trovato (serve Node.js >= 18)." >&2
+    exit 1
+fi
+if [ ! -d "$TRIAD_HOME/cli/node_modules" ]; then
+    echo "triad-cli: installo le dipendenze (npm install in cli/)..." >&2
+    (cd "$TRIAD_HOME/cli" && npm install --silent) >&2
+fi
+TRIAD_HOME="$TRIAD_HOME" exec node "$TRIAD_HOME/cli/triad-cli.mjs" "$@"

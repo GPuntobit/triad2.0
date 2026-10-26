@@ -112,6 +112,17 @@ node triad-cli.mjs ai verify        # verifica soluzioni AI
 node triad-cli.mjs test conformance # esegue conformance
 ```
 
+Launcher pronti in `bin/` (installano le dipendenze al primo avvio):
+
+```sh
+bin/triad-cli status            # POSIX
+bin\triad-cli.cmd status        # Windows
+```
+
+Eseguibile standalone (non serve installare `cli/`): scaricare `triad-cli.exe` (Windows) o
+`triad-cli` (Linux) dalla [release beta](https://github.com/GPuntobit/triad2.0/releases) e
+copiarlo nella root del repository o in `bin/`; per ricostruirlo: `cd cli && npm run build:exe`.
+
 Vedi [cli/README.md](cli/README.md) per la documentazione completa della CLI di sviluppo.
 
 ## Esempio veloce (`examples/assaggio.td`)
@@ -165,6 +176,7 @@ CI (`.github/workflows/ci.yml`): `conformance-core` (Ubuntu, runner Node), `seed
 ```
 bin/triad                   launcher POSIX (sh)
 bin/triad.cmd               launcher Windows (cmd)
+bin/triad-cli, triad-cli.cmd launcher della CLI di sviluppo
 cli/                        CLI di sviluppo (triad-cli, Node.js)
 conformance/                suite golden: contratto eseguibile delle implementazioni
 conformance/run.mjs         runner di conformità (Node, senza Julia)
