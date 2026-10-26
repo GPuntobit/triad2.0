@@ -9,6 +9,14 @@ Julia di bootstrap è stata rimossa: il linguaggio non dipende da Julia.
 L'estensione canonica dei sorgenti è `.triad`; negli esempi trovi anche `.td`, accettata
 come alias storico. La conformità è verificata da [`conformance/`](conformance/README.md).
 
+> **Cosa gira oggi.** Il tutorial descrive il linguaggio completo definito da `SPEC.md`
+> (profilo Triad-Full). Il runtime attuale esegue solo il sottoinsieme **Triad-Core**
+> ([`SPEC-CORE.md`](SPEC-CORE.md)): interi, Bool, stringhe, simboli, `nothing`, variabili, funzioni,
+> ricorsione, `if`/`while`/`let`/`begin`, lambda e chiusure, liste base. Struct, logica,
+> macro, contratti, budget, tracce, effetti e destrutturazione sono specifica ma **non ancora
+> eseguibili** (nella conformance Full passa solo `errore`). Gli output Full mostrati sono i golden
+> prodotti dalla vecchia implementazione Julia (`conformance/cases/`).
+
 Questo tutorial copre: installazione/avvio, CLI e REPL, sintassi, funzioni e multiple dispatch, struct, logica (fatti/regole/solve), errori come dati, contratti, budget, tracce, effetti dichiarati, macro e codice come dato, e la **destrutturazione** (aggiunta di recente).
 
 ---
@@ -32,9 +40,33 @@ file): `triad` (REPL), `-l file` (carica e apre il REPL), `-i file` (esegue e ap
 L'estensione `.td` si può omettere (`famiglia` trova `famiglia.td`). `-` come script legge da stdin.
 Codici di uscita: `0` ok, `1` errore non gestito, `2` riga di comando non valida.
 
+Esempi che girano già sul seed: i programmi Triad-Core in `conformance/core/cases/*/program.td`.
+
+```sh
+bin\triad.cmd conformance\core\cases\ricorsione\program.td           # Windows (seed PE)
+node seed/dev/triad_core.cjs conformance/core/cases/ricorsione/program.td   # Linux/macOS
+```
+
+### 1.1 CLI di sviluppo (`triad-cli`) e conformance
+
+```sh
+bin/triad-cli status                 # ambiente e seed trovato (Windows: bin\triad-cli.cmd)
+bin/triad-cli test conformance       # conformance Core (37 casi)
+bin/triad-cli ai verify -v           # verifica le soluzioni di ai/tasks/
+bin/triad-cli seed generate windows  # rigenera seed.hex e stampa lo SHA-256
+node conformance/run.mjs --cases conformance/cases   # profilo Full (12 casi)
+```
+
+I launcher installano le dipendenze di `cli/` al primo avvio (serve Node.js ≥ 18). In
+alternativa si usa l'eseguibile standalone `triad-cli.exe` / `triad-cli` allegato alla
+[release beta](https://github.com/GPuntobit/triad2.0/releases), da copiare nella root del
+repository o in `bin/`. Dettagli in [`cli/README.md`](cli/README.md).
+
 ---
 
 ## 2. REPL (stile Prolog)
+
+> Definito da SPEC.md §14, **non ancora implementato** dal seed.
 
 ```
 triad> 1 + 2
@@ -353,7 +385,7 @@ f([10, 20])   # 30
 
 ## 12. Errori come dati
 
-Un errore è un valore `Err(kind, msg, data)`. Non solleva eccezioni Julia, salvo non gestito al top level.
+Un errore è un valore `Err(kind, msg, data)`. Non solleva eccezioni dell'host, salvo non gestito al top level.
 
 ```julia
 e = try 1 / 0 end        # Float division: Inf (come Julia), non errore
@@ -575,13 +607,15 @@ println(e.kind)   # :bounds
 
 ## 19.5 Esempi eseguibili con output reale
 
-Questi esempi sono copiati da `examples/*.td` e da `test/runtests.jl`. L'output mostrato è quello **reale** prodotto da `julia --startup-file=no triad.jl <file>` (o equivalente).
+Questi esempi sono copiati da `examples/*.td`. Usano Triad-Full: l'output mostrato è quello
+prodotto dalla vecchia implementazione Julia (oggi rimossa) e conservato come golden in
+`conformance/cases/`. Sul seed attuale questi file **non girano ancora**.
 
 ### 19.5.1 assaggio.td — tutti i paradigmi (struct, logica, macro, contratti)
 
 Comando:
 ```sh
-julia --startup-file=no triad.jl examples/assaggio.td
+triad examples/assaggio.td
 ```
 
 Output:
@@ -600,7 +634,7 @@ alice è nonna di dave? true
 
 Comando:
 ```sh
-julia --startup-file=no triad.jl examples/famiglia.td
+triad examples/famiglia.td
 ```
 
 Output:
@@ -622,7 +656,7 @@ figli di bob: [:ann, :pat]
 
 Comando:
 ```sh
-julia --startup-file=no triad.jl examples/garanzie.td
+triad examples/garanzie.td
 ```
 
 Output:
@@ -670,7 +704,7 @@ imparato: [:gatto]
 
 Comando:
 ```sh
-julia --startup-file=no triad.jl examples/macro.td
+triad examples/macro.td
 ```
 
 Output:
@@ -689,9 +723,10 @@ polinomio: :(0 + 1 * x ^ 0 + 2 * x ^ 1 + 3 * x ^ 2)
 p(2) = 17
 ```
 
-### 19.5.5 Esempi dai test (test/runtests.jl)
+### 19.5.5 Espressioni e valori attesi
 
-Ogni riga sotto è un comando eseguibile con `julia --startup-file=no -e '<codice>'` e il valore restituito.
+Ogni riga è un frammento Triad con il valore che produce (dai vecchi test dell'implementazione
+Julia; molti usano costrutti Full come `for`, range, `map`/`filter`, comprehension).
 
 ```julia
 x = 2; y = x * 21; y           # 42
@@ -707,6 +742,12 @@ filter(x -> x % 2 == 0, 1:6)           # [2, 4, 6]
 [x^2 for x in 1:4 if x > 2]            # [9, 16]
 xs = [1, 2, 3]; xs[end]                # 3
 x = 3; x > 2 ? :big : :small           # :big
+f(n) = n < 2 ? n : f(n - 1) + f(n - 2); f(10)   # 55
+function fact_(n::Int)::Int
+    if n <= 1; return 1; end
+    n * fact_(n - 1)
+end; fact_(10)                         # 3628800
+```
 
 ---
 
@@ -717,8 +758,8 @@ x = 3; x > 2 ? :big : :small           # :big
 Il **seed S0** è un interprete Triad-Core scritto in machine code x86-64, completamente indipendente da linguaggi ospiti come Julia. Serve come base per il bootstrap Triad (vedi [`BOOTSTRAP.md`](BOOTSTRAP.md)).
 
 **Disponibilità:**
-- Windows PE: `seed/windows-x86_64/seed.exe` (25.088 byte, SHA-256 `160912BACD0A5C1C6F5FD3CF9B9F62398C05CB2103EA153E0B25D767C7316B27`; dump `seed.hex`: `9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822`)
-- Linux ELF: `seed/linux-x86_64/seed.hex` (in sviluppo)
+- Windows PE: `seed/windows-x86_64/seed.exe` (25.088 byte, SHA-256 `F2352418485383038952748E5E2767662BA5CCA724C7F4195B672E254FA6B7CE`; dump `seed.hex`: `3A75A21E2F47D8DC4C88D4BC2580A85D5349BCDF7550E5FFA16E2C0AC7CA8C11`, verificato dalla CI)
+- Linux ELF: `seed/linux-x86_64/seed.hex`, stadio E0 (stampa solo `Triad seed Linux OK`)
 
 **Funzionalità S0 (Windows):**
 - Interi, variabili, funzioni (forma breve `f() = expr` e blocco `function f() ... end`)
@@ -728,7 +769,7 @@ Il **seed S0** è un interprete Triad-Core scritto in machine code x86-64, compl
 - Stringhe base + concatenazione + `string()` (Int/String)
 - `nothing`, simboli
 - **Liste complete:** costruzione `[1, 2, 3]`, stampa, `push!`, helper `get(xs, i)`
-- Conformance: 33/33 casi Core byte-esatti (Windows), 36/36 con runtime Julia
+- Conformance: 33 casi Core byte-esatti sul seed PE in CI; 37/37 con `node conformance/run.mjs`
 
 **Uso del seed Windows:**
 ```powershell
@@ -736,7 +777,8 @@ seed\windows-x86_64\seed.exe file.td
 seed\windows-x86_64\seed.exe conformance\core\cases\stringhe\program.td
 ```
 
-Codici di uscita: `0` ok, `1` errore.
+Codici di uscita: `0` ok, `1` errore. Il seed esegue solo file: opzioni come `--help`, `-E`
+o il REPL escono con codice 0 senza output.
 
 **Limitazioni attuali del seed:**
 - `string()` con Bool/Symbol/Nothing non supportato (crash)
@@ -766,7 +808,38 @@ Codici di uscita: `0` ok, `1` errore.
 - Funzioni e chiamate con chiusure
 - Test conformance suite
 
-Vedi [`TASK.md`](TASK.md) per il piano dettagliato delle task S1 rimanenti.
+Vedi [`TASK.md`](TASK.md) per il piano dettagliato delle task S1 rimanenti. I sorgenti sono in
+`selfhost/` (`tokenizer.td`, `parser.td`, `eval.td`, `interpreter.td`, …); la CI esegue
+`selfhost/main.td` sul seed Windows e si aspetta `Value: 10`. Questi file usano l'helper `get`
+del seed e girano solo su `seed.exe`.
+
+#### S1.11 Parser (`selfhost/parser.td`)
+
+Questa sezione descrive l'implementazione del parser S1.11, che estende il tokenizer per riconoscere i costrutti `if`, `else`, `while` e `function`. I tipi di token aggiunti sono:
+
+- **9: IF**
+- **10: ELSE**
+- **11: WHILE**
+- **12: FUNCTION**
+- **13: END**
+- **14: THEN**
+- **15: DO**
+
+Il test S1.11 verifica la tokenizzazione della sorgente `"if end"`; l'output atteso è:
+
+```
+Token 1: type=9 (IF)
+Token 2: type=13 (END)
+```
+
+L'esecuzione del test si esegue da riga di comando:
+
+```cmd
+seed\windows-x86_64\seed.exe selfhost\parser.td
+```
+
+L'output conferma che il parser riconosce correttamente le keyword `if` ed `end` e restituisce i rispettivi tipi di token.
+
 
 ### 20.3 Piano di bootstrap (S0 → S4)
 
@@ -784,21 +857,16 @@ Vedi [`BOOTSTRAP.md`](BOOTSTRAP.md) per dettagli architetturali e [`STATUS.md`](
 
 Se vuoi contribuire al bootstrap:
 1. Completa le task S1 in [`TASK.md`](TASK.md)
-2. Testa il seed su Windows: `seed\windows-x86_64\seed.exe conformance\core\cases\*`
+2. Testa il seed su Windows: `seed\windows-x86_64\seed.exe conformance\core\cases\<caso>\program.td`, oppure tutta la suite con `bin\triad-cli.cmd test conformance`
 3. Verifica il hash del seed: `certutil -hashfile seed\windows-x86_64\seed.hex SHA256`
 4. Aggiorna STATUS.md con i progressi
-f(n) = n < 2 ? n : f(n - 1) + f(n - 2); f(10)   # 55
-function fact_(n::Int)::Int
-    if n <= 1; return 1; end
-    n * fact_(n - 1)
-end; fact_(10)                         # 3628800
-```
 
 ---
 
-## 20. Fix noti — prima/dopo (sezione §3 di HANDOFF-HERMES.md)
+## 21. Fix storici — prima/dopo
 
-I sei fix seguenti sono già applicati a `triad.jl` e `syntax.jl`. Non modificare i file: questa sezione documenta solo il comportamento prima e dopo.
+Questi sei fix erano stati applicati all'implementazione Julia (`triad.jl`, `syntax.jl`), ora
+rimossa. Il comportamento "dopo" è quello richiesto da SPEC.md e vale per ogni implementazione.
 
 | # | Fix | Prima | Dopo |
 |---|-----|-------|------|
@@ -809,7 +877,7 @@ I sei fix seguenti sono già applicati a `triad.jl` e `syntax.jl`. Non modificar
 | 5 | Commenti `#=` annidati | Il lexer si fermava al primo `=#` (`#= a #= b =# c =#` si rompeva). | Il lexer conta la profondità; `#= a #= b =# c =#` funziona, e un `#=` non chiuso resta errore `incomplete`. |
 | 6 | Lambda con parametri tipati | `function (x::Int) x end` usciva con una `MethodError` dell'host (`Err(:host)`). | `Lam` porta i `types`; `:lambda` usa `split_params`; `apply_lam` fa `conform`; tipo sconosciuto validato alla definizione, come `define_function`. |
 
-### 20.1 Esempio — prima/dopo del fix 1 (range)
+### 21.1 Esempio — prima/dopo del fix 1 (range)
 
 ```julia
 # Prima del fix: unparse(1:n) -> "1 : n"  (errore di parse se rilanciato)
@@ -817,7 +885,7 @@ I sei fix seguenti sono già applicati a `triad.jl` e `syntax.jl`. Non modificar
 unparse(parse_program("1:n"))   # "1:n"
 ```
 
-### 20.2 Esempio — prima/dopo del fix 3 (xs[end] = v)
+### 21.2 Esempio — prima/dopo del fix 3 (xs[end] = v)
 
 ```julia
 # Prima del fix: Err(:undef, "'end' non è definito")
@@ -827,7 +895,7 @@ xs[end] = 7
 xs   # [1, 2, 7]
 ```
 
-### 20.3 Esempio — prima/dopo del fix 4 (escape sconosciuti)
+### 21.3 Esempio — prima/dopo del fix 4 (escape sconosciuti)
 
 ```julia
 # Prima del fix: "\r" -> "arb"  (corruzione silenziosa)
@@ -838,7 +906,7 @@ e.data.line        # numero di riga
 e.data.col         # numero di colonna
 ```
 
-### 20.4 Esempio — prima/dopo del fix 5 (commenti #= annidati)
+### 21.4 Esempio — prima/dopo del fix 5 (commenti #= annidati)
 
 ```julia
 # Prima del fix: #= a #= b =# c =#  si rompeva al primo =#
@@ -846,7 +914,7 @@ e.data.col         # numero di colonna
 #= esterno #= interno =# fine esterno =#   # valido, profondità contata
 ```
 
-### 20.5 Esempio — prima/dopo del fix 6 (lambda tipate)
+### 21.5 Esempio — prima/dopo del fix 6 (lambda tipate)
 
 ```julia
 # Prima del fix: Err(:host) per MethodError
@@ -864,15 +932,17 @@ f(2.0) # Err(:type): atteso Int, ricevuto Float
 
 ---
 
-## 20. File e moduli
+## 22. File e moduli
 
-- `include("triad.jl")` da Julia, poi `w = Triad.World()`, `Triad.run_source(w, src)` (solleva `TriadError`) oppure `Triad.eval_source(w, src)` (restituisce sempre un valore, eventualmente `Err`).
-- Test: `julia test/runtests.jl`.
-- Esempi: `examples/assaggio.td`, `famiglia.td`, `garanzie.td`, `macro.td`.
+- Esempi Triad-Full: `examples/assaggio.td`, `famiglia.td`, `garanzie.td`, `macro.td`, `tour.td`,
+  `hello_shebang.td`, `benvenuto.triad`.
+- Programmi Triad-Core eseguibili oggi: `conformance/core/cases/*/program.td`.
+- Interprete self-hosted (S1): `selfhost/*.td`.
+- Conformance: `conformance/run.mjs`, casi in `conformance/core/cases/` (Core) e `conformance/cases/` (Full).
 
 ---
 
-## 21. Riferimento rapido sintassi
+## 23. Riferimento rapido sintassi
 
 ```
 struttura:  struct Nome; x::T; y::T; end
@@ -900,40 +970,10 @@ eval:       eval(codice)
 
 ---
 
-# Parte 2 — Integrazione Julia, esempi avanzati, debug e glossario
+# Parte 2 — Esempi avanzati, debug e glossario
 
-## A. Usare Triad da Julia (API del kernel)
-
-Il kernel è il modulo `Triad` in `triad.jl`. Da Julia:
-
-```julia
-include("triad.jl")
-using .Triad
-
-# Crea un mondo (ambiente di esecuzione) vuoto
-w = Triad.World(out = IOBuffer())   # out: dove va println/print
-
-# Esegue sorgente Triad; solleva TriadError in caso di errore non gestito
-v = Triad.run_source(w, "x = 1 + 2; x")
-# v == 3
-
-# Esegue e restituisce SEMPRE un valore (Err in caso di errore)
-r = Triad.eval_source(w, "nondefinito")
-# r isa Triad.Err, r.kind == :undef
-
-# Parsing indipendente
-code, lines = Triad.parse_toplevel("x = 1")
-# code è un Node(:block, [...]); lines i numeri di riga
-
-# Albero -> testo / S-expression
-Triad.unparse(code)
-Triad.sexpr(code)
-```
-
-- `run_source` solleva `TriadError(err::Err)` quando c'è un errore non gestito nel programma.
-- `eval_source` cattura tutto e restituisce l'`Err` (utile per test o REPL).
-- `World(out = IOBuffer())` cattura l'output di `println`/`print` in un buffer.
-- Il mondo porta lo stato: funzioni, struct, macro, fatti/regole della KB, variabili globali, budget, tracer.
+> L'API Julia del kernel (`include("triad.jl")`, `Triad.run_source`, `Triad.eval_source`) non
+> esiste più: è stata rimossa insieme all'implementazione Julia.
 
 ## B. Esempi avanzati
 
@@ -1039,7 +1079,7 @@ r.kind          # :budget
 | Ricorsione infinita si blocca | Triad usa stack esplicito, finisce in `:budget` | Non è stack overflow, è `Err(:budget)` |
 
 Strumenti di debug:
-- `triad.jl --tree file.td` — vedi l'albero uniforme (S-expression) per capire come il parser ha interpretato il codice.
+- `triad --tree file.td` (SPEC §14, non ancora nel seed) — vedi l'albero uniforme (S-expression) per capire come il parser ha interpretato il codice.
 - `sexpr(codice)` — stessa cosa dentro Triad.
 - `unparse(albero)` — albero -> testo.
 - `parse("testo")` -> albero.
@@ -1051,7 +1091,7 @@ Strumenti di debug:
 
 - **Node**: l'unico tipo di albero di Triad (`head`, `args`). Codice e dati sono la stessa cosa.
 - **Solution**: `{nome = valore, …}` restituita da `solve`; si accede con `s.nome` o `s[:nome]`.
-- **Err**: errore come dato (`kind`, `msg`, `data`), mai eccezione Julia (salvo top level non gestito).
+- **Err**: errore come dato (`kind`, `msg`, `data`), mai eccezione dell'host (salvo top level non gestito).
 - **Traced**: `(result, trace)` restituito da `with trace` / `solve trace`.
 - **solve**: motore logico SLD iterativo (nessuna ricorsione dell'host); restituisce lista di `Solution`.
 - **Occurs-check**: l'unificazione rifiuta `?x = f(?x)` (nessuna soluzione, non ciclo infinito).
@@ -1060,7 +1100,7 @@ Strumenti di debug:
 - **Contratti**: `requires` (pre-condizione) / `ensures` (post-condizione con `result`).
 - **Budget**: `with budget(steps = N)` limita i passi; esaurimento → `Err(:budget)` come valore.
 - **Destrutturazione**: `(a, b) = lista` (parentesi obbligatorie, arità esatta), `for (k, v) in lista_di_liste`.
-- **REPL**: `triad>` per codice, `?- goal` per query Prolog, comandi `:load`/`:reload`/`:listing`/`:tree`/`:reset`/`:help`/`:quit`.
+- **REPL**: `triad>` per codice, `?- goal` per query Prolog, comandi `:load`/`:reload`/`:listing`/`:tree`/`:reset`/`:help`/`:quit` (SPEC §14, non ancora implementato).
 
 ## E. Stato e limiti noti (SPEC §15)
 
@@ -1068,112 +1108,18 @@ Non ancora implementati: argomenti con nome (tranne `budget(steps = …)`), stru
 
 ---
 
-## F. Test oracle — confronto con gli interpreti di riferimento
+## F. Verifica della conformità
 
-Triad include un harness di test oracle (`test/oracles/oracle_tests.jl`) che cross-checka il comportamento di Triad contro tre interpreti esterni, usati solo come riferimento (non modificati):
-
-| Interprete | Percorso | Cosa viene testato |
-|---|---|---|
-| SWI-Prolog | `C:\Program Files\swipl\bin\swipl.exe` | fatti, regole e query da `examples/famiglia.td` |
-| SBCL (via Portacle) | `C:\Users\xbos\portacle\win\sbcl\bin\sbcl.exe` | closure, lambda e ricorsione |
-| Julia | `julia` (PATH) o `C:\Users\xbos\AppData\Local\Programs\Julia-1.13.1\bin\julia.exe` | multiple dispatch (`defmethod` equivalente) |
-
-Per ogni interprete il harness genera il sorgente nativo equivalente (`.pl`, `.lisp`, `.jl`), lo esegue, normalizza l'output e lo confronta con l'output di Triad sullo stesso esempio.
-
-Eseguire gli oracle test:
+Gli oracle test (`test/oracles/oracle_tests.jl`, confronto con SWI-Prolog, SBCL e Julia) sono
+stati rimossi con l'implementazione Julia. Oggi il contratto eseguibile è `conformance/`:
 
 ```sh
-julia --startup-file=no test/oracles/oracle_tests.jl
+node conformance/run.mjs                              # Core, 37 casi
+node conformance/run.mjs --cases conformance/cases    # Full, 12 casi (oggi passa solo errore)
 ```
 
-Se uno degli interpreti non è disponibile, il relativo testset viene saltato (`@skip`).
-
----
-
-### F.1 Passi manuali con gli oracoli
-
-I comandi sotto possono essere eseguiti a mano per confrontare Triad con ciascun interprete.
-
-#### SWI-Prolog (fatti e regole da famiglia.td)
-
-File Prolog (`famiglia.pl`):
-```
-parent(tom, bob). parent(tom, liz). parent(bob, ann). parent(bob, pat). parent(pat, jim).
-female(liz). female(ann). female(pat).
-mother(M, C) :- parent(M, C), female(M).
-ancestor(A, D) :- parent(A, D).
-ancestor(A, D) :- parent(A, X), ancestor(X, D).
-```
-
-Comando per le madri:
-```sh
-"C:\Program Files\swipl\bin\swipl.exe" -s famiglia.pl -g "mother(M,C), format('~w,~w~n',[M,C]), fail; true." -t halt
-```
-
-Output atteso (stesso di Triad `solve mother(?m, ?c)` su `examples/famiglia.td`):
-```
-pat,jim
-```
-
-Comando per gli antenati di tom:
-```sh
-"C:\Program Files\swipl\bin\swipl.exe" -s famiglia.pl -g "ancestor(tom,D), format('~w~n',[D]), fail; true." -t halt
-```
-
-Output atteso (stesso di Triad `solve ancestor(:tom, ?d)`):
-```
-bob
-liz
-ann
-pat
-jim
-```
-
-#### SBCL via Portacle (closure, lambda, ricorsione)
-
-File Lisp (`oracle.lisp`):
-```lisp
-(defun mk (a b) (+ a b))
-(format t "~a~%" (mk 10 20))
-(defun fattorial (n) (if (<= n 1) 1 (* n (fattorial (- n 1)))))
-(format t "~a~%" (fattorial 10))
-```
-
-Comando (impostare `SBCL_HOME` perché SBCL trovi il core):
-```sh
-set SBCL_HOME=C:\Users\xbos\portacle\win\sbcl\lib\sbcl
-"C:\Users\xbos\portacle\win\sbcl\bin\sbcl.exe" --noinform --load oracle.lisp
-```
-
-Output atteso (stesso di Triad `mk = (a, b) -> a + b` e `fattorial`):
-```
-30
-3628800
-```
-
-#### Julia 1.13.1 (multiple dispatch)
-
-File Julia (`oracle.jl`):
-```julia
-area(n::Number) = :number
-area(n::Int) = :int
-println(area(1))
-println(area(1.5))
-```
-
-Comando:
-```sh
-"C:\Users\xbos\AppData\Local\Programs\Julia-1.13.1\bin\julia.exe" --startup-file=no oracle.jl
-```
-
-Output atteso (stesso di Triad con le stesse definizioni):
-```
-:int
-:number
-```
-
----
-
+Ogni caso è `program.td` + `expected.out` + `expected.code`; il confronto è byte per byte su
+stdout e codice di uscita. Vedi [`conformance/README.md`](conformance/README.md).
 
 ---
 
@@ -1182,30 +1128,4 @@ Fine del tutorial.
 ---
 
 Scritto e mantenuto da **Kilo** — agente software engineer per il progetto Triad 2.0.
-## S1.11 Parser completo
-
-Questa sezione descrive l'implementazione del parser S1.11, che estende il tokenizer per riconoscere i costrutti `if`, `else`, `while` e `function`. I tipi di token aggiunti sono:
-
-- **9: IF**
-- **10: ELSE**
-- **11: WHILE**
-- **12: FUNCTION**
-- **13: END**
-- **14: THEN**
-- **15: DO**
-
-Il test S1.11 verifica la tokenizzazione della sorgente `"if end"`; l'output atteso è:
-
-```
-Token 1: type=9 (IF)
-Token 2: type=13 (END)
-```
-
-L'esecuzione del test si esegue da riga di comando:
-
-```cmd
-seed\windows-x86_64\seed.exe selfhost\parser.td
-```
-
-L'output conferma che il parser riconosce correttamente le keyword `if` ed `end` e restituisce i rispettivi tipi di token.
-Ultimo aggiornamento: include la destrutturazione (`(a, b) = lista`, `for (k, v) in lista_di_liste`, parametri `(a, b)`) e i test oracle.
+Ultimo aggiornamento: allineato al runtime seed (Triad-Core), a `triad-cli` e alla rimozione dell'implementazione Julia.
