@@ -4,13 +4,13 @@
 #
 #  Cerca un runtime Triad in questo ordine:
 #    1. bin/triad-native  (eseguibile standalone per il sistema corrente)
-#    2. Variabile d'ambiente TRIAD_JULIA
-#    3. julia nel PATH
-#    4. Posizioni standard di Julia per Linux/macOS (anche WSL)
+#    2. seed/<piattaforma>/seed  (interprete Triad-Core in codice macchina)
+#
+#  Non dipende da Julia né da altri linguaggi ospiti: l'esecuzione del
+#  codice .triad avviene tramite il seed in codice macchina.
 #
 #  Uso:  triad [opzioni] [file.td [argomenti...]]
 #        triad --help          tutte le opzioni
-#        triad --build         crea l'eseguibile standalone (richiede PackageCompiler)
 #
 #  Per usarlo da ovunque: aggiungere questa cartella al PATH, oppure
 #  creare un link simbolico in ~/.local/bin/triad.
@@ -34,70 +34,32 @@ while [ -L "$self" ]; do
 done
 TRIAD_HOME="$(cd "$(dirname "$self")/.." && pwd)"
 
-is_windows_julia_on_wsl() {
-    case "$1" in
-        *.exe)
-            grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null
-            ;;
-        *) return 1 ;;
-    esac
-}
-
-# --- Modalità --build: crea l'eseguibile standalone -------------------
+# --- Modalità --build (strumento di sviluppo, richiede Julia) -------
 if [ "${1:-}" = "--build" ]; then
     shift
-    JULIA="${TRIAD_JULIA:-julia}"
-    if ! command -v "$JULIA" >/dev/null 2>&1; then
-        echo "triad --build: Julia non trovato. Imposta TRIAD_JULIA o aggiungi julia al PATH." >&2
-        exit 2
-    fi
-    if is_windows_julia_on_wsl "$JULIA"; then
-        echo "triad --build: in WSL serve Julia per Linux; julia.exe Windows non è compatibile con i percorsi Linux." >&2
-        exit 2
-    fi
-    echo "==> Compilazione eseguibile standalone..."
-    exec "$JULIA" --startup-file=no "$TRIAD_HOME/bin/build_standalone.jl" "$@"
+    echo "triad --build: strumento di sviluppo; richiede Julia e PackageCompiler." >&2
+    echo "Per l'esecuzione normale usa il seed in codice macchina (nessuna dipendenza)." >&2
+    exit 2
 fi
 
 # --- Ricerca del runtime ----------------------------------------------
 RUNTIME=""
+SEED=""
 
-# 1. Eseguibile standalone (nessuna dipendenza da Julia)
+# 1. Eseguibile standalone (nessuna dipendenza)
 if [ -x "$TRIAD_HOME/bin/triad-native" ]; then
     RUNTIME="standalone"
 fi
 
-# 2-4. Runtime Julia
+# 2. Seed in codice macchina (interprete Triad-Core)
 if [ -z "$RUNTIME" ]; then
-    JULIA=""
-
-    # 2. Variabile d'ambiente
-    if [ -n "${TRIAD_JULIA:-}" ] && [ -x "$TRIAD_JULIA" ]; then
-        JULIA="$TRIAD_JULIA"
-    fi
-
-    # 3. PATH
-    if [ -z "$JULIA" ] && command -v julia >/dev/null 2>&1; then
-        JULIA="julia"
-    fi
-
-    # 4. Posizioni standard
-    if [ -z "$JULIA" ]; then
-        for candidate in \
-            /usr/local/bin/julia \
-            /usr/bin/julia \
-            /opt/julia/bin/julia \
-            "$HOME/.juliaup/bin/julia" \
-        ; do
-            if [ -x "$candidate" ]; then
-                JULIA="$candidate"
-                break
-            fi
-        done
-    fi
-
-    if [ -n "$JULIA" ]; then
-        RUNTIME="julia"
+    case "$(uname -s)" in
+        Linux*)  SEED_CAND="$TRIAD_HOME/seed/linux-x86_64/seed" ;;
+        *)       SEED_CAND="" ;;
+    esac
+    if [ -n "$SEED_CAND" ] && [ -x "$SEED_CAND" ]; then
+        SEED="$SEED_CAND"
+        RUNTIME="seed"
     fi
 fi
 
@@ -106,22 +68,19 @@ case "$RUNTIME" in
     standalone)
         exec "$TRIAD_HOME/bin/triad-native" "$@"
         ;;
-    julia)
-        if is_windows_julia_on_wsl "$JULIA"; then
-            echo "triad: in WSL serve Julia per Linux; julia.exe Windows non è compatibile con i percorsi Linux." >&2
-            exit 1
-        fi
-        exec "$JULIA" --startup-file=no "$TRIAD_HOME/triad.jl" "$@"
+    seed)
+        exec "$SEED" "$@"
         ;;
     *)
         echo "triad: runtime non trovato." >&2
         echo "" >&2
         echo "Opzioni:" >&2
-        echo "  1. Crea uno standalone:   triad --build" >&2
-        echo "  2. Installa Julia e aggiungilo al PATH" >&2
-        echo "  3. Imposta TRIAD_JULIA=/path/to/julia" >&2
+        echo "  1. Decodifica il seed in codice macchina:" >&2
+        echo "     Linux:  xxd -r -p seed/linux-x86_64/seed.hex > seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed" >&2
+        echo "  2. Compila uno standalone (strumento di sviluppo): triad --build (richiede Julia)" >&2
         echo "" >&2
-        echo "Scarica Julia da https://julialang.org/downloads/" >&2
+        echo "Triad non dipende da Julia per l'esecuzione del codice .triad." >&2
         exit 1
         ;;
 esac
+

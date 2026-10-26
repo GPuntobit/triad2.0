@@ -30,11 +30,9 @@ julia --startup-file=no triad.jl --version
 ```
 
 Launcher (se `bin/` è nel `PATH`): `triad`, `triad.cmd` (Windows). Entrambi preferiscono
-un eventuale `bin/triad-native`; altrimenti rispettano `TRIAD_JULIA` e cercano Julia nel
-`PATH`. I fallback successivi sono specifici della piattaforma: `triad` controlla alcune
-posizioni standard Linux/macOS, mentre `triad.cmd` controlla installazioni Windows note
-(incluso un percorso locale specifico della macchina di sviluppo). Il launcher POSIX non
-usa un eseguibile Julia Windows; su WSL richiede Julia nativa Linux. Esempio:
+un eventuale `bin/triad-native`; altrimenti usano il seed in codice macchina
+(`seed/<piattaforma>/seed`). Triad non dipende da Julia per l'esecuzione del codice .triad;
+Julia resta strumento di sviluppo opzionale. Esempio:
 
 ```sh
 triad examples/assaggio.td      # esegue assaggio.td

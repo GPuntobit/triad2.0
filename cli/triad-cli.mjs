@@ -5,7 +5,7 @@ import { handleSeedGenerate } from './lib/commands/seed.mjs';
 import { handleAIVerify } from './lib/commands/ai.mjs';
 import { handleBuildStandalone } from './lib/commands/build.mjs';
 import { handleTestRun, handleTestConformance } from './lib/commands/test.mjs';
-import { findJulia, projectPath } from './lib/utils.mjs';
+import { findSeed, projectPath } from './lib/utils.mjs';
 
 const program = new Command();
 
@@ -91,7 +91,7 @@ program
     console.log('Environment:');
     console.log(`  Node.js: ${process.version}`);
     console.log(`  Platform: ${process.platform}`);
-    console.log(`  Julia: ${findJulia()}`);
+    console.log(`  Seed: ${findSeed() || 'non trovato'}`);
     console.log('');
     console.log('Project:');
     console.log(`  Root: ${projectPath()}`);

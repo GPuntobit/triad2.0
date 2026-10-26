@@ -56,14 +56,12 @@ L'estensione `.triad` Ã¨ canonica; `.td` Ã¨ accettata come alias storico.
 
 Il launcher cerca in ordine:
 1. `bin/triad-native` â€” eseguibile standalone (se compilato)
-2. Variabile d'ambiente `TRIAD_JULIA`
-3. `julia` nel `PATH`
-4. Posizioni standard di Julia per Linux/macOS
+2. `seed/<piattaforma>/seed` — interprete Triad-Core in codice macchina
 
-Su Windows usare `triad.cmd` (funziona analogamente). Su WSL il launcher POSIX richiede
-Julia per Linux; non usa il `julia.exe` installato in Windows, perchÃ© i percorsi e i file
-passati dal filesystem Linux non sono compatibili con quel runtime.
 
+
+Su Windows usare `triad.cmd` (funziona analogamente). Il launcher POSIX usa il seed Linux (`seed/linux-x86_64/seed`) quando disponibile; non richiede
+Julia per eseguire codice .triad.
 ### 2. File .triad eseguibili direttamente (shebang)
 
 I file `.triad` (o `.td`) possono essere resi eseguibili come script autonomi:
@@ -95,11 +93,8 @@ repository non ha ancora il layout di pacchetto `Project.toml`/`src/Triad.jl` ri
 builder e lo script di precompilazione presuppone `using Triad`. Il packaging resta quindi
 da completare e verificare prima di poter usare `bin/triad-native`.
 
-Per usare Triad oggi, serve Julia installato: usare il launcher `triad`/`triad.cmd` oppure
-`julia --startup-file=no triad.jl ...`. Un eventuale eseguibile creato in futuro potrÃ 
-includere il runtime Julia senza richiedere un'installazione separata di Julia; non sarÃ 
-perÃ² un'implementazione indipendente da Julia. La strada per un Triad senza linguaggi
-ospiti Ã¨ in [BOOTSTRAP.md](BOOTSTRAP.md).
+Per usare Triad oggi, usa il launcher `triad`/`triad.cmd`, che esegue il seed in codice macchina;
+Julia resta uno strumento di sviluppo per test e conformance, non un runtime per .triad.
 
 ### 4. CLI di sviluppo (triad-cli)
 

@@ -5,6 +5,7 @@ created: 2026-10-22T18:16:39Z
 updated: 2026-10-26
 ---
 # Piano per completare Triad 2.0 - Stato Aggiornato
+Nota runtime: il seed in codice macchina è il runtime predefinito per `.triad` (launcher `bin/triad`/`bin/triad.cmd` e CLI); Julia resta uno strumento di sviluppo (test, conformance, packaging).
 
 ## Stato Attuale (Giorno 4)
 

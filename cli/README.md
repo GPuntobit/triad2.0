@@ -33,7 +33,7 @@ Triad 2.0 CLI Status
 Environment:
   Node.js: v24.22.0
   Platform: win32
-  Julia: C:\Users\xbos\AppData\Local\Programs\Julia-1.13.1\bin\julia.exe
+  Seed: C:\Users\xbos\Documents\progetti\triad2.0\seed\windows-x86_64\seed.exe
 
 Project:
   Root: C:\Users\xbos\Documents\progetti\triad2.0
@@ -97,7 +97,8 @@ Opzioni:
 ## Requisiti
 
 - **Node.js** ≥ 18.0.0
-- **Julia** ≥ 1.6 (per i comandi che wrappano script Julia)
+- **Seed** in codice macchina (runtime predefinito per `.triad`)
+- **Julia** ≥ 1.6 (solo sviluppo: test, conformance, build standalone)
 - **PackageCompiler** (installato automaticamente dal comando build standalone)
 
 ## Architettura
@@ -109,7 +110,7 @@ cli/
 ├── triad-cli.mjs           # Entry point principale
 ├── package.json            # Dipendenze Node.js
 ├── lib/
-│   ├── utils.mjs           # Funzioni utility (trova Julia, esegui script)
+│   ├── utils.mjs           # Funzioni utility (trova seed, esegui script)
 │   └── commands/
 │       ├── seed.mjs        # Generazione seed
 │       ├── ai.mjs          # Verifica AI
@@ -127,6 +128,5 @@ cli/
 
 ## Note
 
-- I comandi che wrappano script Julia richiedono Julia installato
-- La CLI non sostituisce i launcher esistenti (`bin/triad`, `bin/triad.cmd`), ma fornisce un'interfaccia unificata per le operazioni di sviluppo
-- Per eseguire programmi Triad, usa ancora i launcher standard o `julia triad.jl`
+- I comandi di sviluppo che wrappano script Julia richiedono Julia installato
+- Il runtime per eseguire programmi Triad è il seed in codice macchina (o `bin/triad-native`); usa `triad`/`triad.cmd` o `triad-cli` per le operazioni di sviluppo

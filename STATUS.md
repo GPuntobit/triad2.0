@@ -16,6 +16,7 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
   ricorsione, Bool, operatori (`% ^ ! && || +=`), `if`/`elseif`/`else`, `while`, `let`, `begin`,
   lambda, chiusure con cattura per valore, stringhe base + concatenazione + `string()`,
   `nothing`, simboli e costruzione/stampa di liste di interi.
+- **Launcher/CLI**: il runtime predefinito per `.triad` è il seed in codice macchina (`bin/triad`, `bin/triad.cmd`, `cli/lib/utils.mjs`); Julia resta uno strumento di sviluppo (test, conformance, packaging).
 - **CI**: `.github/workflows/ci.yml` — conformance Full/Core su Ubuntu e Windows, casi del seed su Windows, hash check.
 
 ## Cosa manca
