@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Triad 2.0 — linguaggio di programmazione</title>
+<meta name="description" content="Triad 2.0: linguaggio autonomo con sintassi a blocchi, tipi dichiarati, multiple dispatch, logica integrata, codice come dato." />
+<link rel="stylesheet" href="assets/css/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+</head>
+<body>
+<div id="site-header"></div>
+<main>
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="badges">
+        <span class="badge">v0.2.0</span>
+        <span class="badge">MIT</span>
+        <span class="badge">Spec normativa</span>
+        <span class="badge">Conformance 33/33</span>
+      </div>
+      <h1>Un linguaggio <span>a sé</span>, definito dal suo standard</h1>
+      <p>Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple dispatch, programmazione logica integrata (<code>fact</code>, <code>rule</code>, <code>solve</code>), codice come dato. Errori, contratti, budget, tracce ed effetti sono parte del linguaggio, non di una libreria.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="pages/getting-started.html">Inizia ora</a>
+        <a class="btn btn-ghost" href="https://github.com/GPuntobit/triad2.0" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+    <div class="code-card"><span class="kw">struct</span> <span class="ty">Point</span>
+    x::<span class="ty">Float</span>
+    y::<span class="ty">Float</span>
+<span class="kw">end</span>
+
+<span class="kw">function</span> dist(a::<span class="ty">Point</span>, b::<span class="ty">Point</span>)::<span class="ty">Float</span>
+    <span class="kw">requires</span> a.x != b.x || a.y != b.y
+    sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
+<span class="kw">end</span>
+
+<span class="kw">fact</span> parent(:alice, :bob)
+<span class="kw">rule</span> grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)
+
+result = solve grandparent(:alice, ?who) limit 5
+println(result)   <span class="cm"># [{who = :dave}]</span></div>
+  </div>
+</section>
+<section class="section alt">
+  <div class="container">
+    <h2 class="section-title">Perché Triad</h2>
+    <p class="section-sub">Una specifica normativa indipendente dall'implementazione, una suite di conformità eseguibile, un percorso di bootstrap verso il self-hosting.</p>
+    <div class="grid grid-3">
+      <div class="card"><div class="icon">📜</div><h3>Specifica normativa</h3><p>SPEC.md (0.2.0): lessico, grammatica, tipi, semantica, esecuzione, errori, contratti, effetti, logica, CLI. §1–§14 e §16 normativi.</p></div>
+      <div class="card"><div class="icon">✅</div><h3>Conformance eseguibile</h3><p>Casi golden con stdout ed exit code attesi. Qualsiasi implementazione (seed in codice macchina, Triad-Core, compilatore nativo) deve passarli.</p></div>
+      <div class="card"><div class="icon">🧬</div><h3>Bootstrap autonomo</h3><p>Seed S0 in codice macchina (PE Windows + ELF Linux). Roadmap S1–S4 verso Triad senza linguaggi ospiti. Vedi BOOTSTRAP.md.</p></div>
+      <div class="card"><div class="icon">🧠</div><h3>Logica integrata</h3><p>fact, rule, unificazione con occurs-check, backtracking, solve con variabili logiche ?x. Come in Prolog, ma nel linguaggio.</p></div>
+      <div class="card"><div class="icon">🪞</div><h3>Codice come dato</h3><p>Albero uniforme Node, quote :( … ) con $, macro. Introspezione e metaprogrammazione native.</p></div>
+      <div class="card"><div class="icon">🛡️</div><h3>Contratti ed effetti</h3><p>requires/ensures, budget (with budget), tracce (with trace), effetti dichiarati (!io, !state). Errori come dati (Err).</p></div>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Avvio rapido</h2>
+    <p class="section-sub">L'implementazione di riferimento è in Julia (transitoria per il bootstrap), zero pacchetti esterni.</p>
+    <div class="grid grid-2">
+      <div class="code-card"># REPL
+julia --startup-file=no triad.jl
+
+# esegui un file
+julia --startup-file=no triad.jl examples/assaggio.td
+
+# valuta un'espressione
+julia --startup-file=no triad.jl -E '1 + 2'
+
+# launcher (bin/ nel PATH)
+triad examples/assaggio.td</div>
+      <div>
+        <h3>Documentazione</h3>
+        <ul class="feature-list">
+          <li><a href="pages/getting-started.html">Inizia: installazione e CLI</a></li>
+          <li><a href="pages/language-tour.html">Tour del linguaggio</a></li>
+          <li><a href="pages/spec.html">SPEC.md — standard 0.2.0</a></li>
+          <li><a href="pages/tutorial.html">TUTORIAL.md — completo</a></li>
+          <li><a href="pages/examples.html">Esempi (.triad / .td)</a></li>
+          <li><a href="pages/conformance.html">Conformance suite</a></li>
+          <li><a href="pages/bootstrap.html">BOOTSTRAP.md — piano self-hosting</a></li>
+          <li><a href="pages/status.html">STATUS.md — stato e roadmap</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+<div id="site-footer"></div>
+<script src="assets/js/app.js"></script>
+<script>TriadSite.mount('Home');</script>
+</main>
+</body>
+</html>

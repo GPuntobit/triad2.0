@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Esempi — Triad 2.0</title>
+<link rel="stylesheet" href="../assets/css/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+</head>
+<body>
+<div id="site-header"></div>
+<main class="container">
+  <div class="doc-layout">
+    <aside class="doc-sidebar">
+      <h4>Documentazione</h4>
+      <ul>
+        <li><a href="getting-started.html">Inizia</a></li>
+        <li><a href="language-tour.html">Tour</a></li>
+        <li><a href="spec.html">Spec</a></li>
+        <li><a href="tutorial.html">Tutorial</a></li>
+        <li><a href="examples.html" class="active">Esempi</a></li>
+        <li><a href="conformance.html">Conformance</a></li>
+        <li><a href="bootstrap.html">Bootstrap</a></li>
+        <li><a href="editors.html">Editor</a></li>
+        <li><a href="ai.html">AI</a></li>
+        <li><a href="status.html">Stato</a></li>
+        <li><a href="license.html">Licenza</a></li>
+      </ul>
+    </aside>
+    <article class="doc-content">
+      <h1>Esempi</h1>
+      <p>I sorgenti di esempio si trovano in <a href="https://github.com/GPuntobit/triad2.0/tree/main/examples" target="_blank" rel="noopener">examples/</a>. Estensione canonica <code>.triad</code>, alias storico <code>.td</code>.</p>
+      <div class="grid grid-2">
+        <div class="card"><h3>assaggio.td</h3><p>Struct Point, distanza, fatti parent, regola grandparent, solve.</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/assaggio.td" target="_blank" rel="noopener">Apri</a></div>
+        <div class="card"><h3>benvenuto.triad</h3><p>Benvenuto in Triad.</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/benvenuto.triad" target="_blank" rel="noopener">Apri</a></div>
+        <div class="card"><h3>famiglia.td</h3><p>Relazioni familiari e solve.</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/famiglia.td" target="_blank" rel="noopener">Apri</a></div>
+        <div class="card"><h3>garanzie.td</h3><p>Contratti requires/ensures.</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/garanzie.td" target="_blank" rel="noopener">Apri</a></div>
+        <div class="card"><h3>macro.td</h3><p>Macro e codice come dato.</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/macro.td" target="_blank" rel="noopener">Apri</a></div>
+        <div class="card"><h3>tour.td</h3><p>Tour completo delle feature.</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/tour.td" target="_blank" rel="noopener">Apri</a></div>
+      </div>
+      <h2>Esecuzione</h2>
+      <div class="code-card">triad examples/assaggio.td
+# oppure
+julia --startup-file=no triad.jl examples/assaggio.td</div>
+    </article>
+  </div>
+</main>
+<div id="site-footer"></div>
+<script src="../assets/js/app.js"></script>
+<script>TriadSite.mount('Esempi');</script>
+</body>
+</html>
