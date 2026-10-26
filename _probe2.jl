@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 
-include(joinpath(@__DIR__, "triad.jl"))
+include(joinpath(@__DIR__, "src", "triad.jl"))
 using .Triad
 
 world = World(out = IOBuffer())

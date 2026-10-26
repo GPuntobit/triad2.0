@@ -15,7 +15,7 @@
 #    --update      rigenera i golden (expected.out / expected.code)
 # =====================================================================
 
-include(joinpath(@__DIR__, "..", "triad.jl"))
+include(joinpath(@__DIR__, "..", "src", "triad.jl"))
 using .Triad
 
 function parse_opts(argv)
