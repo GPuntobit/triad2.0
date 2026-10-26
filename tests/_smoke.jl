@@ -1,5 +1,5 @@
 println("Julia OK ", VERSION)
 println("LOADING triad.jl...")
 t0 = time()
-include(joinpath(@__DIR__, "triad.jl"))
+include(joinpath(@__DIR__, "..", "src", "triad.jl"))
 println("LOADED in ", round(time() - t0, digits=2), "s")
