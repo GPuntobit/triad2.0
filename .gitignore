@@ -58,3 +58,20 @@ ai/tasks/*/solution.triad
 /_probe3.jl
 /_qc.jl
 /_smoke.jl
+
+## AI generated files (esclusionale)
+/ai/
+
+## File di log generici (già presenti ma aggiunti per completezza)
+*.log
+
+## Cache del sistema operativo
+.Cache/
+.cache/
+
+## Backup editoriali
+*.bak
+*.backup
+
+## File di trapock (es. Python, Node)
+# pieni di cache, non servono in repo
