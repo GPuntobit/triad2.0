@@ -1,0 +1,3 @@
+nome = "Triad"
+println("ciao " * nome)
+println(length(nome))

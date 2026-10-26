@@ -1,0 +1,3 @@
+crea(n) = x -> x + n
+f = crea(10)
+println(f(5))
