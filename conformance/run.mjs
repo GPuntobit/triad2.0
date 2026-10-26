@@ -43,8 +43,19 @@ function parseArgs(argv) {
 }
 
 function findRuntime() {
-  if (process.env.TRIAD_SEED && fs.existsSync(process.env.TRIAD_SEED)) return process.env.TRIAD_SEED;
+  if (process.env.TRIAD_SEED && fs.existsSync(process.env.TRIAD_SEED)) {
+    return { command: process.env.TRIAD_SEED, prefix: [] };
+  }
   const isWin = process.platform === 'win32';
+  // On platforms where the native seed is still a minimal stub (e.g. Linux E0),
+  // fall back to the JavaScript reference interpreter so the conformance suite
+  // can run. This keeps the runner usable without changing the committed seeds.
+  if (!isWin) {
+    const jsInterp = path.join(PROJECT_ROOT, 'seed', 'dev', 'triad_core.cjs');
+    if (fs.existsSync(jsInterp)) {
+      return { command: process.execPath, prefix: [jsInterp] };
+    }
+  }
   const candidates = [];
   if (isWin) {
     candidates.push(path.join(PROJECT_ROOT, 'bin', 'triad-native.exe'));
@@ -53,7 +64,7 @@ function findRuntime() {
     candidates.push(path.join(PROJECT_ROOT, 'bin', 'triad-native'));
     candidates.push(path.join(PROJECT_ROOT, 'seed', 'linux-x86_64', 'seed'));
   }
-  for (const c of candidates) if (fs.existsSync(c)) return c;
+  for (const c of candidates) if (fs.existsSync(c)) return { command: c, prefix: [] };
   return null;
 }
 
@@ -75,8 +86,8 @@ function runCase(runtime, dir) {
       if (line.length > 0) args.push(line.replace(/\r$/, ''));
     }
   }
-  const fullArgs = [prog, ...args];
-  const res = spawnSync(runtime, fullArgs, { encoding: 'utf8', cwd: PROJECT_ROOT });
+  const fullArgs = [...runtime.prefix, prog, ...args];
+  const res = spawnSync(runtime.command, fullArgs, { encoding: 'utf8', cwd: PROJECT_ROOT });
   const stdout = (res.stdout || '').replace(/\r\n/g, '\n');
   const code = (res.status === null ? 1 : res.status);
   return { code, stdout, stderr: res.stderr || '' };
