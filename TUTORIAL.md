@@ -2,9 +2,9 @@
 
 **Triad** è un linguaggio di programmazione autonomo: la sua definizione è lo standard
 normativo in [`SPEC.md`](SPEC.md) (0.2.0), indipendente dall'implementazione.
-L'implementazione di riferimento attuale è scritta in Julia per il bootstrap (`triad.jl`,
-`syntax.jl`) e sarà sostituita da un'implementazione self-hosted ([`BOOTSTRAP.md`](BOOTSTRAP.md));
-il linguaggio non dipende da Julia.
+Il runtime attuale è il seed in codice macchina (`seed/`), che interpreta Triad-Core; sarà
+affiancato da un'implementazione self-hosted ([`BOOTSTRAP.md`](BOOTSTRAP.md)). L'implementazione
+Julia di bootstrap è stata rimossa: il linguaggio non dipende da Julia.
 
 L'estensione canonica dei sorgenti è `.triad`; negli esempi trovi anche `.td`, accettata
 come alias storico. La conformità è verificata da [`conformance/`](conformance/README.md).
@@ -15,30 +15,19 @@ Questo tutorial copre: installazione/avvio, CLI e REPL, sintassi, funzioni e mul
 
 ## 1. Avvio e riga di comando
 
-Dalla cartella del progetto:
-
-```sh
-julia --startup-file=no triad.jl          # REPL
-julia --startup-file=no triad.jl file.td a b  # esegue file.td, ARGS == ["a", "b"]
-julia --startup-file=no triad.jl -l file.td     # carica file e apre il REPL
-julia --startup-file=no triad.jl -i file.td     # esegue file e poi apre il REPL
-julia --startup-file=no triad.jl --tree file.td # stampa albero uniforme (S-expression)
-julia --startup-file=no triad.jl -e 'codice'    # esegue una stringa
-julia --startup-file=no triad.jl -E 'codice'    # esegue e stampa il valore
-julia --startup-file=no triad.jl --help         # tutte le opzioni
-julia --startup-file=no triad.jl --version
-```
-
 Launcher (se `bin/` è nel `PATH`): `triad`, `triad.cmd` (Windows). Entrambi preferiscono
 un eventuale `bin/triad-native`; altrimenti usano il seed in codice macchina
-(`seed/<piattaforma>/seed`). Triad non dipende da Julia per l'esecuzione del codice .triad;
-Julia resta strumento di sviluppo opzionale. Esempio:
+(`seed/<piattaforma>/seed`). Triad non dipende da Julia.
 
 ```sh
-triad examples/assaggio.td      # esegue assaggio.td
-triad -E '1 + 2'                # stampa 3
-triad -l famiglia               # carica famiglia.td e apre il REPL (senza .td)
+triad examples/assaggio.td a b  # esegue il file, ARGS == ["a", "b"]
 ```
+
+Interfaccia definita da SPEC.md §14 (non ancora implementata dal seed, che oggi esegue solo
+file): `triad` (REPL), `-l file` (carica e apre il REPL), `-i file` (esegue e apre il REPL),
+`--tree file` (albero uniforme), `-e 'codice'`, `-E 'codice'` (stampa il valore), `--help`,
+`--version`. Su Linux, finché il seed è allo stadio E0, si usa l'interprete di riferimento:
+`node seed/dev/triad_core.cjs file.td`.
 
 L'estensione `.td` si può omettere (`famiglia` trova `famiglia.td`). `-` come script legge da stdin.
 Codici di uscita: `0` ok, `1` errore non gestito, `2` riga di comando non valida.

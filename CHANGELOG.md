@@ -3,6 +3,17 @@
 Le modifiche normative aggiornano anche `VERSION`, la specifica (`SPEC.md`) e, se cambia
 il comportamento, i golden di `conformance/`.
 
+## Non rilasciato — 2026-10-26
+
+- **Conformità**: nuovo caso Core `gcd` (Euclide, ricorsione e `%`); la suite Core ha 37 casi.
+- **Golden versionati**: `.gitignore` non esclude più `conformance/**/expected.out` e
+  `expected.code`; il runner accetta `expected.golden` come copia di riserva.
+- **Runner**: `conformance/run.mjs` usa l'interprete `seed/dev/triad_core.cjs` su Linux/macOS
+  (il seed ELF è ancora E0) e fallisce con `golden mancante` invece di confrontare con uno
+  stdout vuoto; rimosso il golden `gcd` scritto nel codice del runner.
+- **Julia rimossa**: `triad.jl`, `syntax.jl`, `test/` e `bin/build_standalone.jl` non fanno più
+  parte del repository; la CI usa solo Node e il seed.
+
 ## Non rilasciato — 2026-10-22
 
 - **Open source**: aggiunta `LICENSE` MIT; inclusi nel repository i binari del seed

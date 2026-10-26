@@ -11,7 +11,8 @@ di Triad-Full: saranno coperti dai test del seed.
 ## Esecuzione
 
 ```sh
-node conformance/run.mjs --cases conformance/core/cases          # verifica
+node conformance/run.mjs                                         # verifica (Core è il default)
+node conformance/run.mjs --cases conformance/core/cases          # equivalente
 node conformance/run.mjs --cases conformance/core/cases --update # golden
 ```
 
@@ -26,6 +27,9 @@ node conformance/run.mjs --cases conformance/core/cases --update # golden
 | `confronti` | Bool stampabili (`true`/`false`) dal seed (M3b2b3a) |
 | `operatori` | `%`, `^` destra-associata, letterali `true`/`false` (M3b2b3b) |
 | `if_else` | blocchi `if`/`else`/`end` e annidamento (M3b2b3c) |
+| `if_elseif` | catene `if`/`elseif`/`else`, solo il primo ramo vero — coperto dal seed (A02) |
+| `if_nested` | `if`/`elseif` annidati — coperto dal seed (A02) |
+| `if_no_else` | `if` senza `else` — coperto dal seed (A02) |
 | `while_loop` | `while`/`end`, aggiornamento variabili (M3b2b3d) |
 | `lambda` | lambda a un parametro, anche come argomento (M3b2b3e) |
 | `closure` | cattura del parametro — coperto dal seed (M3b2b3k) |
@@ -34,8 +38,12 @@ node conformance/run.mjs --cases conformance/core/cases --update # golden
 | `controllo` | `while`, `if`/`elseif`/`else`, `let`, `begin` |
 | `funzioni` | funzioni nominali, forma breve, ricorsione, ternario — coperto dal seed (M3b2b3h) |
 | `funzioni_blocco` | funzione con corpo multi-istruzione e valore dell'ultima espressione — coperto dal seed (M3b2b3i) |
+| `funzioni_io` | funzione a blocco con effetto dichiarato `!io` — coperto dal seed |
+| `formula` | funzione a blocco con due parametri (area del rettangolo) — coperto dal seed |
 | `begin_block` | blocco `begin … end` — coperto dal seed (M3b2b3l) |
 | `liste` | indici 1-based, `length`, `push!`, iterazione con `while` |
+| `liste_base` | costruzione e stampa di liste di interi — coperto dal seed |
+| `liste_push` | `push!` su liste di interi, aliasing — coperto dal seed |
 | `stringhe_base` | stringhe letterali, stampa, `length` — coperto dal seed (M3b2b3m) |
 | `nothing_base` | valore `nothing` e stampa — coperto dal seed (M3b2b3n) |
 | `stringhe_concat` | concatenazione `*` e `length` — coperto dal seed (M3b2b3o) |
@@ -50,5 +58,6 @@ node conformance/run.mjs --cases conformance/core/cases --update # golden
 | `scope` | locale vs globale, shadowing con `let` — coperto dal seed (M3b2b3j) |
 | `gcd` | algoritmo di Euclide per MCD (ricorsione, modulo) — coperto dal seed |
 
-I golden sono generati dallo stage0 e congelati; ogni implementazione Core (seed compreso)
+37 casi in totale, tutti verdi con `node conformance/run.mjs`; il job CI `seed-windows` ne
+esegue 33 direttamente sul seed PE. I golden sono generati dallo stage0 e congelati; ogni implementazione Core (seed compreso)
 deve riprodurli byte per byte con gli stessi exit code.
