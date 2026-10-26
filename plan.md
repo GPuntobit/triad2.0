@@ -78,3 +78,4 @@ updated: 2026-10-26
 - **03_fibonacci**: funzione ricorsiva fib(n) ✅
 - **04_stringhe**: assegnamento e concatenazione stringhe ✅
 - **05_chiusure**: chiusure e applicazione ✅
+
