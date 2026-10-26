@@ -1,5 +1,7 @@
 # Triad 2.0 — linguaggio di programmazione
 
+Standalone language with a normative specification, executable conformance, .triad extension, and editor tooling. Bootstrap independent of Julia and any host language: S0 seed in machine code (Windows x86-64) and a roadmap to self-hosting.
+
 **Triad** è un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati,
 multiple dispatch, programmazione logica integrata, codice come dato. La sua definizione è
 una specifica normativa indipendente dall'implementazione ([SPEC.md](SPEC.md), standard
