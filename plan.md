@@ -51,6 +51,15 @@ updated: 2026-10-26
 - S3: Self-hosting - validazione cross-platform
 - S4: Runtime completo, Linux parity - benchmark
 
+### Pulizia: output di debug e file usa-e-getta
+- [ ] `seed/dev/gen_seed.js:1589`: rimuovere `console.log('labels', JSON.stringify(labels))`, che stampa il dump di tutte le etichette dell'emitter a ogni rigenerazione del seed (solo debug).
+- [ ] `seed/dev/gen_seed.js:1590`: rimuovere `console.log('code bytes:', code.length)` (dato intermedio; la dimensione finale è già stampata alla riga 1640).
+- [ ] `seed/dev/gen_seed_linux.js:113-114`: ridurre l'output a `sha256(ELF)` e al file scritto; `ELF bytes` ed `entry RVA` sono dettagli di debug.
+- Nota — da mantenere (output legittimi della CLI): `console.log`/`console.error` in `ai/jev_audit.mjs` (report, `--dry-run`, messaggi d'uso) e in `.webcmd/graphify/tools/generate.mjs`.
+- [ ] `_probe.jl`, `_probe2.jl`, `_probe3.jl`, `_qc.jl`, `_smoke.jl`: `PROMPT_JEV.md` li descrive come "gitignored, script usa-e-getta", ma sono versionati. Rimuoverli dal repository e aggiungerli a `.gitignore`.
+- [ ] File di output alla radice versionati (`out.txt`, `output.txt`, `outfile.txt`, `stdout.txt`, `runoutput.txt`, `test_output.txt`, `error.txt`, `scope_out.txt`, `let_output.txt`, `let_test_out.txt`, `let_annidato_out.txt`): rimuoverli e ignorarli.
+- [ ] `run_seed.bat` … `run_seed12.bat` (12 varianti): tenerne uno parametrizzato.
+
 ## File S1 Implementati
 
 - `selfhost/value.td`: Sistema di valori taggati ✅
