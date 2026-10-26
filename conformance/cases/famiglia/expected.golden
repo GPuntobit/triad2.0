@@ -1,0 +1,11 @@
+discendenti di tom: [:bob, :liz, :ann, :pat, :jim]
+fratelli di ann: [:pat]
+madri: ["pat -> jim"]
+senza figli: [:liz, :ann, :jim]
+over 50: [:tom, :bob]
+modi di spezzare [1, 2, 3]:
+  [] ++ [1, 2, 3]
+  [1] ++ [2, 3]
+  [1, 2] ++ [3]
+  [1, 2, 3] ++ []
+figli di bob: [:ann, :pat]

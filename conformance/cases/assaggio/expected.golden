@@ -1,0 +1,8 @@
+nipoti di alice: [{who = :dave}]
+primo: dave
+quanti: 1
+dist(p, q) = 5.0
+dist(p, p) -> Err(:contract, "requires violata in dist: a.x != b.x || a.y != b.y", Info(fn = :dist, clause = :requires, cond = :(a.x != b.x || a.y != b.y)))
+tipo: contract
+almeno un nipote
+alice è nonna di dave? true

@@ -35,7 +35,9 @@ export async function verifyAISolutions(options = {}) {
     const code = res.status === null ? 1 : res.status;
     const out = (res.stdout || '').replace(/\r\n/g, '\n');
 
-    const eoutPath = path.join(dir, 'expected.out');
+    const eoutPathPrimary = path.join(dir, 'expected.out');
+    const eoutPathFallback = path.join(dir, 'expected.golden');
+    const eoutPath = fs.existsSync(eoutPathPrimary) ? eoutPathPrimary : eoutPathFallback;
     const ecodePath = path.join(dir, 'expected.code');
     const expectedOut = fs.existsSync(eoutPath) ? fs.readFileSync(eoutPath, 'utf8') : '';
     const expectedCode = fs.existsSync(ecodePath) ? parseInt(fs.readFileSync(ecodePath, 'utf8').trim(), 10) : 0;

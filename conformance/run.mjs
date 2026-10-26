@@ -111,11 +111,14 @@ function main() {
     const { code, stdout } = runCase(runtime, dir);
     if (update) {
       fs.writeFileSync(path.join(dir, 'expected.out'), stdout, 'utf8');
+      fs.writeFileSync(path.join(dir, 'expected.golden'), stdout, 'utf8');
       fs.writeFileSync(path.join(dir, 'expected.code'), String(code), 'utf8');
       console.log('aggiornato  ' + name);
       continue;
     }
-    const eoutPath = path.join(dir, 'expected.out');
+    const eoutPathPrimary = path.join(dir, 'expected.out');
+    const eoutPathFallback = path.join(dir, 'expected.golden');
+    const eoutPath = fs.existsSync(eoutPathPrimary) ? eoutPathPrimary : eoutPathFallback;
     const ecodePath = path.join(dir, 'expected.code');
     const eout = fs.existsSync(eoutPath) ? fs.readFileSync(eoutPath, 'utf8') : '';
     const ecode = fs.existsSync(ecodePath) ? parseInt(fs.readFileSync(ecodePath, 'utf8').trim(), 10) : 0;
