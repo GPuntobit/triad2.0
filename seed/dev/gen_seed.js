@@ -4,6 +4,7 @@
 //   - expr: interi, + - *, parentesi, unario -
 //   - separatori: spazi, tab, a capo, CR, ;
 // Uso: node gen_seed_m3.js out.hex
+// @ts-nocheck
 'use strict';
 const fs = require('fs');
 const outHex = process.argv[2];
