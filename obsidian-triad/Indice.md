@@ -4,7 +4,9 @@ Vault di consultazione del progetto [triad2.0](../). I collegamenti ai sorgenti 
 
 ## Navigazione
 
-- [[Grafo Graphify]] — statistiche, snapshot e limiti dell’esportazione.
+- [[Grafo Graphify]] — statistiche, snapshot ed elenco completo dei file nel grafo.
+- [[graphify/GRAPH_REPORT|GRAPH_REPORT]] — report generato da Graphify.
+- [Grafo interattivo `graph.html`](<./graphify/graph.html>) — da aprire nel browser.
 - [[File - triad.jl]] — runtime principale del linguaggio.
 - [[File - ai verify.jl]] — verificatore delle soluzioni.
 - [[File - ai jev_audit.mjs]] — audit dei file del progetto.
@@ -20,7 +22,7 @@ Vault di consultazione del progetto [triad2.0](../). I collegamenti ai sorgenti 
 - [Plugin KarpathyWiki](./.obsidian/plugins/karpathywiki/)
 - [Plugin Templater](./.obsidian/plugins/templater-obsidian/)
 
-## File individuati nel grafo
+## File con pagina di dettaglio
 
 | File | Note | Area |
 |---|---|---|
@@ -30,4 +32,4 @@ Vault di consultazione del progetto [triad2.0](../). I collegamenti ai sorgenti 
 | [KarpathyWiki `main.js`](./.obsidian/plugins/karpathywiki/main.js) | [[File - KarpathyWiki main.js]] | Bundle plugin |
 | [Templater `main.js`](./.obsidian/plugins/templater-obsidian/main.js) | [[File - Templater main.js]] | Bundle plugin |
 
-> Per il dettaglio della copertura effettivamente restituita da Graphify e dei suoi limiti, consultare [[Grafo Graphify]].
+> L’elenco completo dei 101 file presenti nel grafo, con nodi e relazioni per file, è in [[Grafo Graphify#Tutti i file nel grafo]].
