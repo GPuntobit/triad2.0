@@ -48,6 +48,7 @@ node conformance/run.mjs --cases conformance/core/cases --update # golden
 | `let_chiusura` | lambda dentro `let` con lookup dinamico — coperto dal seed |
 | `chiusura_in_if` | lambda dentro `if` — coperto dal seed |
 | `scope` | locale vs globale, shadowing con `let` — coperto dal seed (M3b2b3j) |
+| `gcd` | algoritmo di Euclide per MCD (ricorsione, modulo) — coperto dal seed |
 
 I golden sono generati dallo stage0 e congelati; ogni implementazione Core (seed compreso)
 deve riprodurli byte per byte con gli stessi exit code.
