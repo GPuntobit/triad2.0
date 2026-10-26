@@ -12,7 +12,7 @@ Nota runtime: il seed in codice macchina è il runtime predefinito per `.triad` 
 ### Seed S0 Windows - COMPLETATO ✅
 
 - **PE**: 25.088 byte, codice 8315 byte
-- **Hash**: `9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822`
+- **Hash**: `3A75A21E2F47D8DC4C88D4BC2580A85D5349BCDF7550E5FFA16E2C0AC7CA8C11`
 - **Funzionalità**:
   - Interi, variabili, funzioni (forma breve e blocco)
   - Ricorsione, Bool, operatori (`% ^ ! && || +=`)

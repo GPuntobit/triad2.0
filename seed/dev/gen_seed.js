@@ -7,6 +7,10 @@
 'use strict';
 const fs = require('fs');
 const outHex = process.argv[2];
+if (!outHex) {
+  console.error('Uso: node gen_seed.js <output.hex>');
+  process.exit(1);
+}
 
 // ---------------------------------------------------------------- emitter
 const code = [], labels = {}, patches = [];
@@ -250,6 +254,9 @@ const xorEax = () => B(0x31, 0xc0);
 function flagLoad() { leaRdxR14(0xF008); B(0x48, 0x8b, 0x02); }
 function flagStoreRax() { leaRdxR14(0xF008); B(0x48, 0x89, 0x02); }
 function flagStoreImm(v) { leaRdxR14(0xF008); B(0x48, 0xc7, 0x02); B32(v); }
+function breakFlagLoad() { leaRdxR14(0xF02C); B(0x48, 0x8b, 0x02); }
+function breakFlagStoreRax() { leaRdxR14(0xF02C); B(0x48, 0x89, 0x02); }
+function breakFlagStoreImm(v) { leaRdxR14(0xF02C); B(0x48, 0xc7, 0x02); B32(v); }
 const movRaxMemRspDisp = d => B(0x48, 0x8b, 0x44, 0x24, d & 255);
 const movRcxMemRdiDisp = d => B(0x48, 0x8b, 0x4f, d & 255);
 const movR8MemRdiDisp = d => B(0x4c, 0x8b, 0x47, d & 255);
@@ -456,6 +463,7 @@ leaRdxR14(0x30000); xorEax(); movMemRdxRax(); // heap chiusure: bump = 0
 movRsiR14();
 maskStoreImm(0);                        // maschera di stop dei blocchi
 flagStoreImm(0);                        // dentro una funzione/chiusura?
+breakFlagStoreImm(0);                    // stato break
 leaRdxR14(0xF028); movMemRdxImm32(0, 0); // modalità di stampa inline
 callL('parse_program');
 xorEcx(); callIat(6, IAT);
@@ -517,6 +525,14 @@ cmpByteRsiDispImm(6, 'o'); jne('pp_not_function');
 cmpByteRsiDispImm(7, 'n'); jne('pp_not_function');
 jmp('st_function');
 L('pp_not_function');
+// statement break
+cmpByteRsiImm('b'); jne('pp_not_break');
+cmpByteRsiDispImm(1, 'r'); jne('pp_not_break');
+cmpByteRsiDispImm(2, 'e'); jne('pp_not_break');
+cmpByteRsiDispImm(3, 'a'); jne('pp_not_break');
+cmpByteRsiDispImm(4, 'k'); jne('pp_not_break');
+jmp('st_break');
+L('pp_not_break');
 cmpByteRsiDispImm(0, 'p'); jne('stmt_assign');
 cmpByteRsiDispImm(1, 'r'); jne('stmt_assign');
 cmpByteRsiDispImm(2, 'i'); jne('stmt_assign');
@@ -534,6 +550,11 @@ cmpByteRsiImm(')'); jne('fail');
 incRsi();
 callL('print_int');
 jmp('pp_loop');
+L('st_break');
+addRsiImm(5);
+callL('skip_ws');
+breakFlagStoreImm(1);
+ret();
 L('stmt_assign');
 pushRsi();                        // inizio statement (per expression statement)
 cmpByteRsiImm('_'); je('st_name');
@@ -694,6 +715,7 @@ movRsiRdi();
 maskLoad(); pushRax(); maskStoreImm(3);
 callL('parse_program');
 popRax(); maskStoreRax();
+breakFlagLoad(); testRax(); jnz('prop_break');
 movR9dImm(0); callL('scan_end');
 addRsiImm(3); jmp('st_if_done');
 L('st_if_elseif_cond');
@@ -720,9 +742,12 @@ addRsiImm(4); callL('skip_ws');
 maskLoad(); pushRax(); maskStoreImm(1);
 callL('parse_program');
 popRax(); maskStoreRax();
+breakFlagLoad(); testRax(); jnz('prop_break');
 addRsiImm(3); jmp('st_if_done');
 L('st_if_done');
 jmp('pp_loop');
+L('prop_break');
+ret();
 
 // while cond <blocco> end
 L('st_while');
@@ -744,6 +769,10 @@ movRsiMemRspDisp(0x08);
 maskLoad(); pushRax(); maskStoreImm(1);
 callL('parse_program');
 popRax(); maskStoreRax();
+breakFlagLoad(); testRax(); jz('wh_no_break');
+breakFlagStoreImm(0);
+jmp('wh_done');
+L('wh_no_break');
 jmp('wh_loop');
 L('wh_done');
 movRsiMemRspDisp(0x00);
@@ -1373,8 +1402,10 @@ jmp('pf_call_tail');
 L('pf_call_block');
 maskLoad(); pushRax(); maskStoreImm(1);
 flagLoad(); pushRax(); flagStoreImm(1);
+breakFlagLoad(); pushRax(); breakFlagStoreImm(0);
 movRsiMemRdi24();
 callL('parse_program');
+movRaxMemRsp(); breakFlagStoreRax(); addRspImm8();
 movRaxMemRsp(); flagStoreRax(); addRspImm8();
 movRaxMemRsp(); maskStoreRax(); addRspImm8();
 blockLoad();
@@ -1586,8 +1617,7 @@ for (const p of patches) {
   for (let i = 0; i < 4; i++) code[p.at + i] = buf[i];
 }
 if (code.length > IAT - 0x1000) throw new Error('codice troppo grande: ' + code.length);
-console.log('labels', JSON.stringify(labels));
-console.log('code bytes:', code.length);
+
 
 // ---------------------------------------------------------------- PE builder
 const img = Buffer.alloc(FILESZ);

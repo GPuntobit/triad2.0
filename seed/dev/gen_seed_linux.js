@@ -110,7 +110,5 @@ if (round.readUInt16LE(0x12) !== 62) throw new Error('e_machine errata');
 if (round.readBigUInt64LE(0x18) !== BigInt(BASE + CODE_OFF)) throw new Error('entry errata');
 
 const sha = crypto.createHash('sha256').update(img).digest('hex');
-console.log('ELF bytes:', fileSize);
-console.log('entry RVA:', '0x' + (CODE_OFF).toString(16));
 console.log('sha256(ELF):', sha);
 console.log('scritto', outPath);
