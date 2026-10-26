@@ -1195,4 +1195,30 @@ Fine del tutorial.
 ---
 
 Scritto e mantenuto da **Kilo** — agente software engineer per il progetto Triad 2.0.
+## S1.11 Parser completo
+
+Questa sezione descrive l'implementazione del parser S1.11, che estende il tokenizer per riconoscere i costrutti `if`, `else`, `while` e `function`. I tipi di token aggiunti sono:
+
+- **9: IF**
+- **10: ELSE**
+- **11: WHILE**
+- **12: FUNCTION**
+- **13: END**
+- **14: THEN**
+- **15: DO**
+
+Il test S1.11 verifica la tokenizzazione della sorgente `"if end"`; l'output atteso è:
+
+```
+Token 1: type=9 (IF)
+Token 2: type=13 (END)
+```
+
+L'esecuzione del test si esegue da riga di comando:
+
+```cmd
+seed\windows-x86_64\seed.exe selfhost\parser.td
+```
+
+L'output conferma che il parser riconosce correttamente le keyword `if` ed `end` e restituisce i rispettivi tipi di token.
 Ultimo aggiornamento: include la destrutturazione (`(a, b) = lista`, `for (k, v) in lista_di_liste`, parametri `(a, b)`) e i test oracle.
