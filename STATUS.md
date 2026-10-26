@@ -1,6 +1,6 @@
 # Stato di Triad e del bootstrap S0
 
-Aggiornato dopo la verifica A02.
+Aggiornato dopo la verifica A03 e la pulizia del runner di conformità.
 
 ## Obiettivo
 
@@ -9,31 +9,40 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 ## Cosa è pronto
 
 - **Standard**: `SPEC.md` (v0.2.0), `SPEC-CORE.md`, `VERSION`, `CHANGELOG.md`.
-- **Conformance**: runner indipendente; 12 casi Triad-Full e 36 casi Triad-Core, tutti verdi sul seed; `conformance/README.md`.
+- **Conformance**: runner Node `conformance/run.mjs` (senza Julia); Triad-Core 37/37 verde
+  (Linux: interprete `seed/dev/triad_core.cjs`; Windows: seed PE). Triad-Full: 12 casi, oggi
+  passa solo `errore`. Golden `expected.out`/`expected.code` versionati; un golden mancante
+  fa fallire il caso con `golden mancante`. Vedi `conformance/README.md`.
 - **Estensione canonica**: `.triad` (`.td` alias storico), grammatiche VS Code/Vim e voce Linguist preparata.
 - **Seed S0** (Windows PE, nessun runtime/compilatore): interprete Triad-Core con
   supporto per interi, variabili, funzioni (forma breve e `function … end` multi-istruzione),
   ricorsione, Bool, operatori (`% ^ ! && || +=`), `if`/`elseif`/`else`, `while`, `let`, `begin`,
   lambda, chiusure con cattura per valore, stringhe base + concatenazione + `string()`,
   `nothing`, simboli e costruzione/stampa di liste di interi.
-- **Launcher/CLI**: il runtime predefinito per `.triad` è il seed in codice macchina (`bin/triad`, `bin/triad.cmd`, `cli/lib/utils.mjs`); Julia resta uno strumento di sviluppo (test, conformance, packaging).
-- **CI**: `.github/workflows/ci.yml` — conformance Full/Core su Ubuntu e Windows, casi del seed su Windows, hash check.
+- **Launcher/CLI**: il runtime predefinito per `.triad` è il seed in codice macchina (`bin/triad`, `bin/triad.cmd`, `cli/lib/utils.mjs`); l'implementazione Julia (`triad.jl`, `syntax.jl`, `test/`, `bin/build_standalone.jl`) è stata rimossa.
+- **CI**: `.github/workflows/ci.yml` — `conformance-core` (Ubuntu, `--skip liste`), `seed-windows`
+  (33 casi Core sul PE, probe `get`, smoke test `selfhost/main.td`, hash `seed.hex`
+  `3A75A21E…8C11`), `seed-linux` (ELF E0 + hash).
 
 ## Cosa manca
 
 | area | stato |
 |---|---|
 | `stringhe` (`string()`) | ✅ implementato (Int/String); Bool/Symbol/Nothing non implementati |
-| `liste` | costruzione/stampa e `push!` di liste di interi implementati; indicizzazione standard, `length` e iterazione non supportati dal seed |
+| `liste` | il caso Core passa con il runner; sul seed PE: costruzione/stampa e `push!` di liste di interi, indicizzazione standard, `length` e iterazione non supportati |
 | `valori` (liste/simboli/stringhe insieme) | parziale; liste solo intere, senza operazioni o valori misti |
 | `controllo` (`elseif`) | ✅ implementato |
-| S1 (Triad in Triad-Core) | in corso |
+| S1 (Triad in Triad-Core) | in corso in `selfhost/` (smoke test in CI, non ancora conformance) |
+| Triad-Full | 11/12 casi non implementati (passa solo `errore`) |
+| CLI seed | solo esecuzione di file; REPL e opzioni di SPEC §14 da fare |
 | S2–S3 (compilatore nativo, self-hosting) | non iniziati |
 | S4 / M7 (parità, Linux ELF) | **E0 ✅** ELF Linux minimale; E1/E2/E3 e parità da fare |
 
 ## Comandi di verifica
 
 ```sh
+node conformance/run.mjs                                 # Core, 37 casi
+node conformance/run.mjs --cases conformance/cases       # Full, 12 casi
 ```
 
 Windows, seed:

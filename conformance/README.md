@@ -25,8 +25,8 @@ Regole:
 
 ## Profili
 
-- **Triad-Full** — `cases/` (12 casi): tutto il linguaggio di `SPEC.md`.
-- **Triad-Core** — `core/cases/` (33 casi): solo il sottoinsieme normativo di
+- **Triad-Full** — `cases/` (12 casi; oggi passa solo `errore`, il resto di Triad-Full non è implementato): tutto il linguaggio di `SPEC.md`.
+- **Triad-Core** — `core/cases/` (37 casi, tutti verdi): solo il sottoinsieme normativo di
   [`SPEC-CORE.md`](../SPEC-CORE.md), condiviso con Triad-Full; i primitivi di bootstrap non
   sono coperti da questa suite.
 
@@ -34,19 +34,30 @@ Regole:
 
 - Definitivo (dalla milestone M4): `triad --conformance DIR`, implementato in
   Triad, eseguito dall'implementazione sotto test.
-- Temporaneo (fase 0): `run.mjs`, runner Node che usa il seed in codice macchina:
+- Temporaneo (fase 0): `run.mjs`, runner Node (nessuna dipendenza da Julia):
 
 ```sh
-node conformance/run.mjs --update   # rigenera expected.*
-node conformance/run.mjs            # verifica (profilo Full)
+node conformance/run.mjs            # verifica (profilo Core, default)
+node conformance/run.mjs --update   # rigenera expected.out/expected.golden/expected.code
 
-# profilo Core
-node conformance/run.mjs --cases conformance/core/cases
-node conformance/run.mjs --cases conformance/core/cases --update
+# profilo Full
+node conformance/run.mjs --cases conformance/cases
+node conformance/run.mjs --cases conformance/cases --update
 ```
 
-`run.jl` è uno strumento di sviluppo: da M3 in poi la suite deve poter girare
-senza Julia né altri linguaggi.
+Opzioni: `--cases DIR` (default `conformance/core/cases`), `--update`, `--skip a,b`
+(default `liste`; la CI passa `--skip liste`, ma oggi `liste` passa anche lui).
+
+Runtime usato, in ordine: `TRIAD_SEED` se impostato; su Linux/macOS l'interprete di
+riferimento `seed/dev/triad_core.cjs` (il seed ELF è ancora E0); su Windows
+`bin/triad-native.exe`, poi `seed/windows-x86_64/seed.exe`.
+
+Golden: il runner legge `expected.out` e, se manca, `expected.golden` (copia identica).
+Se mancano entrambi il caso fallisce con `golden mancante`: di solito il checkout non ha i
+file (`git pull`), perché `.gitignore` esclude `*.out` con l'eccezione
+`!conformance/**/expected.out`.
+
+`run.jl` (Julia) è stato rimosso: la suite gira senza Julia né altri linguaggi.
 
 ## Casi attuali (`cases/`, profilo Full)
 
@@ -58,8 +69,6 @@ senza Julia né altri linguaggi.
 | `tour` | tutti i paradigmi in un programma unico |
 | `hello_shebang` | shebang, ARGS, effetti dichiarati |
 | `valori` | valori, aritmetica, stringhe, liste, comprehension |
-| `liste_base` | costruzione e stampa seed di liste di interi |
-| `liste_push` | `push!` su liste di interi |
 | `dispatch` | struct, operatori-funzione, dispatch, errori come dati |
 | `prolog` | regole ricorsive, liste stile Prolog, `solve` |
 | `destruttura` | `(a, b) = ...`, `for (k, v) in ...`, errore di arità |
@@ -67,4 +76,4 @@ senza Julia né altri linguaggi.
 | `macro_eval` | quote, sexpr, parse/unparse, macro |
 | `errore` | errore non gestito: stdout vuoto, exit code 1 |
 
-I golden sono stati generati dallo stage0 il 2026-10-20 e sono congelati: da qui in poi sono loro il contratto.
+I golden Full sono stati generati dallo stage0 (Julia) il 2026-10-20 e sono congelati: da qui in poi sono loro il contratto.
