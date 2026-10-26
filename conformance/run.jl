@@ -69,7 +69,7 @@ function check_or_update(cases::AbstractString, update::Bool)
             eout = isfile(joinpath(dir, "expected.out")) ? read(joinpath(dir, "expected.out"), String) : ""
             ecode = isfile(joinpath(dir, "expected.code")) ?
                     parse(Int, strip(read(joinpath(dir, "expected.code"), String))) : 0
-            ok = out == eout && code == ecode
+            ok = replace(out, "\r\n" => "\n") == replace(eout, "\r\n" => "\n") && code == ecode
             if ok
                 println("PASS  ", name)
             else

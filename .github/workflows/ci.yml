@@ -1,4 +1,4 @@
-name: CI
+ame: CI
 on:
   push:
   pull_request:
@@ -42,8 +42,8 @@ jobs:
             Remove-Item $out -ErrorAction SilentlyContinue
             $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "conformance\core\cases\$c\program.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
             if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for $c" }
-            $got = Get-Content $out -Raw
-            $exp = Get-Content "conformance\core\cases\$c\expected.out" -Raw
+            $got = (Get-Content $out -Raw) -replace "`r`n", "`n"
+            $exp = (Get-Content "conformance\core\cases\$c\expected.out" -Raw) -replace "`r`n", "`n"
             if ($got -ne $exp) { throw "output mismatch for $c" }
           }
       - name: Seed get probe
@@ -52,7 +52,7 @@ jobs:
           $out = Join-Path $env:TEMP "test_get.out"
           $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "test_get.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
           if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for test_get.td" }
-          $got = Get-Content $out -Raw
+          $got = (Get-Content $out -Raw) -replace "`r`n", "`n"
           if ($got -cne "20`n") { throw "unexpected output for test_get.td: $got" }
       - name: Self-hosted environment smoke test (not S1 conformance)
         shell: pwsh
