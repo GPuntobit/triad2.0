@@ -99,6 +99,22 @@ includere il runtime Julia senza richiedere un'installazione separata di Julia; 
 però un'implementazione indipendente da Julia. La strada per un Triad senza linguaggi
 ospiti è in [BOOTSTRAP.md](BOOTSTRAP.md).
 
+### 4. CLI di sviluppo (triad-cli)
+
+Per le operazioni di sviluppo è disponibile una CLI unificata che wrappa i vari tool:
+
+```sh
+cd cli
+npm install
+node triad-cli.mjs status          # stato del progetto
+node triad-cli.mjs seed generate windows  # genera seed
+node triad-cli.mjs ai verify        # verifica soluzioni AI
+node triad-cli.mjs build standalone # compila eseguibile
+node triad-cli.mjs test conformance # esegue conformance
+```
+
+Vedi [cli/README.md](cli/README.md) per la documentazione completa della CLI di sviluppo.
+
 ### Fallback diretto
 
 Se preferisci invocare Julia esplicitamente:
