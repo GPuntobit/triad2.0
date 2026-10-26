@@ -1,5 +1,5 @@
 
-include(joinpath(@__DIR__, "triad.jl"))
+include(joinpath(@__DIR__, "..", "src", "triad.jl"))
 using .Triad
 
 @assert Triad.unparse(Triad.parse_program("1:n")) == "1:n"
