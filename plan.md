@@ -24,6 +24,7 @@ updated: 2026-10-26
 - **Bug fixato**: `string()` Int conversione (r10 inizializzato correttamente)
 
 ### S1 (Interprete Triad in Triad-Core) - ORA COMPLETATO ✅
+
 - **S1.3**: Sistema di valori taggati (Int, Bool) ✅ completato
 - **S1.4**: Parser/tokenizer inline ✅ completato
 - **S1.5**: Eval espressioni base ✅ completato (bug fixato: lookup ambiente)
@@ -31,6 +32,7 @@ updated: 2026-10-26
 - **S1.11-S1.15**: Parser completo, funzioni, chiusure, test ✅ completato
 
 ### S2-S4 (Bootstrap) - NON INIZIATO
+
 - **S2**: Compilatore nativo - bozza iniziale
 - **S3**: Self-hosting - in progress
 - **S4**: Runtime completo, Linux parity - pianificazione
@@ -38,33 +40,39 @@ updated: 2026-10-26
 ## Task Correnti
 
 ### Immediate: Verifica finale S1
+
 - ✅ Tutte le task ai/tasks/ completate
 - ✅ Conformance suite verify
 - ✅ Bug fixati e documentati
 
 ### Dopo S1
+
 - S2: Compilatore nativo - review codegen
 - S3: Self-hosting - validazione cross-platform
 - S4: Runtime completo, Linux parity - benchmark
 
 ## File S1 Implementati
+
 - `selfhost/value.td`: Sistema di valori taggati ✅
 - `selfhost/tokenizer.td`: Parser/tokenizer inline ✅
 - `selfhost/eval.td`: Eval espressioni base ✅
 - `selfhost/main.td`: Ambiente inline funzionante ✅
 
 ## Limitazioni Seed Attuali
+
 - `string()`: solo Int/String (Bool/Symbol/Nothing non implementati ma non richiesti per conformance)
 - Liste: solo interi, max 64 elementi
 - Indicizzazione standard, `length`, iterazione: non implementati (S2)
 - Conformance: 33/33 completata ✅
 
 ## Stato Conformance
+
 - Stage0 Julia: 33/33 Core, 12/12 Full ✅
 - Seed Windows: 33/33 Core ✅
 - Seed Linux: E0 minima (non comparabile) - in avvio test cross‑platform per parity
 
 ## Task ai/tasks/ Completati ✅
+
 - **01_somma**: programma Triad somma e precedenza ✅
 - **02_fattoriale**: funzione ricorsiva fattoriale(n) ✅
 - **03_fibonacci**: funzione ricorsiva fib(n) ✅
