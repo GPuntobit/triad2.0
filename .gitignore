@@ -1,0 +1,43 @@
+# Windows
+Thumbs.db
+Desktop.ini
+*.log
+
+# IDE
+.vs
+.idea
+*.sln
+*.suo
+*.user
+
+# Obsidian
+.obsidian/
+
+# Environment files
+.env*
+*.env*
+
+# GitHub generated install state (if not needed)
+.github/ecc-install-state.json
+
+# Python (if used)
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+
+# Julia (if used)
+*.jl.cache
+
+# General
+*.out
+*.tmp
+
+# Package manager (if using npm/yarn)
+node_modules/
+.yarn/
+.pnpm-store/
+
+# Delta generated files
+.delta/

@@ -1,0 +1,77 @@
+# Artefatti generati localmente
+# NOTA: questo file deve essere committato.
+# I binari seed e i lockfile restano versionati; qui ignoriamo solo cache,
+# build locali e file temporanei.
+
+## Build standalone (PackageCompiler, bin/build_standalone.jl)
+bin/triad-native
+bin/triad-native.exe
+bin/_precompile_triad.jl
+bin/lib/
+bin/*.ji
+
+## Julia: artefatti runtime (Manifest.toml resta versionato)
+*.ji
+*.jm
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+/deps/deps.jl
+.julia/
+
+## triad-vm (lane Rust, se presente; Cargo.lock resta versionato)
+/target/
+**/*.rs.bk
+
+## Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
+
+## Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.~lock.*#
+
+## GitHub Copilot ECC installation
+/.github/agents/
+/.github/skills/
+/.github/ecc/
+/.github/ecc-install-state.json
+
+## Log e temporanei
+*.log
+tmp/
+node_modules/
+
+## AI benchmark: soluzioni generate localmente
+ai/tasks/*/solution.triad
+
+## Probe locali temporanei
+/_probe.jl
+/_probe2.jl
+/_probe3.jl
+/_qc.jl
+/_smoke.jl
+
+## AI generated files (esclusionale)
+/ai/
+
+## File di log generici (già presenti ma aggiunti per completezza)
+*.log
+
+## Cache del sistema operativo
+.Cache/
+.cache/
+
+## Backup editoriali
+*.bak
+*.backup
+
+## File di trapock (es. Python, Node)
+# pieni di cache, non servono in repo

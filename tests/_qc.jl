@@ -1,0 +1,10 @@
+
+include(joinpath(@__DIR__, "triad.jl"))
+using .Triad
+
+@assert Triad.unparse(Triad.parse_program("1:n")) == "1:n"
+@assert Triad.run_source(Triad.World(out = IOBuffer()), "xs = [1,2,3]\nxs[end] = 7\nxs") ==
+        Any[1, 2, 7]
+@assert Triad.run_source(Triad.World(out = IOBuffer()),
+                         "f = function (x::Int) x end\nf(3)") == 3
+println("Quick checks passed.")
