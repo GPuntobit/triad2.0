@@ -45,10 +45,10 @@ process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 
   <image mask="url(#logoMask)" x="45" y="40" width="120" height="120" xlink:href="data:image/png;base64,${logo}"/>
 
-  <text x="105" y="184" text-anchor="middle" font-family="${serif}" font-size="15" fill="${C.text}">Il libro di <tspan font-style="italic">Triad</tspan></text>
-  <line x1="80" y1="192" x2="130" y2="192" stroke="${C.accent}" stroke-width="0.6"/>
-  <text x="105" y="202" text-anchor="middle" font-family="${serif}" font-style="italic" font-size="6" fill="${C.muted}">Imparare il linguaggio e il codice del progetto triad2.0,</text>
-  <text x="105" y="210" text-anchor="middle" font-family="${serif}" font-style="italic" font-size="6" fill="${C.muted}">dai primi programmi al seed in codice macchina</text>
+  <text x="105" y="184" text-anchor="middle" font-family="${serif}" font-size="17" fill="${C.text}">Il libro di <tspan font-style="italic">Triad</tspan></text>
+  <line x1="75" y1="193" x2="135" y2="193" stroke="${C.accent}" stroke-width="0.7"/>
+  <text x="105" y="204" text-anchor="middle" font-family="${serif}" font-style="italic" font-size="6.2" fill="${C.muted}">Imparare il linguaggio e il codice del progetto triad2.0,</text>
+  <text x="105" y="212" text-anchor="middle" font-family="${serif}" font-style="italic" font-size="6.2" fill="${C.muted}">dai primi programmi al seed in codice macchina</text>
 
   <text x="105" y="226" text-anchor="middle" font-family="${sans}" font-size="3.6" letter-spacing="0.4" fill="${C.muted}">${partsText}</text>
 
