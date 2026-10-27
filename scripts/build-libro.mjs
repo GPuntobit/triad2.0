@@ -177,7 +177,6 @@ const html = `<!DOCTYPE html>
   <div class="synopsis-page">
     ${synopsisHtml}
   </div>
-  <div class="toc">${tocHtml}</div>
   <div class="part">
     ${manualeHtml}
   </div>
