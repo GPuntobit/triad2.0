@@ -24,6 +24,17 @@ Sono parte del linguaggio, non di una libreria: errori come dati (`Err`), contra
 (`requires`/`ensures`), budget (`with budget`), tracce (`with trace`), effetti dichiarati
 (`!io`, `!state`).
 
+## Curva di apprendimento
+
+<p align="center">
+  <img src="docs/assets/img/curva-apprendimento.svg" alt="Curva e soglia di apprendimento di Triad 2.0" width="900">
+</p>
+
+Ricavata dai capitoli di [TUTORIAL.md](TUTORIAL.md) e MANUALE.md: Triad-Core si impara
+facendo (37/37 casi eseguibili), Triad-Full oggi si può solo studiare (1/12). Alla soglia di
+Triad-Full la padronanza reale si ferma intorno al 39%. Analisi completa sul sito:
+[Curva e soglia di apprendimento](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
+
 ## Standard e riconoscimento
 
 - **Specifica:** [SPEC.md](SPEC.md) — normativa, versione in [`VERSION`](VERSION); storia in

@@ -6,6 +6,7 @@ const NAV = [
   { href: 'pages/language-tour.html', label: 'Tour' },
   { href: 'pages/spec.html', label: 'Spec' },
   { href: 'pages/tutorial.html', label: 'Tutorial' },
+  { href: 'pages/apprendimento.html', label: 'Apprendimento' },
   { href: 'pages/examples.html', label: 'Esempi' },
   { href: 'pages/conformance.html', label: 'Conformance' },
   { href: 'pages/bootstrap.html', label: 'Bootstrap' },
@@ -78,6 +79,11 @@ function mount(active) {
   const footerSlot = document.getElementById('site-footer');
   if (headerSlot) headerSlot.innerHTML = renderHeader(active);
   if (footerSlot) footerSlot.innerHTML = renderFooter();
+  const prefix = /\/pages\/[^/]*$/.test(location.pathname) ? '../' : '';
+  if (prefix) [headerSlot, footerSlot].forEach(slot => slot && slot.querySelectorAll('a[href]').forEach(a => {
+    const href = a.getAttribute('href');
+    if (!/^([a-z]+:|#|\/)/i.test(href)) a.setAttribute('href', prefix + href);
+  }));
 }
 
 async function loadMarkdown(targetId, file) {

@@ -60,6 +60,14 @@ println(result)   <span class="cm"># [{who = :dave}]</span></div>
 </section>
 <section class="section">
   <div class="container">
+    <h2 class="section-title">Soglia di apprendimento</h2>
+    <p class="section-sub">Dai capitoli di TUTORIAL.md e MANUALE.md: Triad-Core si impara facendo, Triad-Full oggi solo leggendo. Alla soglia di Triad-Full la padronanza reale si ferma, mentre quella teorica continua a salire.</p>
+    <div class="chart-card" id="lc-home"></div>
+    <p class="chart-link"><a href="pages/apprendimento.html">Analisi completa: fasi, difficoltà e metodo →</a></p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
     <h2 class="section-title">Avvio rapido</h2>
     <p class="section-sub">L'implementazione di riferimento è in Julia (transitoria per il bootstrap), zero pacchetti esterni.</p>
     <div class="grid grid-2">
@@ -81,6 +89,7 @@ triad examples/assaggio.td</div>
           <li><a href="pages/language-tour.html">Tour del linguaggio</a></li>
           <li><a href="pages/spec.html">SPEC.md — standard 0.2.0</a></li>
           <li><a href="pages/tutorial.html">TUTORIAL.md — completo</a></li>
+          <li><a href="pages/apprendimento.html">Curva e soglia di apprendimento</a></li>
           <li><a href="pages/examples.html">Esempi (.triad / .td)</a></li>
           <li><a href="pages/conformance.html">Conformance suite</a></li>
           <li><a href="pages/bootstrap.html">BOOTSTRAP.md — piano self-hosting</a></li>
@@ -92,7 +101,8 @@ triad examples/assaggio.td</div>
 </section>
 <div id="site-footer"></div>
 <script src="assets/js/app.js"></script>
-<script>TriadSite.mount('Home');</script>
+<script src="assets/js/learning-curve.js"></script>
+<script>TriadSite.mount('Home'); TriadLearningCurve.render('lc-home', 'curve', { compact: true });</script>
 </main>
 </body>
 </html>
