@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Curva di apprendimento — Triad 2.0</title>
+<meta name="description" content="Curva e soglia di apprendimento di Triad 2.0, ricavate da TUTORIAL.md e MANUALE.md." />
+<link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+<div id="site-header"></div>
+<main class="container">
+  <div class="doc-layout">
+    <aside class="doc-sidebar">
+      <h4>Documentazione</h4>
+      <ul>
+        <li><a href="getting-started.html">Inizia</a></li>
+        <li><a href="language-tour.html">Tour</a></li>
+        <li><a href="spec.html">Spec</a></li>
+        <li><a href="tutorial.html">Tutorial</a></li>
+        <li><a class="active" href="apprendimento.html">Apprendimento</a></li>
+        <li><a href="examples.html">Esempi</a></li>
+        <li><a href="conformance.html">Conformance</a></li>
+        <li><a href="bootstrap.html">Bootstrap</a></li>
+        <li><a href="editors.html">Editor</a></li>
+        <li><a href="ai.html">AI</a></li>
+        <li><a href="status.html">Stato</a></li>
+        <li><a href="license.html">Licenza</a></li>
+      </ul>
+    </aside>
+    <article class="doc-content">
+      <h1>Curva e soglia di apprendimento</h1>
+      <p>Il percorso di studio di <code>TUTORIAL.md</code> (capitoli 1–49) e di <code>MANUALE.md</code> è diviso in 17 fasi.
+        Per ogni fase sono stimate la <b>difficoltà</b> (0–100) e la quota <b>esercitabile oggi</b> con il runtime
+        disponibile. La curva mostra quanta parte del linguaggio si padroneggia man mano che si accumula fatica.</p>
+      <div class="chart-card" id="lc-curve"></div>
+      <h2>La soglia</h2>
+      <p>Fino alla fine di Triad-Core (fase S8, capitolo 17 del tutorial) teoria e pratica salgono insieme: ogni esempio
+        gira con <code>node seed/dev/triad_core.cjs</code> e i 37 casi di conformità Core sono verdi. Al capitolo 18 inizia
+        Triad-Full: la difficoltà sale di colpo e la pratica crolla all'8%, perché nella conformance Full passa solo
+        <code>errore</code> (1/12). Da lì la curva teorica continua a salire, quella reale si appiattisce: è la
+        <b>soglia di apprendimento</b> di Triad oggi.</p>
+      <div class="chart-card" id="lc-stages"></div>
+      <h2>Le fasi</h2>
+      <p>Passa il mouse sui punti dei grafici per i dettagli di ogni fase.</p>
+      <div id="lc-table"></div>
+      <h2>Metodo</h2>
+      <ul>
+        <li><b>padronanza reale</b><sub>i</sub> = Σ<sub>j≤i</sub> difficoltà<sub>j</sub> × esercitabile<sub>j</sub> / Σ difficoltà;
+          <b>teorica</b><sub>i</sub> = Σ<sub>j≤i</sub> difficoltà<sub>j</sub> / Σ difficoltà (fasi S0–S14, quelle del linguaggio).</li>
+        <li>La difficoltà è un giudizio (novità, trappole, volume, prerequisiti, tooling); la quota esercitabile riflette lo stato
+          della conformance: Core 37/37, Full 1/12, seed Linux allo stadio E0.</li>
+        <li>L'ordine delle fasi segue i capitoli di <code>TUTORIAL.md</code>; la colonna Manuale indica i capitoli
+          corrispondenti di <code>MANUALE.md</code>, dove Core e Full sono presentati sullo stesso piano.</li>
+        <li>Grafico statico per il README: <a href="../assets/img/curva-apprendimento.svg">curva-apprendimento.svg</a>,
+          rigenerabile con <code>node docs/assets/js/learning-curve.js &gt; docs/assets/img/curva-apprendimento.svg</code>.</li>
+      </ul>
+    </article>
+  </div>
+</main>
+<div id="site-footer"></div>
+<script src="../assets/js/app.js"></script>
+<script src="../assets/js/learning-curve.js"></script>
+<script>
+TriadSite.mount('Apprendimento');
+TriadLearningCurve.render('lc-curve', 'curve');
+TriadLearningCurve.render('lc-stages', 'stages');
+TriadLearningCurve.renderTable('lc-table');
+</script>
+</body>
+</html>

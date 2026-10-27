@@ -6,6 +6,7 @@ const NAV = [
   { href: 'pages/language-tour.html', label: 'Tour' },
   { href: 'pages/spec.html', label: 'Spec' },
   { href: 'pages/tutorial.html', label: 'Tutorial' },
+  { href: 'pages/apprendimento.html', label: 'Apprendimento' },
   { href: 'pages/examples.html', label: 'Esempi' },
   { href: 'pages/conformance.html', label: 'Conformance' },
   { href: 'pages/bootstrap.html', label: 'Bootstrap' },
