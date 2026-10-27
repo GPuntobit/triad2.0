@@ -102,6 +102,14 @@ async function loadMarkdown(targetId, file) {
         a.target = '_blank';
       }
     });
+    const siteRoot = /\/pages\/[^/]*$/.test(location.pathname) ? '../' : '';
+    const fileDir = file.includes('/') ? file.slice(0, file.lastIndexOf('/') + 1) : '';
+    el.querySelectorAll('img[src]').forEach(img => {
+      const src = img.getAttribute('src');
+      if (/^([a-z]+:|\/|#)/i.test(src)) return;
+      const path = fileDir + src;
+      img.src = path.startsWith('docs/') ? siteRoot + path.slice(5) : RAW_BASE + path;
+    });
   } catch (e) {
     el.innerHTML = '<div class="doc-loading">Impossibile caricare il documento: ' + e.message + '</div>';
   }
