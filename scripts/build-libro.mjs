@@ -6,10 +6,45 @@ import { marked } from 'marked';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'docs', 'libro');
 
-const sommario = readFileSync(join(root, 'SOMMARIO.md'), 'utf8');
-const sommarioHtml = marked.parse(sommario);
+function extractHeadings(md, maxLevel) {
+  const lines = md.split(/\r?\n/);
+  const out = [];
+  let inFence = false;
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    const m = line.match(/^(#{1,6})\s+(.+)$/);
+    if (!m || m[1].length > maxLevel) continue;
+    const text = m[2].trim();
+    if (/[.](triad|td)\b/.test(text)) continue;
+    if (/^[a-zàèéìòù]/.test(text)) continue;
+    out.push({ level: m[1].length, text });
+  }
+  return out;
+}
+
+function buildSommarioHtml() {
+  const manH = extractHeadings(manuale, 2);
+  const tutH = extractHeadings(tutorial, 2);
+  let html = '<h1>Sommario</h1>\n';
+  html += '<p class="sommario-intro">Elenco dei capitoli e delle sezioni principali del libro (Manuale + Tutorial).</p>\n';
+  html += '<h2>Manuale di Triad 2.0</h2>\n<ul class="sommario-list">\n';
+  for (const h of manH) {
+    html += '<li class="sl' + h.level + '">' + h.text + '</li>\n';
+  }
+  html += '</ul>\n';
+  html += '<h2>Tutorial di Triad 2.0</h2>\n<ul class="sommario-list">\n';
+  for (const h of tutH) {
+    html += '<li class="sl' + h.level + '">' + h.text + '</li>\n';
+  }
+  html += '</ul>\n';
+  return html;
+}
+
 const manuale = readFileSync(join(root, 'MANUALE.md'), 'utf8');
 const tutorial = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
+
+const sommarioHtml = buildSommarioHtml();
 
 marked.setOptions({ gfm: true, breaks: false });
 
@@ -160,6 +195,10 @@ const html = `<!DOCTYPE html>
   .backcover p { text-align: justify; font-size: 10.5pt; line-height: 1.6; }
   .backcover code { background: #1a1520; color: #f5f5f4; }
   .sommario-page { page-break-after: always; }
+  .sommario-list { list-style: none; padding-left: 0; }
+  .sommario-list .sl1 { font-weight: bold; margin-top: 8pt; }
+  .sommario-list .sl2 { padding-left: 14pt; font-size: 10pt; }
+  .sommario-intro { font-style: italic; color: #555; font-size: 10pt; }
   .synopsis-page { page-break-after: always; }
   .synopsis { padding: 24pt 18pt; }
   .synopsis h1 { border-color: #7d5157; }
