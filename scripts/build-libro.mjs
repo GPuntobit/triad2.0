@@ -135,7 +135,8 @@ const html = `<!DOCTYPE html>
   h1 { font-size: 18pt; margin-top: 24pt; border-bottom: 1.2pt solid #7d5157; padding-bottom: 4pt; }
   h2 { font-size: 13.5pt; margin-top: 16pt; color: #2a1a1f; }
   h3 { font-size: 11.5pt; margin-top: 12pt; color: #3a2a2f; }
-  p { margin: 6pt 0 8pt 0; text-align: justify; orphans: 3; widows: 3; }
+  p { margin: 6pt 0 8pt 0; text-align: justify; orphans: 3; widows: 3; text-indent: 0; }
+  p + p { text-indent: 1.2em; margin-top: 0; }
   a { color: #d0405a; text-decoration: none; }
   code { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace; font-size: 9pt; background: #f3f1f4; padding: 1pt 3pt; border-radius: 2pt; }
   pre { background: #0d0a0f; color: #f5f5f4; padding: 10pt 12pt; border-radius: 4pt; overflow-x: auto; page-break-inside: avoid; margin: 8pt 0; border-left: 3pt solid #d0405a; }

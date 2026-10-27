@@ -33,6 +33,10 @@ process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
       <stop offset="0.72" stop-color="#fff"/>
       <stop offset="1" stop-color="#000"/>
     </radialGradient>
+    <radialGradient id="logoGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="${C.accent}" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="${C.accent}" stop-opacity="0"/>
+    </radialGradient>
     <mask id="logoMask" maskContentUnits="userSpaceOnUse">
       <rect x="36.2" y="24" width="80" height="80" fill="url(#fade)"/>
     </mask>
@@ -40,6 +44,8 @@ process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
   <rect width="152.4" height="228.6" fill="url(#glow)"/>
   <rect x="8" y="8" width="136.4" height="212.6" fill="none" stroke="${C.frame}" stroke-width="0.6"/>
   <rect x="10" y="10" width="132.4" height="208.6" fill="none" stroke="${C.frame}" stroke-width="0.25" opacity="0.6"/>
+
+  <circle cx="76.2" cy="64" r="46" fill="url(#logoGlow)"/>
 
   <text x="76.2" y="16" text-anchor="middle" font-family="${sans}" font-size="3.5" letter-spacing="1.6" fill="${C.muted}">GPUNTOBIT</text>
 
