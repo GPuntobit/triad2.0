@@ -44,3 +44,31 @@ node_modules/
 # Conformance golden outputs (must be versioned)
 !conformance/**/expected.out
 !conformance/**/expected.code
+!ai/**/expected.out
+
+# Python virtualenv
+.venv/
+
+# Graphify (generated: `graphify update .`)
+graphify-out/
+graphify.skill
+
+# Local scratch scripts and standalone drafts (root only)
+/_*.mjs
+/_*.js
+/curva-apprendimento-triad.html
+
+# Command output captures (root only)
+/runoutput.txt
+/stdout.txt
+/scope_out.txt
+/test_output.txt
+/out.txt
+/output.txt
+/outfile.txt
+/error.txt
+/let_*out*.txt
+/0
+
+# Agent/IDE local state
+.kiro/settings/*.lock

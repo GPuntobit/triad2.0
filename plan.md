@@ -58,7 +58,7 @@ Nota runtime: il seed in codice macchina è il runtime predefinito per `.triad` 
 - [ ] `seed/dev/gen_seed_linux.js:113-114`: ridurre l'output a `sha256(ELF)` e al file scritto; `ELF bytes` ed `entry RVA` sono dettagli di debug.
 - Nota — da mantenere (output legittimi della CLI): `console.log`/`console.error` in `ai/jev_audit.mjs` (report, `--dry-run`, messaggi d'uso) e in `.webcmd/graphify/tools/generate.mjs`.
 - [ ] `_probe.jl`, `_probe2.jl`, `_probe3.jl`, `_qc.jl`, `_smoke.jl`: `PROMPT_JEV.md` li descrive come "gitignored, script usa-e-getta", ma sono versionati. Rimuoverli dal repository e aggiungerli a `.gitignore`.
-- [ ] File di output alla radice versionati (`out.txt`, `output.txt`, `outfile.txt`, `stdout.txt`, `runoutput.txt`, `test_output.txt`, `error.txt`, `scope_out.txt`, `let_output.txt`, `let_test_out.txt`, `let_annidato_out.txt`): rimuoverli e ignorarli.
+- [x] File di output alla radice versionati (`out.txt`, `output.txt`, `outfile.txt`, `stdout.txt`, `runoutput.txt`, `test_output.txt`, `error.txt`, `scope_out.txt`, `let_output.txt`, `let_test_out.txt`, `let_annidato_out.txt`): rimuoverli e ignorarli.
 - [ ] `run_seed.bat` … `run_seed12.bat` (12 varianti): tenerne uno parametrizzato.
 
 ## File S1 Implementati
