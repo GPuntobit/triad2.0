@@ -29,11 +29,6 @@
   .backcover h1 { color: #f5f5f4; border-color: #7d5157; }
   .backcover p { text-align: justify; font-size: 10.5pt; line-height: 1.6; }
   .backcover code { background: #1a1520; color: #f5f5f4; }
-  .sommario-page { page-break-after: always; }
-  .sommario-list { list-style: none; padding-left: 0; }
-  .sommario-list .sl1 { font-weight: bold; margin-top: 8pt; }
-  .sommario-list .sl2 { padding-left: 14pt; font-size: 10pt; }
-  .sommario-intro { font-style: italic; color: #555; font-size: 10pt; }
   .toc { page-break-after: always; }
   .toc-list { list-style: none; padding-left: 0; }
   .toc-list li { margin: 2pt 0; font-size: 10pt; }
@@ -46,111 +41,7 @@
 </style>
 </head>
 <body>
-  <div class="cover"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
-  <div class="sommario-page">
-    <h1>Sommario</h1>
-<p class="sommario-intro">Elenco dei capitoli e delle sezioni principali.</p>
-<h2>Manuale di Triad 2.0</h2>
-<ul class="sommario-list">
-<li class="sl1">Manuale di Triad 2.0</li>
-<li class="sl2">Come leggere questo manuale</li>
-<li class="sl1">Parte I — Il linguaggio</li>
-<li class="sl2">1. Lessico</li>
-<li class="sl2">2. Valori e tipi</li>
-<li class="sl2">3. Variabili e assegnamento</li>
-<li class="sl2">4. Operatori e precedenza</li>
-<li class="sl2">5. Controllo di flusso</li>
-<li class="sl2">6. Funzioni</li>
-<li class="sl2">7. Tipi e multiple dispatch</li>
-<li class="sl2">8. Lambda, chiusure e scope</li>
-<li class="sl2">9. Liste</li>
-<li class="sl2">10. Stringhe, simboli e conversioni</li>
-<li class="sl2">11. Errori come dati</li>
-<li class="sl2">12. Contratti</li>
-<li class="sl2">13. Budget</li>
-<li class="sl2">14. Tracce</li>
-<li class="sl2">15. Effetti dichiarati</li>
-<li class="sl2">16. Logica</li>
-<li class="sl2">17. Codice come dato</li>
-<li class="sl2">18. Macro</li>
-<li class="sl2">19. Builtin</li>
-<li class="sl2">20. Riga di comando e REPL</li>
-<li class="sl2">21. Primitivi di bootstrap</li>
-<li class="sl2">22. Stile e pattern idiomatici</li>
-<li class="sl1">Parte II — Esercizi</li>
-<li class="sl2">23. Esercizi guidati (Triad-Core)</li>
-<li class="sl2">24. Esercizi su Triad-Full</li>
-<li class="sl1">Parte III — Riferimento</li>
-<li class="sl2">25. Grammatica</li>
-<li class="sl2">26. Schede rapide</li>
-<li class="sl2">27. Tabella degli errori</li>
-<li class="sl2">28. Glossario</li>
-<li class="sl2">29. Cosa gira oggi</li>
-<li class="sl1">Appendice A — Influenze dichiarate</li>
-<li class="sl1">Appendice B — Dove guardare</li>
-</ul>
-<h2>Tutorial di Triad 2.0</h2>
-<ul class="sommario-list">
-<li class="sl1">Triad 2.0 — Wiki: imparare il linguaggio e il codice del progetto</li>
-<li class="sl2">Come usare questa wiki</li>
-<li class="sl2">Indice</li>
-<li class="sl1">Parte I — Primi passi</li>
-<li class="sl2">1. Cos'è Triad</li>
-<li class="sl2">2. Installare ed eseguire</li>
-<li class="sl2">3. Il primo programma</li>
-<li class="sl1">Parte II — Triad-Core passo per passo (eseguibile oggi)</li>
-<li class="sl2">4. Lessico</li>
-<li class="sl2">5. Valori, tipi e stampa</li>
-<li class="sl2">6. Variabili e assegnamento</li>
-<li class="sl2">7. Operatori ed espressioni</li>
-<li class="sl2">8. Controllo di flusso</li>
-<li class="sl2">9. Funzioni</li>
-<li class="sl2">10. Lambda, chiusure e scope</li>
-<li class="sl2">11. Liste</li>
-<li class="sl2">12. Stringhe, simboli e conversioni</li>
-<li class="sl2">13. Primitivi di bootstrap</li>
-<li class="sl2">14. Errori di esecuzione</li>
-<li class="sl2">15. Interprete JS e seed Windows: differenze</li>
-<li class="sl2">16. Pattern idiomatici Triad-Core</li>
-<li class="sl2">17. Esercizi guidati</li>
-<li class="sl1">Parte III — Triad-Full (lo standard completo)</li>
-<li class="sl2">18. Lessico e tipi Full (SPEC §1, §4)</li>
-<li class="sl2">19. Funzioni tipate e multiple dispatch (SPEC §5)</li>
-<li class="sl2">20. Struct (SPEC §4)</li>
-<li class="sl2">21. Controllo di flusso Full: `for`, range, comprehension, `try` (SPEC §2)</li>
-<li class="sl2">22. Logica: fatti, regole, `solve` (SPEC §6)</li>
-<li class="sl2">23. Destrutturazione (SPEC §2)</li>
-<li class="sl2">24. Errori come dati (SPEC §8)</li>
-<li class="sl2">25. Contratti (SPEC §9)</li>
-<li class="sl2">26. Budget (SPEC §10)</li>
-<li class="sl2">27. Tracce (SPEC §11)</li>
-<li class="sl2">28. Effetti dichiarati (SPEC §12)</li>
-<li class="sl2">29. Codice come dato, albero uniforme e macro (SPEC §3, §7)</li>
-<li class="sl2">30. Builtin Full (SPEC §13)</li>
-<li class="sl2">31. Riga di comando e REPL (SPEC §14)</li>
-<li class="sl2">32. Esempi Full con output golden</li>
-<li class="sl1">Parte IV — Il codice del progetto</li>
-<li class="sl2">33. Mappa del repository</li>
-<li class="sl2">34. L'interprete di riferimento JS (`seed/dev/triad_core.cjs`)</li>
-<li class="sl2">35. Il seed S0 Windows e il suo generatore</li>
-<li class="sl2">36. Il seed Linux (E0)</li>
-<li class="sl2">37. Self-hosting: S1 in `selfhost/`</li>
-<li class="sl2">38. Conformance: leggere, scrivere e verificare casi</li>
-<li class="sl2">39. La CLI di sviluppo `triad-cli`</li>
-<li class="sl2">40. Benchmark AI (`ai/`)</li>
-<li class="sl2">41. Editor, launcher e sito</li>
-<li class="sl2">42. Integrazione continua</li>
-<li class="sl2">43. Flusso di contributo</li>
-<li class="sl1">Parte V — Riferimento</li>
-<li class="sl2">44. Grammatica Triad-Core (EBNF)</li>
-<li class="sl2">45. Schede rapide Core e Full</li>
-<li class="sl2">46. Debug e problemi comuni</li>
-<li class="sl2">47. Glossario</li>
-<li class="sl2">48. Stato, limiti noti e fix storici</li>
-<li class="sl2">49. FAQ</li>
-</ul>
-
-  </div>
+  <div class="cover"><img src="frontespizio.png" alt="Frontespizio â€” Il libro di Triad" /></div>
   <div class="part">
     <h1>Manuale di Triad 2.0</h1>
 <blockquote>
@@ -6179,25 +6070,25 @@ verificano eseguendoli con <code>node seed/dev/triad_core.cjs</code>.</p>
   <div class="backcover-page">
     <div class="backcover">
   <h1>Il libro di Triad</h1>
-  <p>Triad 2.0 è un linguaggio di programmazione autonomo, definito da una specifica normativa
-  indipendente da qualsiasi implementazione. Non è un dialetto di Julia, Prolog o Lisp, pur avendo
-  preso da ciascuno di essi idee fondamentali: blocchi <code>function … end</code> e tipi con
+  <p>Triad 2.0 Ã¨ un linguaggio di programmazione autonomo, definito da una specifica normativa
+  indipendente da qualsiasi implementazione. Non Ã¨ un dialetto di Julia, Prolog o Lisp, pur avendo
+  preso da ciascuno di essi idee fondamentali: blocchi <code>function â€¦ end</code> e tipi con
   <code>::</code> da Julia, unificazione con occurs-check, backtracking e <code>solve</code> con
-  variabili logiche <code>?x</code> da Prolog, codice come dato e macro da Lisp. Ciò che è proprio
-  di Triad, e non in prestito, è l'integrazione dei tre modelli — imperativo, logico,
-  metaprogrammatorio — in una sola sintassi a blocchi, accompagnata da errori come dati
+  variabili logiche <code>?x</code> da Prolog, codice come dato e macro da Lisp. CiÃ² che Ã¨ proprio
+  di Triad, e non in prestito, Ã¨ l'integrazione dei tre modelli â€” imperativo, logico,
+  metaprogrammatorio â€” in una sola sintassi a blocchi, accompagnata da errori come dati
   (<code>Err</code>), contratti (<code>requires</code>/<code>ensures</code>), budget
   (<code>with budget</code>), tracce (<code>with trace</code>) ed effetti dichiarati
   (<code>!io</code>, <code>!state</code>) come parte del linguaggio e non di una libreria.</p>
-  <p>Il linguaggio si presenta in due profili di conformità. Triad-Core è il sottoinsieme di
-  bootstrap: valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è
+  <p>Il linguaggio si presenta in due profili di conformitÃ . Triad-Core Ã¨ il sottoinsieme di
+  bootstrap: valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full Ã¨
   lo standard completo: tipi dichiarati, multiple dispatch, logica integrata, macro, contratti,
-  budget, tracce, effetti. Ogni programma Core è anche un programma Full valido e deve comportarsi
-  allo stesso modo. Il runtime di riferimento è il seed S0: un interprete Triad-Core scritto
+  budget, tracce, effetti. Ogni programma Core Ã¨ anche un programma Full valido e deve comportarsi
+  allo stesso modo. Il runtime di riferimento Ã¨ il seed S0: un interprete Triad-Core scritto
   direttamente in codice macchina x86-64 (PE su Windows, ELF su Linux), senza alcun linguaggio
   ospite. Il piano di bootstrap prevede S1 (un interprete Triad scritto in Triad-Core), S2
-  (compilatore nativo), S3 (self-hosting) e S4 (parità cross-platform).</p>
-  <p>Questo libro è il percorso di studio del linguaggio per come è definito dallo standard. La
+  (compilatore nativo), S3 (self-hosting) e S4 (paritÃ  cross-platform).</p>
+  <p>Questo libro Ã¨ il percorso di studio del linguaggio per come Ã¨ definito dallo standard. La
   prima parte, Fondamenti, introduce il lessico, i valori e i tipi, il controllo di flusso, le
   funzioni, il dispatch, la logica, il codice come dato, gli errori, i contratti, il budget, le
   tracce e gli effetti. La seconda, Triad-Core, copre il sottoinsieme eseguibile oggi dall'interprete
@@ -6205,29 +6096,29 @@ verificano eseguendoli con <code>node seed/dev/triad_core.cjs</code>.</p>
   dello standard completo, oggi studiabili ma non ancora eseguibili dal runtime. La quarta, Dentro
   il progetto, accompagna il lettore nel codice del repository: il seed, la suite di conformance,
   la CLI, gli strumenti per gli editor.</p>
-  <p>Il progetto è rilasciato sotto licenza MIT. La specifica normativa è in SPEC.md (standard
+  <p>Il progetto Ã¨ rilasciato sotto licenza MIT. La specifica normativa Ã¨ in SPEC.md (standard
   0.2.0), il sottoinsieme di bootstrap in SPEC-CORE.md, la suite di conformance in
   conformance/ con golden verificabili. Il repository include anche un benchmark per la generazione
   di codice Triad da LLM (ai/), grammatiche per VS Code e Vim, e un sito con la curva di
-  apprendimento. L'obiettivo è un linguaggio autonomo e riconosciuto: standard proprio,
+  apprendimento. L'obiettivo Ã¨ un linguaggio autonomo e riconosciuto: standard proprio,
   conformance eseguibile, estensione .triad, tooling editor, bootstrap senza linguaggi ospiti e,
   infine, self-hosting.</p>
-  <p>La suite di conformance è il contratto eseguibile del linguaggio: 37 casi Triad-Core e 12 casi
-  Triad-Full, ognuno con golden verificabili byte per byte, inclusi l'exit code. Il runner è scritto
-  in Node e non dipende da Julia: il seed Windows passa 33 casi Core sul PE, il seed Linux è in
+  <p>La suite di conformance Ã¨ il contratto eseguibile del linguaggio: 37 casi Triad-Core e 12 casi
+  Triad-Full, ognuno con golden verificabili byte per byte, inclusi l'exit code. Il runner Ã¨ scritto
+  in Node e non dipende da Julia: il seed Windows passa 33 casi Core sul PE, il seed Linux Ã¨ in
   fase E0. Ogni caso dichiara il profilo (Core o Full) e un golden mancante fa fallire il caso,
-  così che nessuna implementazione possa registrare comportamenti scorretti come attesi. I test del
+  cosÃ¬ che nessuna implementazione possa registrare comportamenti scorretti come attesi. I test del
   progetto (unit e end-to-end) coprono parser, valutatore, unificazione, macro e CLI.</p>
   <p>Gli strumenti per gli editor includono grammatiche per VS Code e Vim/Neovim e una voce per
-  GitHub Linguist, così che i file <code>.triad</code> (canonica) e <code>.td</code> (alias storico)
+  GitHub Linguist, cosÃ¬ che i file <code>.triad</code> (canonica) e <code>.td</code> (alias storico)
   siano riconosciuti ovunque. Il sito del progetto espone la curva di apprendimento, i grafici delle
   fasi e una demo animata della battitura di un programma Triad-Core eseguito dall'interprete. Il
-  repository è organizzato per essere esplorato: esempi progressivi in <code>examples/</code>,
-  task guidati in <code>ai/tasks/</code>, benchmark LLM in <code>ai/</code>. Ogni modifica è
+  repository Ã¨ organizzato per essere esplorato: esempi progressivi in <code>examples/</code>,
+  task guidati in <code>ai/tasks/</code>, benchmark LLM in <code>ai/</code>. Ogni modifica Ã¨
   accompagnata da test e da aggiornamenti a STATUS.md, BOOTSTRAP.md e CHANGELOG.md.</p>
-  <p>Questo libro è scritto per lo standard 0.2.0. In caso di divergenza tra manuale e specifica,
-  prevale la specifica: SPEC.md e SPEC-CORE.md sono la fonte di verità normativa, e questo volume
-  ne è il percorso di studio, con spiegazioni, esempi ed esercizi.</p>
+  <p>Questo libro Ã¨ scritto per lo standard 0.2.0. In caso di divergenza tra manuale e specifica,
+  prevale la specifica: SPEC.md e SPEC-CORE.md sono la fonte di veritÃ  normativa, e questo volume
+  ne Ã¨ il percorso di studio, con spiegazioni, esempi ed esercizi.</p>
 </div>
   </div>
 </body>
