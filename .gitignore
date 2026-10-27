@@ -44,6 +44,7 @@ node_modules/
 # Conformance golden outputs (must be versioned)
 !conformance/**/expected.out
 !conformance/**/expected.code
+!ai/**/expected.out
 
 # Python virtualenv
 .venv/
