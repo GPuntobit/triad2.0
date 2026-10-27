@@ -6,8 +6,40 @@ import { marked } from 'marked';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'docs', 'libro');
 
-const manuale = readFileSync(join(root, 'MANUALE.md'), 'utf8');
-const tutorial = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
+function extractHeadings(md, maxLevel) {
+  const lines = md.split(/\r?\n/);
+  const out = [];
+  let inFence = false;
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    const m = line.match(/^(#{1,6})\s+(.+)$/);
+    if (!m || m[1].length > maxLevel) continue;
+    const text = m[2].trim();
+    if (/[.](triad|td)\b/.test(text)) continue;
+    if (/^[a-zàèéìòù]/.test(text)) continue;
+    out.push({ level: m[1].length, text });
+  }
+  return out;
+}
+
+function buildSommarioHtml() {
+  const manH = extractHeadings(manuale, 2);
+  const tutH = extractHeadings(tutorial, 2);
+  let html = '<h1>Sommario</h1>\n';
+  html += '<p class="sommario-intro">Elenco dei capitoli e delle sezioni principali.</p>\n';
+  html += '<h2>Manuale di Triad 2.0</h2>\n<ul class="sommario-list">\n';
+  for (const h of manH) {
+    html += '<li class="sl' + h.level + '">' + h.text + '</li>\n';
+  }
+  html += '</ul>\n';
+  html += '<h2>Tutorial di Triad 2.0</h2>\n<ul class="sommario-list">\n';
+  for (const h of tutH) {
+    html += '<li class="sl' + h.level + '">' + h.text + '</li>\n';
+  }
+  html += '</ul>\n';
+  return html;
+}
 
 marked.setOptions({ gfm: true, breaks: false });
 
@@ -33,6 +65,11 @@ function addHeadingIds(html, prefix, toc) {
     return '<h' + level + ' id="' + slug + '">' + text + '</h' + level + '>';
   });
 }
+
+const manuale = readFileSync(join(root, 'MANUALE.md'), 'utf8');
+const tutorial = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
+
+const sommarioHtml = buildSommarioHtml();
 
 const manualeToc = [];
 const tutorialToc = [];
@@ -133,7 +170,7 @@ const html = `<!DOCTYPE html>
 <meta charset="utf-8">
 <title>Il libro di Triad</title>
 <style>
-  @page { size: A4; margin: 20mm 18mm; }
+  @page { size: A4; margin: 20mm 18mm; @bottom-center { content: counter(page); font-size: 9pt; color: #666; } }
   html, body { font-family: 'Liberation Serif', 'Times New Roman', 'DejaVu Serif', Georgia, serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; }
   h1, h2, h3, h4 { font-family: 'Liberation Sans', 'Helvetica Neue', Arial, sans-serif; color: #0d0a0f; page-break-after: avoid; }
   h1 { font-size: 20pt; margin-top: 24pt; border-bottom: 1pt solid #7d5157; padding-bottom: 4pt; }
@@ -157,6 +194,11 @@ const html = `<!DOCTYPE html>
   .backcover h1 { color: #f5f5f4; border-color: #7d5157; }
   .backcover p { text-align: justify; font-size: 10.5pt; line-height: 1.6; }
   .backcover code { background: #1a1520; color: #f5f5f4; }
+  .sommario-page { page-break-after: always; }
+  .sommario-list { list-style: none; padding-left: 0; }
+  .sommario-list .sl1 { font-weight: bold; margin-top: 8pt; }
+  .sommario-list .sl2 { padding-left: 14pt; font-size: 10pt; }
+  .sommario-intro { font-style: italic; color: #555; font-size: 10pt; }
   .synopsis-page { page-break-after: always; }
   .synopsis { padding: 24pt 18pt; }
   .synopsis h1 { border-color: #7d5157; }
@@ -176,6 +218,9 @@ const html = `<!DOCTYPE html>
   <div class="cover"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
   <div class="synopsis-page">
     ${synopsisHtml}
+  </div>
+  <div class="sommario-page">
+    ${sommarioHtml}
   </div>
   <div class="part">
     ${manualeHtml}
