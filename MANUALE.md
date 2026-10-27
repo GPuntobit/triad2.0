@@ -1371,6 +1371,39 @@ funzione generica chiamata nel corpo. `solve … trace` restituisce `Traced(resu
 
 Gli eventi sono record: si filtrano e si contano come ogni altro valore.
 
+### Glossario degli eventi di traccia (porte di Byrd)
+
+Quando si usa `solve … trace`, ogni passo della ricerca produce un evento che registra **a che
+riferimento** (quale goal, quale clausola, quali variabili logiche) si sta lavorando. Le quattro
+porte del modello a scatole di Byrd sono:
+
+| porta | quando si verifica | significato |
+|---|---|---|
+| `:call` | si entra in un goal | inizio della valutazione della clausola candidata |
+| `:exit` | unificazione **riuscita** | il goal è dimostrato: è il "success" della ricerca |
+| `:redo` | backtracking | si torna indietro per cercare un'altra soluzione |
+| `:fail` | nessuna clausola applicabile | il goal **fallisce**: nessuna soluzione per quel ramo |
+
+Note importanti:
+
+- **"success" e "fail" non sono esiti generici**: sono le porte `:exit` e `:fail` della traccia,
+  riferite al goal/clausola in corso. Il fallimento di un goal non è un'eccezione: si manifesta
+  come **lista di soluzioni vuota** nel `result` di `Traced(result, trace)`.
+- **`depth`** appare come evento aggiuntivo quando un ramo viene tagliato dal limite di profondità
+  (`solve … depth N`), segnalando che la ricerca è stata interrotta prima di un `:exit`/`:fail`.
+- Gli eventi sono **record ordinari**: si filtrano (`[e for e in t.trace if e.port == :fail]`),
+  si contano (`length`), si ispezionano (`e.args`, `e.depth`) come ogni altro valore Triad.
+- Il riferimento di ogni evento è il **goal corrente e le variabili logiche** (`?x`, `?y`, …)
+  coinvolte in quel passo: leggendo la traccia si ricostruisce *quale* alternativa è stata
+  provata e *perché* è fallita.
+
+```triad-full
+# Conta i fallimenti di una ricerca
+t = solve path(:a, :c) trace
+fails = [e for e in t.trace if e.port == :fail]
+println(length(fails))
+```
+
 ```triad-full
 fib(n::Int) = n < 2 ? n : fib(n - 1) + fib(n - 2)
 t = with trace

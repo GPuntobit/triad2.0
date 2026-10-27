@@ -98,6 +98,7 @@
 <li class="toc-l2"><a href="#man-12-contratti">12. Contratti</a></li>
 <li class="toc-l2"><a href="#man-13-budget">13. Budget</a></li>
 <li class="toc-l2"><a href="#man-14-tracce">14. Tracce</a></li>
+<li class="toc-l3"><a href="#man-glossario-degli-eventi-di-traccia-porte-di-byrd">Glossario degli eventi di traccia (porte di Byrd)</a></li>
 <li class="toc-l2"><a href="#man-15-effetti-dichiarati">15. Effetti dichiarati</a></li>
 <li class="toc-l2"><a href="#man-16-logica">16. Logica</a></li>
 <li class="toc-l3"><a href="#man-16-1-fatti-regole-termini">16.1 Fatti, regole, termini</a></li>
@@ -1544,6 +1545,57 @@ funzione generica chiamata nel corpo. <code>solve … trace</code> restituisce <
 <code>result</code> è la lista delle soluzioni e gli eventi sono le porte del modello a scatole di Byrd
 (<code>call</code>, <code>exit</code>, <code>redo</code>, <code>fail</code>) più <code>depth</code>, quando un ramo viene tagliato da <code>depth</code>.</p>
 <p>Gli eventi sono record: si filtrano e si contano come ogni altro valore.</p>
+<h3 id="man-glossario-degli-eventi-di-traccia-porte-di-byrd">Glossario degli eventi di traccia (porte di Byrd)</h3>
+<p>Quando si usa <code>solve … trace</code>, ogni passo della ricerca produce un evento che registra <strong>a che
+riferimento</strong> (quale goal, quale clausola, quali variabili logiche) si sta lavorando. Le quattro
+porte del modello a scatole di Byrd sono:</p>
+<table>
+<thead>
+<tr>
+<th>porta</th>
+<th>quando si verifica</th>
+<th>significato</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>:call</code></td>
+<td>si entra in un goal</td>
+<td>inizio della valutazione della clausola candidata</td>
+</tr>
+<tr>
+<td><code>:exit</code></td>
+<td>unificazione <strong>riuscita</strong></td>
+<td>il goal è dimostrato: è il &quot;success&quot; della ricerca</td>
+</tr>
+<tr>
+<td><code>:redo</code></td>
+<td>backtracking</td>
+<td>si torna indietro per cercare un&#39;altra soluzione</td>
+</tr>
+<tr>
+<td><code>:fail</code></td>
+<td>nessuna clausola applicabile</td>
+<td>il goal <strong>fallisce</strong>: nessuna soluzione per quel ramo</td>
+</tr>
+</tbody></table>
+<p>Note importanti:</p>
+<ul>
+<li><strong>&quot;success&quot; e &quot;fail&quot; non sono esiti generici</strong>: sono le porte <code>:exit</code> e <code>:fail</code> della traccia,
+riferite al goal/clausola in corso. Il fallimento di un goal non è un&#39;eccezione: si manifesta
+come <strong>lista di soluzioni vuota</strong> nel <code>result</code> di <code>Traced(result, trace)</code>.</li>
+<li><strong><code>depth</code></strong> appare come evento aggiuntivo quando un ramo viene tagliato dal limite di profondità
+(<code>solve … depth N</code>), segnalando che la ricerca è stata interrotta prima di un <code>:exit</code>/<code>:fail</code>.</li>
+<li>Gli eventi sono <strong>record ordinari</strong>: si filtrano (<code>[e for e in t.trace if e.port == :fail]</code>),
+si contano (<code>length</code>), si ispezionano (<code>e.args</code>, <code>e.depth</code>) come ogni altro valore Triad.</li>
+<li>Il riferimento di ogni evento è il <strong>goal corrente e le variabili logiche</strong> (<code>?x</code>, <code>?y</code>, …)
+coinvolte in quel passo: leggendo la traccia si ricostruisce <em>quale</em> alternativa è stata
+provata e <em>perché</em> è fallita.</li>
+</ul>
+<pre><code class="language-triad-full"># Conta i fallimenti di una ricerca
+t = solve path(:a, :c) trace
+fails = [e for e in t.trace if e.port == :fail]
+println(length(fails))
+</code></pre>
 <pre><code class="language-triad-full">fib(n::Int) = n &lt; 2 ? n : fib(n - 1) + fib(n - 2)
 t = with trace
     fib(3)
