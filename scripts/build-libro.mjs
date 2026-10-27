@@ -6,6 +6,8 @@ import { marked } from 'marked';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'docs', 'libro');
 
+const sommario = readFileSync(join(root, 'SOMMARIO.md'), 'utf8');
+const sommarioHtml = marked.parse(sommario);
 const manuale = readFileSync(join(root, 'MANUALE.md'), 'utf8');
 const tutorial = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
 
@@ -157,6 +159,7 @@ const html = `<!DOCTYPE html>
   .backcover h1 { color: #f5f5f4; border-color: #7d5157; }
   .backcover p { text-align: justify; font-size: 10.5pt; line-height: 1.6; }
   .backcover code { background: #1a1520; color: #f5f5f4; }
+  .sommario-page { page-break-after: always; }
   .synopsis-page { page-break-after: always; }
   .synopsis { padding: 24pt 18pt; }
   .synopsis h1 { border-color: #7d5157; }
@@ -176,6 +179,9 @@ const html = `<!DOCTYPE html>
   <div class="cover"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
   <div class="synopsis-page">
     ${synopsisHtml}
+  </div>
+  <div class="sommario-page">
+    ${sommarioHtml}
   </div>
   <div class="toc">${tocHtml}</div>
   <div class="part">
