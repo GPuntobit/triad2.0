@@ -63,6 +63,12 @@ graphify.skill
 /stdout.txt
 /scope_out.txt
 /test_output.txt
+/out.txt
+/output.txt
+/outfile.txt
+/error.txt
+/let_*out*.txt
+/0
 
 # Agent/IDE local state
 .kiro/settings/*.lock
