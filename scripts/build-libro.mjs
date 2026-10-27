@@ -33,8 +33,19 @@ function addHeadingIds(html, prefix, toc) {
 
 const preface = readFileSync(join(root, 'PREFazione.md'), 'utf8');
 const prefaceHtml = marked.parse(preface);
-const manuale = readFileSync(join(root, 'MANUALE.md'), 'utf8');
-const tutorial = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
+const manualeRaw = readFileSync(join(root, 'MANUALE.md'), 'utf8');
+const tutorialRaw = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
+
+function stripIndice(md, heading, endMarker) {
+  const start = md.indexOf(heading);
+  if (start === -1) return md;
+  const end = md.indexOf(endMarker, start);
+  if (end === -1) return md;
+  return md.slice(0, start) + md.slice(end);
+}
+
+const manuale = stripIndice(manualeRaw, '### Indice', '\n<a id="parte-1">');
+const tutorial = stripIndice(tutorialRaw, '## Indice', '\n<a id="parte-1">');
 
 const manualeToc = [];
 const tutorialToc = [];

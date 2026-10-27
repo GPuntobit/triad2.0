@@ -188,26 +188,6 @@ println(6 * 7)
 <pre><code class="language-text">ciao, Triad
 42
 </code></pre>
-<h3 id="man-indice">Indice</h3>
-<p><strong>Parte I — Il linguaggio</strong></p>
-<ol>
-<li><a href="#cap-1">Lessico</a> · 2. <a href="#cap-2">Valori e tipi</a> · 3. <a href="#cap-3">Variabili e assegnamento</a> ·</li>
-<li><a href="#cap-4">Operatori e precedenza</a> · 5. <a href="#cap-5">Controllo di flusso</a> ·</li>
-<li><a href="#cap-6">Funzioni</a> · 7. <a href="#cap-7">Tipi e multiple dispatch</a> ·</li>
-<li><a href="#cap-8">Lambda, chiusure e scope</a> · 9. <a href="#cap-9">Liste</a> ·</li>
-<li><a href="#cap-10">Stringhe, simboli e conversioni</a> · 11. <a href="#cap-11">Errori come dati</a> ·</li>
-<li><a href="#cap-12">Contratti</a> · 13. <a href="#cap-13">Budget</a> · 14. <a href="#cap-14">Tracce</a> ·</li>
-<li><a href="#cap-15">Effetti dichiarati</a> · 16. <a href="#cap-16">Logica</a> ·</li>
-<li><a href="#cap-17">Codice come dato</a> · 18. <a href="#cap-18">Macro</a> ·</li>
-<li><a href="#cap-19">Builtin</a> · 20. <a href="#cap-20">Riga di comando e REPL</a> ·</li>
-<li><a href="#cap-21">Primitivi di bootstrap</a> · 22. <a href="#cap-22">Stile e pattern idiomatici</a></li>
-</ol>
-<p><strong>Parte II — Esercizi</strong> · <a href="#cap-23">23. Esercizi guidati</a> · <a href="#cap-24">24. Esercizi su Triad-Full</a></p>
-<p><strong>Parte III — Riferimento</strong> · <a href="#cap-25">25. Grammatica</a> · <a href="#cap-26">26. Schede rapide</a> ·
-<a href="#cap-27">27. Tabella degli errori</a> · <a href="#cap-28">28. Glossario</a> ·
-<a href="#cap-29">29. Cosa gira oggi</a></p>
-<p><strong>Appendici</strong> · <a href="#app-a">A. Influenze dichiarate</a> · <a href="#app-b">B. Dove guardare</a></p>
-<hr>
 <p><a id="parte-1"></a></p>
 <h1 id="man-parte-i-il-linguaggio">Parte I — Il linguaggio</h1>
 <p><a id="cap-1"></a></p>
@@ -3071,72 +3051,6 @@ Linux/macOS e dal runner di conformance. &quot;Seed&quot; = <code>seed/windows-x
 Triad-Core in codice macchina (S0). Dove si comportano diversamente lo dice il
 <a href="#cap-15">capitolo 15</a>.</li>
 </ul>
-<h2 id="tut-indice">Indice</h2>
-<p><strong><a href="#parte-1">Parte I — Primi passi</a></strong></p>
-<ol>
-<li><a href="#cap-1">Cos&#39;è Triad</a></li>
-<li><a href="#cap-2">Installare ed eseguire</a></li>
-<li><a href="#cap-3">Il primo programma</a></li>
-</ol>
-<p><strong><a href="#parte-2">Parte II — Triad-Core passo per passo (eseguibile oggi)</a></strong></p>
-<ol start="4">
-<li><a href="#cap-4">Lessico</a></li>
-<li><a href="#cap-5">Valori, tipi e stampa</a></li>
-<li><a href="#cap-6">Variabili e assegnamento</a></li>
-<li><a href="#cap-7">Operatori ed espressioni</a></li>
-<li><a href="#cap-8">Controllo di flusso</a></li>
-<li><a href="#cap-9">Funzioni</a></li>
-<li><a href="#cap-10">Lambda, chiusure e scope</a></li>
-<li><a href="#cap-11">Liste</a></li>
-<li><a href="#cap-12">Stringhe, simboli e conversioni</a></li>
-<li><a href="#cap-13">Primitivi di bootstrap</a></li>
-<li><a href="#cap-14">Errori di esecuzione</a></li>
-<li><a href="#cap-15">Interprete JS e seed Windows: differenze</a></li>
-<li><a href="#cap-16">Pattern idiomatici Triad-Core</a></li>
-<li><a href="#cap-17">Esercizi guidati</a></li>
-</ol>
-<p><strong><a href="#parte-3">Parte III — Triad-Full (lo standard completo)</a></strong></p>
-<ol start="18">
-<li><a href="#cap-18">Lessico e tipi Full</a></li>
-<li><a href="#cap-19">Funzioni tipate e multiple dispatch</a></li>
-<li><a href="#cap-20">Struct</a></li>
-<li><a href="#cap-21">Controllo di flusso Full: <code>for</code>, range, comprehension, <code>try</code></a></li>
-<li><a href="#cap-22">Logica: fatti, regole, <code>solve</code></a></li>
-<li><a href="#cap-23">Destrutturazione</a></li>
-<li><a href="#cap-24">Errori come dati</a></li>
-<li><a href="#cap-25">Contratti</a></li>
-<li><a href="#cap-26">Budget</a></li>
-<li><a href="#cap-27">Tracce</a></li>
-<li><a href="#cap-28">Effetti dichiarati</a></li>
-<li><a href="#cap-29">Codice come dato, albero uniforme e macro</a></li>
-<li><a href="#cap-30">Builtin Full</a></li>
-<li><a href="#cap-31">Riga di comando e REPL (SPEC §14)</a></li>
-<li><a href="#cap-32">Esempi Full con output golden</a></li>
-</ol>
-<p><strong><a href="#parte-4">Parte IV — Il codice del progetto</a></strong></p>
-<ol start="33">
-<li><a href="#cap-33">Mappa del repository</a></li>
-<li><a href="#cap-34">L&#39;interprete di riferimento JS (<code>seed/dev/triad_core.cjs</code>)</a></li>
-<li><a href="#cap-35">Il seed S0 Windows e il suo generatore</a></li>
-<li><a href="#cap-36">Il seed Linux (E0)</a></li>
-<li><a href="#cap-37">Self-hosting: S1 in <code>selfhost/</code></a></li>
-<li><a href="#cap-38">Conformance: leggere, scrivere e verificare casi</a></li>
-<li><a href="#cap-39">La CLI di sviluppo <code>triad-cli</code></a></li>
-<li><a href="#cap-40">Benchmark AI (<code>ai/</code>)</a></li>
-<li><a href="#cap-41">Editor, launcher e sito</a></li>
-<li><a href="#cap-42">Integrazione continua</a></li>
-<li><a href="#cap-43">Flusso di contributo</a></li>
-</ol>
-<p><strong><a href="#parte-5">Parte V — Riferimento</a></strong></p>
-<ol start="44">
-<li><a href="#cap-44">Grammatica Triad-Core (EBNF)</a></li>
-<li><a href="#cap-45">Schede rapide Core e Full</a></li>
-<li><a href="#cap-46">Debug e problemi comuni</a></li>
-<li><a href="#cap-47">Glossario</a></li>
-<li><a href="#cap-48">Stato, limiti noti e fix storici</a></li>
-<li><a href="#cap-49">FAQ</a></li>
-</ol>
-<hr>
 <p><a id="parte-1"></a></p>
 <h1 id="tut-parte-i-primi-passi">Parte I — Primi passi</h1>
 <p><a id="cap-1"></a></p>
