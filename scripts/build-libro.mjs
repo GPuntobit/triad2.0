@@ -130,22 +130,23 @@ const html = `<!DOCTYPE html>
 <style>
   @page { size: 152.4mm 228.6mm; margin: 15mm 12mm; @bottom-center { content: counter(page); font-size: 9pt; color: #666; } }
   @page :first { margin: 0; }
-  html, body { font-family: 'Liberation Serif', 'Times New Roman', 'DejaVu Serif', Georgia, serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; }
-  h1, h2, h3, h4 { font-family: 'Liberation Sans', 'Helvetica Neue', Arial, sans-serif; color: #0d0a0f; page-break-after: avoid; }
-  h1 { font-size: 20pt; margin-top: 24pt; border-bottom: 1pt solid #7d5157; padding-bottom: 4pt; }
-  h2 { font-size: 15pt; margin-top: 18pt; }
-  h3 { font-size: 12.5pt; margin-top: 14pt; }
-  p { margin: 6pt 0; text-align: justify; }
+  html, body { font-family: 'Liberation Serif', 'Times New Roman', 'DejaVu Serif', Georgia, serif; font-size: 10.5pt; line-height: 1.6; color: #1a1a1a; }
+  h1, h2, h3, h4 { font-family: 'Liberation Sans', 'Helvetica Neue', Arial, sans-serif; color: #0d0a0f; page-break-after: avoid; margin-top: 18pt; margin-bottom: 6pt; }
+  h1 { font-size: 18pt; margin-top: 24pt; border-bottom: 1.2pt solid #7d5157; padding-bottom: 4pt; }
+  h2 { font-size: 13.5pt; margin-top: 16pt; color: #2a1a1f; }
+  h3 { font-size: 11.5pt; margin-top: 12pt; color: #3a2a2f; }
+  p { margin: 6pt 0 8pt 0; text-align: justify; orphans: 3; widows: 3; }
   a { color: #d0405a; text-decoration: none; }
-  code { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace; font-size: 9.5pt; background: #f3f1f4; padding: 1pt 3pt; border-radius: 2pt; }
-  pre { background: #0d0a0f; color: #f5f5f4; padding: 10pt; border-radius: 4pt; overflow-x: auto; page-break-inside: avoid; }
-  pre code { background: none; color: inherit; padding: 0; font-size: 9pt; }
-  table { border-collapse: collapse; width: 100%; margin: 8pt 0; page-break-inside: avoid; }
-  th, td { border: 0.5pt solid #b8b0aa; padding: 4pt 6pt; font-size: 9.5pt; }
+  code { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace; font-size: 9pt; background: #f3f1f4; padding: 1pt 3pt; border-radius: 2pt; }
+  pre { background: #0d0a0f; color: #f5f5f4; padding: 10pt 12pt; border-radius: 4pt; overflow-x: auto; page-break-inside: avoid; margin: 8pt 0; border-left: 3pt solid #d0405a; }
+  pre code { background: none; color: inherit; padding: 0; font-size: 8.5pt; line-height: 1.4; }
+  table { border-collapse: collapse; width: 100%; margin: 10pt 0; page-break-inside: avoid; font-size: 9.5pt; }
+  th, td { border: 0.5pt solid #b8b0aa; padding: 4pt 6pt; }
   th { background: #ece8e4; font-weight: bold; }
+  tr:nth-child(even) td { background: #f7f5f3; }
   img { max-width: 100%; }
-  blockquote { border-left: 2pt solid #7d5157; margin: 8pt 0; padding: 4pt 10pt; color: #444; font-style: italic; }
-  hr { border: none; border-top: 0.5pt solid #7d5157; margin: 12pt 0; }
+  blockquote { border-left: 2pt solid #7d5157; margin: 8pt 0; padding: 4pt 10pt; color: #444; font-style: italic; background: #f9f7f5; }
+  hr { border: none; border-top: 0.5pt solid #7d5157; margin: 14pt 0; }
   .cover { page-break-after: always; margin: 0; padding: 0; }
   .cover img { width: 100%; height: 100vh; object-fit: cover; display: block; }
   .preface-page { page-break-after: always; }
@@ -161,8 +162,9 @@ const html = `<!DOCTYPE html>
   .toc-list .toc-l2 { padding-left: 14pt; }
   .toc-list .toc-l3 { padding-left: 28pt; font-size: 9pt; }
   .part { page-break-before: always; }
-  ul, ol { margin: 6pt 0 6pt 18pt; }
-  li { margin: 2pt 0; }
+  ul, ol { margin: 6pt 0 8pt 18pt; }
+  li { margin: 3pt 0; }
+  strong { color: #0d0a0f; }
 </style>
 </head>
 <body>
