@@ -31,6 +31,8 @@ function addHeadingIds(html, prefix, toc) {
   });
 }
 
+const preface = readFileSync(join(root, 'PREFazione.md'), 'utf8');
+const prefaceHtml = marked.parse(preface);
 const manuale = readFileSync(join(root, 'MANUALE.md'), 'utf8');
 const tutorial = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
 
@@ -135,6 +137,7 @@ const html = `<!DOCTYPE html>
   hr { border: none; border-top: 0.5pt solid #7d5157; margin: 12pt 0; }
   .cover { page-break-after: always; margin: 0; padding: 0; }
   .cover img { width: 100%; height: 100vh; object-fit: cover; display: block; }
+  .preface-page { page-break-after: always; }
   .backcover-page { page-break-before: always; }
   .backcover { background: #0d0a0f; color: #f5f5f4; padding: 24pt 18pt; min-height: 100%; }
   .backcover h1 { color: #f5f5f4; border-color: #7d5157; }
@@ -152,7 +155,10 @@ const html = `<!DOCTYPE html>
 </style>
 </head>
 <body>
-  <div class="cover"><img src="frontespizio.png" alt="Frontespizio â€” Il libro di Triad" /></div>
+  <div class="cover"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
+  <div class="preface-page">
+    ${prefaceHtml}
+  </div>
   <div class="part">
     ${manualeHtml}
   </div>
