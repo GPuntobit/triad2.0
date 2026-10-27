@@ -1,45 +1,45 @@
-﻿# Manuale di Triad 2.0
+# Manuale di Triad 2.0
 
 > Il manuale completo del linguaggio: lessico, valori, controllo di flusso, funzioni, dispatch,
 > logica, codice come dato, errori, contratti, budget, tracce, effetti, esercizi e riferimento.
 
-Triad Ã¨ un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple
+Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple
 dispatch, programmazione logica integrata e codice come dato, in una sola sintassi. La sua
-definizione Ã¨ una specifica normativa indipendente da qualsiasi implementazione
+definizione è una specifica normativa indipendente da qualsiasi implementazione
 ([`SPEC.md`](SPEC.md), standard `0.2.0`), accompagnata da una specifica eseguibile
-([`SPEC-CORE.md`](SPEC-CORE.md)) e da una suite di conformitÃ  con golden verificabili
+([`SPEC-CORE.md`](SPEC-CORE.md)) e da una suite di conformità con golden verificabili
 ([`conformance/`](conformance/README.md)).
 
-Questo manuale insegna il linguaggio per come Ã¨ definito dallo standard. Non Ã¨ un riassunto della
-specifica: Ã¨ un percorso di studio, con spiegazioni, esempi ed esercizi.
+Questo manuale insegna il linguaggio per come è definito dallo standard. Non è un riassunto della
+specifica: è un percorso di studio, con spiegazioni, esempi ed esercizi.
 
 ---
 
 ## Come leggere questo manuale
 
-### A chi Ã¨ indirizzato
+### A chi è indirizzato
 
 Sai programmare, in qualunque linguaggio: sai cosa sono una variabile, una funzione, un ciclo, una
 ricorsione. Questo manuale non spiega la programmazione in generale, spiega **Triad**.
 
 ### Due profili, una sola lingua
 
-Lo standard definisce due profili di conformitÃ , ed Ã¨ utile saperli distinguere prima di cominciare:
+Lo standard definisce due profili di conformità, ed è utile saperli distinguere prima di cominciare:
 
-| profilo | che cosa contiene | dove Ã¨ definito |
+| profilo | che cosa contiene | dove è definito |
 |---|---|---|
 | **Triad-Core** | valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O | [`SPEC-CORE.md`](SPEC-CORE.md) |
 | **Triad-Full** | tutto: tipi dichiarati, dispatch, logica, macro, contratti, budget, tracce, effetti | [`SPEC.md`](SPEC.md) |
 
-Triad-Core Ã¨ un **sottoinsieme** di Triad-Full: ogni programma Core Ã¨ anche un programma Full
+Triad-Core è un **sottoinsieme** di Triad-Full: ogni programma Core è anche un programma Full
 valido e deve comportarsi allo stesso modo. Il manuale presenta i due profili **sullo stesso piano**,
 per costruzione logica: ogni capitolo introduce un costrutto e dice in quale profilo esiste. Non
-perchÃ© Full sia "piÃ¹ avanti", ma perchÃ© sono due facce della stessa specifica.
+perché Full sia "più avanti", ma perché sono due facce della stessa specifica.
 
 Dove la differenza conta, trovi due marcatori:
 
-- **[Core]** â€” il costrutto esiste nel sottoinsieme di bootstrap;
-- **[Full]** â€” il costrutto esiste solo nello standard completo.
+- **[Core]** — il costrutto esiste nel sottoinsieme di bootstrap;
+- **[Full]** — il costrutto esiste solo nello standard completo.
 
 ### Convenzioni di notazione
 
@@ -48,9 +48,9 @@ Dove la differenza conta, trovi due marcatori:
 | `monospace` | codice Triad o un valore letterale |
 | **Output:** | l'output esatto prodotto dal programma |
 | **[Core]** / **[Full]** | il profilo in cui il costrutto esiste |
-| `SPEC Â§n` | la sezione normativa corrispondente |
+| `SPEC §n` | la sezione normativa corrispondente |
 
-I blocchi di codice sono marcati con il loro livello di eseguibilitÃ :
+I blocchi di codice sono marcati con il loro livello di eseguibilità:
 
 | fence | significa |
 |---|---|
@@ -88,32 +88,32 @@ ciao, Triad
 
 ### Indice
 
-**Parte I â€” Il linguaggio**
+**Parte I — Il linguaggio**
 
-1. [Lessico](#cap-1) Â· 2. [Valori e tipi](#cap-2) Â· 3. [Variabili e assegnamento](#cap-3) Â·
-4. [Operatori e precedenza](#cap-4) Â· 5. [Controllo di flusso](#cap-5) Â·
-6. [Funzioni](#cap-6) Â· 7. [Tipi e multiple dispatch](#cap-7) Â·
-8. [Lambda, chiusure e scope](#cap-8) Â· 9. [Liste](#cap-9) Â·
-10. [Stringhe, simboli e conversioni](#cap-10) Â· 11. [Errori come dati](#cap-11) Â·
-12. [Contratti](#cap-12) Â· 13. [Budget](#cap-13) Â· 14. [Tracce](#cap-14) Â·
-15. [Effetti dichiarati](#cap-15) Â· 16. [Logica](#cap-16) Â·
-17. [Codice come dato](#cap-17) Â· 18. [Macro](#cap-18) Â·
-19. [Builtin](#cap-19) Â· 20. [Riga di comando e REPL](#cap-20) Â·
-21. [Primitivi di bootstrap](#cap-21) Â· 22. [Stile e pattern idiomatici](#cap-22)
+1. [Lessico](#cap-1) · 2. [Valori e tipi](#cap-2) · 3. [Variabili e assegnamento](#cap-3) ·
+4. [Operatori e precedenza](#cap-4) · 5. [Controllo di flusso](#cap-5) ·
+6. [Funzioni](#cap-6) · 7. [Tipi e multiple dispatch](#cap-7) ·
+8. [Lambda, chiusure e scope](#cap-8) · 9. [Liste](#cap-9) ·
+10. [Stringhe, simboli e conversioni](#cap-10) · 11. [Errori come dati](#cap-11) ·
+12. [Contratti](#cap-12) · 13. [Budget](#cap-13) · 14. [Tracce](#cap-14) ·
+15. [Effetti dichiarati](#cap-15) · 16. [Logica](#cap-16) ·
+17. [Codice come dato](#cap-17) · 18. [Macro](#cap-18) ·
+19. [Builtin](#cap-19) · 20. [Riga di comando e REPL](#cap-20) ·
+21. [Primitivi di bootstrap](#cap-21) · 22. [Stile e pattern idiomatici](#cap-22)
 
-**Parte II â€” Esercizi** Â· [23. Esercizi guidati](#cap-23) Â· [24. Esercizi su Triad-Full](#cap-24)
+**Parte II — Esercizi** · [23. Esercizi guidati](#cap-23) · [24. Esercizi su Triad-Full](#cap-24)
 
-**Parte III â€” Riferimento** Â· [25. Grammatica](#cap-25) Â· [26. Schede rapide](#cap-26) Â·
-[27. Tabella degli errori](#cap-27) Â· [28. Glossario](#cap-28) Â·
+**Parte III — Riferimento** · [25. Grammatica](#cap-25) · [26. Schede rapide](#cap-26) ·
+[27. Tabella degli errori](#cap-27) · [28. Glossario](#cap-28) ·
 [29. Cosa gira oggi](#cap-29)
 
-**Appendici** Â· [A. Influenze dichiarate](#app-a) Â· [B. Dove guardare](#app-b)
+**Appendici** · [A. Influenze dichiarate](#app-a) · [B. Dove guardare](#app-b)
 
 ---
 
 <a id="parte-1"></a>
 
-# Parte I â€” Il linguaggio
+# Parte I — Il linguaggio
 
 <a id="cap-1"></a>
 
@@ -121,8 +121,8 @@ ciao, Triad
 
 ### 1.1 Identificatori
 
-Un identificatore comincia con una lettera o `_`, seguito da lettere, cifre o `_`. Un `!` finale Ã¨
-ammesso se non Ã¨ seguito da `=`. **[Core]**
+Un identificatore comincia con una lettera o `_`, seguito da lettere, cifre o `_`. Un `!` finale è
+ammesso se non è seguito da `=`. **[Core]**
 
 ```triad
 x = 1
@@ -131,18 +131,18 @@ _ = 3
 nome_valido = 4
 ```
 
-`push!`, `sort!` e simili sono nomi legittimi: la convenzione del `!` finale Ã¨ per le funzioni che
+`push!`, `sort!` e simili sono nomi legittimi: la convenzione del `!` finale è per le funzioni che
 mutano il loro argomento (cap. 9).
 
 In Triad-Full gli identificatori ammettono anche lettere non ASCII. **[Full]**
 
 ```triad-full
-etÃ  = 42
+età = 42
 ```
 
 ### 1.2 Numeri
 
-Gli interi si scrivono con cifre decimali; `_` funziona come separatore. Il segno Ã¨ un operatore
+Gli interi si scrivono con cifre decimali; `_` funziona come separatore. Il segno è un operatore
 unario, non parte del letterale. **[Core]**
 
 ```triad
@@ -168,7 +168,7 @@ println(1e-9)
 
 ### 1.3 Stringhe
 
-Una stringa Ã¨ una sequenza di byte UTF-8 **immutabile**, tra apici doppi. Gli escape sono `\n`,
+Una stringa è una sequenza di byte UTF-8 **immutabile**, tra apici doppi. Gli escape sono `\n`,
 `\t`, `\"`, `\\`. **[Core]**
 
 ```triad
@@ -199,8 +199,8 @@ println("x + 1 = $(x + 1)")
 
 ### 1.4 Simboli
 
-Un simbolo Ã¨ `:` seguito da un nome o da un operatore: `:alice`, `:+`. Due simboli sono uguali se
-hanno lo stesso nome. In Triad-Full il simbolo Ã¨ anche l'atomo della logica (cap. 16). **[Core]**
+Un simbolo è `:` seguito da un nome o da un operatore: `:alice`, `:+`. Due simboli sono uguali se
+hanno lo stesso nome. In Triad-Full il simbolo è anche l'atomo della logica (cap. 16). **[Core]**
 
 ```triad
 println(:alice)
@@ -218,12 +218,12 @@ true
 
 ### 1.5 Commenti
 
-`#` commenta fino a fine riga. `#= â€¦ =#` commenta su piÃ¹ righe; in Triad-Full i commenti annidati
+`#` commenta fino a fine riga. `#= … =#` commenta su più righe; in Triad-Full i commenti annidati
 sono ammessi. **[Core]**
 
 ```triad
 #= commento
-   su piÃ¹ righe =#
+   su più righe =#
 x = 1_000   # commento di riga
 println(x)
 ```
@@ -244,7 +244,7 @@ println(1); println(2)
 ```
 
 Una conseguenza pratica: **in Triad-Core ogni a capo chiude l'istruzione**. La grammatica di Core
-non ha una regola di continuazione di riga: un'espressione spezzata su piÃ¹ righe non Ã¨ un
+non ha una regola di continuazione di riga: un'espressione spezzata su più righe non è un
 programma valido. Scrivi **una istruzione per riga** e usa `;` per separare due istruzioni.
 
 ```triad
@@ -260,30 +260,30 @@ println("seconda istruzione")
 seconda istruzione
 ```
 
-> **In Triad-Full** la regola Ã¨ piÃ¹ permissiva: `SPEC Â§1` stabilisce che un a capo **non** chiude
-> l'istruzione dentro `( )`, `[ ]` e `:( )`, nÃ© subito dopo un operatore binario. L'interprete di
+> **In Triad-Full** la regola è più permissiva: `SPEC §1` stabilisce che un a capo **non** chiude
+> l'istruzione dentro `( )`, `[ ]` e `:( )`, né subito dopo un operatore binario. L'interprete di
 > riferimento attuale non implementa ancora questa eccezione, quindi anche in Full la forma
 > sicura resta una istruzione per riga.
 
 ### 1.7 La regola dei due punti e del punto interrogativo
 
-`:` ha tre significati e `?` ne ha due. La specifica li chiama esplicitamente Â«il problema classico
-di `:`Â» â€” Ã¨ il primo punto in cui Triad si discosta dalla sintassi che conosci.
+`:` ha tre significati e `?` ne ha due. La specifica li chiama esplicitamente «il problema classico
+di `:`» — è il primo punto in cui Triad si discosta dalla sintassi che conosci.
 
 | scrittura | significato |
 |---|---|
-| `1:n`, `xs[2:end]` | `:` attaccato a un valore e senza spazi â†’ **range** |
-| `f(:a)`, `x = :a` | `:` non preceduto da un valore e seguito da un nome â†’ **simbolo** |
-| `:( â€¦ )` | â†’ **codice quotato** |
-| `c ? a : b` | `:` circondato da spazi â†’ **separatore del ternario** |
+| `1:n`, `xs[2:end]` | `:` attaccato a un valore e senza spazi → **range** |
+| `f(:a)`, `x = :a` | `:` non preceduto da un valore e seguito da un nome → **simbolo** |
+| `:( … )` | → **codice quotato** |
+| `c ? a : b` | `:` circondato da spazi → **separatore del ternario** |
 
 | scrittura | significato |
 |---|---|
-| `?x` | `?` attaccato â†’ **variabile logica** |
-| `? ` | `?` con spazio dopo â†’ **ternario** |
+| `?x` | `?` attaccato → **variabile logica** |
+| `? ` | `?` con spazio dopo → **ternario** |
 
-Da qui la regola pratica: quando `:` Ã¨ ambiguo, **metti o togli gli spazi**. `xs[2:end]` Ã¨ un range;
-`c ? a : b` Ã¨ un ternario perchÃ© i due spazi lo circondano.
+Da qui la regola pratica: quando `:` è ambiguo, **metti o togli gli spazi**. `xs[2:end]` è un range;
+`c ? a : b` è un ternario perché i due spazi lo circondano.
 
 ### 1.8 Parole chiave
 
@@ -306,14 +306,14 @@ limit depth steps trace
 ### 1.9 Identificatori avanzati e convenzioni
 
 In Triad-Core gli identificatori sono limitati all'ASCII: lettere, cifre e `_`. In Triad-Full si
-ammettono anche lettere non ASCII (accentate, greche, cirilliche): `etÃ `, `Ï€`, `Î”x` sono nomi
+ammettono anche lettere non ASCII (accentate, greche, cirilliche): `età`, `π`, `Δx` sono nomi
 validi. **[Full]**
 
 ```triad-full
-etÃ  = 42
-Ï€ = 3.14159
-Î”x = 0.001
-println(etÃ  + Ï€)
+età = 42
+π = 3.14159
+Δx = 0.001
+println(età + π)
 ```
 
 La convenzione del `!` finale (`push!`, `sort!`) indica funzioni che **mutano** il loro argomento.
@@ -336,8 +336,8 @@ Gli identificatori che coincidono con una parola chiave non sono ammessi: `funct
 
 ### 1.10 Escape e stringhe avanzate
 
-Oltre agli escape base (`\n`, `\t`, `\"`, `\\`), Triad-Full aggiunge `\r`, `\0`, `\u{â€¦}` per
-code point Unicode e `\x{â€¦}` per byte esadecimali. **[Full]**
+Oltre agli escape base (`\n`, `\t`, `\"`, `\\`), Triad-Full aggiunge `\r`, `\0`, `\u{…}` per
+code point Unicode e `\x{…}` per byte esadecimali. **[Full]**
 
 ```triad-full
 println("a\r\nb")          # ritorno a capo CRLF
@@ -345,14 +345,14 @@ println("unicode: \u{1F600}")  # emoji
 println("hex: \x{41}")     # 'A'
 ```
 
-Una stringa puÃ² contenere qualsiasi byte UTF-8 valido; un byte non valido produce un errore di
+Una stringa può contenere qualsiasi byte UTF-8 valido; un byte non valido produce un errore di
 parsing. Le stringhe sono **immutabili**: ogni operazione di concatenazione crea una nuova
 stringa. **[Core]**
 
 ```triad
 a = "ciao"
 b = a * " mondo"
-println(a)        # "ciao" â€” inalterato
+println(a)        # "ciao" — inalterato
 println(b)        # "ciao mondo"
 ```
 
@@ -365,7 +365,7 @@ ciao mondo
 
 ### 1.11 Esercizi sul lessico
 
-1. Scrivi un programma che stampi il tuo nome e la tua etÃ  su due righe, usando `\n` e
+1. Scrivi un programma che stampi il tuo nome e la tua età su due righe, usando `\n` e
    concatenazione di stringhe.
 2. Definisci un identificatore con `_` iniziale e uno con `!` finale; stampali.
 3. Prova a scrivere `x = 1_000_000` e verifica che l'output sia `1000000`.
@@ -391,15 +391,15 @@ ciao mondo
 | `Function` | funzione nominata, lambda, builtin | `Function` |
 | `Nothing` | `nothing` | `Nothing` |
 | `Expr` | codice quotato **[Full]** | `Expr` |
-| `Term`, `LVar` | termini e variabili logiche **[Full]** | â€” |
-| `Solution` | `{who = :dave}` **[Full]** | â€” |
-| `Err` | errore come dato **[Full]** | â€” |
-| `Type` | i tipi stessi sono valori **[Full]** | â€” |
+| `Term`, `LVar` | termini e variabili logiche **[Full]** | — |
+| `Solution` | `{who = :dave}` **[Full]** | — |
+| `Err` | errore come dato **[Full]** | — |
+| `Type` | i tipi stessi sono valori **[Full]** | — |
 | struct utente | `Point(3.0, 4.0)` **[Full]** | `Point` |
 
-Il set dei tipi Core Ã¨ **chiuso e piccolo**: `Int`, `Bool`, `String`, `Symbol`, `List`, `Function`,
+Il set dei tipi Core è **chiuso e piccolo**: `Int`, `Bool`, `String`, `Symbol`, `List`, `Function`,
 `Nothing`. In Core non esistono `Float`, `Term`, `Solution`, `Err` come valori del linguaggio: un
-errore Ã¨ una lista taggata `[Err, kind, msg]` (cap. 11) e una struct Ã¨ `[Point, x, y]`.
+errore è una lista taggata `[Err, kind, msg]` (cap. 11) e una struct è `[Point, x, y]`.
 
 `typeof` restituisce il **nome del tipo come simbolo**.
 
@@ -418,7 +418,7 @@ Nothing Bool Function
 
 ### 2.2 Gerarchia dei tipi
 
-`Int <: Number`, `Float <: Number`, e ogni tipo Ã¨ sottotipo di `Any`. `Any` Ã¨ il supertipo usato
+`Int <: Number`, `Float <: Number`, e ogni tipo è sottotipo di `Any`. `Any` è il supertipo usato
 nelle firme quando un parametro accetta qualunque cosa. **[Full]**
 
 ```triad-full
@@ -429,7 +429,7 @@ end
 
 ### 2.3 Struct
 
-Una `struct` Ã¨ un record immutabile con campi tipizzati e costruttore posizionale. Il
+Una `struct` è un record immutabile con campi tipizzati e costruttore posizionale. Il
 costruttore controlla i campi; un `Int` passato a un campo `Float` viene convertito, un valore non
 convertibile produce `Err(:type)`. **[Full]**
 
@@ -454,7 +454,7 @@ true
 ```
 
 In Core lo stesso concetto si rappresenta con una **lista taggata**: `[Point, x, y]`, con il simbolo
-del tipo in prima posizione. Ãˆ cosÃ¬ che gli interpreti di `selfhost/` rappresentano le struct Full.
+del tipo in prima posizione. È così che gli interpreti di `selfhost/` rappresentano le struct Full.
 
 ```triad
 punto(x, y) = [:Point, x, y]
@@ -497,7 +497,7 @@ bob
 
 ### 2.5 Asserzione di tipo
 
-`e::T` restituisce `e` se Ã¨ di tipo `T`, altrimenti produce `Err(:type)`. **[Full]**
+`e::T` restituisce `e` se è di tipo `T`, altrimenti produce `Err(:type)`. **[Full]**
 
 ```triad-full
 x = 3
@@ -507,9 +507,9 @@ println(iserr(x::String))
 
 ### 2.6 Il vincolo del dichiarato
 
-`x::T = e` â€” e un parametro `x::T` â€” **fissa** il tipo di quel nome nell'ambiente in cui nasce. Gli
+`x::T = e` — e un parametro `x::T` — **fissa** il tipo di quel nome nell'ambiente in cui nasce. Gli
 assegnamenti successivi sono controllati e convertiti contro `T`. Una nuova dichiarazione
-`x::U = â€¦` sostituisce il vincolo; un nome non dichiarato con tipo resta libero; una rilegatura in
+`x::U = …` sostituisce il vincolo; un nome non dichiarato con tipo resta libero; una rilegatura in
 un ambiente interno (`let x = 2.5`) non eredita il vincolo esterno. **[Full]**
 
 ```triad-full
@@ -521,12 +521,12 @@ y::Float = 1.0
 y = 2            # 2.0: conversione Int -> Float
 
 s = "a"
-s = 3            # bene: s non Ã¨ dichiarato con un tipo
+s = 3            # bene: s non è dichiarato con un tipo
 ```
 
 ### 2.7 Le condizioni accettano solo `Bool`
 
-Non esiste il concetto di "truthiness". `if 1` Ã¨ un errore, non `true`. Questo vale per `if`,
+Non esiste il concetto di "truthiness". `if 1` è un errore, non `true`. Questo vale per `if`,
 `while`, `&&`, `||`, `!`, il ternario e i filtri delle comprehension. **[Core]**
 
 ```triad
@@ -550,7 +550,7 @@ grande
 |---|---|
 | `Int` | decimale |
 | `Bool` | `true` / `false` |
-| `String` | cosÃ¬ com'Ã¨ |
+| `String` | così com'è |
 | `Nothing` | `nothing` |
 | `Symbol` | **senza** `:` se passato direttamente, **con** `:` dentro una lista |
 | `List` | `[a, b]`; le stringhe dentro non hanno virgolette |
@@ -573,7 +573,7 @@ senza a capo
 ```
 
 L'uguaglianza confronta numeri, stringhe e simboli **per valore**, le liste **elemento per
-elemento** (anche annidate), le funzioni **per identitÃ **. **[Core]**
+elemento** (anche annidate), le funzioni **per identità**. **[Core]**
 
 ```triad
 println([1, [2, [3]]] == [1, [2, [3]]])
@@ -593,9 +593,9 @@ true true false
 
 ## 3. Variabili e assegnamento
 
-`nome = espr` lega o aggiorna un nome. L'assegnamento **Ã¨ un'espressione** e vale il valore
+`nome = espr` lega o aggiorna un nome. L'assegnamento **è un'espressione** e vale il valore
 assegnato. `+=`, `-=`, `*=` aggiornano una variabile esistente e valutano il lato sinistro una
-volta sola. Usare un nome mai assegnato Ã¨ un errore di esecuzione. **[Core]**
+volta sola. Usare un nome mai assegnato è un errore di esecuzione. **[Core]**
 
 ```triad
 x = 42
@@ -617,7 +617,7 @@ println(n)
 24
 ```
 
-Non esistono dichiarazioni: le variabili sono dinamiche. Le regole di **visibilitÃ ** si vedono nel
+Non esistono dichiarazioni: le variabili sono dinamiche. Le regole di **visibilità** si vedono nel
 capitolo 8.
 
 ---
@@ -626,9 +626,9 @@ capitolo 8.
 
 ## 4. Operatori e precedenza
 
-Il parser Ã¨ un **Pratt** con dodici livelli. Dalla precedenza piÃ¹ bassa alla piÃ¹ alta:
+Il parser è un **Pratt** con dodici livelli. Dalla precedenza più bassa alla più alta:
 
-| livello | operatori | associativitÃ  |
+| livello | operatori | associatività |
 |---|---|---|
 | 1 | `=` `+=` `-=` `*=` | destra |
 | 2 | `x -> e`, `(a, b) -> e`, `c ? a : b` | destra |
@@ -649,9 +649,9 @@ Triad-Full.
 ### 4.1 Aritmetica intera
 
 - `+ - * ^` su `Int` con **wrap a 64 bit** (complemento a due);
-- `%` Ã¨ il **resto con il segno del dividendo**, come `rem` di Julia: `-7 % 3 == -1`;
-- `^` con esponente negativo Ã¨ un errore; `%` per zero Ã¨ un errore;
-- **`/` non esiste in Core**: la divisione Ã¨ di Triad-Full.
+- `%` è il **resto con il segno del dividendo**, come `rem` di Julia: `-7 % 3 == -1`;
+- `^` con esponente negativo è un errore; `%` per zero è un errore;
+- **`/` non esiste in Core**: la divisione è di Triad-Full.
 
 ```triad
 println(2 + 3 * 4, " ", (2 + 3) * 4, " ", 2 ^ 3 ^ 2)
@@ -667,11 +667,11 @@ println(9223372036854775807 + 1)
 -9223372036854775808
 ```
 
-Nota `2 ^ 3 ^ 2 == 512`: l'esponente Ã¨ associativo a destra, come in matematica.
+Nota `2 ^ 3 ^ 2 == 512`: l'esponente è associativo a destra, come in matematica.
 
 ### 4.2 Logica e confronti
 
-`&&` e `||` cortocircuitano. I confronti **non** si concatenano: `1 < 2 < 3` Ã¨ un errore (si
+`&&` e `||` cortocircuitano. I confronti **non** si concatenano: `1 < 2 < 3` è un errore (si
 confronta `Bool < Int`); scrivi `1 < 2 && 2 < 3`. **[Core]**
 
 ```triad
@@ -692,8 +692,8 @@ true
 
 ## 5. Controllo di flusso
 
-In Triad **tutto Ã¨ un'espressione**: `if`, `while`, `let`, `begin` hanno un valore, quello
-dell'ultima istruzione eseguita (`nothing` se non ce n'Ã¨).
+In Triad **tutto è un'espressione**: `if`, `while`, `let`, `begin` hanno un valore, quello
+dell'ultima istruzione eseguita (`nothing` se non ce n'è).
 
 ### 5.1 `if` / `elseif` / `else` **[Core]**
 
@@ -719,11 +719,11 @@ negativo zero positivo
 si
 ```
 
-Il ternario `c ? a : b` Ã¨ la forma breve di `if` e ha la stessa precedenza del `->`. **[Core]**
+Il ternario `c ? a : b` è la forma breve di `if` e ha la stessa precedenza del `->`. **[Core]**
 
 ### 5.2 `while`, `break`, `continue` **[Core]**
 
-`break` e `continue` agiscono sul ciclo **piÃ¹ interno**.
+`break` e `continue` agiscono sul ciclo **più interno**.
 
 ```triad
 i = 0
@@ -753,7 +753,7 @@ In Core **non esiste `for`**: si itera con un contatore e `while`. In Full `for`
 
 ### 5.3 `let` e `begin` **[Core]**
 
-`let` introduce un nuovo scope con legami locali; `begin â€¦ end` raggruppa istruzioni **senza**
+`let` introduce un nuovo scope con legami locali; `begin … end` raggruppa istruzioni **senza**
 creare legami nuovi.
 
 ```triad
@@ -806,7 +806,7 @@ println(xs[2:end])
 [2, 3]
 ```
 
-`end` dentro un indicatore Ã¨ l'ultimo elemento. La destrutturazione nel `for` Ã¨ trattata nel
+`end` dentro un indicatore è l'ultimo elemento. La destrutturazione nel `for` è trattata nel
 capitolo 24.
 
 ### 5.5 Le comprehension **[Full]**
@@ -827,7 +827,7 @@ println([x^2 for x in 1:4 if x > 2])
 
 ### 5.6 `try` / `catch` **[Full]**
 
-In Full l'errore Ã¨ un **valore**, quindi `try` ha due forme: con `catch` il ramo gestito produce il
+In Full l'errore è un **valore**, quindi `try` ha due forme: con `catch` il ramo gestito produce il
 valore dell'espressione; senza `catch`, l'errore **diventa** il valore dell'espressione.
 
 ```triad-full
@@ -854,10 +854,10 @@ true domain
 ### 6.1 Tre forme di definizione **[Core]**
 
 ```triad
-# forma breve: il corpo Ã¨ un'espressione
+# forma breve: il corpo è un'espressione
 quadrato(x) = x * x
 
-# forma blocco: il valore Ã¨ quello dell'ultima espressione
+# forma blocco: il valore è quello dell'ultima espressione
 function calcola(n)
     m = n + 1
     m * 2
@@ -877,10 +877,10 @@ println(quadrato(4), " ", calcola(3), " ", moltiplica(6, 7))
 16 8 42
 ```
 
-### 6.2 `return`, ricorsione, aritÃ 
+### 6.2 `return`, ricorsione, arità
 
 `return e` esce subito dalla funzione; `return` da solo restituisce `nothing`. Una funzione nominata
-Ã¨ visibile nel proprio corpo, quindi la ricorsione diretta funziona. Il numero di argomenti deve
+è visibile nel proprio corpo, quindi la ricorsione diretta funziona. Il numero di argomenti deve
 coincidere con i parametri. **[Core]**
 
 ```triad
@@ -929,12 +929,12 @@ println(applica_tutti(x -> x * x, [1, 2, 3]))
 [1, 4, 9]
 ```
 
-In Full, `reduce(+, xs)` e `map(sq, xs)` funzionano perchÃ© anche gli **operatori sono funzioni**.
+In Full, `reduce(+, xs)` e `map(sq, xs)` funzionano perché anche gli **operatori sono funzioni**.
 
 ### 6.4 L'annotazione di effetto `!io`
 
 Una funzione che stampa deve dichiarare `!io` nella firma. Core **accetta l'annotazione e la
-ignora**: scriverla rende il codice giÃ  pronto per Full. **[Core]**
+ignora**: scriverla rende il codice già pronto per Full. **[Core]**
 
 ```triad
 function mostra() !io
@@ -957,9 +957,9 @@ hello from block
 
 ## 7. Tipi e multiple dispatch
 
-Una funzione generica Ã¨ un insieme di metodi. Ridefinire la stessa firma sostituisce il metodo
-precedente. Tra i metodi applicabili (stessa aritÃ , ogni argomento sottotipo del parametro) vince
-il **piÃ¹ specifico**. **[Full]**
+Una funzione generica è un insieme di metodi. Ridefinire la stessa firma sostituisce il metodo
+precedente. Tra i metodi applicabili (stessa arità, ogni argomento sottotipo del parametro) vince
+il **più specifico**. **[Full]**
 
 ```triad-full
 area(n::Number) = :number
@@ -976,12 +976,12 @@ int
 number
 ```
 
-Un metodo A Ã¨ piÃ¹ specifico di B se ogni suo parametro Ã¨ sottotipo del corrispondente parametro di B
+Un metodo A è più specifico di B se ogni suo parametro è sottotipo del corrispondente parametro di B
 e le firme differiscono.
 
-- Se nessun metodo Ã¨ applicabile: `Err(:method)`.
-- Se piÃ¹ metodi sono massimali: `Err(:ambiguous)`.
-- Se il nome Ã¨ anche un builtin (per esempio `+` sui numeri), si usa il builtin.
+- Se nessun metodo è applicabile: `Err(:method)`.
+- Se più metodi sono massimali: `Err(:ambiguous)`.
+- Se il nome è anche un builtin (per esempio `+` sui numeri), si usa il builtin.
 
 Gli operatori si estendono come funzioni, ridefinendoli:
 
@@ -1007,14 +1007,14 @@ println(p.x, " ", p.y)
 
 ### 7.1 Il tipo di ritorno
 
-`::R` Ã¨ controllato all'uscita, con la conversione `Int -> Float`. Se il valore non Ã¨ conforme:
+`::R` è controllato all'uscita, con la conversione `Int -> Float`. Se il valore non è conforme:
 `Err(:type)`. **[Full]**
 
 ```triad-full
-function metÃ (n::Number)::Float
+function metà(n::Number)::Float
     n / 2
 end
-println(metÃ (3))
+println(metà(3))
 ```
 
 **Output (golden Full):**
@@ -1025,7 +1025,7 @@ println(metÃ (3))
 
 ### 7.2 Funzioni locali
 
-Una `function` definita dentro un'altra funzione Ã¨ una **chiusura locale**, senza dispatch. **[Full]**
+Una `function` definita dentro un'altra funzione è una **chiusura locale**, senza dispatch. **[Full]**
 
 ```triad-full
 function esterno(x)
@@ -1058,12 +1058,12 @@ println(doppio(5), " ", somma(1, 2), " ", applica(x -> x * x))
 10 3 9
 ```
 
-Una lambda con corpo a piÃ¹ istruzioni si scrive con `begin â€¦ end` o con `function (â€¦) â€¦ end`. Le
-lambda senza parametri (`() -> â€¦`) **non** sono supportate: usa `function () â€¦ end`.
+Una lambda con corpo a più istruzioni si scrive con `begin … end` o con `function (…) … end`. Le
+lambda senza parametri (`() -> …`) **non** sono supportate: usa `function () … end`.
 
 ### 8.2 Chiusure
 
-Una lambda cattura l'ambiente in cui Ã¨ creata. Secondo `SPEC-CORE Â§5` le variabili catturate sono
+Una lambda cattura l'ambiente in cui è creata. Secondo `SPEC-CORE §5` le variabili catturate sono
 **condivise**: le mutazioni sono visibili. **[Core]**
 
 ```triad
@@ -1094,19 +1094,19 @@ println(acc(10))
 ```
 
 > **Attenzione.** Il seed Windows cattura **per valore** e copre solo l'ultimo legame del frame: un
-> accumulatore come `contatore` puÃ² non funzionare sul seed. L'interprete JS e la specifica usano il
+> accumulatore come `contatore` può non funzionare sul seed. L'interprete JS e la specifica usano il
 > modello condiviso.
 
 ### 8.3 Le regole di scope
 
-1. `function`, lambda, `let`, `while`, `for` e le comprehension introducono **ambienti**; un nome Ã¨
-   visibile nell'ambiente in cui Ã¨ legato e in quelli interni (scope lessicale), mai in quelli
+1. `function`, lambda, `let`, `while`, `for` e le comprehension introducono **ambienti**; un nome è
+   visibile nell'ambiente in cui è legato e in quelli interni (scope lessicale), mai in quelli
    esterni.
 2. **Dentro una funzione nominata** l'assegnamento lega nel frame locale: una funzione **non
    modifica i globali**.
-3. **Dentro una lambda** l'assegnamento a un nome giÃ  legato fuori aggiorna quel legame.
+3. **Dentro una lambda** l'assegnamento a un nome già legato fuori aggiorna quel legame.
 4. **Al top level** i cicli possono aggiornare i globali.
-5. `let x = â€¦` crea un nuovo `x`: assegnare `x` dentro il `let` non tocca l'`x` esterno.
+5. `let x = …` crea un nuovo `x`: assegnare `x` dentro il `let` non tocca l'`x` esterno.
 
 ```triad
 x = 1
@@ -1130,7 +1130,7 @@ println(c)
 0
 ```
 
-Per far uscire un risultato da una funzione, restituiscilo â€” oppure usa una lista, che Ã¨ mutabile.
+Per far uscire un risultato da una funzione, restituiscilo — oppure usa una lista, che è mutabile.
 
 ---
 
@@ -1138,7 +1138,7 @@ Per far uscire un risultato da una funzione, restituiscilo â€” oppure usa u
 
 ## 9. Liste
 
-Una lista Ã¨ eterogenea, annidabile e **mutabile**. Gli indici partono da **1**. **[Core]**
+Una lista è eterogenea, annidabile e **mutabile**. Gli indici partono da **1**. **[Core]**
 
 ```triad
 xs = [1, 2, 3]
@@ -1193,7 +1193,7 @@ In Full esistono anche `reverse`, `sort`, `sum`, `first`, `last`, `rest`, `pop!`
 | operazione | significato |
 |---|---|
 | `a * b` | concatenazione di stringhe |
-| `length(s)` | numero di **byte** UTF-8 (`length("Ã©") == 2`) |
+| `length(s)` | numero di **byte** UTF-8 (`length("é") == 2`) |
 | `string(x)` | rappresentazione testuale di qualsiasi valore (`string(:a) == "a"`, `string([1, 2]) == "[1, 2]"`) |
 | `Int(s)` | da stringa a intero (`Int("42") == 42`); da `Bool`: `0`/`1` |
 | `Symbol(s)` | da stringa a simbolo (`Symbol("ciao") == :ciao`) |
@@ -1223,16 +1223,16 @@ Per accedere ai singoli byte di una stringa servono i primitivi di bootstrap (ca
 
 ## 11. Errori come dati
 
-Questa Ã¨ una delle idee portanti di Triad: **l'errore Ã¨ un valore**, non un'eccezione che
+Questa è una delle idee portanti di Triad: **l'errore è un valore**, non un'eccezione che
  interrompe il programma.
 
 ### 11.1 La forma `Err`
 
-Un errore Ã¨ un valore `Err` con tre campi:
+Un errore è un valore `Err` con tre campi:
 
-- `kind::Symbol` â€” la categoria, su cui si puÃ² fare dispatch;
-- `msg::String` â€” il messaggio;
-- `data` â€” un valore qualsiasi, spesso un record `Info(...)` con i dettagli.
+- `kind::Symbol` — la categoria, su cui si può fare dispatch;
+- `msg::String` — il messaggio;
+- `data` — un valore qualsiasi, spesso un record `Info(...)` con i dettagli.
 
 **[Full]**
 
@@ -1247,13 +1247,13 @@ println(iserr(e))
 | costrutto | effetto |
 |---|---|
 | `err(:kind, "msg"[, data])` | costruisce un `Err` **senza** sollevarlo |
-| `throw(e)`, `error("msg")` | solleva (`error` produce `Err(:error, â€¦)`) |
-| `try b catch e h end` | se `b` solleva, `e` Ã¨ legato all'`Err` e si valuta `h` |
+| `throw(e)`, `error("msg")` | solleva (`error` produce `Err(:error, …)`) |
+| `try b catch e h end` | se `b` solleva, `e` è legato all'`Err` e si valuta `h` |
 | `try b end` | **l'errore diventa il valore** dell'espressione |
-| `iserr(x)` | controlla se `x` Ã¨ un `Err` |
+| `iserr(x)` | controlla se `x` è un `Err` |
 
-Tutti i fallimenti del linguaggio â€” divisione intera per zero, `sqrt(-1.0)`, indici fuori range,
-nessun metodo applicabile â€” arrivano come `Err` e **mai** come fallimenti fatali. **[Full]**
+Tutti i fallimenti del linguaggio — divisione intera per zero, `sqrt(-1.0)`, indici fuori range,
+nessun metodo applicabile — arrivano come `Err` e **mai** come fallimenti fatali. **[Full]**
 
 ```triad-full
 e = try div(1, 0) end
@@ -1280,7 +1280,7 @@ true
 | `:undef` | nome, funzione, macro o predicato non definito |
 | `:type` | tipo sbagliato (campi, ritorno, `::`, condizioni non `Bool`) |
 | `:method` | nessun metodo applicabile; `data.types` contiene i tipi degli argomenti |
-| `:ambiguous` | piÃ¹ metodi ugualmente specifici |
+| `:ambiguous` | più metodi ugualmente specifici |
 | `:field`, `:bounds`, `:domain` | campo inesistente, indice fuori range, errore matematico |
 | `:instantiation` | variabile logica non legata dove serve un valore |
 | `:contract` | `requires`/`ensures` violata (cap. 12) |
@@ -1289,13 +1289,13 @@ true
 | `:host` | qualsiasi altro errore dell'interprete |
 
 Un errore non gestito al top level interrompe il programma: il messaggio riporta la riga
-dell'istruzione (`riga 12: â€¦`) e il codice di uscita Ã¨ `1`.
+dell'istruzione (`riga 12: …`) e il codice di uscita è `1`.
 
 ### 11.4 In Core: errori come liste taggate
 
-Core non ha `try`/`catch` nÃ© il tipo `Err`: un errore **termina il processo** con exit code `1` e un
-messaggio diagnostico su stderr. Ma il pattern "errore come dato" si puÃ² giÃ  scrivere, ed Ã¨
-esattamente cosÃ¬ che S1 implementerÃ  Full. La convenzione Ã¨ `[:Err, kind, msg]`. **[Core]**
+Core non ha `try`/`catch` né il tipo `Err`: un errore **termina il processo** con exit code `1` e un
+messaggio diagnostico su stderr. Ma il pattern "errore come dato" si può già scrivere, ed è
+esattamente così che S1 implementerà Full. La convenzione è `[:Err, kind, msg]`. **[Core]**
 
 ```triad
 err(kind, msg) = [:Err, kind, msg]
@@ -1327,7 +1327,7 @@ errore domain: divisione per zero
 3
 ```
 
-Nota che `&&` cortocircuita: `v[1]` viene valutato solo se `v` Ã¨ una lista di 3 elementi.
+Nota che `&&` cortocircuita: `v[1]` viene valutato solo se `v` è una lista di 3 elementi.
 
 ---
 
@@ -1335,7 +1335,7 @@ Nota che `&&` cortocircuita: `v[1]` viene valutato solo se `v` Ã¨ una lista di
 
 ## 12. Contratti
 
-Un contratto Ã¨ una precondizione (`requires`) o una postcondizione (`ensures`) dichiarata nel corpo
+Un contratto è una precondizione (`requires`) o una postcondizione (`ensures`) dichiarata nel corpo
 di una funzione. **[Full]**
 
 ```triad-full
@@ -1351,10 +1351,10 @@ end
   valore restituito, **dopo** il controllo del tipo di ritorno.
 - Una violazione produce
   `Err(:contract, "requires violata in safe_div: b != 0", Info(fn, clause, cond[, result]))`.
-  `cond` contiene il **codice** della condizione: Ã¨ un dato, si puÃ² ispezionare.
-- Le condizioni sono **pure**: un effetto dentro un contratto dÃ  `Err(:effect)`.
+  `cond` contiene il **codice** della condizione: è un dato, si può ispezionare.
+- Le condizioni sono **pure**: un effetto dentro un contratto dà `Err(:effect)`.
 - Al top level `requires c` funziona come un'asserzione.
-- `ensures` fuori da una `function` Ã¨ un `Err(:syntax)`.
+- `ensures` fuori da una `function` è un `Err(:syntax)`.
 
 ```triad-full
 println(safe_div(6, 3))
@@ -1380,8 +1380,8 @@ safe_div
 
 ## 13. Budget
 
-Un **budget** limita quanti passi il programma puÃ² consumare. Un passo Ã¨ una chiamata, un'iterazione
-di ciclo o un passo di risoluzione. Quando il budget si esaurisce, **il valore del `with` Ã¨
+Un **budget** limita quanti passi il programma può consumare. Un passo è una chiamata, un'iterazione
+di ciclo o un passo di risoluzione. Quando il budget si esaurisce, **il valore del `with` è
 `Err(:budget)`**: il programma non si blocca e non viene interrotto. **[Full]**
 
 ```triad-full
@@ -1397,8 +1397,8 @@ println(r.kind)
 budget
 ```
 
-I budget si annidano e vale il piÃ¹ stretto. Un `with` converte in valore **solo** l'esaurimento del
-proprio budget, mentre quello di un budget esterno continua a propagarsi. `solve â€¦ steps N` Ã¨ il
+I budget si annidano e vale il più stretto. Un `with` converte in valore **solo** l'esaurimento del
+proprio budget, mentre quello di un budget esterno continua a propagarsi. `solve … steps N` è il
 budget specifico di una query.
 
 Il motore logico usa uno stack esplicito: la ricorsione infinita, anche sinistra, finisce in
@@ -1410,7 +1410,7 @@ Il motore logico usa uno stack esplicito: la ricorsione infinita, anche sinistra
 
 ## 14. Tracce
 
-La traccia di un calcolo Ã¨ un **valore**, non output stampato. **[Full]**
+La traccia di un calcolo è un **valore**, non output stampato. **[Full]**
 
 ```triad-full
 fib(n::Int) = n < 2 ? n : fib(n - 1) + fib(n - 2)
@@ -1431,40 +1431,40 @@ println(length(t.trace))
 
 `fib(3)` effettua 5 chiamate (`fib(3)`, `fib(2)`, `fib(1)`, `fib(0)`, `fib(1)`): la traccia registra
 **due eventi per ogni chiamata**, `:call` e `:exit`, quindi 10 eventi. Per `fib(5)` sono 15 chiamate
-e 30 eventi â€” Ã¨ il valore atteso dal caso di conformance `garanzie_core`.
+e 30 eventi — è il valore atteso dal caso di conformance `garanzie_core`.
 
-`with trace â€¦ end` restituisce `Traced(result, trace)` con gli eventi `:call` e `:exit` di ogni
-funzione generica chiamata nel corpo. `solve â€¦ trace` restituisce `Traced(result, trace)` dove
-`result` Ã¨ la lista delle soluzioni e gli eventi sono le porte del modello a scatole di Byrd
-(`call`, `exit`, `redo`, `fail`) piÃ¹ `depth`, quando un ramo viene tagliato da `depth`.
+`with trace … end` restituisce `Traced(result, trace)` con gli eventi `:call` e `:exit` di ogni
+funzione generica chiamata nel corpo. `solve … trace` restituisce `Traced(result, trace)` dove
+`result` è la lista delle soluzioni e gli eventi sono le porte del modello a scatole di Byrd
+(`call`, `exit`, `redo`, `fail`) più `depth`, quando un ramo viene tagliato da `depth`.
 
 Gli eventi sono record: si filtrano e si contano come ogni altro valore.
 
 ### Glossario degli eventi di traccia (porte di Byrd)
 
-Quando si usa `solve â€¦ trace`, ogni passo della ricerca produce un evento che registra **a che
+Quando si usa `solve … trace`, ogni passo della ricerca produce un evento che registra **a che
 riferimento** (quale goal, quale clausola, quali variabili logiche) si sta lavorando. Le quattro
 porte del modello a scatole di Byrd sono:
 
 | porta | quando si verifica | significato |
 |---|---|---|
 | `:call` | si entra in un goal | inizio della valutazione della clausola candidata |
-| `:exit` | unificazione **riuscita** | il goal Ã¨ dimostrato: Ã¨ il "success" della ricerca |
+| `:exit` | unificazione **riuscita** | il goal è dimostrato: è il "success" della ricerca |
 | `:redo` | backtracking | si torna indietro per cercare un'altra soluzione |
 | `:fail` | nessuna clausola applicabile | il goal **fallisce**: nessuna soluzione per quel ramo |
 
 Note importanti:
 
 - **"success" e "fail" non sono esiti generici**: sono le porte `:exit` e `:fail` della traccia,
-  riferite al goal/clausola in corso. Il fallimento di un goal non Ã¨ un'eccezione: si manifesta
+  riferite al goal/clausola in corso. Il fallimento di un goal non è un'eccezione: si manifesta
   come **lista di soluzioni vuota** nel `result` di `Traced(result, trace)`.
-- **`depth`** appare come evento aggiuntivo quando un ramo viene tagliato dal limite di profonditÃ 
-  (`solve â€¦ depth N`), segnalando che la ricerca Ã¨ stata interrotta prima di un `:exit`/`:fail`.
+- **`depth`** appare come evento aggiuntivo quando un ramo viene tagliato dal limite di profondità
+  (`solve … depth N`), segnalando che la ricerca è stata interrotta prima di un `:exit`/`:fail`.
 - Gli eventi sono **record ordinari**: si filtrano (`[e for e in t.trace if e.port == :fail]`),
   si contano (`length`), si ispezionano (`e.args`, `e.depth`) come ogni altro valore Triad.
-- Il riferimento di ogni evento Ã¨ il **goal corrente e le variabili logiche** (`?x`, `?y`, â€¦)
-  coinvolte in quel passo: leggendo la traccia si ricostruisce *quale* alternativa Ã¨ stata
-  provata e *perchÃ©* Ã¨ fallita.
+- Il riferimento di ogni evento è il **goal corrente e le variabili logiche** (`?x`, `?y`, …)
+  coinvolte in quel passo: leggendo la traccia si ricostruisce *quale* alternativa è stata
+  provata e *perché* è fallita.
 
 ```triad-full
 # Conta i fallimenti di una ricerca
@@ -1510,15 +1510,15 @@ end
 | `io` | `println`, `print` |
 | `state` | `fact`/`rule` eseguiti dentro una funzione (modificano la knowledge base) |
 
-Il controllo Ã¨ **dinamico**. Una funzione viene eseguita solo con gli effetti che dichiara, e solo
+Il controllo è **dinamico**. Una funzione viene eseguita solo con gli effetti che dichiara, e solo
 se il chiamante li permette. Se una funzione pura chiama `println`, o chiama una funzione `!io`, si
 ottiene `Err(:effect)`; `data` contiene `fn`, `caller` e `missing`.
 
 - Il top level permette tutti gli effetti.
 - Le lambda ereditano gli effetti del contesto in cui vengono eseguite.
 - Macro e contratti sono puri.
-- Leggere la knowledge base (`solve`, chiamare un predicato) Ã¨ puro.
-- La mutazione locale di dati (`push!` su una lista, assegnamento a variabili locali) **non** Ã¨ un
+- Leggere la knowledge base (`solve`, chiamare un predicato) è puro.
+- La mutazione locale di dati (`push!` su una lista, assegnamento a variabili locali) **non** è un
   effetto: modifica solo valori raggiungibili dall'ambiente locale.
 
 ```triad-full
@@ -1561,10 +1561,10 @@ rule ancestor(?a, ?d) :- parent(?a, ?x), ancestor(?x, ?d)
 
 Dentro un termine:
 
-- `:atomo` Ã¨ un simbolo; `?x` Ã¨ una variabile logica; numeri, stringhe e liste sono se stessi;
-- `f(t1, t2)` Ã¨ un termine composto. Anche `?x + 1` Ã¨ un termine (`+(?x, 1)`) e **non viene
+- `:atomo` è un simbolo; `?x` è una variabile logica; numeri, stringhe e liste sono se stessi;
+- `f(t1, t2)` è un termine composto. Anche `?x + 1` è un termine (`+(?x, 1)`) e **non viene
   valutato**;
-- un **nome nudo** Ã¨ un valore dell'ambiente corrente, letto al momento in cui viene eseguito `fact`,
+- un **nome nudo** è un valore dell'ambiente corrente, letto al momento in cui viene eseguito `fact`,
   `rule` o `solve`: `chi = :bob; solve parent(chi, ?c)`;
 - `$(espr)` inserisce esplicitamente un valore calcolato: `fact eta(:bob, $(2026 - 1975))`;
 - `[a, b]` e `[?h | ?t]` sono liste e pattern su liste;
@@ -1577,24 +1577,24 @@ L'unificazione fa l'**occurs-check**: `solve ?x = f(?x)` non ha soluzioni.
 
 | goal | significato |
 |---|---|
-| `p(tâ€¦)` | predicato della knowledge base, risolto con SLD e backtracking, clausole in ordine |
+| `p(t…)` | predicato della knowledge base, risolto con SLD e backtracking, clausole in ordine |
 | `g1 && g2`, `(g1, g2)` | congiunzione; nelle `rule` anche con `,` |
 | `g1 \|\| g2` | disgiunzione |
 | `!g`, `not(g)` | negazione per fallimento |
-| `not(b)` *fuori* da un goal | Ã¨ una funzione: nega un `Bool` (`not(true) == false`) |
+| `not(b)` *fuori* da un goal | è una funzione: nega un `Bool` (`not(true) == false`) |
 | `a = b` | unificazione |
 | `?y is espr` | valuta `espr` (le variabili devono essere legate) e unifica con `?y` |
 | `a < b`, `==`, `!=`, `<=`, `>`, `>=` | confronto tra valori, valutati |
-| `f(tâ€¦)` con `f` funzione Triad | chiama la funzione con gli argomenti valutati; deve restituire `Bool` |
+| `f(t…)` con `f` funzione Triad | chiama la funzione con gli argomenti valutati; deve restituire `Bool` |
 | `true`, `false` | successo, fallimento |
 
-Un predicato senza clausole con quell'aritÃ , che non sia nemmeno una funzione, dÃ 
-`Err(:undef, "predicato sconosciuto: p/2")`. Una variabile non legata dentro un'espressione dÃ 
+Un predicato senza clausole con quell'arità, che non sia nemmeno una funzione, dà
+`Err(:undef, "predicato sconosciuto: p/2")`. Una variabile non legata dentro un'espressione dà
 `Err(:instantiation)`.
 
-### 16.3 `solve` Ã¨ un valore
+### 16.3 `solve` è un valore
 
-`solve` **restituisce una lista** di `Solution`. Non stampa nulla: Ã¨ un valore come un altro.
+`solve` **restituisce una lista** di `Solution`. Non stampa nulla: è un valore come un altro.
 
 ```triad-full
 fact parent(:alice, :bob)
@@ -1622,20 +1622,20 @@ variabili rimaste libere restano `?x#n`. `vars(sol)` restituisce i nomi legati.
 
 Opzioni di `solve`:
 
-- `limit n` â€” al massimo `n` soluzioni;
-- `depth d` â€” i rami piÃ¹ profondi di `d` vengono tagliati (falliscono);
-- `steps s` â€” al massimo `s` passi di risoluzione, altrimenti `Err(:budget)`; il default Ã¨
+- `limit n` — al massimo `n` soluzioni;
+- `depth d` — i rami più profondi di `d` vengono tagliati (falliscono);
+- `steps s` — al massimo `s` passi di risoluzione, altrimenti `Err(:budget)`; il default è
   `1 000 000`;
-- `trace` â€” vedi cap. 14.
+- `trace` — vedi cap. 14.
 
 ### 16.4 Un predicato usato come funzione
 
-Chiamare un predicato dove ci si aspetta un valore restituisce un `Bool`: dice se il goal Ã¨
+Chiamare un predicato dove ci si aspetta un valore restituisce un `Bool`: dice se il goal è
 dimostrabile.
 
 ```triad-full
 if grandparent(:alice, :dave)
-    println("alice Ã¨ nonna di dave")
+    println("alice è nonna di dave")
 end
 ```
 
@@ -1694,8 +1694,8 @@ println(foglie)
 
 ## 17. Codice come dato
 
-Il parser produce **un solo tipo di nodo**, `Node(head, args)`. Ãˆ lo stesso albero che il kernel
-esegue, che `:( â€¦ )` restituisce come valore e che `triad --tree` stampa come S-expression.
+Il parser produce **un solo tipo di nodo**, `Node(head, args)`. È lo stesso albero che il kernel
+esegue, che `:( … )` restituisce come valore e che `triad --tree` stampa come S-expression.
 **[Full]**
 
 | sintassi | nodo |
@@ -1711,15 +1711,15 @@ esegue, che `:( â€¦ )` restituisce come valore e che `triad --tree` stampa c
 | `x::T` | `(typed x T)` |
 | `"a $x"` | `(string "a " x)` |
 | `if c a else b end`, `c ? a : b` | `(if c (block a) (block b))` |
-| `while`, `for`, `let`, `begin` | `(while c body)`, `(for x iter body)`, `(let (tuple â€¦) body)`, `(block â€¦)` |
-| `function f(a::T)::R !io â€¦ end` | `(function f (tuple (typed a T)) R (tuple io) body)` |
+| `while`, `for`, `let`, `begin` | `(while c body)`, `(for x iter body)`, `(let (tuple …) body)`, `(block …)` |
+| `function f(a::T)::R !io … end` | `(function f (tuple (typed a T)) R (tuple io) body)` |
 | `struct P; x::Float; end` | `(struct P (tuple (typed x Float)))` |
-| `macro m(a) â€¦ end`, `@m(e)` | `(macro m (tuple a) body)`, `(macrocall m e)` |
-| `:(e)`, `quote â€¦ end`, `$e` | `(quasi e)`, `(quasi (block â€¦))`, `(unquote e)` |
+| `macro m(a) … end`, `@m(e)` | `(macro m (tuple a) body)`, `(macrocall m e)` |
+| `:(e)`, `quote … end`, `$e` | `(quasi e)`, `(quasi (block …))`, `(unquote e)` |
 | `fact t`, `rule h :- g1, g2` | `(fact t)`, `(rule h g1 g2)` |
 | `solve g limit 5 trace` | `(solve g (tuple (assign limit 5) (assign trace true)))` |
 | `try b catch e h end` | `(try b e h)` |
-| `with budget(steps = N), trace â€¦ end` | `(with (tuple (call budget (assign steps N)) trace) body)` |
+| `with budget(steps = N), trace … end` | `(with (tuple (call budget (assign steps N)) trace) body)` |
 
 ### 17.1 Quote, unquote, eval
 
@@ -1741,8 +1741,8 @@ call
 49
 ```
 
-Dentro un quote, `$x` e `$(e)` inseriscono il **valore** di un'espressione: se Ã¨ codice viene
-innestato, se Ã¨ un numero o una lista diventa una costante, se Ã¨ un Symbol diventa un identificatore.
+Dentro un quote, `$x` e `$(e)` inseriscono il **valore** di un'espressione: se è codice viene
+innestato, se è un numero o una lista diventa una costante, se è un Symbol diventa un identificatore.
 `eval(c)` esegue codice **nello scope globale**. Gli altri builtin del gruppo "codice" sono `parse`,
 `unparse`, `sexpr`, `Expr` e `gensym`.
 
@@ -1781,7 +1781,7 @@ println(x, " ", y)
 2 1
 ```
 
-L'espansione Ã¨ **pura** (Â§15) e **non Ã¨ igienica**: per i nomi temporanei si usa `gensym()`.
+L'espansione è **pura** (§15) e **non è igienica**: per i nomi temporanei si usa `gensym()`.
 
 ### 18.1 Codice che genera codice
 
@@ -1824,9 +1824,9 @@ println(eval(p))
 | codice | `eval parse unparse sexpr Expr gensym` |
 | logica | `vars(sol)` |
 
-**Il sottoinsieme di Core** Ã¨ piÃ¹ piccolo: `+ - * % ^`, i confronti, `&& || !`, `length`, `push!`,
+**Il sottoinsieme di Core** è più piccolo: `+ - * % ^`, i confronti, `&& || !`, `length`, `push!`,
 l'indicizzazione `xs[i]`, `*` sulle stringhe, `Int`, `string`, `Symbol`, `print`, `println`, `typeof`
-(`SPEC-CORE Â§7`). In Core `map`, `filter`, `reduce`, `sum`, `sort`, `div` e `mod` **non esistono**:
+(`SPEC-CORE §7`). In Core `map`, `filter`, `reduce`, `sum`, `sort`, `div` e `mod` **non esistono**:
 si scrivono a mano (cap. 22.1).
 
 ---
@@ -1835,7 +1835,7 @@ si scrivono a mano (cap. 22.1).
 
 ## 20. Riga di comando e REPL
 
-L'interfaccia di `triad` Ã¨ normativa (`SPEC Â§14`):
+L'interfaccia di `triad` è normativa (`SPEC §14`):
 
 ```
 triad                            # REPL
@@ -1851,13 +1851,13 @@ triad -v, --version
 triad -                          # legge lo script da stdin
 ```
 
-- L'estensione `.triad`/`.td` si puÃ² omettere; lo shebang `#!` Ã¨ ignorato.
+- L'estensione `.triad`/`.td` si può omettere; lo shebang `#!` è ignorato.
 - Il programma vede gli argomenti in `ARGS`, lista di stringhe, senza il nome del programma.
 - Codici di uscita: `0` successo, `1` errore non gestito (su stderr), `2` uso non valido.
 
 ### 20.1 Il REPL
 
-Il REPL Ã¨ in stile Prolog:
+Il REPL è in stile Prolog:
 
 ```
 triad> 1 + 2
@@ -1869,15 +1869,15 @@ triad> parent(:jim, ?x)
 false.
 ```
 
-- I blocchi restano aperti finchÃ© non sono chiusi da `end`.
-- `?- goal` (il `.` finale Ã¨ facoltativo) esegue una query con le opzioni di `solve`: `limit`,
+- I blocchi restano aperti finché non sono chiusi da `end`.
+- `?- goal` (il `.` finale è facoltativo) esegue una query con le opzioni di `solve`: `limit`,
   `depth`, `steps`, `trace`.
-- Un'istruzione che Ã¨ un goal su un predicato della knowledge base Ã¨ trattata come query.
+- Un'istruzione che è un goal su un predicato della knowledge base è trattata come query.
 - Dopo ogni soluzione: `;`, `n` o spazio per la successiva, `a` per tutte le rimanenti, invio o `.`
   per fermarsi. `false.` significa nessun'altra soluzione.
-- Comandi: `:load FILEâ€¦` (`:l`), `:reload` (`:r`), `:listing [nome]` (`:ls`), `:tree CODICE`,
+- Comandi: `:load FILE…` (`:l`), `:reload` (`:r`), `:listing [nome]` (`:ls`), `:tree CODICE`,
   `:reset`, `:help` (`:h`), `:quit` (`:q`, `halt`, Ctrl-D).
-- Ctrl-C interrompe il calcolo in corso; un errore non gestito Ã¨ stampato e il REPL continua.
+- Ctrl-C interrompe il calcolo in corso; un errore non gestito è stampato e il REPL continua.
 
 ---
 
@@ -1886,13 +1886,13 @@ false.
 ## 21. Primitivi di bootstrap
 
 Cinque primitive servono a S1 per leggere e analizzare il sorgente Triad. **Non fanno parte di
-Triad-Full** (`SPEC-CORE Â§8`): usale solo nel codice di bootstrap.
+Triad-Full** (`SPEC-CORE §8`): usale solo nel codice di bootstrap.
 
 | primitiva | semantica |
 |---|---|
 | `readfile(path)` | contenuto del file come `String`; errore se non leggibile |
 | `strlen(s)` | numero di byte |
-| `strbyte(s, i)` | byte (`Int` 0â€“255) alla posizione `i`, da 1 |
+| `strbyte(s, i)` | byte (`Int` 0–255) alla posizione `i`, da 1 |
 | `strsub(s, a, b)` | sottostringa dai byte `a` a `b` inclusi, da 1 |
 | `exit(n)` | termina il processo con codice `n` |
 
@@ -1922,7 +1922,7 @@ println(strsub(s, 1, fine - 1))
 abc
 ```
 
-Un programma puÃ² leggere se stesso con `readfile(ARGS[1])`: Ã¨ il primo passo di un interprete
+Un programma può leggere se stesso con `readfile(ARGS[1])`: è il primo passo di un interprete
 self-hosted.
 
 ---
@@ -1984,7 +1984,7 @@ println(riduci((a, b) -> a + b, 0, xs))
 
 ### 22.2 Record come liste taggate
 
-In Core non c'Ã¨ `struct`: un record Ã¨ una lista con un simbolo come tag in prima posizione.
+In Core non c'è `struct`: un record è una lista con un simbolo come tag in prima posizione.
 
 ```triad
 punto(x, y) = [:Punto, x, y]
@@ -2003,8 +2003,8 @@ println(p, " ", p[1] == :Punto)
 
 ### 22.3 Ambiente come lista di associazioni
 
-Ãˆ la struttura usata dagli interpreti in `selfhost/`: una lista piatta `[nome1, valore1, nome2,
-valore2, â€¦]`.
+È la struttura usata dagli interpreti in `selfhost/`: una lista piatta `[nome1, valore1, nome2,
+valore2, …]`.
 
 ```triad
 function env_get(env, nome)
@@ -2046,7 +2046,7 @@ println(env, " ", env_get(env, :x), " ", env_get(env, :z))
 
 ### 22.4 Stato mutabile condiviso
 
-PoichÃ© una funzione nominata non puÃ² riassegnare un globale, lo stato condiviso si tiene in una
+Poiché una funzione nominata non può riassegnare un globale, lo stato condiviso si tiene in una
 lista mutabile o in una chiusura.
 
 ```triad
@@ -2103,29 +2103,29 @@ ababab
 
 ### 22.6 Regole di stile
 
-- Funzioni piccole con nomi chiari; caso base esplicito in ogni ricorsione; per profonditÃ  grandi
+- Funzioni piccole con nomi chiari; caso base esplicito in ogni ricorsione; per profondità grandi
   preferisci `while`.
-- Cicli con contatori espliciti (`i = 1 â€¦ while i <= length(xs)`).
+- Cicli con contatori espliciti (`i = 1 … while i <= length(xs)`).
 - Non usare `fact`, `rule`, `solve`, `struct` e le altre parole chiave di Full come nomi: il codice
   deve restare valido anche in Triad-Full.
 - Scrivi `!io` sulle funzioni che stampano: Core lo ignora, Full lo richiede.
-- Metti le parentesi quando spezzi un'espressione su piÃ¹ righe.
+- Metti le parentesi quando spezzi un'espressione su più righe.
 
 ---
 
 <a id="parte-2"></a>
 
-# Parte II â€” Esercizi
+# Parte II — Esercizi
 
-Ogni esercizio ha una soluzione verificata. Prova prima, poi apri il riquadro Â«SoluzioneÂ».
+Ogni esercizio ha una soluzione verificata. Prova prima, poi apri il riquadro «Soluzione».
 
 <a id="cap-23"></a>
 
 ## 23. Esercizi guidati (Triad-Core)
 
-### Esercizio 1 â€” Potenza e somme
+### Esercizio 1 — Potenza e somme
 
-Senza usare `^`, scrivi `potenza(b, e)` ricorsiva e `somma_fino(n)` (somma `1 + â€¦ + n`) con `while`.
+Senza usare `^`, scrivi `potenza(b, e)` ricorsiva e `somma_fino(n)` (somma `1 + … + n`) con `while`.
 Stampa `potenza(3, 13)`, `potenza(2, 10)` e `somma_fino(100)`.
 
 <details>
@@ -2155,7 +2155,7 @@ println(potenza(3, 13), " ", potenza(2, 10), " ", somma_fino(100))
 
 </details>
 
-### Esercizio 2 â€” Numeri primi
+### Esercizio 2 — Numeri primi
 
 Stampa la lista dei numeri primi minori di 30.
 
@@ -2196,7 +2196,7 @@ println(primi)
 
 </details>
 
-### Esercizio 3 â€” Inverti una lista
+### Esercizio 3 — Inverti una lista
 
 Scrivi `inverti(xs)` che restituisca una nuova lista con gli elementi in ordine inverso.
 
@@ -2225,7 +2225,7 @@ println(inverti([1, :due, "tre"]))
 
 </details>
 
-### Esercizio 4 â€” Ordinamento per inserzione
+### Esercizio 4 — Ordinamento per inserzione
 
 Ordina in loco `[5, 2, 9, 1, 7]`.
 
@@ -2261,7 +2261,7 @@ Il `!` finale nel nome segnala, per convenzione, una funzione che muta il suo ar
 
 </details>
 
-### Esercizio 5 â€” Contatore di parole
+### Esercizio 5 — Contatore di parole
 
 Conta le parole (separate da spazi) di `"il  linguaggio Triad "` usando `strbyte`.
 
@@ -2295,9 +2295,9 @@ println(conta_parole("il  linguaggio Triad "))
 
 </details>
 
-### Esercizio 6 â€” Un mini-tokenizer
+### Esercizio 6 — Un mini-tokenizer
 
-Trasforma `"12+x*3"` in una lista di token `[tipo, testo]`, con tipi `:num`, `:id`, `:op`. Ãˆ il primo
+Trasforma `"12+x*3"` in una lista di token `[tipo, testo]`, con tipi `:num`, `:id`, `:op`. È il primo
 passo di un interprete.
 
 <details>
@@ -2345,11 +2345,11 @@ println(tokenizza("12+x*3"))
 
 </details>
 
-### Esercizio 7 â€” Valutare un'espressione
+### Esercizio 7 — Valutare un'espressione
 
 Usando i token dell'esercizio 6, scrivi un valutatore a discesa ricorsiva per `+` e `*` con
 precedenza, dove le variabili vengono da una lista di associazioni. Suggerimento: tieni la posizione
-corrente in una lista `pos = [1]`, cosÃ¬ le funzioni possono aggiornarla.
+corrente in una lista `pos = [1]`, così le funzioni possono aggiornarla.
 
 <details>
 <summary>Soluzione</summary>
@@ -2438,7 +2438,7 @@ println(valuta("2*3+4*5", []))
 
 </details>
 
-### Esercizio 8 â€” Un ambiente a dizionario
+### Esercizio 8 — Un ambiente a dizionario
 
 Estendi l'esercizio 5 con un ambiente che supporta anche la rimozione, e scrivi `ambiente_da_elenco`
 che costruisce un ambiente da coppie `[nome, valore]`. Verifica con `env_get` ed `env_set` del
@@ -2519,10 +2519,10 @@ println(env, " ", env_get(env, :x))
 Questi esercizi usano i costrutti dello standard completo. Sono definiti dalla specifica e hanno
 output golden in `conformance/cases/`, ma **non sono ancora eseguibili** dal runtime corrente.
 
-### Esercizio 9 â€” Dispatch su struct
+### Esercizio 9 — Dispatch su struct
 
 Definisci `struct Vec2` con due campi `Float` e tre metodi di `area`: uno per `Vec2`, uno per `Number`
-e uno per `Any`. Verifica che il metodo piÃ¹ specifico vinca.
+e uno per `Any`. Verifica che il metodo più specifico vinca.
 
 <details>
 <summary>Soluzione</summary>
@@ -2552,7 +2552,7 @@ println(area("ciao"))
 
 </details>
 
-### Esercizio 10 â€” Una base di conoscenza
+### Esercizio 10 — Una base di conoscenza
 
 Scrivi fatti e regole per `parent` e `sorella`, e usa `solve` per trovare le sorelle di `:bob` e
 i nipoti di `:alice`.
@@ -2583,7 +2583,7 @@ println([s.z for s in solve grandparent(:alice, ?z)])
 
 </details>
 
-### Esercizio 11 â€” Contratti in pratica
+### Esercizio 11 — Contratti in pratica
 
 Scrivi `dividi(a, b)` con `requires b != 0` e `ensures abs(result * b - a) < 1e-9`, e usa `try` per
 distinguere il caso di contratto violata dal caso di successo.
@@ -2614,7 +2614,7 @@ contratto: requires
 
 </details>
 
-### Esercizio 12 â€” Una macro che misura
+### Esercizio 12 — Una macro che misura
 
 Scrivi la macro `@misura(label, espr)` che valuta l'espressione e stampa etichetta e valore,
 restituendo il valore.
@@ -2648,7 +2648,7 @@ somma -> 6
 
 <a id="parte-3"></a>
 
-# Parte III â€” Riferimento
+# Parte III — Riferimento
 
 <a id="cap-25"></a>
 
@@ -2710,7 +2710,7 @@ macrodef   = "macro" NAME "(" [ NAME { "," NAME } ] ")" block "end" ;
 fact       = "fact" term ;
 rule       = "rule" term [ ":-" goal { "," goal } ] ;
 
-expr       = (* Pratt: precedenze dalla piÃ¹ bassa alla piÃ¹ alta *)
+expr       = (* Pratt: precedenze dalla più bassa alla più alta *)
   1  a = b   a += b   a -= b   a *= b                 (destra)
   2  x -> e   (a, b) -> e   c ? a : b                 (destra)
   3  ||
@@ -2764,20 +2764,20 @@ modifier   = "budget" "(" "steps" "=" expr ")" | "trace" ;
 | una funzione | `function (x) x end` |
 | un record Core | `[:Punto, 1, 2]` |
 | una struct **[Full]** | `Point(3, 4)` |
-| codice come dato **[Full]** | `:(a + b)`, `quote â€¦ end` |
+| codice come dato **[Full]** | `:(a + b)`, `quote … end` |
 
 ### 26.2 Controllo di flusso
 
 | vuoi | scrivi |
 |---|---|
-| una condizione | `if c â€¦ elseif d â€¦ else â€¦ end` |
+| una condizione | `if c … elseif d … else … end` |
 | una condizione breve | `c ? a : b` |
-| un ciclo | `while c â€¦ end` **[Core]** Â· `for x in xs â€¦ end` **[Full]** |
+| un ciclo | `while c … end` **[Core]** · `for x in xs … end` **[Full]** |
 | uscire dal ciclo | `break` |
 | saltare al passo dopo | `continue` |
 | uscire dalla funzione | `return e` |
-| uno scope nuovo | `let x = 1 â€¦ end` |
-| un blocco senza scope | `begin â€¦ end` |
+| uno scope nuovo | `let x = 1 … end` |
+| un blocco senza scope | `begin … end` |
 | una lista costruita **[Full]** | `[x * x for x in xs]` |
 | catturare un errore **[Full]** | `try b catch e h end` |
 
@@ -2786,9 +2786,9 @@ modifier   = "budget" "(" "steps" "=" expr ")" | "trace" ;
 | vuoi | scrivi |
 |---|---|
 | una funzione | `f(x) = x + 1` |
-| un corpo multi-istruzione | `function f(x) â€¦ end` |
-| un tipo di ritorno **[Full]** | `function f(x)::Float â€¦ end` |
-| un effetto **[Full]** | `function f(x) !io â€¦ end` |
+| un corpo multi-istruzione | `function f(x) … end` |
+| un tipo di ritorno **[Full]** | `function f(x)::Float … end` |
+| un effetto **[Full]** | `function f(x) !io … end` |
 | un predicato in un goal **[Full]** | `function evena(n) n % 2 == 0 end` |
 | una precondizione **[Full]** | `requires cond` |
 | una postcondizione **[Full]** | `ensures cond` |
@@ -2801,27 +2801,27 @@ modifier   = "budget" "(" "steps" "=" expr ")" | "trace" ;
 
 ### 27.1 In Core
 
-Core non ha `try`/`catch` nÃ© valori `Err`: un errore **termina il processo** con exit code `1` e un
-messaggio diagnostico su stderr. Quello giÃ  stampato su stdout resta.
+Core non ha `try`/`catch` né valori `Err`: un errore **termina il processo** con exit code `1` e un
+messaggio diagnostico su stderr. Quello già stampato su stdout resta.
 
 | messaggio | causa |
 |---|---|
-| `parse error: unexpected token â€¦` / `parse error: expected â€¦` | sintassi non Core (`1.5`, `/`, `() -> â€¦`, `end` mancante) |
+| `parse error: unexpected token …` / `parse error: expected …` | sintassi non Core (`1.5`, `/`, `() -> …`, `end` mancante) |
 | `error: undefined variable NOME` | nome mai assegnato, o funzione chiamata prima di essere definita |
-| `error: not a function` | si chiama un valore che non Ã¨ una funzione (`x = 5; x(1)`) |
+| `error: not a function` | si chiama un valore che non è una funzione (`x = 5; x(1)`) |
 | `error: arity mismatch` | numero di argomenti diverso dai parametri |
 | `error: index out of range` | `xs[i]` con `i < 1` o `i > length(xs)` |
 | `error: + type error` (e simili) | operandi di tipo sbagliato (`1 + "a"`) |
 | `error: if cond` / `while cond` / `ternary cond` / `&& expects bool` | condizione non `Bool` |
 | `error: div by zero` / `negative exponent` | `x % 0`, `2 ^ -1` |
 | `error: unknown function NOME` | builtin riservato usato in modo non supportato |
-| `cannot read file: â€¦` | file inesistente o non leggibile |
+| `cannot read file: …` | file inesistente o non leggibile |
 | `usage: triad FILE [ARG...]` (exit 2) | nessun file passato |
 
 ### 27.2 In Triad-Full
 
 Gli stessi fallimenti arrivano come `Err` con un `kind` (cap. 11.3), invece di terminare il
-processo. Un errore non gestito al top level stampa `riga N: â€¦` e esce con codice `1`.
+processo. Un errore non gestito al top level stampa `riga N: …` e esce con codice `1`.
 
 ---
 
@@ -2831,14 +2831,14 @@ processo. Un errore non gestito al top level stampa `riga N: â€¦` e esce con
 
 | termine | significato |
 |---|---|
-| **Albero uniforme** | l'unico tipo di nodo prodotto dal parser, `Node(head, args)`; Ã¨ anche ciÃ² che il kernel esegue |
+| **Albero uniforme** | l'unico tipo di nodo prodotto dal parser, `Node(head, args)`; è anche ciò che il kernel esegue |
 | **Ambiente** | l'insieme dei legami di nomi a valori visibile in un punto del programma |
 | **Backtracking** | il motore logico torna sui legami e prova la clausola successiva |
 | **Budget** | limite di passi eseguibili; esaurito produce `Err(:budget)` |
 | **Clausola** | un `fact` o una `rule` della knowledge base |
-| **Chiusura** | funzione che cattura l'ambiente in cui Ã¨ stata creata |
+| **Chiusura** | funzione che cattura l'ambiente in cui è stata creata |
 | **Dispatch** | scelta del metodo in base ai **tipi** degli argomenti |
-| **Effetto** | capacitÃ  dichiarata di una funzione: `io`, `state` |
+| **Effetto** | capacità dichiarata di una funzione: `io`, `state` |
 | **Err** | l'errore come dato: `kind`, `msg`, `data` |
 | **Goal** | una domanda alla knowledge base: predicato, congiunzione, disgiunzione, unificazione |
 | **Knowledge base** | l'insieme dei fatti e delle regole |
@@ -2846,7 +2846,7 @@ processo. Un errore non gestito al top level stampa `riga N: â€¦` e esce con
 | **Occurs-check** | la regola che impedisce a `?x` di unificarsi con un termine che contiene `?x` |
 | **Precedenza** | l'ordine in cui gli operatori vengono valutati (12 livelli) |
 | **Profilo** | un sottoinsieme normativo dello standard: Core o Full |
-| **Scope lessicale** | un nome Ã¨ visibile dove Ã¨ stato legato e all'interno, mai all'esterno |
+| **Scope lessicale** | un nome è visibile dove è stato legato e all'interno, mai all'esterno |
 | **Soluzione** | una `Solution`: i legami prodotti da un goal risolto |
 | **Standardizzazione a parte** | le variabili di una clausola vengono rinominate a ogni uso |
 | **Unificazione** | l'uguaglianza logica: due termini si rendono identici legando le variabili |
@@ -2858,7 +2858,7 @@ processo. Un errore non gestito al top level stampa `riga N: â€¦` e esce con
 
 ## 29. Cosa gira oggi
 
-Questa sezione non fa parte del linguaggio: Ã¨ lo stato dell'implementazione,useful per orientarsi
+Questa sezione non fa parte del linguaggio: è lo stato dell'implementazione,useful per orientarsi
 prima di scrivere codice.
 
 | profilo | stato |
@@ -2868,44 +2868,44 @@ prima di scrivere codice.
 
 Differenze note fra i due runtime Core:
 
-| funzionalitÃ  | interprete JS | seed Windows |
+| funzionalità | interprete JS | seed Windows |
 |---|---|---|
-| `return`, `break`, `continue` | sÃ¬ | non elencati nel README del seed |
-| lambda | piÃ¹ parametri | **un solo parametro** |
+| `return`, `break`, `continue` | sì | non elencati nel README del seed |
+| lambda | più parametri | **un solo parametro** |
 | chiusure | condivise | **per valore**, solo l'ultimo legame del frame |
 | `string(x)` | tutti i tipi | solo `Int` e `String` |
 | liste | eterogenee, `xs[i]`, `length`, `push!` | solo interi; costruzione, stampa, `push!` |
 | `get(xs, i)` | non esiste | helper **non standard**, indici **da 0** |
-| `ARGS`, primitivi di bootstrap | sÃ¬ | non elencati nel README del seed |
+| `ARGS`, primitivi di bootstrap | sì | non elencati nel README del seed |
 | messaggi di errore | su stderr | solo exit code |
 
 Regola pratica: **scrivi codice che rispetta `SPEC-CORE` e verificalo con l'interprete JS**; se deve
-girare anche sul seed, restringiti alle funzionalitÃ  elencate nella colonna di destra e verificalo
+girare anche sul seed, restringiti alle funzionalità elencate nella colonna di destra e verificalo
 su Windows.
 
 Due limiti noti che il lettore deve conoscere prima di scrivere codice:
 
 - **ogni a capo chiude l'istruzione**, anche dentro `( )`, `[ ]` e negli argomenti di una chiamata.
-  L'eccezione prevista da `SPEC Â§1` per Triad-Full (a capo dentro le parentesi, o subito dopo un
-  operatore binario) non Ã¨ implementata nell'interprete di riferimento. Scrivere una istruzione
+  L'eccezione prevista da `SPEC §1` per Triad-Full (a capo dentro le parentesi, o subito dopo un
+  operatore binario) non è implementata nell'interprete di riferimento. Scrivere una istruzione
   per riga;
-- **il seed Windows non implementa l'indicizzazione standard `xs[i]`**: lÃ¬ c'Ã¨ l'helper non
+- **il seed Windows non implementa l'indicizzazione standard `xs[i]`**: lì c'è l'helper non
   standard `get(xs, i)`, con indici **da 0**.
 
 ---
 
 <a id="app-a"></a>
 
-# Appendice A â€” Influenze dichiarate
+# Appendice A — Influenze dichiarate
 
-Triad nasce da idee di Julia, Prolog e Lisp, ma **non Ã¨ un dialetto di nessuno dei tre**: la
-definizione del linguaggio Ã¨ la specifica.
+Triad nasce da idee di Julia, Prolog e Lisp, ma **non è un dialetto di nessuno dei tre**: la
+definizione del linguaggio è la specifica.
 
 | da | idea ripresa |
 |---|---|
-| Julia | blocchi `function â€¦ end`, `struct`, tipi con `::`, multiple dispatch, operatori-funzione, `if`/`for`/`while`/`let` |
+| Julia | blocchi `function … end`, `struct`, tipi con `::`, multiple dispatch, operatori-funzione, `if`/`for`/`while`/`let` |
 | Prolog | `fact`/`rule` come costrutti, unificazione con occurs-check, backtracking, `solve`, variabili logiche `?x` |
-| Lisp | codice come dato, albero uniforme, `:( â€¦ )`/`quote` con `$`, macro |
+| Lisp | codice come dato, albero uniforme, `:( … )`/`quote` con `$`, macro |
 
 **Propri di Triad**, non presi in prestito: errori come dati, contratti, budget, tracce ed effetti
 dichiarati come parte del linguaggio, e l'integrazione dei tre modelli in una sintassi a blocchi.
@@ -2914,7 +2914,7 @@ dichiarati come parte del linguaggio, e l'integrazione dei tre modelli in una si
 
 <a id="app-b"></a>
 
-# Appendice B â€” Dove guardare
+# Appendice B — Dove guardare
 
 | vuoi | leggi |
 |---|---|
@@ -2923,10 +2923,10 @@ dichiarati come parte del linguaggio, e l'integrazione dei tre modelli in una si
 | il percorso di studio per capitoli e il codice del progetto | [`TUTORIAL.md`](TUTORIAL.md) |
 | gli esempi completi con output | `examples/` |
 | il contratto eseguibile, con i golden | [`conformance/`](conformance/README.md) |
-| lo stato del bootstrap | [`STATUS.md`](STATUS.md) Â· [`BOOTSTRAP.md`](BOOTSTRAP.md) |
-| il piano di lavoro | [`plan.md`](plan.md) Â· [`TASK.md`](TASK.md) |
+| lo stato del bootstrap | [`STATUS.md`](STATUS.md) · [`BOOTSTRAP.md`](BOOTSTRAP.md) |
+| il piano di lavoro | [`plan.md`](plan.md) · [`TASK.md`](TASK.md) |
 | gli strumenti per gli editor | [`editors/`](editors/README.md) |
-| la licenza | [`LICENSE`](LICENSE) â€” MIT |
+| la licenza | [`LICENSE`](LICENSE) — MIT |
 
 ---
 

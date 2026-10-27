@@ -60,14 +60,19 @@ Questo volume la traduce in un percorso: spiegazioni, esempi, esercizi, marcator
 funzione, un ciclo, una ricorsione. Questo libro non insegna la programmazione in generale, insegna
 Triad. Le influenze del linguaggio (Julia, Prolog, Lisp) sono documentate nell&#39;Appendice A della
 specifica: sono note informative, non definizioni. Triad non è un dialetto di nessuno dei tre.</p>
-<p>Il volume è organizzato in quattro parti. La prima, <em>Fondamenti</em>, introduce il lessico, i valori e
+<p>Il volume è organizzato in cinque parti. La prima, <em>Fondamenti</em>, introduce il lessico, i valori e
 i tipi, il controllo di flusso, le funzioni, il dispatch, la logica, il codice come dato, gli errori,
 i contratti, il budget, le tracce e gli effetti. La seconda, <em>Triad-Core</em>, copre il sottoinsieme
 eseguibile oggi dall&#39;interprete di riferimento, con tutti i 37 casi di conformance. La terza,
 <em>Triad-Full</em>, presenta i costrutti dello standard completo, oggi studiabili ma non ancora
 eseguibili dal runtime corrente. La quarta, <em>Dentro il progetto</em>, accompagna il lettore nel codice
 del repository: il seed in codice macchina, la suite di conformance, la CLI, gli strumenti per
-gli editor.</p>
+gli editor. La quinta, <em>Sul campo</em>, affronta il lavoro quotidiano: scegliere il costrutto
+giusto per ogni problema, portare un programma esistente a Triad, verificare il codice con
+sonde, golden e benchmark, proporre una modifica al linguaggio.</p>
+<p>In coda al volume, l&#39;appendice riporta per intero i due testi normativi, <code>SPEC.md</code> e
+<code>SPEC-CORE.md</code>. Il volume è così autosufficiente: ogni affermazione del manuale può essere
+controllata sulla fonte che la definisce.</p>
 <p>Due profili di conformità attraversano tutto il libro. Triad-Core è il sottoinsieme di bootstrap:
 valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è lo standard
 completo. Ogni programma Core è anche un programma Full valido e deve comportarsi allo stesso modo.
@@ -84,32 +89,32 @@ lo dice esplicitamente.</p>
 
   </div>
   <div class="part">
-    <p>﻿# Manuale di Triad 2.0</p>
+    <h1>Manuale di Triad 2.0</h1>
 <blockquote>
 <p>Il manuale completo del linguaggio: lessico, valori, controllo di flusso, funzioni, dispatch,
 logica, codice come dato, errori, contratti, budget, tracce, effetti, esercizi e riferimento.</p>
 </blockquote>
-<p>Triad Ã¨ un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple
+<p>Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple
 dispatch, programmazione logica integrata e codice come dato, in una sola sintassi. La sua
-definizione Ã¨ una specifica normativa indipendente da qualsiasi implementazione
+definizione è una specifica normativa indipendente da qualsiasi implementazione
 (<a href="SPEC.md"><code>SPEC.md</code></a>, standard <code>0.2.0</code>), accompagnata da una specifica eseguibile
-(<a href="SPEC-CORE.md"><code>SPEC-CORE.md</code></a>) e da una suite di conformitÃ  con golden verificabili
+(<a href="SPEC-CORE.md"><code>SPEC-CORE.md</code></a>) e da una suite di conformità con golden verificabili
 (<a href="conformance/README.md"><code>conformance/</code></a>).</p>
-<p>Questo manuale insegna il linguaggio per come Ã¨ definito dallo standard. Non Ã¨ un riassunto della
-specifica: Ã¨ un percorso di studio, con spiegazioni, esempi ed esercizi.</p>
+<p>Questo manuale insegna il linguaggio per come è definito dallo standard. Non è un riassunto della
+specifica: è un percorso di studio, con spiegazioni, esempi ed esercizi.</p>
 <hr>
 <h2 id="man-come-leggere-questo-manuale">Come leggere questo manuale</h2>
-<h3 id="man-a-chi-a-indirizzato">A chi Ã¨ indirizzato</h3>
+<h3 id="man-a-chi-e-indirizzato">A chi è indirizzato</h3>
 <p>Sai programmare, in qualunque linguaggio: sai cosa sono una variabile, una funzione, un ciclo, una
 ricorsione. Questo manuale non spiega la programmazione in generale, spiega <strong>Triad</strong>.</p>
 <h3 id="man-due-profili-una-sola-lingua">Due profili, una sola lingua</h3>
-<p>Lo standard definisce due profili di conformitÃ , ed Ã¨ utile saperli distinguere prima di cominciare:</p>
+<p>Lo standard definisce due profili di conformità, ed è utile saperli distinguere prima di cominciare:</p>
 <table>
 <thead>
 <tr>
 <th>profilo</th>
 <th>che cosa contiene</th>
-<th>dove Ã¨ definito</th>
+<th>dove è definito</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -123,14 +128,14 @@ ricorsione. Questo manuale non spiega la programmazione in generale, spiega <str
 <td><a href="SPEC.md"><code>SPEC.md</code></a></td>
 </tr>
 </tbody></table>
-<p>Triad-Core Ã¨ un <strong>sottoinsieme</strong> di Triad-Full: ogni programma Core Ã¨ anche un programma Full
+<p>Triad-Core è un <strong>sottoinsieme</strong> di Triad-Full: ogni programma Core è anche un programma Full
 valido e deve comportarsi allo stesso modo. Il manuale presenta i due profili <strong>sullo stesso piano</strong>,
 per costruzione logica: ogni capitolo introduce un costrutto e dice in quale profilo esiste. Non
-perchÃ© Full sia &quot;piÃ¹ avanti&quot;, ma perchÃ© sono due facce della stessa specifica.</p>
+perché Full sia &quot;più avanti&quot;, ma perché sono due facce della stessa specifica.</p>
 <p>Dove la differenza conta, trovi due marcatori:</p>
 <ul>
-<li><strong>[Core]</strong> â€” il costrutto esiste nel sottoinsieme di bootstrap;</li>
-<li><strong>[Full]</strong> â€” il costrutto esiste solo nello standard completo.</li>
+<li><strong>[Core]</strong> — il costrutto esiste nel sottoinsieme di bootstrap;</li>
+<li><strong>[Full]</strong> — il costrutto esiste solo nello standard completo.</li>
 </ul>
 <h3 id="man-convenzioni-di-notazione">Convenzioni di notazione</h3>
 <table>
@@ -153,11 +158,11 @@ perchÃ© Full sia &quot;piÃ¹ avanti&quot;, ma perchÃ© sono due facce della 
 <td>il profilo in cui il costrutto esiste</td>
 </tr>
 <tr>
-<td><code>SPEC Â§n</code></td>
+<td><code>SPEC §n</code></td>
 <td>la sezione normativa corrispondente</td>
 </tr>
 </tbody></table>
-<p>I blocchi di codice sono marcati con il loro livello di eseguibilitÃ :</p>
+<p>I blocchi di codice sono marcati con il loro livello di eseguibilità:</p>
 <table>
 <thead>
 <tr>
@@ -192,24 +197,24 @@ println(6 * 7)
 42
 </code></pre>
 <p><a id="parte-1"></a></p>
-<h1>Parte I â€” Il linguaggio</h1>
+<h1 id="man-parte-i-il-linguaggio">Parte I — Il linguaggio</h1>
 <p><a id="cap-1"></a></p>
 <h2 id="man-1-lessico">1. Lessico</h2>
 <h3 id="man-1-1-identificatori">1.1 Identificatori</h3>
-<p>Un identificatore comincia con una lettera o <code>_</code>, seguito da lettere, cifre o <code>_</code>. Un <code>!</code> finale Ã¨
-ammesso se non Ã¨ seguito da <code>=</code>. <strong>[Core]</strong></p>
+<p>Un identificatore comincia con una lettera o <code>_</code>, seguito da lettere, cifre o <code>_</code>. Un <code>!</code> finale è
+ammesso se non è seguito da <code>=</code>. <strong>[Core]</strong></p>
 <pre><code class="language-triad">x = 1
 somma_2 = 2
 _ = 3
 nome_valido = 4
 </code></pre>
-<p><code>push!</code>, <code>sort!</code> e simili sono nomi legittimi: la convenzione del <code>!</code> finale Ã¨ per le funzioni che
+<p><code>push!</code>, <code>sort!</code> e simili sono nomi legittimi: la convenzione del <code>!</code> finale è per le funzioni che
 mutano il loro argomento (cap. 9).</p>
 <p>In Triad-Full gli identificatori ammettono anche lettere non ASCII. <strong>[Full]</strong></p>
-<pre><code class="language-triad-full">etÃ  = 42
+<pre><code class="language-triad-full">età = 42
 </code></pre>
 <h3 id="man-1-2-numeri">1.2 Numeri</h3>
-<p>Gli interi si scrivono con cifre decimali; <code>_</code> funziona come separatore. Il segno Ã¨ un operatore
+<p>Gli interi si scrivono con cifre decimali; <code>_</code> funziona come separatore. Il segno è un operatore
 unario, non parte del letterale. <strong>[Core]</strong></p>
 <pre><code class="language-triad">println(42)
 println(1_000_000)
@@ -225,7 +230,7 @@ println(-5)
 println(1e-9)
 </code></pre>
 <h3 id="man-1-3-stringhe">1.3 Stringhe</h3>
-<p>Una stringa Ã¨ una sequenza di byte UTF-8 <strong>immutabile</strong>, tra apici doppi. Gli escape sono <code>\n</code>,
+<p>Una stringa è una sequenza di byte UTF-8 <strong>immutabile</strong>, tra apici doppi. Gli escape sono <code>\n</code>,
 <code>\t</code>, <code>\&quot;</code>, <code>\\</code>. <strong>[Core]</strong></p>
 <pre><code class="language-triad">println(&quot;ciao\n&quot;)
 println(&quot;tab:\t|&quot;)
@@ -246,8 +251,8 @@ println(&quot;x = $x&quot;)
 println(&quot;x + 1 = $(x + 1)&quot;)
 </code></pre>
 <h3 id="man-1-4-simboli">1.4 Simboli</h3>
-<p>Un simbolo Ã¨ <code>:</code> seguito da un nome o da un operatore: <code>:alice</code>, <code>:+</code>. Due simboli sono uguali se
-hanno lo stesso nome. In Triad-Full il simbolo Ã¨ anche l&#39;atomo della logica (cap. 16). <strong>[Core]</strong></p>
+<p>Un simbolo è <code>:</code> seguito da un nome o da un operatore: <code>:alice</code>, <code>:+</code>. Due simboli sono uguali se
+hanno lo stesso nome. In Triad-Full il simbolo è anche l&#39;atomo della logica (cap. 16). <strong>[Core]</strong></p>
 <pre><code class="language-triad">println(:alice)
 println(:+)
 println(:ok == Symbol(&quot;ok&quot;))
@@ -258,10 +263,10 @@ println(:ok == Symbol(&quot;ok&quot;))
 true
 </code></pre>
 <h3 id="man-1-5-commenti">1.5 Commenti</h3>
-<p><code>#</code> commenta fino a fine riga. <code>#= â€¦ =#</code> commenta su piÃ¹ righe; in Triad-Full i commenti annidati
+<p><code>#</code> commenta fino a fine riga. <code>#= … =#</code> commenta su più righe; in Triad-Full i commenti annidati
 sono ammessi. <strong>[Core]</strong></p>
 <pre><code class="language-triad">#= commento
-   su piÃ¹ righe =#
+   su più righe =#
 x = 1_000   # commento di riga
 println(x)
 </code></pre>
@@ -274,7 +279,7 @@ println(x)
 <pre><code class="language-triad">println(1); println(2)
 </code></pre>
 <p>Una conseguenza pratica: <strong>in Triad-Core ogni a capo chiude l&#39;istruzione</strong>. La grammatica di Core
-non ha una regola di continuazione di riga: un&#39;espressione spezzata su piÃ¹ righe non Ã¨ un
+non ha una regola di continuazione di riga: un&#39;espressione spezzata su più righe non è un
 programma valido. Scrivi <strong>una istruzione per riga</strong> e usa <code>;</code> per separare due istruzioni.</p>
 <pre><code class="language-triad">totale = 1 + 2 + 3
 println(totale);
@@ -285,14 +290,14 @@ println(&quot;seconda istruzione&quot;)
 seconda istruzione
 </code></pre>
 <blockquote>
-<p><strong>In Triad-Full</strong> la regola Ã¨ piÃ¹ permissiva: <code>SPEC Â§1</code> stabilisce che un a capo <strong>non</strong> chiude
-l&#39;istruzione dentro <code>( )</code>, <code>[ ]</code> e <code>:( )</code>, nÃ© subito dopo un operatore binario. L&#39;interprete di
+<p><strong>In Triad-Full</strong> la regola è più permissiva: <code>SPEC §1</code> stabilisce che un a capo <strong>non</strong> chiude
+l&#39;istruzione dentro <code>( )</code>, <code>[ ]</code> e <code>:( )</code>, né subito dopo un operatore binario. L&#39;interprete di
 riferimento attuale non implementa ancora questa eccezione, quindi anche in Full la forma
 sicura resta una istruzione per riga.</p>
 </blockquote>
 <h3 id="man-1-7-la-regola-dei-due-punti-e-del-punto-interrogativo">1.7 La regola dei due punti e del punto interrogativo</h3>
-<p><code>:</code> ha tre significati e <code>?</code> ne ha due. La specifica li chiama esplicitamente Â«il problema classico
-di <code>:</code>Â» â€” Ã¨ il primo punto in cui Triad si discosta dalla sintassi che conosci.</p>
+<p><code>:</code> ha tre significati e <code>?</code> ne ha due. La specifica li chiama esplicitamente «il problema classico
+di <code>:</code>» — è il primo punto in cui Triad si discosta dalla sintassi che conosci.</p>
 <table>
 <thead>
 <tr>
@@ -302,19 +307,19 @@ di <code>:</code>Â» â€” Ã¨ il primo punto in cui Triad si discosta dall
 </thead>
 <tbody><tr>
 <td><code>1:n</code>, <code>xs[2:end]</code></td>
-<td><code>:</code> attaccato a un valore e senza spazi â†’ <strong>range</strong></td>
+<td><code>:</code> attaccato a un valore e senza spazi → <strong>range</strong></td>
 </tr>
 <tr>
 <td><code>f(:a)</code>, <code>x = :a</code></td>
-<td><code>:</code> non preceduto da un valore e seguito da un nome â†’ <strong>simbolo</strong></td>
+<td><code>:</code> non preceduto da un valore e seguito da un nome → <strong>simbolo</strong></td>
 </tr>
 <tr>
-<td><code>:( â€¦ )</code></td>
-<td>â†’ <strong>codice quotato</strong></td>
+<td><code>:( … )</code></td>
+<td>→ <strong>codice quotato</strong></td>
 </tr>
 <tr>
 <td><code>c ? a : b</code></td>
-<td><code>:</code> circondato da spazi â†’ <strong>separatore del ternario</strong></td>
+<td><code>:</code> circondato da spazi → <strong>separatore del ternario</strong></td>
 </tr>
 </tbody></table>
 <table>
@@ -326,15 +331,15 @@ di <code>:</code>Â» â€” Ã¨ il primo punto in cui Triad si discosta dall
 </thead>
 <tbody><tr>
 <td><code>?x</code></td>
-<td><code>?</code> attaccato â†’ <strong>variabile logica</strong></td>
+<td><code>?</code> attaccato → <strong>variabile logica</strong></td>
 </tr>
 <tr>
 <td><code>? </code></td>
-<td><code>?</code> con spazio dopo â†’ <strong>ternario</strong></td>
+<td><code>?</code> con spazio dopo → <strong>ternario</strong></td>
 </tr>
 </tbody></table>
-<p>Da qui la regola pratica: quando <code>:</code> Ã¨ ambiguo, <strong>metti o togli gli spazi</strong>. <code>xs[2:end]</code> Ã¨ un range;
-<code>c ? a : b</code> Ã¨ un ternario perchÃ© i due spazi lo circondano.</p>
+<p>Da qui la regola pratica: quando <code>:</code> è ambiguo, <strong>metti o togli gli spazi</strong>. <code>xs[2:end]</code> è un range;
+<code>c ? a : b</code> è un ternario perché i due spazi lo circondano.</p>
 <h3 id="man-1-8-parole-chiave">1.8 Parole chiave</h3>
 <p>Lo standard definisce <strong>29 parole chiave</strong>:</p>
 <pre><code>function struct macro end if elseif else for in while let begin return
@@ -347,12 +352,12 @@ true false nothing isa is
 <p><code>true</code>, <code>false</code> e <code>nothing</code> sono valori, non parole strutturali.</p>
 <h3 id="man-1-9-identificatori-avanzati-e-convenzioni">1.9 Identificatori avanzati e convenzioni</h3>
 <p>In Triad-Core gli identificatori sono limitati all&#39;ASCII: lettere, cifre e <code>_</code>. In Triad-Full si
-ammettono anche lettere non ASCII (accentate, greche, cirilliche): <code>etÃ </code>, <code>Ï€</code>, <code>Î”x</code> sono nomi
+ammettono anche lettere non ASCII (accentate, greche, cirilliche): <code>età</code>, <code>π</code>, <code>Δx</code> sono nomi
 validi. <strong>[Full]</strong></p>
-<pre><code class="language-triad-full">etÃ  = 42
-Ï€ = 3.14159
-Î”x = 0.001
-println(etÃ  + Ï€)
+<pre><code class="language-triad-full">età = 42
+π = 3.14159
+Δx = 0.001
+println(età + π)
 </code></pre>
 <p>La convenzione del <code>!</code> finale (<code>push!</code>, <code>sort!</code>) indica funzioni che <strong>mutano</strong> il loro argomento.
 La convenzione del <code>?</code> finale (<code>valido?</code>, <code>vuoto?</code>) indica predicati che restituiscono un <code>Bool</code>.
@@ -369,18 +374,18 @@ end
 <p>Gli identificatori che coincidono con una parola chiave non sono ammessi: <code>function</code>, <code>end</code>,
 <code>if</code> non possono essere usati come nomi di variabile o funzione. <strong>[Core]</strong></p>
 <h3 id="man-1-10-escape-e-stringhe-avanzate">1.10 Escape e stringhe avanzate</h3>
-<p>Oltre agli escape base (<code>\n</code>, <code>\t</code>, <code>\&quot;</code>, <code>\\</code>), Triad-Full aggiunge <code>\r</code>, <code>\0</code>, <code>\u{â€¦}</code> per
-code point Unicode e <code>\x{â€¦}</code> per byte esadecimali. <strong>[Full]</strong></p>
+<p>Oltre agli escape base (<code>\n</code>, <code>\t</code>, <code>\&quot;</code>, <code>\\</code>), Triad-Full aggiunge <code>\r</code>, <code>\0</code>, <code>\u{…}</code> per
+code point Unicode e <code>\x{…}</code> per byte esadecimali. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">println(&quot;a\r\nb&quot;)          # ritorno a capo CRLF
 println(&quot;unicode: \u{1F600}&quot;)  # emoji
 println(&quot;hex: \x{41}&quot;)     # &#39;A&#39;
 </code></pre>
-<p>Una stringa puÃ² contenere qualsiasi byte UTF-8 valido; un byte non valido produce un errore di
+<p>Una stringa può contenere qualsiasi byte UTF-8 valido; un byte non valido produce un errore di
 parsing. Le stringhe sono <strong>immutabili</strong>: ogni operazione di concatenazione crea una nuova
 stringa. <strong>[Core]</strong></p>
 <pre><code class="language-triad">a = &quot;ciao&quot;
 b = a * &quot; mondo&quot;
-println(a)        # &quot;ciao&quot; â€” inalterato
+println(a)        # &quot;ciao&quot; — inalterato
 println(b)        # &quot;ciao mondo&quot;
 </code></pre>
 <p><strong>Output:</strong></p>
@@ -389,7 +394,7 @@ ciao mondo
 </code></pre>
 <h3 id="man-1-11-esercizi-sul-lessico">1.11 Esercizi sul lessico</h3>
 <ol>
-<li>Scrivi un programma che stampi il tuo nome e la tua etÃ  su due righe, usando <code>\n</code> e
+<li>Scrivi un programma che stampi il tuo nome e la tua età su due righe, usando <code>\n</code> e
 concatenazione di stringhe.</li>
 <li>Definisci un identificatore con <code>_</code> iniziale e uno con <code>!</code> finale; stampali.</li>
 <li>Prova a scrivere <code>x = 1_000_000</code> e verifica che l&#39;output sia <code>1000000</code>.</li>
@@ -456,22 +461,22 @@ concatenazione di stringhe.</li>
 <tr>
 <td><code>Term</code>, <code>LVar</code></td>
 <td>termini e variabili logiche <strong>[Full]</strong></td>
-<td>â€”</td>
+<td>—</td>
 </tr>
 <tr>
 <td><code>Solution</code></td>
 <td><code>{who = :dave}</code> <strong>[Full]</strong></td>
-<td>â€”</td>
+<td>—</td>
 </tr>
 <tr>
 <td><code>Err</code></td>
 <td>errore come dato <strong>[Full]</strong></td>
-<td>â€”</td>
+<td>—</td>
 </tr>
 <tr>
 <td><code>Type</code></td>
 <td>i tipi stessi sono valori <strong>[Full]</strong></td>
-<td>â€”</td>
+<td>—</td>
 </tr>
 <tr>
 <td>struct utente</td>
@@ -479,9 +484,9 @@ concatenazione di stringhe.</li>
 <td><code>Point</code></td>
 </tr>
 </tbody></table>
-<p>Il set dei tipi Core Ã¨ <strong>chiuso e piccolo</strong>: <code>Int</code>, <code>Bool</code>, <code>String</code>, <code>Symbol</code>, <code>List</code>, <code>Function</code>,
+<p>Il set dei tipi Core è <strong>chiuso e piccolo</strong>: <code>Int</code>, <code>Bool</code>, <code>String</code>, <code>Symbol</code>, <code>List</code>, <code>Function</code>,
 <code>Nothing</code>. In Core non esistono <code>Float</code>, <code>Term</code>, <code>Solution</code>, <code>Err</code> come valori del linguaggio: un
-errore Ã¨ una lista taggata <code>[Err, kind, msg]</code> (cap. 11) e una struct Ã¨ <code>[Point, x, y]</code>.</p>
+errore è una lista taggata <code>[Err, kind, msg]</code> (cap. 11) e una struct è <code>[Point, x, y]</code>.</p>
 <p><code>typeof</code> restituisce il <strong>nome del tipo come simbolo</strong>.</p>
 <pre><code class="language-triad">xs = [1, :a, &quot;s&quot;]
 println(typeof(1), &quot; &quot;, typeof(&quot;s&quot;), &quot; &quot;, typeof(:a), &quot; &quot;, typeof(xs))
@@ -492,14 +497,14 @@ println(typeof(nothing), &quot; &quot;, typeof(true), &quot; &quot;, typeof(x -&
 Nothing Bool Function
 </code></pre>
 <h3 id="man-2-2-gerarchia-dei-tipi">2.2 Gerarchia dei tipi</h3>
-<p><code>Int &lt;: Number</code>, <code>Float &lt;: Number</code>, e ogni tipo Ã¨ sottotipo di <code>Any</code>. <code>Any</code> Ã¨ il supertipo usato
+<p><code>Int &lt;: Number</code>, <code>Float &lt;: Number</code>, e ogni tipo è sottotipo di <code>Any</code>. <code>Any</code> è il supertipo usato
 nelle firme quando un parametro accetta qualunque cosa. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">function accetta_qualsiasi(x::Any)
     &quot;qualunque cosa: &quot; * string(x)
 end
 </code></pre>
 <h3 id="man-2-3-struct">2.3 Struct</h3>
-<p>Una <code>struct</code> Ã¨ un record immutabile con campi tipizzati e costruttore posizionale. Il
+<p>Una <code>struct</code> è un record immutabile con campi tipizzati e costruttore posizionale. Il
 costruttore controlla i campi; un <code>Int</code> passato a un campo <code>Float</code> viene convertito, un valore non
 convertibile produce <code>Err(:type)</code>. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">struct Point
@@ -518,7 +523,7 @@ true
 true
 </code></pre>
 <p>In Core lo stesso concetto si rappresenta con una <strong>lista taggata</strong>: <code>[Point, x, y]</code>, con il simbolo
-del tipo in prima posizione. Ãˆ cosÃ¬ che gli interpreti di <code>selfhost/</code> rappresentano le struct Full.</p>
+del tipo in prima posizione. È così che gli interpreti di <code>selfhost/</code> rappresentano le struct Full.</p>
 <pre><code class="language-triad">punto(x, y) = [:Point, x, y]
 px(p) = p[2]
 py(p) = p[3]
@@ -544,15 +549,15 @@ println(Symbol(&quot;bob&quot;))
 bob
 </code></pre>
 <h3 id="man-2-5-asserzione-di-tipo">2.5 Asserzione di tipo</h3>
-<p><code>e::T</code> restituisce <code>e</code> se Ã¨ di tipo <code>T</code>, altrimenti produce <code>Err(:type)</code>. <strong>[Full]</strong></p>
+<p><code>e::T</code> restituisce <code>e</code> se è di tipo <code>T</code>, altrimenti produce <code>Err(:type)</code>. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">x = 3
 println(x::Int)
 println(iserr(x::String))
 </code></pre>
 <h3 id="man-2-6-il-vincolo-del-dichiarato">2.6 Il vincolo del dichiarato</h3>
-<p><code>x::T = e</code> â€” e un parametro <code>x::T</code> â€” <strong>fissa</strong> il tipo di quel nome nell&#39;ambiente in cui nasce. Gli
+<p><code>x::T = e</code> — e un parametro <code>x::T</code> — <strong>fissa</strong> il tipo di quel nome nell&#39;ambiente in cui nasce. Gli
 assegnamenti successivi sono controllati e convertiti contro <code>T</code>. Una nuova dichiarazione
-<code>x::U = â€¦</code> sostituisce il vincolo; un nome non dichiarato con tipo resta libero; una rilegatura in
+<code>x::U = …</code> sostituisce il vincolo; un nome non dichiarato con tipo resta libero; una rilegatura in
 un ambiente interno (<code>let x = 2.5</code>) non eredita il vincolo esterno. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">x::Int = 5
 x = 6            # bene
@@ -562,10 +567,10 @@ y::Float = 1.0
 y = 2            # 2.0: conversione Int -&gt; Float
 
 s = &quot;a&quot;
-s = 3            # bene: s non Ã¨ dichiarato con un tipo
+s = 3            # bene: s non è dichiarato con un tipo
 </code></pre>
 <h3 id="man-2-7-le-condizioni-accettano-solo-bool">2.7 Le condizioni accettano solo <code>Bool</code></h3>
-<p>Non esiste il concetto di &quot;truthiness&quot;. <code>if 1</code> Ã¨ un errore, non <code>true</code>. Questo vale per <code>if</code>,
+<p>Non esiste il concetto di &quot;truthiness&quot;. <code>if 1</code> è un errore, non <code>true</code>. Questo vale per <code>if</code>,
 <code>while</code>, <code>&amp;&amp;</code>, <code>||</code>, <code>!</code>, il ternario e i filtri delle comprehension. <strong>[Core]</strong></p>
 <pre><code class="language-triad">println(1 &lt; 2 &amp;&amp; 2 &lt; 3)
 x = 3
@@ -594,7 +599,7 @@ grande
 </tr>
 <tr>
 <td><code>String</code></td>
-<td>cosÃ¬ com&#39;Ã¨</td>
+<td>così com&#39;è</td>
 </tr>
 <tr>
 <td><code>Nothing</code></td>
@@ -625,7 +630,7 @@ alice
 senza a capo
 </code></pre>
 <p>L&#39;uguaglianza confronta numeri, stringhe e simboli <strong>per valore</strong>, le liste <strong>elemento per
-elemento</strong> (anche annidate), le funzioni **per identitÃ **. <strong>[Core]</strong></p>
+elemento</strong> (anche annidate), le funzioni <strong>per identità</strong>. <strong>[Core]</strong></p>
 <pre><code class="language-triad">println([1, [2, [3]]] == [1, [2, [3]]])
 println(&quot;ab&quot; == &quot;a&quot; * &quot;b&quot;, &quot; &quot;, :a == :a, &quot; &quot;, 1 == 2)
 </code></pre>
@@ -636,9 +641,9 @@ true true false
 <hr>
 <p><a id="cap-3"></a></p>
 <h2 id="man-3-variabili-e-assegnamento">3. Variabili e assegnamento</h2>
-<p><code>nome = espr</code> lega o aggiorna un nome. L&#39;assegnamento <strong>Ã¨ un&#39;espressione</strong> e vale il valore
+<p><code>nome = espr</code> lega o aggiorna un nome. L&#39;assegnamento <strong>è un&#39;espressione</strong> e vale il valore
 assegnato. <code>+=</code>, <code>-=</code>, <code>*=</code> aggiornano una variabile esistente e valutano il lato sinistro una
-volta sola. Usare un nome mai assegnato Ã¨ un errore di esecuzione. <strong>[Core]</strong></p>
+volta sola. Usare un nome mai assegnato è un errore di esecuzione. <strong>[Core]</strong></p>
 <pre><code class="language-triad">x = 42
 y = x + 8
 x = x + 1
@@ -654,18 +659,18 @@ println(n)
 <pre><code class="language-text">43 50 186
 24
 </code></pre>
-<p>Non esistono dichiarazioni: le variabili sono dinamiche. Le regole di **visibilitÃ ** si vedono nel
+<p>Non esistono dichiarazioni: le variabili sono dinamiche. Le regole di <strong>visibilità</strong> si vedono nel
 capitolo 8.</p>
 <hr>
 <p><a id="cap-4"></a></p>
 <h2 id="man-4-operatori-e-precedenza">4. Operatori e precedenza</h2>
-<p>Il parser Ã¨ un <strong>Pratt</strong> con dodici livelli. Dalla precedenza piÃ¹ bassa alla piÃ¹ alta:</p>
+<p>Il parser è un <strong>Pratt</strong> con dodici livelli. Dalla precedenza più bassa alla più alta:</p>
 <table>
 <thead>
 <tr>
 <th>livello</th>
 <th>operatori</th>
-<th>associativitÃ</th>
+<th>associatività</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -734,9 +739,9 @@ Triad-Full.</p>
 <h3 id="man-4-1-aritmetica-intera">4.1 Aritmetica intera</h3>
 <ul>
 <li><code>+ - * ^</code> su <code>Int</code> con <strong>wrap a 64 bit</strong> (complemento a due);</li>
-<li><code>%</code> Ã¨ il <strong>resto con il segno del dividendo</strong>, come <code>rem</code> di Julia: <code>-7 % 3 == -1</code>;</li>
-<li><code>^</code> con esponente negativo Ã¨ un errore; <code>%</code> per zero Ã¨ un errore;</li>
-<li><strong><code>/</code> non esiste in Core</strong>: la divisione Ã¨ di Triad-Full.</li>
+<li><code>%</code> è il <strong>resto con il segno del dividendo</strong>, come <code>rem</code> di Julia: <code>-7 % 3 == -1</code>;</li>
+<li><code>^</code> con esponente negativo è un errore; <code>%</code> per zero è un errore;</li>
+<li><strong><code>/</code> non esiste in Core</strong>: la divisione è di Triad-Full.</li>
 </ul>
 <pre><code class="language-triad">println(2 + 3 * 4, &quot; &quot;, (2 + 3) * 4, &quot; &quot;, 2 ^ 3 ^ 2)
 println(7 % 3, &quot; &quot;, -7 % 3, &quot; &quot;, 10 % 4)
@@ -747,9 +752,9 @@ println(9223372036854775807 + 1)
 1 -1 2
 -9223372036854775808
 </code></pre>
-<p>Nota <code>2 ^ 3 ^ 2 == 512</code>: l&#39;esponente Ã¨ associativo a destra, come in matematica.</p>
+<p>Nota <code>2 ^ 3 ^ 2 == 512</code>: l&#39;esponente è associativo a destra, come in matematica.</p>
 <h3 id="man-4-2-logica-e-confronti">4.2 Logica e confronti</h3>
-<p><code>&amp;&amp;</code> e <code>||</code> cortocircuitano. I confronti <strong>non</strong> si concatenano: <code>1 &lt; 2 &lt; 3</code> Ã¨ un errore (si
+<p><code>&amp;&amp;</code> e <code>||</code> cortocircuitano. I confronti <strong>non</strong> si concatenano: <code>1 &lt; 2 &lt; 3</code> è un errore (si
 confronta <code>Bool &lt; Int</code>); scrivi <code>1 &lt; 2 &amp;&amp; 2 &lt; 3</code>. <strong>[Core]</strong></p>
 <pre><code class="language-triad">println(!false, &quot; &quot;, true &amp;&amp; false, &quot; &quot;, false || true)
 println(1 &lt; 2 &amp;&amp; 2 &lt; 3)
@@ -761,8 +766,8 @@ true
 <hr>
 <p><a id="cap-5"></a></p>
 <h2 id="man-5-controllo-di-flusso">5. Controllo di flusso</h2>
-<p>In Triad <strong>tutto Ã¨ un&#39;espressione</strong>: <code>if</code>, <code>while</code>, <code>let</code>, <code>begin</code> hanno un valore, quello
-dell&#39;ultima istruzione eseguita (<code>nothing</code> se non ce n&#39;Ã¨).</p>
+<p>In Triad <strong>tutto è un&#39;espressione</strong>: <code>if</code>, <code>while</code>, <code>let</code>, <code>begin</code> hanno un valore, quello
+dell&#39;ultima istruzione eseguita (<code>nothing</code> se non ce n&#39;è).</p>
 <h3 id="man-5-1-if-elseif-else-core">5.1 <code>if</code> / <code>elseif</code> / <code>else</code> <strong>[Core]</strong></h3>
 <pre><code class="language-triad">function classifica(x)
     if x &lt; 0
@@ -781,9 +786,9 @@ println(v)
 <pre><code class="language-text">negativo zero positivo
 si
 </code></pre>
-<p>Il ternario <code>c ? a : b</code> Ã¨ la forma breve di <code>if</code> e ha la stessa precedenza del <code>-&gt;</code>. <strong>[Core]</strong></p>
+<p>Il ternario <code>c ? a : b</code> è la forma breve di <code>if</code> e ha la stessa precedenza del <code>-&gt;</code>. <strong>[Core]</strong></p>
 <h3 id="man-5-2-while-break-continue-core">5.2 <code>while</code>, <code>break</code>, <code>continue</code> <strong>[Core]</strong></h3>
-<p><code>break</code> e <code>continue</code> agiscono sul ciclo <strong>piÃ¹ interno</strong>.</p>
+<p><code>break</code> e <code>continue</code> agiscono sul ciclo <strong>più interno</strong>.</p>
 <pre><code class="language-triad">i = 0
 somma_dispari = 0
 while i &lt; 10
@@ -805,7 +810,7 @@ fine
 </code></pre>
 <p>In Core <strong>non esiste <code>for</code></strong>: si itera con un contatore e <code>while</code>. In Full <code>for</code> esiste (cap. 5.6).</p>
 <h3 id="man-5-3-let-e-begin-core">5.3 <code>let</code> e <code>begin</code> <strong>[Core]</strong></h3>
-<p><code>let</code> introduce un nuovo scope con legami locali; <code>begin â€¦ end</code> raggruppa istruzioni <strong>senza</strong>
+<p><code>let</code> introduce un nuovo scope con legami locali; <code>begin … end</code> raggruppa istruzioni <strong>senza</strong>
 creare legami nuovi.</p>
 <pre><code class="language-triad">x = 1
 let x = 10
@@ -845,7 +850,7 @@ println(xs[2:end])
 3
 [2, 3]
 </code></pre>
-<p><code>end</code> dentro un indicatore Ã¨ l&#39;ultimo elemento. La destrutturazione nel <code>for</code> Ã¨ trattata nel
+<p><code>end</code> dentro un indicatore è l&#39;ultimo elemento. La destrutturazione nel <code>for</code> è trattata nel
 capitolo 24.</p>
 <h3 id="man-5-5-le-comprehension-full">5.5 Le comprehension <strong>[Full]</strong></h3>
 <p>La comprehension <code>[e for x in xs]</code> costruisce una lista; con <code>if</code> aggiunge un filtro.</p>
@@ -857,7 +862,7 @@ println([x^2 for x in 1:4 if x &gt; 2])
 [9, 16]
 </code></pre>
 <h3 id="man-5-6-try-catch-full">5.6 <code>try</code> / <code>catch</code> <strong>[Full]</strong></h3>
-<p>In Full l&#39;errore Ã¨ un <strong>valore</strong>, quindi <code>try</code> ha due forme: con <code>catch</code> il ramo gestito produce il
+<p>In Full l&#39;errore è un <strong>valore</strong>, quindi <code>try</code> ha due forme: con <code>catch</code> il ramo gestito produce il
 valore dell&#39;espressione; senza <code>catch</code>, l&#39;errore <strong>diventa</strong> il valore dell&#39;espressione.</p>
 <pre><code class="language-triad-full">e = try div(1, 0) end
 println(iserr(e), &quot; &quot;, e.kind)
@@ -873,10 +878,10 @@ println(r)
 <p><a id="cap-6"></a></p>
 <h2 id="man-6-funzioni">6. Funzioni</h2>
 <h3 id="man-6-1-tre-forme-di-definizione-core">6.1 Tre forme di definizione <strong>[Core]</strong></h3>
-<pre><code class="language-triad"># forma breve: il corpo Ã¨ un&#39;espressione
+<pre><code class="language-triad"># forma breve: il corpo è un&#39;espressione
 quadrato(x) = x * x
 
-# forma blocco: il valore Ã¨ quello dell&#39;ultima espressione
+# forma blocco: il valore è quello dell&#39;ultima espressione
 function calcola(n)
     m = n + 1
     m * 2
@@ -892,9 +897,9 @@ println(quadrato(4), &quot; &quot;, calcola(3), &quot; &quot;, moltiplica(6, 7))
 <p><strong>Output:</strong></p>
 <pre><code class="language-text">16 8 42
 </code></pre>
-<h3 id="man-6-2-return-ricorsione-arita">6.2 <code>return</code>, ricorsione, aritÃ</h3>
+<h3 id="man-6-2-return-ricorsione-arita">6.2 <code>return</code>, ricorsione, arità</h3>
 <p><code>return e</code> esce subito dalla funzione; <code>return</code> da solo restituisce <code>nothing</code>. Una funzione nominata
-Ã¨ visibile nel proprio corpo, quindi la ricorsione diretta funziona. Il numero di argomenti deve
+è visibile nel proprio corpo, quindi la ricorsione diretta funziona. Il numero di argomenti deve
 coincidere con i parametri. <strong>[Core]</strong></p>
 <pre><code class="language-triad">function taglia(n)
     if n &gt; 100
@@ -930,10 +935,10 @@ println(applica_tutti(x -&gt; x * x, [1, 2, 3]))
 <p><strong>Output:</strong></p>
 <pre><code class="language-text">[1, 4, 9]
 </code></pre>
-<p>In Full, <code>reduce(+, xs)</code> e <code>map(sq, xs)</code> funzionano perchÃ© anche gli <strong>operatori sono funzioni</strong>.</p>
+<p>In Full, <code>reduce(+, xs)</code> e <code>map(sq, xs)</code> funzionano perché anche gli <strong>operatori sono funzioni</strong>.</p>
 <h3 id="man-6-4-l-39-annotazione-di-effetto-io">6.4 L&#39;annotazione di effetto <code>!io</code></h3>
 <p>Una funzione che stampa deve dichiarare <code>!io</code> nella firma. Core <strong>accetta l&#39;annotazione e la
-ignora</strong>: scriverla rende il codice giÃ  pronto per Full. <strong>[Core]</strong></p>
+ignora</strong>: scriverla rende il codice già pronto per Full. <strong>[Core]</strong></p>
 <pre><code class="language-triad">function mostra() !io
     println(&quot;hello from block&quot;)
     20 + 22
@@ -947,9 +952,9 @@ println(mostra())
 <hr>
 <p><a id="cap-7"></a></p>
 <h2 id="man-7-tipi-e-multiple-dispatch">7. Tipi e multiple dispatch</h2>
-<p>Una funzione generica Ã¨ un insieme di metodi. Ridefinire la stessa firma sostituisce il metodo
-precedente. Tra i metodi applicabili (stessa aritÃ , ogni argomento sottotipo del parametro) vince
-il <strong>piÃ¹ specifico</strong>. <strong>[Full]</strong></p>
+<p>Una funzione generica è un insieme di metodi. Ridefinire la stessa firma sostituisce il metodo
+precedente. Tra i metodi applicabili (stessa arità, ogni argomento sottotipo del parametro) vince
+il <strong>più specifico</strong>. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">area(n::Number) = :number
 area(n::Int) = :int
 
@@ -960,12 +965,12 @@ println(area(1.5))
 <pre><code class="language-text">int
 number
 </code></pre>
-<p>Un metodo A Ã¨ piÃ¹ specifico di B se ogni suo parametro Ã¨ sottotipo del corrispondente parametro di B
+<p>Un metodo A è più specifico di B se ogni suo parametro è sottotipo del corrispondente parametro di B
 e le firme differiscono.</p>
 <ul>
-<li>Se nessun metodo Ã¨ applicabile: <code>Err(:method)</code>.</li>
-<li>Se piÃ¹ metodi sono massimali: <code>Err(:ambiguous)</code>.</li>
-<li>Se il nome Ã¨ anche un builtin (per esempio <code>+</code> sui numeri), si usa il builtin.</li>
+<li>Se nessun metodo è applicabile: <code>Err(:method)</code>.</li>
+<li>Se più metodi sono massimali: <code>Err(:ambiguous)</code>.</li>
+<li>Se il nome è anche un builtin (per esempio <code>+</code> sui numeri), si usa il builtin.</li>
 </ul>
 <p>Gli operatori si estendono come funzioni, ridefinendoli:</p>
 <pre><code class="language-triad-full">struct Point
@@ -984,18 +989,18 @@ println(p.x, &quot; &quot;, p.y)
 <pre><code class="language-text">4.0 6.0
 </code></pre>
 <h3 id="man-7-1-il-tipo-di-ritorno">7.1 Il tipo di ritorno</h3>
-<p><code>::R</code> Ã¨ controllato all&#39;uscita, con la conversione <code>Int -&gt; Float</code>. Se il valore non Ã¨ conforme:
+<p><code>::R</code> è controllato all&#39;uscita, con la conversione <code>Int -&gt; Float</code>. Se il valore non è conforme:
 <code>Err(:type)</code>. <strong>[Full]</strong></p>
-<pre><code class="language-triad-full">function metÃ (n::Number)::Float
+<pre><code class="language-triad-full">function metà(n::Number)::Float
     n / 2
 end
-println(metÃ (3))
+println(metà(3))
 </code></pre>
 <p><strong>Output (golden Full):</strong></p>
 <pre><code class="language-text">1.5
 </code></pre>
 <h3 id="man-7-2-funzioni-locali">7.2 Funzioni locali</h3>
-<p>Una <code>function</code> definita dentro un&#39;altra funzione Ã¨ una <strong>chiusura locale</strong>, senza dispatch. <strong>[Full]</strong></p>
+<p>Una <code>function</code> definita dentro un&#39;altra funzione è una <strong>chiusura locale</strong>, senza dispatch. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">function esterno(x)
     function interno(y)
         y * 2
@@ -1016,10 +1021,10 @@ println(doppio(5), &quot; &quot;, somma(1, 2), &quot; &quot;, applica(x -&gt; x 
 <p><strong>Output:</strong></p>
 <pre><code class="language-text">10 3 9
 </code></pre>
-<p>Una lambda con corpo a piÃ¹ istruzioni si scrive con <code>begin â€¦ end</code> o con <code>function (â€¦) â€¦ end</code>. Le
-lambda senza parametri (<code>() -&gt; â€¦</code>) <strong>non</strong> sono supportate: usa <code>function () â€¦ end</code>.</p>
+<p>Una lambda con corpo a più istruzioni si scrive con <code>begin … end</code> o con <code>function (…) … end</code>. Le
+lambda senza parametri (<code>() -&gt; …</code>) <strong>non</strong> sono supportate: usa <code>function () … end</code>.</p>
 <h3 id="man-8-2-chiusure">8.2 Chiusure</h3>
-<p>Una lambda cattura l&#39;ambiente in cui Ã¨ creata. Secondo <code>SPEC-CORE Â§5</code> le variabili catturate sono
+<p>Una lambda cattura l&#39;ambiente in cui è creata. Secondo <code>SPEC-CORE §5</code> le variabili catturate sono
 <strong>condivise</strong>: le mutazioni sono visibili. <strong>[Core]</strong></p>
 <pre><code class="language-triad">function add(n)
     x -&gt; x + n
@@ -1045,19 +1050,19 @@ println(acc(10))
 </code></pre>
 <blockquote>
 <p><strong>Attenzione.</strong> Il seed Windows cattura <strong>per valore</strong> e copre solo l&#39;ultimo legame del frame: un
-accumulatore come <code>contatore</code> puÃ² non funzionare sul seed. L&#39;interprete JS e la specifica usano il
+accumulatore come <code>contatore</code> può non funzionare sul seed. L&#39;interprete JS e la specifica usano il
 modello condiviso.</p>
 </blockquote>
 <h3 id="man-8-3-le-regole-di-scope">8.3 Le regole di scope</h3>
 <ol>
-<li><code>function</code>, lambda, <code>let</code>, <code>while</code>, <code>for</code> e le comprehension introducono <strong>ambienti</strong>; un nome Ã¨
-visibile nell&#39;ambiente in cui Ã¨ legato e in quelli interni (scope lessicale), mai in quelli
+<li><code>function</code>, lambda, <code>let</code>, <code>while</code>, <code>for</code> e le comprehension introducono <strong>ambienti</strong>; un nome è
+visibile nell&#39;ambiente in cui è legato e in quelli interni (scope lessicale), mai in quelli
 esterni.</li>
 <li><strong>Dentro una funzione nominata</strong> l&#39;assegnamento lega nel frame locale: una funzione <strong>non
 modifica i globali</strong>.</li>
-<li><strong>Dentro una lambda</strong> l&#39;assegnamento a un nome giÃ  legato fuori aggiorna quel legame.</li>
+<li><strong>Dentro una lambda</strong> l&#39;assegnamento a un nome già legato fuori aggiorna quel legame.</li>
 <li><strong>Al top level</strong> i cicli possono aggiornare i globali.</li>
-<li><code>let x = â€¦</code> crea un nuovo <code>x</code>: assegnare <code>x</code> dentro il <code>let</code> non tocca l&#39;<code>x</code> esterno.</li>
+<li><code>let x = …</code> crea un nuovo <code>x</code>: assegnare <code>x</code> dentro il <code>let</code> non tocca l&#39;<code>x</code> esterno.</li>
 </ol>
 <pre><code class="language-triad">x = 1
 function f()
@@ -1076,11 +1081,11 @@ println(c)
 <pre><code class="language-text">2 1
 0
 </code></pre>
-<p>Per far uscire un risultato da una funzione, restituiscilo â€” oppure usa una lista, che Ã¨ mutabile.</p>
+<p>Per far uscire un risultato da una funzione, restituiscilo — oppure usa una lista, che è mutabile.</p>
 <hr>
 <p><a id="cap-9"></a></p>
 <h2 id="man-9-liste">9. Liste</h2>
-<p>Una lista Ã¨ eterogenea, annidabile e <strong>mutabile</strong>. Gli indici partono da <strong>1</strong>. <strong>[Core]</strong></p>
+<p>Una lista è eterogenea, annidabile e <strong>mutabile</strong>. Gli indici partono da <strong>1</strong>. <strong>[Core]</strong></p>
 <pre><code class="language-triad">xs = [1, 2, 3]
 println(xs[1], &quot; &quot;, length(xs))
 push!(xs, 4)
@@ -1128,7 +1133,7 @@ println(tot)
 </tr>
 <tr>
 <td><code>length(s)</code></td>
-<td>numero di <strong>byte</strong> UTF-8 (<code>length(&quot;Ã©&quot;) == 2</code>)</td>
+<td>numero di <strong>byte</strong> UTF-8 (<code>length(&quot;é&quot;) == 2</code>)</td>
 </tr>
 <tr>
 <td><code>string(x)</code></td>
@@ -1162,14 +1167,14 @@ risposta: 42
 <hr>
 <p><a id="cap-11"></a></p>
 <h2 id="man-11-errori-come-dati">11. Errori come dati</h2>
-<p>Questa Ã¨ una delle idee portanti di Triad: <strong>l&#39;errore Ã¨ un valore</strong>, non un&#39;eccezione che
+<p>Questa è una delle idee portanti di Triad: <strong>l&#39;errore è un valore</strong>, non un&#39;eccezione che
  interrompe il programma.</p>
 <h3 id="man-11-1-la-forma-err">11.1 La forma <code>Err</code></h3>
-<p>Un errore Ã¨ un valore <code>Err</code> con tre campi:</p>
+<p>Un errore è un valore <code>Err</code> con tre campi:</p>
 <ul>
-<li><code>kind::Symbol</code> â€” la categoria, su cui si puÃ² fare dispatch;</li>
-<li><code>msg::String</code> â€” il messaggio;</li>
-<li><code>data</code> â€” un valore qualsiasi, spesso un record <code>Info(...)</code> con i dettagli.</li>
+<li><code>kind::Symbol</code> — la categoria, su cui si può fare dispatch;</li>
+<li><code>msg::String</code> — il messaggio;</li>
+<li><code>data</code> — un valore qualsiasi, spesso un record <code>Info(...)</code> con i dettagli.</li>
 </ul>
 <p><strong>[Full]</strong></p>
 <pre><code class="language-triad-full">e = err(:mio, &quot;ops&quot;, 42)
@@ -1190,11 +1195,11 @@ println(iserr(e))
 </tr>
 <tr>
 <td><code>throw(e)</code>, <code>error(&quot;msg&quot;)</code></td>
-<td>solleva (<code>error</code> produce <code>Err(:error, â€¦)</code>)</td>
+<td>solleva (<code>error</code> produce <code>Err(:error, …)</code>)</td>
 </tr>
 <tr>
 <td><code>try b catch e h end</code></td>
-<td>se <code>b</code> solleva, <code>e</code> Ã¨ legato all&#39;<code>Err</code> e si valuta <code>h</code></td>
+<td>se <code>b</code> solleva, <code>e</code> è legato all&#39;<code>Err</code> e si valuta <code>h</code></td>
 </tr>
 <tr>
 <td><code>try b end</code></td>
@@ -1202,11 +1207,11 @@ println(iserr(e))
 </tr>
 <tr>
 <td><code>iserr(x)</code></td>
-<td>controlla se <code>x</code> Ã¨ un <code>Err</code></td>
+<td>controlla se <code>x</code> è un <code>Err</code></td>
 </tr>
 </tbody></table>
-<p>Tutti i fallimenti del linguaggio â€” divisione intera per zero, <code>sqrt(-1.0)</code>, indici fuori range,
-nessun metodo applicabile â€” arrivano come <code>Err</code> e <strong>mai</strong> come fallimenti fatali. <strong>[Full]</strong></p>
+<p>Tutti i fallimenti del linguaggio — divisione intera per zero, <code>sqrt(-1.0)</code>, indici fuori range,
+nessun metodo applicabile — arrivano come <code>Err</code> e <strong>mai</strong> come fallimenti fatali. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">e = try div(1, 0) end
 println(e.kind)
 println(iserr(e))
@@ -1245,7 +1250,7 @@ true
 </tr>
 <tr>
 <td><code>:ambiguous</code></td>
-<td>piÃ¹ metodi ugualmente specifici</td>
+<td>più metodi ugualmente specifici</td>
 </tr>
 <tr>
 <td><code>:field</code>, <code>:bounds</code>, <code>:domain</code></td>
@@ -1273,11 +1278,11 @@ true
 </tr>
 </tbody></table>
 <p>Un errore non gestito al top level interrompe il programma: il messaggio riporta la riga
-dell&#39;istruzione (<code>riga 12: â€¦</code>) e il codice di uscita Ã¨ <code>1</code>.</p>
+dell&#39;istruzione (<code>riga 12: …</code>) e il codice di uscita è <code>1</code>.</p>
 <h3 id="man-11-4-in-core-errori-come-liste-taggate">11.4 In Core: errori come liste taggate</h3>
-<p>Core non ha <code>try</code>/<code>catch</code> nÃ© il tipo <code>Err</code>: un errore <strong>termina il processo</strong> con exit code <code>1</code> e un
-messaggio diagnostico su stderr. Ma il pattern &quot;errore come dato&quot; si puÃ² giÃ  scrivere, ed Ã¨
-esattamente cosÃ¬ che S1 implementerÃ  Full. La convenzione Ã¨ <code>[:Err, kind, msg]</code>. <strong>[Core]</strong></p>
+<p>Core non ha <code>try</code>/<code>catch</code> né il tipo <code>Err</code>: un errore <strong>termina il processo</strong> con exit code <code>1</code> e un
+messaggio diagnostico su stderr. Ma il pattern &quot;errore come dato&quot; si può già scrivere, ed è
+esattamente così che S1 implementerà Full. La convenzione è <code>[:Err, kind, msg]</code>. <strong>[Core]</strong></p>
 <pre><code class="language-triad">err(kind, msg) = [:Err, kind, msg]
 is_err(v) = typeof(v) == :List &amp;&amp; length(v) == 3 &amp;&amp; v[1] == :Err
 
@@ -1303,11 +1308,11 @@ println(div_intera(17, 5))
 <pre><code class="language-text">errore domain: divisione per zero
 3
 </code></pre>
-<p>Nota che <code>&amp;&amp;</code> cortocircuita: <code>v[1]</code> viene valutato solo se <code>v</code> Ã¨ una lista di 3 elementi.</p>
+<p>Nota che <code>&amp;&amp;</code> cortocircuita: <code>v[1]</code> viene valutato solo se <code>v</code> è una lista di 3 elementi.</p>
 <hr>
 <p><a id="cap-12"></a></p>
 <h2 id="man-12-contratti">12. Contratti</h2>
-<p>Un contratto Ã¨ una precondizione (<code>requires</code>) o una postcondizione (<code>ensures</code>) dichiarata nel corpo
+<p>Un contratto è una precondizione (<code>requires</code>) o una postcondizione (<code>ensures</code>) dichiarata nel corpo
 di una funzione. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">function safe_div(a::Number, b::Number)::Float
     requires b != 0
@@ -1321,10 +1326,10 @@ end
 valore restituito, <strong>dopo</strong> il controllo del tipo di ritorno.</li>
 <li>Una violazione produce
 <code>Err(:contract, &quot;requires violata in safe_div: b != 0&quot;, Info(fn, clause, cond[, result]))</code>.
-<code>cond</code> contiene il <strong>codice</strong> della condizione: Ã¨ un dato, si puÃ² ispezionare.</li>
-<li>Le condizioni sono <strong>pure</strong>: un effetto dentro un contratto dÃ  <code>Err(:effect)</code>.</li>
+<code>cond</code> contiene il <strong>codice</strong> della condizione: è un dato, si può ispezionare.</li>
+<li>Le condizioni sono <strong>pure</strong>: un effetto dentro un contratto dà <code>Err(:effect)</code>.</li>
 <li>Al top level <code>requires c</code> funziona come un&#39;asserzione.</li>
-<li><code>ensures</code> fuori da una <code>function</code> Ã¨ un <code>Err(:syntax)</code>.</li>
+<li><code>ensures</code> fuori da una <code>function</code> è un <code>Err(:syntax)</code>.</li>
 </ul>
 <pre><code class="language-triad-full">println(safe_div(6, 3))
 
@@ -1342,8 +1347,8 @@ safe_div
 <hr>
 <p><a id="cap-13"></a></p>
 <h2 id="man-13-budget">13. Budget</h2>
-<p>Un <strong>budget</strong> limita quanti passi il programma puÃ² consumare. Un passo Ã¨ una chiamata, un&#39;iterazione
-di ciclo o un passo di risoluzione. Quando il budget si esaurisce, <strong>il valore del <code>with</code> Ã¨
+<p>Un <strong>budget</strong> limita quanti passi il programma può consumare. Un passo è una chiamata, un&#39;iterazione
+di ciclo o un passo di risoluzione. Quando il budget si esaurisce, <strong>il valore del <code>with</code> è
 <code>Err(:budget)</code></strong>: il programma non si blocca e non viene interrotto. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">r = with budget(steps = 10_000)
     while true end
@@ -1353,15 +1358,15 @@ println(r.kind)
 <p><strong>Output (golden Full):</strong></p>
 <pre><code class="language-text">budget
 </code></pre>
-<p>I budget si annidano e vale il piÃ¹ stretto. Un <code>with</code> converte in valore <strong>solo</strong> l&#39;esaurimento del
-proprio budget, mentre quello di un budget esterno continua a propagarsi. <code>solve â€¦ steps N</code> Ã¨ il
+<p>I budget si annidano e vale il più stretto. Un <code>with</code> converte in valore <strong>solo</strong> l&#39;esaurimento del
+proprio budget, mentre quello di un budget esterno continua a propagarsi. <code>solve … steps N</code> è il
 budget specifico di una query.</p>
 <p>Il motore logico usa uno stack esplicito: la ricorsione infinita, anche sinistra, finisce in
 <code>Err(:budget)</code> e <strong>non</strong> in uno stack overflow.</p>
 <hr>
 <p><a id="cap-14"></a></p>
 <h2 id="man-14-tracce">14. Tracce</h2>
-<p>La traccia di un calcolo Ã¨ un <strong>valore</strong>, non output stampato. <strong>[Full]</strong></p>
+<p>La traccia di un calcolo è un <strong>valore</strong>, non output stampato. <strong>[Full]</strong></p>
 <pre><code class="language-triad-full">fib(n::Int) = n &lt; 2 ? n : fib(n - 1) + fib(n - 2)
 
 t = with trace
@@ -1376,14 +1381,14 @@ println(length(t.trace))
 </code></pre>
 <p><code>fib(3)</code> effettua 5 chiamate (<code>fib(3)</code>, <code>fib(2)</code>, <code>fib(1)</code>, <code>fib(0)</code>, <code>fib(1)</code>): la traccia registra
 <strong>due eventi per ogni chiamata</strong>, <code>:call</code> e <code>:exit</code>, quindi 10 eventi. Per <code>fib(5)</code> sono 15 chiamate
-e 30 eventi â€” Ã¨ il valore atteso dal caso di conformance <code>garanzie_core</code>.</p>
-<p><code>with trace â€¦ end</code> restituisce <code>Traced(result, trace)</code> con gli eventi <code>:call</code> e <code>:exit</code> di ogni
-funzione generica chiamata nel corpo. <code>solve â€¦ trace</code> restituisce <code>Traced(result, trace)</code> dove
-<code>result</code> Ã¨ la lista delle soluzioni e gli eventi sono le porte del modello a scatole di Byrd
-(<code>call</code>, <code>exit</code>, <code>redo</code>, <code>fail</code>) piÃ¹ <code>depth</code>, quando un ramo viene tagliato da <code>depth</code>.</p>
+e 30 eventi — è il valore atteso dal caso di conformance <code>garanzie_core</code>.</p>
+<p><code>with trace … end</code> restituisce <code>Traced(result, trace)</code> con gli eventi <code>:call</code> e <code>:exit</code> di ogni
+funzione generica chiamata nel corpo. <code>solve … trace</code> restituisce <code>Traced(result, trace)</code> dove
+<code>result</code> è la lista delle soluzioni e gli eventi sono le porte del modello a scatole di Byrd
+(<code>call</code>, <code>exit</code>, <code>redo</code>, <code>fail</code>) più <code>depth</code>, quando un ramo viene tagliato da <code>depth</code>.</p>
 <p>Gli eventi sono record: si filtrano e si contano come ogni altro valore.</p>
 <h3 id="man-glossario-degli-eventi-di-traccia-porte-di-byrd">Glossario degli eventi di traccia (porte di Byrd)</h3>
-<p>Quando si usa <code>solve â€¦ trace</code>, ogni passo della ricerca produce un evento che registra <strong>a che
+<p>Quando si usa <code>solve … trace</code>, ogni passo della ricerca produce un evento che registra <strong>a che
 riferimento</strong> (quale goal, quale clausola, quali variabili logiche) si sta lavorando. Le quattro
 porte del modello a scatole di Byrd sono:</p>
 <table>
@@ -1402,7 +1407,7 @@ porte del modello a scatole di Byrd sono:</p>
 <tr>
 <td><code>:exit</code></td>
 <td>unificazione <strong>riuscita</strong></td>
-<td>il goal Ã¨ dimostrato: Ã¨ il &quot;success&quot; della ricerca</td>
+<td>il goal è dimostrato: è il &quot;success&quot; della ricerca</td>
 </tr>
 <tr>
 <td><code>:redo</code></td>
@@ -1418,15 +1423,15 @@ porte del modello a scatole di Byrd sono:</p>
 <p>Note importanti:</p>
 <ul>
 <li><strong>&quot;success&quot; e &quot;fail&quot; non sono esiti generici</strong>: sono le porte <code>:exit</code> e <code>:fail</code> della traccia,
-riferite al goal/clausola in corso. Il fallimento di un goal non Ã¨ un&#39;eccezione: si manifesta
+riferite al goal/clausola in corso. Il fallimento di un goal non è un&#39;eccezione: si manifesta
 come <strong>lista di soluzioni vuota</strong> nel <code>result</code> di <code>Traced(result, trace)</code>.</li>
-<li><strong><code>depth</code></strong> appare come evento aggiuntivo quando un ramo viene tagliato dal limite di profonditÃ 
-(<code>solve â€¦ depth N</code>), segnalando che la ricerca Ã¨ stata interrotta prima di un <code>:exit</code>/<code>:fail</code>.</li>
+<li><strong><code>depth</code></strong> appare come evento aggiuntivo quando un ramo viene tagliato dal limite di profondità
+(<code>solve … depth N</code>), segnalando che la ricerca è stata interrotta prima di un <code>:exit</code>/<code>:fail</code>.</li>
 <li>Gli eventi sono <strong>record ordinari</strong>: si filtrano (<code>[e for e in t.trace if e.port == :fail]</code>),
 si contano (<code>length</code>), si ispezionano (<code>e.args</code>, <code>e.depth</code>) come ogni altro valore Triad.</li>
-<li>Il riferimento di ogni evento Ã¨ il <strong>goal corrente e le variabili logiche</strong> (<code>?x</code>, <code>?y</code>, â€¦)
-coinvolte in quel passo: leggendo la traccia si ricostruisce <em>quale</em> alternativa Ã¨ stata
-provata e <em>perchÃ©</em> Ã¨ fallita.</li>
+<li>Il riferimento di ogni evento è il <strong>goal corrente e le variabili logiche</strong> (<code>?x</code>, <code>?y</code>, …)
+coinvolte in quel passo: leggendo la traccia si ricostruisce <em>quale</em> alternativa è stata
+provata e <em>perché</em> è fallita.</li>
 </ul>
 <pre><code class="language-triad-full"># Conta i fallimenti di una ricerca
 t = solve path(:a, :c) trace
@@ -1470,15 +1475,15 @@ end
 <td><code>fact</code>/<code>rule</code> eseguiti dentro una funzione (modificano la knowledge base)</td>
 </tr>
 </tbody></table>
-<p>Il controllo Ã¨ <strong>dinamico</strong>. Una funzione viene eseguita solo con gli effetti che dichiara, e solo
+<p>Il controllo è <strong>dinamico</strong>. Una funzione viene eseguita solo con gli effetti che dichiara, e solo
 se il chiamante li permette. Se una funzione pura chiama <code>println</code>, o chiama una funzione <code>!io</code>, si
 ottiene <code>Err(:effect)</code>; <code>data</code> contiene <code>fn</code>, <code>caller</code> e <code>missing</code>.</p>
 <ul>
 <li>Il top level permette tutti gli effetti.</li>
 <li>Le lambda ereditano gli effetti del contesto in cui vengono eseguite.</li>
 <li>Macro e contratti sono puri.</li>
-<li>Leggere la knowledge base (<code>solve</code>, chiamare un predicato) Ã¨ puro.</li>
-<li>La mutazione locale di dati (<code>push!</code> su una lista, assegnamento a variabili locali) <strong>non</strong> Ã¨ un
+<li>Leggere la knowledge base (<code>solve</code>, chiamare un predicato) è puro.</li>
+<li>La mutazione locale di dati (<code>push!</code> su una lista, assegnamento a variabili locali) <strong>non</strong> è un
 effetto: modifica solo valori raggiungibili dall&#39;ambiente locale.</li>
 </ul>
 <pre><code class="language-triad-full">function rumorosa()
@@ -1509,10 +1514,10 @@ rule ancestor(?a, ?d) :- parent(?a, ?x), ancestor(?x, ?d)
 </code></pre>
 <p>Dentro un termine:</p>
 <ul>
-<li><code>:atomo</code> Ã¨ un simbolo; <code>?x</code> Ã¨ una variabile logica; numeri, stringhe e liste sono se stessi;</li>
-<li><code>f(t1, t2)</code> Ã¨ un termine composto. Anche <code>?x + 1</code> Ã¨ un termine (<code>+(?x, 1)</code>) e <strong>non viene
+<li><code>:atomo</code> è un simbolo; <code>?x</code> è una variabile logica; numeri, stringhe e liste sono se stessi;</li>
+<li><code>f(t1, t2)</code> è un termine composto. Anche <code>?x + 1</code> è un termine (<code>+(?x, 1)</code>) e <strong>non viene
 valutato</strong>;</li>
-<li>un <strong>nome nudo</strong> Ã¨ un valore dell&#39;ambiente corrente, letto al momento in cui viene eseguito <code>fact</code>,
+<li>un <strong>nome nudo</strong> è un valore dell&#39;ambiente corrente, letto al momento in cui viene eseguito <code>fact</code>,
 <code>rule</code> o <code>solve</code>: <code>chi = :bob; solve parent(chi, ?c)</code>;</li>
 <li><code>$(espr)</code> inserisce esplicitamente un valore calcolato: <code>fact eta(:bob, $(2026 - 1975))</code>;</li>
 <li><code>[a, b]</code> e <code>[?h | ?t]</code> sono liste e pattern su liste;</li>
@@ -1529,7 +1534,7 @@ L&#39;unificazione fa l&#39;<strong>occurs-check</strong>: <code>solve ?x = f(?x
 </tr>
 </thead>
 <tbody><tr>
-<td><code>p(tâ€¦)</code></td>
+<td><code>p(t…)</code></td>
 <td>predicato della knowledge base, risolto con SLD e backtracking, clausole in ordine</td>
 </tr>
 <tr>
@@ -1546,7 +1551,7 @@ L&#39;unificazione fa l&#39;<strong>occurs-check</strong>: <code>solve ?x = f(?x
 </tr>
 <tr>
 <td><code>not(b)</code> <em>fuori</em> da un goal</td>
-<td>Ã¨ una funzione: nega un <code>Bool</code> (<code>not(true) == false</code>)</td>
+<td>è una funzione: nega un <code>Bool</code> (<code>not(true) == false</code>)</td>
 </tr>
 <tr>
 <td><code>a = b</code></td>
@@ -1561,7 +1566,7 @@ L&#39;unificazione fa l&#39;<strong>occurs-check</strong>: <code>solve ?x = f(?x
 <td>confronto tra valori, valutati</td>
 </tr>
 <tr>
-<td><code>f(tâ€¦)</code> con <code>f</code> funzione Triad</td>
+<td><code>f(t…)</code> con <code>f</code> funzione Triad</td>
 <td>chiama la funzione con gli argomenti valutati; deve restituire <code>Bool</code></td>
 </tr>
 <tr>
@@ -1569,11 +1574,11 @@ L&#39;unificazione fa l&#39;<strong>occurs-check</strong>: <code>solve ?x = f(?x
 <td>successo, fallimento</td>
 </tr>
 </tbody></table>
-<p>Un predicato senza clausole con quell&#39;aritÃ , che non sia nemmeno una funzione, dÃ 
-<code>Err(:undef, &quot;predicato sconosciuto: p/2&quot;)</code>. Una variabile non legata dentro un&#39;espressione dÃ 
+<p>Un predicato senza clausole con quell&#39;arità, che non sia nemmeno una funzione, dà
+<code>Err(:undef, &quot;predicato sconosciuto: p/2&quot;)</code>. Una variabile non legata dentro un&#39;espressione dà
 <code>Err(:instantiation)</code>.</p>
-<h3 id="man-16-3-solve-a-un-valore">16.3 <code>solve</code> Ã¨ un valore</h3>
-<p><code>solve</code> <strong>restituisce una lista</strong> di <code>Solution</code>. Non stampa nulla: Ã¨ un valore come un altro.</p>
+<h3 id="man-16-3-solve-e-un-valore">16.3 <code>solve</code> è un valore</h3>
+<p><code>solve</code> <strong>restituisce una lista</strong> di <code>Solution</code>. Non stampa nulla: è un valore come un altro.</p>
 <pre><code class="language-triad-full">fact parent(:alice, :bob)
 fact parent(:alice, :carol)
 fact parent(:bob, :dave)
@@ -1594,17 +1599,17 @@ dave
 variabili rimaste libere restano <code>?x#n</code>. <code>vars(sol)</code> restituisce i nomi legati.</p>
 <p>Opzioni di <code>solve</code>:</p>
 <ul>
-<li><code>limit n</code> â€” al massimo <code>n</code> soluzioni;</li>
-<li><code>depth d</code> â€” i rami piÃ¹ profondi di <code>d</code> vengono tagliati (falliscono);</li>
-<li><code>steps s</code> â€” al massimo <code>s</code> passi di risoluzione, altrimenti <code>Err(:budget)</code>; il default Ã¨
+<li><code>limit n</code> — al massimo <code>n</code> soluzioni;</li>
+<li><code>depth d</code> — i rami più profondi di <code>d</code> vengono tagliati (falliscono);</li>
+<li><code>steps s</code> — al massimo <code>s</code> passi di risoluzione, altrimenti <code>Err(:budget)</code>; il default è
 <code>1 000 000</code>;</li>
-<li><code>trace</code> â€” vedi cap. 14.</li>
+<li><code>trace</code> — vedi cap. 14.</li>
 </ul>
 <h3 id="man-16-4-un-predicato-usato-come-funzione">16.4 Un predicato usato come funzione</h3>
-<p>Chiamare un predicato dove ci si aspetta un valore restituisce un <code>Bool</code>: dice se il goal Ã¨
+<p>Chiamare un predicato dove ci si aspetta un valore restituisce un <code>Bool</code>: dice se il goal è
 dimostrabile.</p>
 <pre><code class="language-triad-full">if grandparent(:alice, :dave)
-    println(&quot;alice Ã¨ nonna di dave&quot;)
+    println(&quot;alice è nonna di dave&quot;)
 end
 </code></pre>
 <h3 id="man-16-5-esempi">16.5 Esempi</h3>
@@ -1640,8 +1645,8 @@ println(foglie)
 <hr>
 <p><a id="cap-17"></a></p>
 <h2 id="man-17-codice-come-dato">17. Codice come dato</h2>
-<p>Il parser produce <strong>un solo tipo di nodo</strong>, <code>Node(head, args)</code>. Ãˆ lo stesso albero che il kernel
-esegue, che <code>:( â€¦ )</code> restituisce come valore e che <code>triad --tree</code> stampa come S-expression.
+<p>Il parser produce <strong>un solo tipo di nodo</strong>, <code>Node(head, args)</code>. È lo stesso albero che il kernel
+esegue, che <code>:( … )</code> restituisce come valore e che <code>triad --tree</code> stampa come S-expression.
 <strong>[Full]</strong></p>
 <table>
 <thead>
@@ -1696,10 +1701,10 @@ esegue, che <code>:( â€¦ )</code> restituisce come valore e che <code>triad 
 </tr>
 <tr>
 <td><code>while</code>, <code>for</code>, <code>let</code>, <code>begin</code></td>
-<td><code>(while c body)</code>, <code>(for x iter body)</code>, <code>(let (tuple â€¦) body)</code>, <code>(block â€¦)</code></td>
+<td><code>(while c body)</code>, <code>(for x iter body)</code>, <code>(let (tuple …) body)</code>, <code>(block …)</code></td>
 </tr>
 <tr>
-<td><code>function f(a::T)::R !io â€¦ end</code></td>
+<td><code>function f(a::T)::R !io … end</code></td>
 <td><code>(function f (tuple (typed a T)) R (tuple io) body)</code></td>
 </tr>
 <tr>
@@ -1707,12 +1712,12 @@ esegue, che <code>:( â€¦ )</code> restituisce come valore e che <code>triad 
 <td><code>(struct P (tuple (typed x Float)))</code></td>
 </tr>
 <tr>
-<td><code>macro m(a) â€¦ end</code>, <code>@m(e)</code></td>
+<td><code>macro m(a) … end</code>, <code>@m(e)</code></td>
 <td><code>(macro m (tuple a) body)</code>, <code>(macrocall m e)</code></td>
 </tr>
 <tr>
-<td><code>:(e)</code>, <code>quote â€¦ end</code>, <code>$e</code></td>
-<td><code>(quasi e)</code>, <code>(quasi (block â€¦))</code>, <code>(unquote e)</code></td>
+<td><code>:(e)</code>, <code>quote … end</code>, <code>$e</code></td>
+<td><code>(quasi e)</code>, <code>(quasi (block …))</code>, <code>(unquote e)</code></td>
 </tr>
 <tr>
 <td><code>fact t</code>, <code>rule h :- g1, g2</code></td>
@@ -1727,7 +1732,7 @@ esegue, che <code>:( â€¦ )</code> restituisce come valore e che <code>triad 
 <td><code>(try b e h)</code></td>
 </tr>
 <tr>
-<td><code>with budget(steps = N), trace â€¦ end</code></td>
+<td><code>with budget(steps = N), trace … end</code></td>
 <td><code>(with (tuple (call budget (assign steps N)) trace) body)</code></td>
 </tr>
 </tbody></table>
@@ -1745,8 +1750,8 @@ println(eval(quadrato))
 (call + (dot a x) (call f b 2))
 49
 </code></pre>
-<p>Dentro un quote, <code>$x</code> e <code>$(e)</code> inseriscono il <strong>valore</strong> di un&#39;espressione: se Ã¨ codice viene
-innestato, se Ã¨ un numero o una lista diventa una costante, se Ã¨ un Symbol diventa un identificatore.
+<p>Dentro un quote, <code>$x</code> e <code>$(e)</code> inseriscono il <strong>valore</strong> di un&#39;espressione: se è codice viene
+innestato, se è un numero o una lista diventa una costante, se è un Symbol diventa un identificatore.
 <code>eval(c)</code> esegue codice <strong>nello scope globale</strong>. Gli altri builtin del gruppo &quot;codice&quot; sono <code>parse</code>,
 <code>unparse</code>, <code>sexpr</code>, <code>Expr</code> e <code>gensym</code>.</p>
 <hr>
@@ -1775,7 +1780,7 @@ println(x, &quot; &quot;, y)
 <p><strong>Output (golden Full):</strong></p>
 <pre><code class="language-text">2 1
 </code></pre>
-<p>L&#39;espansione Ã¨ <strong>pura</strong> (Â§15) e <strong>non Ã¨ igienica</strong>: per i nomi temporanei si usa <code>gensym()</code>.</p>
+<p>L&#39;espansione è <strong>pura</strong> (§15) e <strong>non è igienica</strong>: per i nomi temporanei si usa <code>gensym()</code>.</p>
 <h3 id="man-18-1-codice-che-genera-codice">18.1 Codice che genera codice</h3>
 <pre><code class="language-triad-full">function poly(coeffs)
     acc = :(0)
@@ -1837,14 +1842,14 @@ println(eval(p))
 <td><code>vars(sol)</code></td>
 </tr>
 </tbody></table>
-<p><strong>Il sottoinsieme di Core</strong> Ã¨ piÃ¹ piccolo: <code>+ - * % ^</code>, i confronti, <code>&amp;&amp; || !</code>, <code>length</code>, <code>push!</code>,
+<p><strong>Il sottoinsieme di Core</strong> è più piccolo: <code>+ - * % ^</code>, i confronti, <code>&amp;&amp; || !</code>, <code>length</code>, <code>push!</code>,
 l&#39;indicizzazione <code>xs[i]</code>, <code>*</code> sulle stringhe, <code>Int</code>, <code>string</code>, <code>Symbol</code>, <code>print</code>, <code>println</code>, <code>typeof</code>
-(<code>SPEC-CORE Â§7</code>). In Core <code>map</code>, <code>filter</code>, <code>reduce</code>, <code>sum</code>, <code>sort</code>, <code>div</code> e <code>mod</code> <strong>non esistono</strong>:
+(<code>SPEC-CORE §7</code>). In Core <code>map</code>, <code>filter</code>, <code>reduce</code>, <code>sum</code>, <code>sort</code>, <code>div</code> e <code>mod</code> <strong>non esistono</strong>:
 si scrivono a mano (cap. 22.1).</p>
 <hr>
 <p><a id="cap-20"></a></p>
 <h2 id="man-20-riga-di-comando-e-repl">20. Riga di comando e REPL</h2>
-<p>L&#39;interfaccia di <code>triad</code> Ã¨ normativa (<code>SPEC Â§14</code>):</p>
+<p>L&#39;interfaccia di <code>triad</code> è normativa (<code>SPEC §14</code>):</p>
 <pre><code>triad                            # REPL
 triad FILE [ARG...]              # esegue FILE; ARGS == [ARG...]
 triad -l FILE                    # carica FILE e apre il REPL
@@ -1858,12 +1863,12 @@ triad -v, --version
 triad -                          # legge lo script da stdin
 </code></pre>
 <ul>
-<li>L&#39;estensione <code>.triad</code>/<code>.td</code> si puÃ² omettere; lo shebang <code>#!</code> Ã¨ ignorato.</li>
+<li>L&#39;estensione <code>.triad</code>/<code>.td</code> si può omettere; lo shebang <code>#!</code> è ignorato.</li>
 <li>Il programma vede gli argomenti in <code>ARGS</code>, lista di stringhe, senza il nome del programma.</li>
 <li>Codici di uscita: <code>0</code> successo, <code>1</code> errore non gestito (su stderr), <code>2</code> uso non valido.</li>
 </ul>
 <h3 id="man-20-1-il-repl">20.1 Il REPL</h3>
-<p>Il REPL Ã¨ in stile Prolog:</p>
+<p>Il REPL è in stile Prolog:</p>
 <pre><code>triad&gt; 1 + 2
 3
 triad&gt; ?- ancestor(:tom, ?d)
@@ -1873,21 +1878,21 @@ triad&gt; parent(:jim, ?x)
 false.
 </code></pre>
 <ul>
-<li>I blocchi restano aperti finchÃ© non sono chiusi da <code>end</code>.</li>
-<li><code>?- goal</code> (il <code>.</code> finale Ã¨ facoltativo) esegue una query con le opzioni di <code>solve</code>: <code>limit</code>,
+<li>I blocchi restano aperti finché non sono chiusi da <code>end</code>.</li>
+<li><code>?- goal</code> (il <code>.</code> finale è facoltativo) esegue una query con le opzioni di <code>solve</code>: <code>limit</code>,
 <code>depth</code>, <code>steps</code>, <code>trace</code>.</li>
-<li>Un&#39;istruzione che Ã¨ un goal su un predicato della knowledge base Ã¨ trattata come query.</li>
+<li>Un&#39;istruzione che è un goal su un predicato della knowledge base è trattata come query.</li>
 <li>Dopo ogni soluzione: <code>;</code>, <code>n</code> o spazio per la successiva, <code>a</code> per tutte le rimanenti, invio o <code>.</code>
 per fermarsi. <code>false.</code> significa nessun&#39;altra soluzione.</li>
-<li>Comandi: <code>:load FILEâ€¦</code> (<code>:l</code>), <code>:reload</code> (<code>:r</code>), <code>:listing [nome]</code> (<code>:ls</code>), <code>:tree CODICE</code>,
+<li>Comandi: <code>:load FILE…</code> (<code>:l</code>), <code>:reload</code> (<code>:r</code>), <code>:listing [nome]</code> (<code>:ls</code>), <code>:tree CODICE</code>,
 <code>:reset</code>, <code>:help</code> (<code>:h</code>), <code>:quit</code> (<code>:q</code>, <code>halt</code>, Ctrl-D).</li>
-<li>Ctrl-C interrompe il calcolo in corso; un errore non gestito Ã¨ stampato e il REPL continua.</li>
+<li>Ctrl-C interrompe il calcolo in corso; un errore non gestito è stampato e il REPL continua.</li>
 </ul>
 <hr>
 <p><a id="cap-21"></a></p>
 <h2 id="man-21-primitivi-di-bootstrap">21. Primitivi di bootstrap</h2>
 <p>Cinque primitive servono a S1 per leggere e analizzare il sorgente Triad. <strong>Non fanno parte di
-Triad-Full</strong> (<code>SPEC-CORE Â§8</code>): usale solo nel codice di bootstrap.</p>
+Triad-Full</strong> (<code>SPEC-CORE §8</code>): usale solo nel codice di bootstrap.</p>
 <table>
 <thead>
 <tr>
@@ -1905,7 +1910,7 @@ Triad-Full</strong> (<code>SPEC-CORE Â§8</code>): usale solo nel codice di boo
 </tr>
 <tr>
 <td><code>strbyte(s, i)</code></td>
-<td>byte (<code>Int</code> 0â€“255) alla posizione <code>i</code>, da 1</td>
+<td>byte (<code>Int</code> 0–255) alla posizione <code>i</code>, da 1</td>
 </tr>
 <tr>
 <td><code>strsub(s, a, b)</code></td>
@@ -1937,7 +1942,7 @@ println(strsub(s, 1, fine - 1))
 <pre><code class="language-text">3
 abc
 </code></pre>
-<p>Un programma puÃ² leggere se stesso con <code>readfile(ARGS[1])</code>: Ã¨ il primo passo di un interprete
+<p>Un programma può leggere se stesso con <code>readfile(ARGS[1])</code>: è il primo passo di un interprete
 self-hosted.</p>
 <hr>
 <p><a id="cap-22"></a></p>
@@ -1987,7 +1992,7 @@ println(riduci((a, b) -&gt; a + b, 0, xs))
 21
 </code></pre>
 <h3 id="man-22-2-record-come-liste-taggate">22.2 Record come liste taggate</h3>
-<p>In Core non c&#39;Ã¨ <code>struct</code>: un record Ã¨ una lista con un simbolo come tag in prima posizione.</p>
+<p>In Core non c&#39;è <code>struct</code>: un record è una lista con un simbolo come tag in prima posizione.</p>
 <pre><code class="language-triad">punto(x, y) = [:Punto, x, y]
 px(p) = p[2]
 py(p) = p[3]
@@ -1999,7 +2004,7 @@ println(p, &quot; &quot;, p[1] == :Punto)
 <pre><code class="language-text">[:Punto, 11, 22] true
 </code></pre>
 <h3 id="man-22-3-ambiente-come-lista-di-associazioni">22.3 Ambiente come lista di associazioni</h3>
-<p>Ãˆ la struttura usata dagli interpreti in <code>selfhost/</code>: una lista piatta <code>[nome1, valore1, nome2, valore2, â€¦]</code>.</p>
+<p>È la struttura usata dagli interpreti in <code>selfhost/</code>: una lista piatta <code>[nome1, valore1, nome2, valore2, …]</code>.</p>
 <pre><code class="language-triad">function env_get(env, nome)
     i = 1
     while i &lt; length(env)
@@ -2034,7 +2039,7 @@ println(env, &quot; &quot;, env_get(env, :x), &quot; &quot;, env_get(env, :z))
 <pre><code class="language-text">[:x, 11, :y, 20] 11 nothing
 </code></pre>
 <h3 id="man-22-4-stato-mutabile-condiviso">22.4 Stato mutabile condiviso</h3>
-<p>PoichÃ© una funzione nominata non puÃ² riassegnare un globale, lo stato condiviso si tiene in una
+<p>Poiché una funzione nominata non può riassegnare un globale, lo stato condiviso si tiene in una
 lista mutabile o in una chiusura.</p>
 <pre><code class="language-triad">stato = [0]
 function tick()
@@ -2079,22 +2084,22 @@ println(unisci([1, 2, 3], &quot;, &quot;))
 </code></pre>
 <h3 id="man-22-6-regole-di-stile">22.6 Regole di stile</h3>
 <ul>
-<li>Funzioni piccole con nomi chiari; caso base esplicito in ogni ricorsione; per profonditÃ  grandi
+<li>Funzioni piccole con nomi chiari; caso base esplicito in ogni ricorsione; per profondità grandi
 preferisci <code>while</code>.</li>
-<li>Cicli con contatori espliciti (<code>i = 1 â€¦ while i &lt;= length(xs)</code>).</li>
+<li>Cicli con contatori espliciti (<code>i = 1 … while i &lt;= length(xs)</code>).</li>
 <li>Non usare <code>fact</code>, <code>rule</code>, <code>solve</code>, <code>struct</code> e le altre parole chiave di Full come nomi: il codice
 deve restare valido anche in Triad-Full.</li>
 <li>Scrivi <code>!io</code> sulle funzioni che stampano: Core lo ignora, Full lo richiede.</li>
-<li>Metti le parentesi quando spezzi un&#39;espressione su piÃ¹ righe.</li>
+<li>Metti le parentesi quando spezzi un&#39;espressione su più righe.</li>
 </ul>
 <hr>
 <p><a id="parte-2"></a></p>
-<h1 id="man-parte-ii-a-esercizi">Parte II â€” Esercizi</h1>
-<p>Ogni esercizio ha una soluzione verificata. Prova prima, poi apri il riquadro Â«SoluzioneÂ».</p>
+<h1 id="man-parte-ii-esercizi">Parte II — Esercizi</h1>
+<p>Ogni esercizio ha una soluzione verificata. Prova prima, poi apri il riquadro «Soluzione».</p>
 <p><a id="cap-23"></a></p>
 <h2 id="man-23-esercizi-guidati-triad-core">23. Esercizi guidati (Triad-Core)</h2>
-<h3 id="man-esercizio-1-a-potenza-e-somme">Esercizio 1 â€” Potenza e somme</h3>
-<p>Senza usare <code>^</code>, scrivi <code>potenza(b, e)</code> ricorsiva e <code>somma_fino(n)</code> (somma <code>1 + â€¦ + n</code>) con <code>while</code>.
+<h3 id="man-esercizio-1-potenza-e-somme">Esercizio 1 — Potenza e somme</h3>
+<p>Senza usare <code>^</code>, scrivi <code>potenza(b, e)</code> ricorsiva e <code>somma_fino(n)</code> (somma <code>1 + … + n</code>) con <code>while</code>.
 Stampa <code>potenza(3, 13)</code>, <code>potenza(2, 10)</code> e <code>somma_fino(100)</code>.</p>
 <details>
 <summary>Soluzione</summary><pre><code class="language-triad">potenza(b, e) = e == 0 ? 1 : b * potenza(b, e - 1)
@@ -2114,7 +2119,7 @@ println(potenza(3, 13), &quot; &quot;, potenza(2, 10), &quot; &quot;, somma_fino
 <p><strong>Output:</strong></p>
 <pre><code class="language-text">1594323 1024 5050
 </code></pre>
-</details><h3 id="man-esercizio-2-a-numeri-primi">Esercizio 2 â€” Numeri primi</h3>
+</details><h3 id="man-esercizio-2-numeri-primi">Esercizio 2 — Numeri primi</h3>
 <p>Stampa la lista dei numeri primi minori di 30.</p>
 <details>
 <summary>Soluzione</summary><pre><code class="language-triad">function primo(n)
@@ -2144,7 +2149,7 @@ println(primi)
 <p><strong>Output:</strong></p>
 <pre><code class="language-text">[2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
 </code></pre>
-</details><h3 id="man-esercizio-3-a-inverti-una-lista">Esercizio 3 â€” Inverti una lista</h3>
+</details><h3 id="man-esercizio-3-inverti-una-lista">Esercizio 3 — Inverti una lista</h3>
 <p>Scrivi <code>inverti(xs)</code> che restituisca una nuova lista con gli elementi in ordine inverso.</p>
 <details>
 <summary>Soluzione</summary><pre><code class="language-triad">function inverti(xs)
@@ -2162,7 +2167,7 @@ println(inverti([1, :due, &quot;tre&quot;]))
 <p><strong>Output:</strong></p>
 <pre><code class="language-text">[tre, :due, 1]
 </code></pre>
-</details><h3 id="man-esercizio-4-a-ordinamento-per-inserzione">Esercizio 4 â€” Ordinamento per inserzione</h3>
+</details><h3 id="man-esercizio-4-ordinamento-per-inserzione">Esercizio 4 — Ordinamento per inserzione</h3>
 <p>Ordina in loco <code>[5, 2, 9, 1, 7]</code>.</p>
 <details>
 <summary>Soluzione</summary><pre><code class="language-triad">function ordina!(xs)
@@ -2186,7 +2191,7 @@ println(ordina!([5, 2, 9, 1, 7]))
 <pre><code class="language-text">[1, 2, 5, 7, 9]
 </code></pre>
 <p>Il <code>!</code> finale nel nome segnala, per convenzione, una funzione che muta il suo argomento.</p>
-</details><h3 id="man-esercizio-5-a-contatore-di-parole">Esercizio 5 â€” Contatore di parole</h3>
+</details><h3 id="man-esercizio-5-contatore-di-parole">Esercizio 5 — Contatore di parole</h3>
 <p>Conta le parole (separate da spazi) di <code>&quot;il  linguaggio Triad &quot;</code> usando <code>strbyte</code>.</p>
 <details>
 <summary>Soluzione</summary><pre><code class="language-triad">function conta_parole(s)
@@ -2209,8 +2214,8 @@ println(conta_parole(&quot;il  linguaggio Triad &quot;))
 <p><strong>Output:</strong></p>
 <pre><code class="language-text">3
 </code></pre>
-</details><h3 id="man-esercizio-6-a-un-mini-tokenizer">Esercizio 6 â€” Un mini-tokenizer</h3>
-<p>Trasforma <code>&quot;12+x*3&quot;</code> in una lista di token <code>[tipo, testo]</code>, con tipi <code>:num</code>, <code>:id</code>, <code>:op</code>. Ãˆ il primo
+</details><h3 id="man-esercizio-6-un-mini-tokenizer">Esercizio 6 — Un mini-tokenizer</h3>
+<p>Trasforma <code>&quot;12+x*3&quot;</code> in una lista di token <code>[tipo, testo]</code>, con tipi <code>:num</code>, <code>:id</code>, <code>:op</code>. È il primo
 passo di un interprete.</p>
 <details>
 <summary>Soluzione</summary><pre><code class="language-triad">cifra(b) = b &gt;= 48 &amp;&amp; b &lt;= 57
@@ -2248,10 +2253,10 @@ println(tokenizza(&quot;12+x*3&quot;))
 <p><strong>Output:</strong></p>
 <pre><code class="language-text">[[:num, 12], [:op, +], [:id, x], [:op, *], [:num, 3]]
 </code></pre>
-</details><h3 id="man-esercizio-7-a-valutare-un-39-espressione">Esercizio 7 â€” Valutare un&#39;espressione</h3>
+</details><h3 id="man-esercizio-7-valutare-un-39-espressione">Esercizio 7 — Valutare un&#39;espressione</h3>
 <p>Usando i token dell&#39;esercizio 6, scrivi un valutatore a discesa ricorsiva per <code>+</code> e <code>*</code> con
 precedenza, dove le variabili vengono da una lista di associazioni. Suggerimento: tieni la posizione
-corrente in una lista <code>pos = [1]</code>, cosÃ¬ le funzioni possono aggiornarla.</p>
+corrente in una lista <code>pos = [1]</code>, così le funzioni possono aggiornarla.</p>
 <details>
 <summary>Soluzione</summary><pre><code class="language-triad">cifra(b) = b &gt;= 48 &amp;&amp; b &lt;= 57
 lettera(b) = (b &gt;= 97 &amp;&amp; b &lt;= 122) || b == 95
@@ -2330,7 +2335,7 @@ println(valuta(&quot;2*3+4*5&quot;, []))
 <pre><code class="language-text">42
 26
 </code></pre>
-</details><h3 id="man-esercizio-8-a-un-ambiente-a-dizionario">Esercizio 8 â€” Un ambiente a dizionario</h3>
+</details><h3 id="man-esercizio-8-un-ambiente-a-dizionario">Esercizio 8 — Un ambiente a dizionario</h3>
 <p>Estendi l&#39;esercizio 5 con un ambiente che supporta anche la rimozione, e scrivi <code>ambiente_da_elenco</code>
 che costruisce un ambiente da coppie <code>[nome, valore]</code>. Verifica con <code>env_get</code> ed <code>env_set</code> del
 capitolo 22.3.</p>
@@ -2397,9 +2402,9 @@ println(env, &quot; &quot;, env_get(env, :x))
 <h2 id="man-24-esercizi-su-triad-full">24. Esercizi su Triad-Full</h2>
 <p>Questi esercizi usano i costrutti dello standard completo. Sono definiti dalla specifica e hanno
 output golden in <code>conformance/cases/</code>, ma <strong>non sono ancora eseguibili</strong> dal runtime corrente.</p>
-<h3 id="man-esercizio-9-a-dispatch-su-struct">Esercizio 9 â€” Dispatch su struct</h3>
+<h3 id="man-esercizio-9-dispatch-su-struct">Esercizio 9 — Dispatch su struct</h3>
 <p>Definisci <code>struct Vec2</code> con due campi <code>Float</code> e tre metodi di <code>area</code>: uno per <code>Vec2</code>, uno per <code>Number</code>
-e uno per <code>Any</code>. Verifica che il metodo piÃ¹ specifico vinca.</p>
+e uno per <code>Any</code>. Verifica che il metodo più specifico vinca.</p>
 <details>
 <summary>Soluzione</summary><pre><code class="language-triad-full">struct Vec2
     x::Float
@@ -2419,7 +2424,7 @@ println(area(&quot;ciao&quot;))
 25
 0
 </code></pre>
-</details><h3 id="man-esercizio-10-a-una-base-di-conoscenza">Esercizio 10 â€” Una base di conoscenza</h3>
+</details><h3 id="man-esercizio-10-una-base-di-conoscenza">Esercizio 10 — Una base di conoscenza</h3>
 <p>Scrivi fatti e regole per <code>parent</code> e <code>sorella</code>, e usa <code>solve</code> per trovare le sorelle di <code>:bob</code> e
 i nipoti di <code>:alice</code>.</p>
 <details>
@@ -2439,7 +2444,7 @@ println([s.z for s in solve grandparent(:alice, ?z)])
 <pre><code class="language-text">[:carol]
 [:dave, :erin]
 </code></pre>
-</details><h3 id="man-esercizio-11-a-contratti-in-pratica">Esercizio 11 â€” Contratti in pratica</h3>
+</details><h3 id="man-esercizio-11-contratti-in-pratica">Esercizio 11 — Contratti in pratica</h3>
 <p>Scrivi <code>dividi(a, b)</code> con <code>requires b != 0</code> e <code>ensures abs(result * b - a) &lt; 1e-9</code>, e usa <code>try</code> per
 distinguere il caso di contratto violata dal caso di successo.</p>
 <details>
@@ -2459,7 +2464,7 @@ end
 <p><strong>Output (golden Full):</strong></p>
 <pre><code class="language-text">contratto: requires
 </code></pre>
-</details><h3 id="man-esercizio-12-a-una-macro-che-misura">Esercizio 12 â€” Una macro che misura</h3>
+</details><h3 id="man-esercizio-12-una-macro-che-misura">Esercizio 12 — Una macro che misura</h3>
 <p>Scrivi la macro <code>@misura(label, espr)</code> che valuta l&#39;espressione e stampa etichetta e valore,
 restituendo il valore.</p>
 <details>
@@ -2480,7 +2485,7 @@ println(totale)
 </code></pre>
 </details><hr>
 <p><a id="parte-3"></a></p>
-<h1 id="man-parte-iii-a-riferimento">Parte III â€” Riferimento</h1>
+<h1 id="man-parte-iii-riferimento">Parte III — Riferimento</h1>
 <p><a id="cap-25"></a></p>
 <h2 id="man-25-grammatica">25. Grammatica</h2>
 <h3 id="man-25-1-triad-core-ebnf-normativa">25.1 Triad-Core (EBNF normativa)</h3>
@@ -2534,7 +2539,7 @@ macrodef   = &quot;macro&quot; NAME &quot;(&quot; [ NAME { &quot;,&quot; NAME } 
 fact       = &quot;fact&quot; term ;
 rule       = &quot;rule&quot; term [ &quot;:-&quot; goal { &quot;,&quot; goal } ] ;
 
-expr       = (* Pratt: precedenze dalla piÃ¹ bassa alla piÃ¹ alta *)
+expr       = (* Pratt: precedenze dalla più bassa alla più alta *)
   1  a = b   a += b   a -= b   a *= b                 (destra)
   2  x -&gt; e   (a, b) -&gt; e   c ? a : b                 (destra)
   3  ||
@@ -2623,7 +2628,7 @@ modifier   = &quot;budget&quot; &quot;(&quot; &quot;steps&quot; &quot;=&quot; ex
 </tr>
 <tr>
 <td>codice come dato <strong>[Full]</strong></td>
-<td><code>:(a + b)</code>, <code>quote â€¦ end</code></td>
+<td><code>:(a + b)</code>, <code>quote … end</code></td>
 </tr>
 </tbody></table>
 <h3 id="man-26-2-controllo-di-flusso">26.2 Controllo di flusso</h3>
@@ -2636,7 +2641,7 @@ modifier   = &quot;budget&quot; &quot;(&quot; &quot;steps&quot; &quot;=&quot; ex
 </thead>
 <tbody><tr>
 <td>una condizione</td>
-<td><code>if c â€¦ elseif d â€¦ else â€¦ end</code></td>
+<td><code>if c … elseif d … else … end</code></td>
 </tr>
 <tr>
 <td>una condizione breve</td>
@@ -2644,7 +2649,7 @@ modifier   = &quot;budget&quot; &quot;(&quot; &quot;steps&quot; &quot;=&quot; ex
 </tr>
 <tr>
 <td>un ciclo</td>
-<td><code>while c â€¦ end</code> <strong>[Core]</strong> Â· <code>for x in xs â€¦ end</code> <strong>[Full]</strong></td>
+<td><code>while c … end</code> <strong>[Core]</strong> · <code>for x in xs … end</code> <strong>[Full]</strong></td>
 </tr>
 <tr>
 <td>uscire dal ciclo</td>
@@ -2660,11 +2665,11 @@ modifier   = &quot;budget&quot; &quot;(&quot; &quot;steps&quot; &quot;=&quot; ex
 </tr>
 <tr>
 <td>uno scope nuovo</td>
-<td><code>let x = 1 â€¦ end</code></td>
+<td><code>let x = 1 … end</code></td>
 </tr>
 <tr>
 <td>un blocco senza scope</td>
-<td><code>begin â€¦ end</code></td>
+<td><code>begin … end</code></td>
 </tr>
 <tr>
 <td>una lista costruita <strong>[Full]</strong></td>
@@ -2689,15 +2694,15 @@ modifier   = &quot;budget&quot; &quot;(&quot; &quot;steps&quot; &quot;=&quot; ex
 </tr>
 <tr>
 <td>un corpo multi-istruzione</td>
-<td><code>function f(x) â€¦ end</code></td>
+<td><code>function f(x) … end</code></td>
 </tr>
 <tr>
 <td>un tipo di ritorno <strong>[Full]</strong></td>
-<td><code>function f(x)::Float â€¦ end</code></td>
+<td><code>function f(x)::Float … end</code></td>
 </tr>
 <tr>
 <td>un effetto <strong>[Full]</strong></td>
-<td><code>function f(x) !io â€¦ end</code></td>
+<td><code>function f(x) !io … end</code></td>
 </tr>
 <tr>
 <td>un predicato in un goal <strong>[Full]</strong></td>
@@ -2716,8 +2721,8 @@ modifier   = &quot;budget&quot; &quot;(&quot; &quot;steps&quot; &quot;=&quot; ex
 <p><a id="cap-27"></a></p>
 <h2 id="man-27-tabella-degli-errori">27. Tabella degli errori</h2>
 <h3 id="man-27-1-in-core">27.1 In Core</h3>
-<p>Core non ha <code>try</code>/<code>catch</code> nÃ© valori <code>Err</code>: un errore <strong>termina il processo</strong> con exit code <code>1</code> e un
-messaggio diagnostico su stderr. Quello giÃ  stampato su stdout resta.</p>
+<p>Core non ha <code>try</code>/<code>catch</code> né valori <code>Err</code>: un errore <strong>termina il processo</strong> con exit code <code>1</code> e un
+messaggio diagnostico su stderr. Quello già stampato su stdout resta.</p>
 <table>
 <thead>
 <tr>
@@ -2726,8 +2731,8 @@ messaggio diagnostico su stderr. Quello giÃ  stampato su stdout resta.</p>
 </tr>
 </thead>
 <tbody><tr>
-<td><code>parse error: unexpected token â€¦</code> / <code>parse error: expected â€¦</code></td>
-<td>sintassi non Core (<code>1.5</code>, <code>/</code>, <code>() -&gt; â€¦</code>, <code>end</code> mancante)</td>
+<td><code>parse error: unexpected token …</code> / <code>parse error: expected …</code></td>
+<td>sintassi non Core (<code>1.5</code>, <code>/</code>, <code>() -&gt; …</code>, <code>end</code> mancante)</td>
 </tr>
 <tr>
 <td><code>error: undefined variable NOME</code></td>
@@ -2735,7 +2740,7 @@ messaggio diagnostico su stderr. Quello giÃ  stampato su stdout resta.</p>
 </tr>
 <tr>
 <td><code>error: not a function</code></td>
-<td>si chiama un valore che non Ã¨ una funzione (<code>x = 5; x(1)</code>)</td>
+<td>si chiama un valore che non è una funzione (<code>x = 5; x(1)</code>)</td>
 </tr>
 <tr>
 <td><code>error: arity mismatch</code></td>
@@ -2762,7 +2767,7 @@ messaggio diagnostico su stderr. Quello giÃ  stampato su stdout resta.</p>
 <td>builtin riservato usato in modo non supportato</td>
 </tr>
 <tr>
-<td><code>cannot read file: â€¦</code></td>
+<td><code>cannot read file: …</code></td>
 <td>file inesistente o non leggibile</td>
 </tr>
 <tr>
@@ -2772,7 +2777,7 @@ messaggio diagnostico su stderr. Quello giÃ  stampato su stdout resta.</p>
 </tbody></table>
 <h3 id="man-27-2-in-triad-full">27.2 In Triad-Full</h3>
 <p>Gli stessi fallimenti arrivano come <code>Err</code> con un <code>kind</code> (cap. 11.3), invece di terminare il
-processo. Un errore non gestito al top level stampa <code>riga N: â€¦</code> e esce con codice <code>1</code>.</p>
+processo. Un errore non gestito al top level stampa <code>riga N: …</code> e esce con codice <code>1</code>.</p>
 <hr>
 <p><a id="cap-28"></a></p>
 <h2 id="man-28-glossario">28. Glossario</h2>
@@ -2785,7 +2790,7 @@ processo. Un errore non gestito al top level stampa <code>riga N: â€¦</code>
 </thead>
 <tbody><tr>
 <td><strong>Albero uniforme</strong></td>
-<td>l&#39;unico tipo di nodo prodotto dal parser, <code>Node(head, args)</code>; Ã¨ anche ciÃ² che il kernel esegue</td>
+<td>l&#39;unico tipo di nodo prodotto dal parser, <code>Node(head, args)</code>; è anche ciò che il kernel esegue</td>
 </tr>
 <tr>
 <td><strong>Ambiente</strong></td>
@@ -2805,7 +2810,7 @@ processo. Un errore non gestito al top level stampa <code>riga N: â€¦</code>
 </tr>
 <tr>
 <td><strong>Chiusura</strong></td>
-<td>funzione che cattura l&#39;ambiente in cui Ã¨ stata creata</td>
+<td>funzione che cattura l&#39;ambiente in cui è stata creata</td>
 </tr>
 <tr>
 <td><strong>Dispatch</strong></td>
@@ -2813,7 +2818,7 @@ processo. Un errore non gestito al top level stampa <code>riga N: â€¦</code>
 </tr>
 <tr>
 <td><strong>Effetto</strong></td>
-<td>capacitÃ  dichiarata di una funzione: <code>io</code>, <code>state</code></td>
+<td>capacità dichiarata di una funzione: <code>io</code>, <code>state</code></td>
 </tr>
 <tr>
 <td><strong>Err</strong></td>
@@ -2845,7 +2850,7 @@ processo. Un errore non gestito al top level stampa <code>riga N: â€¦</code>
 </tr>
 <tr>
 <td><strong>Scope lessicale</strong></td>
-<td>un nome Ã¨ visibile dove Ã¨ stato legato e all&#39;interno, mai all&#39;esterno</td>
+<td>un nome è visibile dove è stato legato e all&#39;interno, mai all&#39;esterno</td>
 </tr>
 <tr>
 <td><strong>Soluzione</strong></td>
@@ -2867,7 +2872,7 @@ processo. Un errore non gestito al top level stampa <code>riga N: â€¦</code>
 <hr>
 <p><a id="cap-29"></a></p>
 <h2 id="man-29-cosa-gira-oggi">29. Cosa gira oggi</h2>
-<p>Questa sezione non fa parte del linguaggio: Ã¨ lo stato dell&#39;implementazione,useful per orientarsi
+<p>Questa sezione non fa parte del linguaggio: è lo stato dell&#39;implementazione,useful per orientarsi
 prima di scrivere codice.</p>
 <table>
 <thead>
@@ -2889,19 +2894,19 @@ prima di scrivere codice.</p>
 <table>
 <thead>
 <tr>
-<th>funzionalitÃ</th>
+<th>funzionalità</th>
 <th>interprete JS</th>
 <th>seed Windows</th>
 </tr>
 </thead>
 <tbody><tr>
 <td><code>return</code>, <code>break</code>, <code>continue</code></td>
-<td>sÃ¬</td>
+<td>sì</td>
 <td>non elencati nel README del seed</td>
 </tr>
 <tr>
 <td>lambda</td>
-<td>piÃ¹ parametri</td>
+<td>più parametri</td>
 <td><strong>un solo parametro</strong></td>
 </tr>
 <tr>
@@ -2926,7 +2931,7 @@ prima di scrivere codice.</p>
 </tr>
 <tr>
 <td><code>ARGS</code>, primitivi di bootstrap</td>
-<td>sÃ¬</td>
+<td>sì</td>
 <td>non elencati nel README del seed</td>
 </tr>
 <tr>
@@ -2936,22 +2941,22 @@ prima di scrivere codice.</p>
 </tr>
 </tbody></table>
 <p>Regola pratica: <strong>scrivi codice che rispetta <code>SPEC-CORE</code> e verificalo con l&#39;interprete JS</strong>; se deve
-girare anche sul seed, restringiti alle funzionalitÃ  elencate nella colonna di destra e verificalo
+girare anche sul seed, restringiti alle funzionalità elencate nella colonna di destra e verificalo
 su Windows.</p>
 <p>Due limiti noti che il lettore deve conoscere prima di scrivere codice:</p>
 <ul>
 <li><strong>ogni a capo chiude l&#39;istruzione</strong>, anche dentro <code>( )</code>, <code>[ ]</code> e negli argomenti di una chiamata.
-L&#39;eccezione prevista da <code>SPEC Â§1</code> per Triad-Full (a capo dentro le parentesi, o subito dopo un
-operatore binario) non Ã¨ implementata nell&#39;interprete di riferimento. Scrivere una istruzione
+L&#39;eccezione prevista da <code>SPEC §1</code> per Triad-Full (a capo dentro le parentesi, o subito dopo un
+operatore binario) non è implementata nell&#39;interprete di riferimento. Scrivere una istruzione
 per riga;</li>
-<li><strong>il seed Windows non implementa l&#39;indicizzazione standard <code>xs[i]</code></strong>: lÃ¬ c&#39;Ã¨ l&#39;helper non
+<li><strong>il seed Windows non implementa l&#39;indicizzazione standard <code>xs[i]</code></strong>: lì c&#39;è l&#39;helper non
 standard <code>get(xs, i)</code>, con indici <strong>da 0</strong>.</li>
 </ul>
 <hr>
 <p><a id="app-a"></a></p>
-<h1 id="man-appendice-a-a-influenze-dichiarate">Appendice A â€” Influenze dichiarate</h1>
-<p>Triad nasce da idee di Julia, Prolog e Lisp, ma <strong>non Ã¨ un dialetto di nessuno dei tre</strong>: la
-definizione del linguaggio Ã¨ la specifica.</p>
+<h1 id="man-appendice-a-influenze-dichiarate">Appendice A — Influenze dichiarate</h1>
+<p>Triad nasce da idee di Julia, Prolog e Lisp, ma <strong>non è un dialetto di nessuno dei tre</strong>: la
+definizione del linguaggio è la specifica.</p>
 <table>
 <thead>
 <tr>
@@ -2961,7 +2966,7 @@ definizione del linguaggio Ã¨ la specifica.</p>
 </thead>
 <tbody><tr>
 <td>Julia</td>
-<td>blocchi <code>function â€¦ end</code>, <code>struct</code>, tipi con <code>::</code>, multiple dispatch, operatori-funzione, <code>if</code>/<code>for</code>/<code>while</code>/<code>let</code></td>
+<td>blocchi <code>function … end</code>, <code>struct</code>, tipi con <code>::</code>, multiple dispatch, operatori-funzione, <code>if</code>/<code>for</code>/<code>while</code>/<code>let</code></td>
 </tr>
 <tr>
 <td>Prolog</td>
@@ -2969,14 +2974,14 @@ definizione del linguaggio Ã¨ la specifica.</p>
 </tr>
 <tr>
 <td>Lisp</td>
-<td>codice come dato, albero uniforme, <code>:( â€¦ )</code>/<code>quote</code> con <code>$</code>, macro</td>
+<td>codice come dato, albero uniforme, <code>:( … )</code>/<code>quote</code> con <code>$</code>, macro</td>
 </tr>
 </tbody></table>
 <p><strong>Propri di Triad</strong>, non presi in prestito: errori come dati, contratti, budget, tracce ed effetti
 dichiarati come parte del linguaggio, e l&#39;integrazione dei tre modelli in una sintassi a blocchi.</p>
 <hr>
 <p><a id="app-b"></a></p>
-<h1 id="man-appendice-b-a-dove-guardare">Appendice B â€” Dove guardare</h1>
+<h1 id="man-appendice-b-dove-guardare">Appendice B — Dove guardare</h1>
 <table>
 <thead>
 <tr>
@@ -3006,11 +3011,11 @@ dichiarati come parte del linguaggio, e l&#39;integrazione dei tre modelli in un
 </tr>
 <tr>
 <td>lo stato del bootstrap</td>
-<td><a href="STATUS.md"><code>STATUS.md</code></a> Â· <a href="BOOTSTRAP.md"><code>BOOTSTRAP.md</code></a></td>
+<td><a href="STATUS.md"><code>STATUS.md</code></a> · <a href="BOOTSTRAP.md"><code>BOOTSTRAP.md</code></a></td>
 </tr>
 <tr>
 <td>il piano di lavoro</td>
-<td><a href="plan.md"><code>plan.md</code></a> Â· <a href="TASK.md"><code>TASK.md</code></a></td>
+<td><a href="plan.md"><code>plan.md</code></a> · <a href="TASK.md"><code>TASK.md</code></a></td>
 </tr>
 <tr>
 <td>gli strumenti per gli editor</td>
@@ -3018,7 +3023,7 @@ dichiarati come parte del linguaggio, e l&#39;integrazione dei tre modelli in un
 </tr>
 <tr>
 <td>la licenza</td>
-<td><a href="LICENSE"><code>LICENSE</code></a> â€” MIT</td>
+<td><a href="LICENSE"><code>LICENSE</code></a> — MIT</td>
 </tr>
 </tbody></table>
 <hr>

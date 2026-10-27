@@ -19,8 +19,9 @@ html = html.replace(/<img[^>]*webp[^>]*>/gi, '');
     pageSize: { width: 8640, height: 12960 },
     margins: { top: 850, right: 680, bottom: 850, left: 680 },
     pageNumber: true,
+    footer: true,
     skipFirstHeaderFooter: true
-  });
+  }, '<p style="text-align: center;"></p>');
   fs.writeFileSync(path.join(root, 'docs', 'libro', 'libro.docx'), buffer);
   console.log('scritto libro.docx, size:', buffer.length);
 })();

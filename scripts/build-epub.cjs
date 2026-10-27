@@ -1,0 +1,84 @@
+const fs = require('fs');
+const path = require('path');
+const marked = require('marked');
+const Epub = require('epub-gen');
+
+const root = 'c:\\\\Users\\\\xbos\\\\Documents\\\\progetti\\\\triad2.0';
+const outDir = path.join(root, 'docs', 'libro');
+
+const preface = fs.readFileSync(path.join(root, 'PREFazione.md'), 'utf8');
+const manuale = fs.readFileSync(path.join(root, 'MANUALE.md'), 'utf8');
+const tutorial = fs.readFileSync(path.join(root, 'TUTORIAL.md'), 'utf8');
+
+marked.setOptions({ gfm: true, breaks: false });
+
+// Rimuovi indici interni
+function stripIndice(md, heading, endMarker) {
+  const start = md.indexOf(heading);
+  if (start === -1) return md;
+  const end = md.indexOf(endMarker, start);
+  if (end === -1) return md;
+  return md.slice(0, start) + md.slice(end);
+}
+const manualeClean = stripIndice(manuale, '### Indice', '\n<a id="parte-1">');
+const tutorialClean = stripIndice(tutorial, '## Indice', '\n<a id="parte-1">');
+
+const css = `
+body { font-family: serif; font-size: 1em; line-height: 1.6; color: #1a1a1a; }
+h1, h2, h3 { font-family: sans-serif; color: #0d0a0f; page-break-before: always; }
+h1 { font-size: 1.6em; border-bottom: 1px solid #7d5157; padding-bottom: 0.3em; }
+h2 { font-size: 1.3em; }
+h3 { font-size: 1.1em; }
+p { text-align: justify; margin: 0.6em 0; }
+code { font-family: monospace; font-size: 0.9em; background: #f3f1f4; padding: 0.1em 0.3em; }
+pre { background: #0d0a0f; color: #f5f5f4; padding: 0.8em; border-radius: 4px; overflow-x: auto; }
+pre code { background: none; color: inherit; }
+table { border-collapse: collapse; width: 100%; margin: 0.8em 0; }
+th, td { border: 0.5pt solid #b8b0aa; padding: 0.3em 0.5em; }
+th { background: #ece8e4; font-weight: bold; }
+blockquote { border-left: 2pt solid #7d5157; margin: 0.8em 0; padding: 0.3em 0.8em; font-style: italic; }
+`;
+
+const content = [
+  {
+    title: 'Prefazione',
+    data: marked.parse(preface)
+  },
+  {
+    title: 'Manuale di Triad 2.0',
+    data: marked.parse(manualeClean)
+  },
+  {
+    title: 'Tutorial di Triad 2.0',
+    data: marked.parse(tutorialClean)
+  },
+  {
+    title: 'Quarta di copertina',
+    data: `<div style="background:#0d0a0f;color:#f5f5f4;padding:1em;">
+      <h1>Il libro di Triad</h1>
+      <p>Triad 2.0 è un linguaggio di programmazione autonomo, definito da una specifica normativa indipendente da qualsiasi implementazione.</p>
+      <p>Il progetto è rilasciato sotto licenza MIT. SPEC.md (standard 0.2.0), SPEC-CORE.md, conformance/ con golden verificabili.</p>
+      <p>L'obiettivo è un linguaggio autonomo e riconosciuto: standard proprio, conformance eseguibile, estensione .triad, tooling editor, bootstrap senza linguaggi ospiti e self-hosting.</p>
+    </div>`
+  }
+];
+
+const options = {
+  title: 'Il libro di Triad',
+  author: 'GPuntobit',
+  publisher: 'GPuntobit',
+  description: 'Il libro di Triad — imparare il linguaggio e il codice del progetto triad2.0',
+  cover: path.join(outDir, 'frontespizio.png'),
+  content: content,
+  css: css,
+  tocTitle: 'Sommario',
+  version: 3,
+  lang: 'it'
+};
+
+const epub = new Epub(options, path.join(outDir, 'libro.epub'));
+epub.promise.then(() => {
+  console.log('scritto libro.epub');
+}).catch(err => {
+  console.error('errore epub:', err);
+});

@@ -17,8 +17,8 @@ const sans = "'Liberation Sans', 'Helvetica Neue', Arial, 'DejaVu Sans', sans-se
 const mono = "'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace";
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-const parts = ['Fondamenti', 'Triad-Core', 'Triad-Full', 'Dentro il progetto'];
-const partsText = parts.map((p, i) => `<tspan fill="${C.accent}">${['I', 'II', 'III', 'IV'][i]}</tspan> ${esc(p)}`)
+const parts = ['Fondamenti', 'Triad-Core', 'Triad-Full', 'Dentro il progetto', 'Sul campo'];
+const partsText = parts.map((p, i) => `<tspan fill="${C.accent}">${['I', 'II', 'III', 'IV', 'V'][i]}</tspan> ${esc(p)}`)
   .join(`<tspan fill="${C.dim}">  ·  </tspan>`);
 
 process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>

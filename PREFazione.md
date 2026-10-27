@@ -15,14 +15,20 @@ funzione, un ciclo, una ricorsione. Questo libro non insegna la programmazione i
 Triad. Le influenze del linguaggio (Julia, Prolog, Lisp) sono documentate nell'Appendice A della
 specifica: sono note informative, non definizioni. Triad non è un dialetto di nessuno dei tre.
 
-Il volume è organizzato in quattro parti. La prima, *Fondamenti*, introduce il lessico, i valori e
+Il volume è organizzato in cinque parti. La prima, *Fondamenti*, introduce il lessico, i valori e
 i tipi, il controllo di flusso, le funzioni, il dispatch, la logica, il codice come dato, gli errori,
 i contratti, il budget, le tracce e gli effetti. La seconda, *Triad-Core*, copre il sottoinsieme
 eseguibile oggi dall'interprete di riferimento, con tutti i 37 casi di conformance. La terza,
 *Triad-Full*, presenta i costrutti dello standard completo, oggi studiabili ma non ancora
 eseguibili dal runtime corrente. La quarta, *Dentro il progetto*, accompagna il lettore nel codice
 del repository: il seed in codice macchina, la suite di conformance, la CLI, gli strumenti per
-gli editor.
+gli editor. La quinta, *Sul campo*, affronta il lavoro quotidiano: scegliere il costrutto
+giusto per ogni problema, portare un programma esistente a Triad, verificare il codice con
+sonde, golden e benchmark, proporre una modifica al linguaggio.
+
+In coda al volume, l'appendice riporta per intero i due testi normativi, `SPEC.md` e
+`SPEC-CORE.md`. Il volume è così autosufficiente: ogni affermazione del manuale può essere
+controllata sulla fonte che la definisce.
 
 Due profili di conformità attraversano tutto il libro. Triad-Core è il sottoinsieme di bootstrap:
 valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è lo standard
