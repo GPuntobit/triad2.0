@@ -3,7 +3,10 @@ const path = require('path');
 const htmlToDocx = require('html-to-docx');
 
 const root = 'c:\\Users\\xbos\\Documents\\progetti\\triad2.0';
-const html = fs.readFileSync(path.join(root, 'docs', 'libro', 'libro.html'), 'utf8');
+let html = fs.readFileSync(path.join(root, 'docs', 'libro', 'libro.html'), 'utf8');
+
+// Rimuovi immagini webp (non supportate da tutte le versioni di Word)
+html = html.replace(/<img[^>]*webp[^>]*>/gi, '');
 
 (async () => {
   const buffer = await htmlToDocx(html, null, {
