@@ -16,19 +16,7 @@ const NAV = [
 ];
 
 function renderHeader(active) {
-  const links = NAV.map(n => `<a href="${n.href}" ${n.label===active?'class="active"':''}>${n.label}</a>`).join('');
-  return `
-<header class="site-header">
-  <div class="container nav">
-    <a class="brand" href="index.html"><span class="logo">T</span> Triad 2.0</a>
-    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
-    <nav class="nav-links">${links}</nav>
-  </div>
-</header>`;
-}
-
-function renderHeader(active) {
-  const links = NAV.map(n => `<a href="${n.href}" ${n.label===active?'class="active"':''}>${n.label}</a>`).join('');
+  const links = NAV.map(n => `<a href="${n.href}" ${n.label===active?'class="active" aria-current="page"':''}>${n.label}</a>`).join('');
   return `
 <header class="site-header">
   <div class="container nav">
