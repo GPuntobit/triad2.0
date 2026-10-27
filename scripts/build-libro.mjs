@@ -6,14 +6,55 @@ import { marked } from 'marked';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'docs', 'libro');
 
-const coverSvg = readFileSync(join(outDir, 'frontespizio.svg'), 'utf8');
 const manuale = readFileSync(join(root, 'MANUALE.md'), 'utf8');
 const tutorial = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
 
 marked.setOptions({ gfm: true, breaks: false });
 
-const manualeHtml = marked.parse(manuale);
-const tutorialHtml = marked.parse(tutorial);
+function slugify(s) {
+  return String(s).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'section';
+}
+
+function addHeadingIds(html, prefix, toc) {
+  const used = new Set();
+  let firstH1 = true;
+  return html.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (m, level, text) => {
+    const plain = text.replace(/<[^>]+>/g, '').trim();
+    if (level === '1' && firstH1) { firstH1 = false; return m; }
+    const base = prefix + '-' + slugify(plain);
+    let slug = base;
+    let n = 1;
+    while (used.has(slug)) { slug = base + '-' + n++; }
+    used.add(slug);
+    toc.push({ level: +level, text: plain, slug });
+    return '<h' + level + ' id="' + slug + '">' + text + '</h' + level + '>';
+  });
+}
+
+const manualeToc = [];
+const tutorialToc = [];
+const manualeHtml = addHeadingIds(marked.parse(manuale), 'man', manualeToc);
+const tutorialHtml = addHeadingIds(marked.parse(tutorial), 'tut', tutorialToc);
+
+function buildToc(groups) {
+  let html = '<h1>Indice</h1>\n';
+  for (const g of groups) {
+    html += '<h2>' + g.label + '</h2>\n<ul class="toc-list">\n';
+    for (const e of g.entries) {
+      html += '<li class="toc-l' + e.level + '"><a href="#' + e.slug + '">' + e.text + '</a></li>\n';
+    }
+    html += '</ul>\n';
+  }
+  return html;
+}
+
+const tocHtml = buildToc([
+  { label: 'Manuale di Triad 2.0', entries: manualeToc },
+  { label: 'Tutorial di Triad 2.0', entries: tutorialToc }
+]);
 
 const html = `<!DOCTYPE html>
 <html lang="it">
@@ -39,20 +80,25 @@ const html = `<!DOCTYPE html>
   blockquote { border-left: 2pt solid #7d5157; margin: 8pt 0; padding: 4pt 10pt; color: #444; font-style: italic; }
   hr { border: none; border-top: 0.5pt solid #7d5157; margin: 12pt 0; }
   .cover { page-break-after: always; text-align: center; }
-  .cover svg { width: 100%; height: auto; }
+  .cover img { width: 100%; height: auto; }
+  .toc { page-break-after: always; }
+  .toc-list { list-style: none; padding-left: 0; }
+  .toc-list li { margin: 2pt 0; font-size: 10pt; }
+  .toc-list .toc-l1 { font-weight: bold; margin-top: 8pt; }
+  .toc-list .toc-l2 { padding-left: 14pt; }
+  .toc-list .toc-l3 { padding-left: 28pt; font-size: 9pt; }
   .part { page-break-before: always; }
   ul, ol { margin: 6pt 0 6pt 18pt; }
   li { margin: 2pt 0; }
 </style>
 </head>
 <body>
-  <div class="cover">${coverSvg}</div>
+  <div class="cover"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
+  <div class="toc">${tocHtml}</div>
   <div class="part">
-    <h1>Manuale di Triad 2.0</h1>
     ${manualeHtml}
   </div>
   <div class="part">
-    <h1>Tutorial di Triad 2.0</h1>
     ${tutorialHtml}
   </div>
 </body>

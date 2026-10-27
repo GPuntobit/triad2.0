@@ -4,9 +4,10 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import sharp from 'sharp';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const logo = readFileSync(join(root, 'docs', 'triad-logo.webp')).toString('base64');
+const logo = (await sharp(join(root, 'docs', 'triad-logo.webp')).png().toBuffer()).toString('base64');
 const version = readFileSync(join(root, 'VERSION'), 'utf8').trim();
 const year = new Date().getFullYear();
 
@@ -42,7 +43,7 @@ process.stdout.write(`<?xml version="1.0" encoding="UTF-8"?>
 
   <text x="105" y="30" text-anchor="middle" font-family="${sans}" font-size="4.2" letter-spacing="1.6" fill="${C.muted}">GPUNTOBIT</text>
 
-  <image mask="url(#logoMask)" x="45" y="40" width="120" height="120" xlink:href="data:image/webp;base64,${logo}"/>
+  <image mask="url(#logoMask)" x="45" y="40" width="120" height="120" xlink:href="data:image/png;base64,${logo}"/>
 
   <text x="105" y="184" text-anchor="middle" font-family="${serif}" font-size="15" fill="${C.text}">Il libro di <tspan font-style="italic">Triad</tspan></text>
   <line x1="80" y1="192" x2="130" y2="192" stroke="${C.accent}" stroke-width="0.6"/>
