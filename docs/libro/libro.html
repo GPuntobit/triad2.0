@@ -24,8 +24,8 @@
   img { max-width: 100%; }
   blockquote { border-left: 2pt solid #7d5157; margin: 8pt 0; padding: 4pt 10pt; color: #444; font-style: italic; background: #f9f7f5; }
   hr { border: none; border-top: 0.5pt solid #7d5157; margin: 14pt 0; }
-  .cover { page-break-after: always; margin: 0; padding: 0; }
-  .cover img { width: 100%; height: 100vh; object-fit: cover; display: block; }
+  .cover { page-break-after: always; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; text-align: center; }
+  .cover img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; margin: auto; }
   .preface-page { page-break-after: always; }
   .backcover-page { page-break-before: always; }
   .backcover { background: #0d0a0f; color: #f5f5f4; padding: 24pt 18pt; min-height: 100%; }
@@ -45,7 +45,7 @@
 </style>
 </head>
 <body>
-  <div class="cover"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
+  <div class="cover" style="text-align:center"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
   <div class="preface-page">
     <h1>Prefazione</h1>
 <p>Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple
