@@ -20,8 +20,10 @@ function slugify(s) {
 
 function addHeadingIds(html, prefix, toc) {
   const used = new Set();
+  let firstH1 = true;
   return html.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (m, level, text) => {
     const plain = text.replace(/<[^>]+>/g, '').trim();
+    if (level === '1' && firstH1) { firstH1 = false; return m; }
     const base = prefix + '-' + slugify(plain);
     let slug = base;
     let n = 1;
@@ -94,11 +96,9 @@ const html = `<!DOCTYPE html>
   <div class="cover"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
   <div class="toc">${tocHtml}</div>
   <div class="part">
-    <h1>Manuale di Triad 2.0</h1>
     ${manualeHtml}
   </div>
   <div class="part">
-    <h1>Tutorial di Triad 2.0</h1>
     ${tutorialHtml}
   </div>
 </body>
