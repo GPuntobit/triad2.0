@@ -11,7 +11,7 @@ const program = join(root, 'scripts', 'anteprima.td');
 const code = readFileSync(program, 'utf8').replace(/\r/g, '').trimEnd().split('\n');
 const output = execFileSync(process.execPath, [join(root, 'seed/dev/triad_core.cjs'), program], { encoding: 'utf8' })
   .replace(/\r/g, '').trimEnd().split('\n');
-const command = '$ node seed/dev/triad_core.cjs anteprima.td';
+const command = '$ node seed/dev/triad_core.cjs scripts/anteprima.td';
 
 const C = { bg: '#0b1220', bar: '#111827', border: '#263248', text: '#e5e7eb', muted: '#94a3b8',
   kw: '#c084fc', fn: '#60a5fa', str: '#34d399', cm: '#64748b', num: '#fbbf24', out: '#e5e7eb', prompt: '#34d399' };
