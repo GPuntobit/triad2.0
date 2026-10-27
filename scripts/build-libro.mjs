@@ -6,7 +6,6 @@ import { marked } from 'marked';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'docs', 'libro');
 
-const coverSvg = readFileSync(join(outDir, 'frontespizio.svg'), 'utf8');
 const manuale = readFileSync(join(root, 'MANUALE.md'), 'utf8');
 const tutorial = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
 
@@ -39,14 +38,14 @@ const html = `<!DOCTYPE html>
   blockquote { border-left: 2pt solid #7d5157; margin: 8pt 0; padding: 4pt 10pt; color: #444; font-style: italic; }
   hr { border: none; border-top: 0.5pt solid #7d5157; margin: 12pt 0; }
   .cover { page-break-after: always; text-align: center; }
-  .cover svg { width: 100%; height: auto; }
+  .cover img { width: 100%; height: auto; }
   .part { page-break-before: always; }
   ul, ol { margin: 6pt 0 6pt 18pt; }
   li { margin: 2pt 0; }
 </style>
 </head>
 <body>
-  <div class="cover">${coverSvg}</div>
+  <div class="cover"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
   <div class="part">
     <h1>Manuale di Triad 2.0</h1>
     ${manualeHtml}
