@@ -93,24 +93,6 @@ const tocHtml = buildToc([
   { label: 'Tutorial di Triad 2.0', entries: tutorialToc }
 ]);
 
-const synopsisHtml = `<div class="synopsis">
-  <h1>Sinossi</h1>
-  <p>Triad è un linguaggio di programmazione autonomo, definito da una specifica normativa
-  indipendente da qualsiasi implementazione. Questo libro ne è il percorso di studio: dai primi
-  programmi al seed in codice macchina, dalle operazioni aritmetiche e sulle stringhe alla
-  unificazione con occurs-check, dal controllo di flusso alla metaprogrammazione.</p>
-  <p>Il volume presenta il linguaggio in quattro parti. <em>Fondamenti</em> introduce il lessico,
-  i valori e i tipi, il controllo di flusso, le funzioni, il dispatch, la logica, il codice come
-  dato, gli errori, i contratti, il budget, le tracce e gli effetti. <em>Triad-Core</em> copre il
-  sottoinsieme eseguibile oggi dall'interprete di riferimento, con tutti i 37 casi di conformance.
-  <em>Triad-Full</em> presenta i costrutti dello standard completo, oggi studiabili ma non ancora
-  eseguibili dal runtime. <em>Dentro il progetto</em> accompagna il lettore nel codice del
-  repository: il seed, la suite di conformance, la CLI, gli strumenti per gli editor.</p>
-  <p>Il lettore troverà spiegazioni, esempi ed esercizi, con marcatori [Core] e [Full] che indicano
-  in quale profilo esiste ciascun costrutto. Il manuale non è un riassunto della specifica: è un
-  percorso di studio, mentre SPEC.md e SPEC-CORE.md restano la fonte di verità normativa.</p>
-</div>`;
-
 const backCoverHtml = `<div class="backcover">
   <h1>Il libro di Triad</h1>
   <p>Triad 2.0 è un linguaggio di programmazione autonomo, definito da una specifica normativa
@@ -199,10 +181,6 @@ const html = `<!DOCTYPE html>
   .sommario-list .sl1 { font-weight: bold; margin-top: 8pt; }
   .sommario-list .sl2 { padding-left: 14pt; font-size: 10pt; }
   .sommario-intro { font-style: italic; color: #555; font-size: 10pt; }
-  .synopsis-page { page-break-after: always; }
-  .synopsis { padding: 24pt 18pt; }
-  .synopsis h1 { border-color: #7d5157; }
-  .synopsis p { text-align: justify; font-size: 11pt; line-height: 1.6; }
   .toc { page-break-after: always; }
   .toc-list { list-style: none; padding-left: 0; }
   .toc-list li { margin: 2pt 0; font-size: 10pt; }
@@ -216,9 +194,6 @@ const html = `<!DOCTYPE html>
 </head>
 <body>
   <div class="cover"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
-  <div class="synopsis-page">
-    ${synopsisHtml}
-  </div>
   <div class="sommario-page">
     ${sommarioHtml}
   </div>
