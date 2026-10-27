@@ -79,6 +79,11 @@ function mount(active) {
   const footerSlot = document.getElementById('site-footer');
   if (headerSlot) headerSlot.innerHTML = renderHeader(active);
   if (footerSlot) footerSlot.innerHTML = renderFooter();
+  const prefix = /\/pages\/[^/]*$/.test(location.pathname) ? '../' : '';
+  if (prefix) [headerSlot, footerSlot].forEach(slot => slot && slot.querySelectorAll('a[href]').forEach(a => {
+    const href = a.getAttribute('href');
+    if (!/^([a-z]+:|#|\/)/i.test(href)) a.setAttribute('href', prefix + href);
+  }));
 }
 
 async function loadMarkdown(targetId, file) {
