@@ -1,0 +1,48 @@
+// Configurazione markdownlint per il progetto Triad.
+// Letta automaticamente dall'estensione markdownlint di VS Code,
+// da markdownlint-cli e da markdownlint-cli2.
+{
+  "default": true,
+
+  // Le regole strutturali (heading, liste, URL nudi, prima riga H1)
+  // restano ATTIVE: i file del progetto vengono corretti, non silenziati.
+
+  // Righe lunghe: la documentazione usa tabelle, badge e frasi italiane
+  // che superano i 100/80 caratteri senza penalizzare la leggibilità.
+  "MD013": false,
+
+  // Intestazioni duplicate consentite tra release/sezione diverse
+  // (es. "CLI", "Documentazione" ricorrenti nel changelog).
+  "MD024": { "siblings_only": true },
+
+  // HTML inline necessario per banner, badge e layout centrato nei README;
+  // anchor <a id="..."> per gli indici profondi di MANUALE/TUTORIAL.
+  "MD033": false,
+
+  // Blocchi ``` senza linguaggio: in un repo su più piattaforme (VS Code,
+  // GitHub, Obsidian) l'evidenziazione automatica è preferibile a un
+  // linguaggio forzato o fittizio.
+  "MD040": false,
+
+  // "Titoli" in grassetto/corsivo usati come pseudo-intestazioni visive nei
+  // prompt AI e nelle note interne: sono contenuto, non struttura.
+  "MD036": false,
+
+  // Stile tabelle "compact" usato in tutto il progetto.
+  "MD060": false,
+
+  // Cartelle generate o esterne: non fanno parte della documentazione
+  // del linguaggio (node_modules, wiki Obsidian, agent/skill template,
+  // config di tool third-party, output di Jekyll).
+  "ignorePaths": [
+    "node_modules",
+    "cli/node_modules",
+    "obsidian-triad",
+    ".github/agents",
+    ".github/skills",
+    ".kiro",
+    ".kilo",
+    "docs/_site",
+    "docs/node_modules"
+  ]
+}
