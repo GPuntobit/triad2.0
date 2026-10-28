@@ -45,11 +45,10 @@ function stripIndice(md, heading, endMarker) {
 }
 
 function namespaceAnchors(md, prefix) {
-  const anchor = '(cap-\\d+|parte-\\d+|app-[a-z])';
   return md
-    .replace(new RegExp(`id="${anchor}"`, 'g'), (_, id) => `id="${prefix}-${id}"`)
-    .replace(new RegExp(`href="#${anchor}"`, 'g'), (_, id) => `href="#${prefix}-${id}"`)
-    .replace(new RegExp(`\\]\\(#${anchor}\\)`, 'g'), (_, id) => `](#${prefix}-${id})`);
+    .replace(/id="(cap-\d+|parte-\d+|app-[a-z])"/g, (_, id) => `id="${prefix}-${id}"`)
+    .replace(/href="#(cap-\d+|parte-\d+|app-[a-z])"/g, (_, id) => `href="#${prefix}-${id}"`)
+    .replace(/\]\(#(cap-\d+|parte-\d+|app-[a-z])\)/g, (_, id) => `](#${prefix}-${id})`);
 }
 
 function rewriteRepositoryLinks(html) {
