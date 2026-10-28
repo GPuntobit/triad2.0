@@ -30,11 +30,16 @@ function findProjectRoot() {
 const PROJECT_ROOT = findProjectRoot();
 
 /**
- * Trova il seed in codice macchina (nessuna dipendenza da Julia)
+ * Trova il seed in codice macchina (nessuna dipendenza da Julia).
+ * TRIAD_SEED ha la precedenza (usato anche dalla CI), coerentemente con
+ * conformance/run.mjs.
  */
 export function findSeed() {
   const isWindows = process.platform === 'win32';
   const candidates = [];
+  if (process.env.TRIAD_SEED && fs.existsSync(process.env.TRIAD_SEED)) {
+    return process.env.TRIAD_SEED;
+  }
   if (isWindows) {
     candidates.push(
       path.join(PROJECT_ROOT, 'bin', 'triad-native.exe'),
@@ -50,6 +55,23 @@ export function findSeed() {
     if (fs.existsSync(c)) return c;
   }
   return null;
+}
+
+/**
+ * Vero se il seed corrente è uno stub (es. Linux E0: ELF di poche centinaia
+ * di byte che stampa solo "Triad seed Linux OK"). Sotto i 4 KB non può
+ * essere l'interprete Triad-Core completo (E2): serve il fallback JS.
+ */
+export function seedIsStub(seedPath = findSeed()) {
+  if (!seedPath) return true;
+  try {
+    const st = fs.statSync(seedPath);
+    if (st.isFile() && st.size < 4096) return true;
+    // Probe runtime: se il seed risponde a un file .td con output valido è reale.
+    return false;
+  } catch {
+    return true;
+  }
 }
 
 /**

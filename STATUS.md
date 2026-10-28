@@ -36,7 +36,7 @@ Triad come linguaggio autonomo e riconosciuto: standard proprio, conformance, es
 | Triad-Full | 11/12 casi non implementati (passa solo `errore`) |
 | CLI seed | solo esecuzione di file; REPL e opzioni di SPEC §14 da fare |
 | S2–S3 (compilatore nativo, self-hosting) | non iniziati |
-| S4 / M7 (parità, Linux ELF) | **E0 ✅** ELF Linux minimale; E1/E2/E3 e parità da fare |
+| S4 / M7 (parità, Linux ELF) | **E0 ✅** ELF Linux minimale; E1/E2/E3 e parità da fare. Toolchain POSIX Linux: `install.sh` + launcher `bin/triad`/`bin/triad-cli` con fallback automatico al JS reference quando il seed è stub; job CI `linux-toolchain` dedicato |
 
 ## Comandi di verifica
 

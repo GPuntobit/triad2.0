@@ -1,5 +1,5 @@
 import path from 'path';
-import { runSeed, findSeed, projectPath, fileExists, runNode } from '../utils.mjs';
+import { runSeed, findSeed, seedIsStub, projectPath, fileExists, runNode } from '../utils.mjs';
 import chalk from 'chalk';
 
 /**
@@ -30,9 +30,15 @@ export async function runProgram(file, programArgs = [], options = {}) {
   const seed = findSeed();
   const jsInterp = projectPath('seed', 'dev', 'triad_core.cjs');
 
-  if (process.platform !== 'win32' && !options.native && fileExists(jsInterp)) {
-    // Seed Linux ancora stub (E0): runtime JS di riferimento
+  // Usa il seed nativo solo se esiste e non è uno stub (Linux E0). Coerente
+  // con bin/triad e conformance/run.mjs: su Windows il seed.exe è completo,
+  // su Linux lo stub E0 (<4KB) viene riconosciuto e si usa il JS reference.
+  const useNative = seed && !seedIsStub(seed);
+  if (!options.native && !useNative && fileExists(jsInterp)) {
+    // Seed stub o assente: runtime JS di riferimento
     result = await runNode(jsInterp, [prog, ...programArgs]);
+  } else if (useNative) {
+    result = await runSeed([prog, ...programArgs]);
   } else if (seed) {
     result = await runSeed([prog, ...programArgs]);
   } else {
