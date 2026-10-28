@@ -187,7 +187,7 @@ const html = `<!DOCTYPE html>
   hr { border: none; border-top: 0.5pt solid #7d5157; margin: 14pt 0; }
   .cover { page-break-after: always; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; text-align: center; }
   .cover img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; margin: auto; }
-  .sommario-page { page-break-after: always; }
+  .index-page { page-break-after: always; }
   .sommario-list { list-style: none; padding-left: 0; }
   .sommario-list .sl1 { font-weight: bold; margin-top: 8pt; }
   .sommario-list .sl2 { padding-left: 14pt; font-size: 10pt; }
@@ -216,8 +216,9 @@ const html = `<!DOCTYPE html>
   <div class="preface-page">
     ${prefaceHtml}
   </div>
-  <div class="sommario-page">
+  <div class="index-page">
     ${sommarioHtml}
+    ${tocHtml}
   </div>
   <div class="part">
     ${manualeHtml}
