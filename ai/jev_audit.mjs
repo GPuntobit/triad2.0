@@ -16,11 +16,13 @@
 // model, not a code reader, so "how many errors are in this project" is not one
 // question -- it is one judgment per file, aggregated in code.
 
-import { readFile, writeFile, readdir, stat } from "node:fs/promises";
-import { join, relative, extname, dirname } from "node:path";
+import { constants } from "node:fs";
+import { readFile, writeFile, readdir, stat, lstat, realpath, open } from "node:fs/promises";
+import { join, relative, extname, dirname, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT_REAL = await realpath(ROOT);
 const API_URL = "https://api.typesafe.ai/v1/systemone";
 const MODEL = process.env.TYPESAFE_MODEL || "jev-latest";
 const API_KEY = process.env.TYPESAFE_API_KEY || "";
@@ -62,6 +64,11 @@ const TEXT_EXT = new Set([
 ]);
 const SKIP_NAMES = new Set(["seed.exe", "seed", "triad-native.exe", "triad-native"]);
 
+function isWithinRoot(path) {
+  const rel = relative(ROOT_REAL, path);
+  return rel === "" || (rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel));
+}
+
 // The audit covers the files the project actually ships, i.e. the ones tracked
 // by git. Untracked scratch files in the working tree are not artifacts.
 async function trackedFiles() {
@@ -75,9 +82,45 @@ async function trackedFiles() {
     const base = rel.split("/").pop();
     if (SKIP_NAMES.has(base)) continue;
     if (!TEXT_EXT.has(extname(rel))) continue;
+    const path = join(ROOT, rel);
+    const info = await lstat(path);
+    if (info.isSymbolicLink() || !info.isFile()) continue;
+    if (!isWithinRoot(await realpath(path))) continue;
     out.push(rel);
   }
   return out;
+}
+
+async function readTrackedFile(rel) {
+  const path = join(ROOT, rel);
+  const info = await lstat(path);
+  if (info.isSymbolicLink() || !info.isFile()) {
+    throw new Error(`Refusing to audit non-regular file: ${rel}`);
+  }
+
+  const resolved = await realpath(path);
+  if (!isWithinRoot(resolved)) {
+    throw new Error(`Refusing to audit file outside the repository: ${rel}`);
+  }
+
+  const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);
+  const file = await open(path, flags);
+  try {
+    const openedInfo = await file.stat();
+    const resolvedInfo = await stat(resolved);
+    if (!openedInfo.isFile() || (openedInfo.ino && resolvedInfo.ino &&
+        (openedInfo.dev !== resolvedInfo.dev || openedInfo.ino !== resolvedInfo.ino))) {
+      throw new Error(`Tracked file changed while opening: ${rel}`);
+    }
+
+    const currentPath = await realpath(path);
+    if (currentPath !== resolved || !isWithinRoot(currentPath)) {
+      throw new Error(`Tracked file changed while opening: ${rel}`);
+    }
+    return await file.readFile("utf8");
+  } finally {
+    await file.close();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -284,7 +327,7 @@ async function sweep({ dryRun }) {
   const results = [];
 
   for (const path of files) {
-    const content = await readFile(join(ROOT, path), "utf8");
+    const content = await readTrackedFile(path);
     const state = buildState(path, content, facts);
     const payload = { model: MODEL, state, questions: QUESTIONS };
 
