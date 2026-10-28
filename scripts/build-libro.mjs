@@ -1,4 +1,4 @@
-﻿import { readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
@@ -55,7 +55,7 @@ function namespaceAnchors(md, prefix) {
 function rewriteRepositoryLinks(html) {
   const withLocalLogo = html.replace(
     'src="https://raw.githubusercontent.com/GPuntobit/triad2.0/main/docs/triad-logo.webp"',
-    'src="../triad-logo.webp"'
+    'src="triad-logo.webp"'
   );
   return withLocalLogo.replace(/href="([^"]+)"/g, (match, target) => {
     if (/^(?:https?:|mailto:|#)/.test(target)) return match;
@@ -241,4 +241,5 @@ const html = `<!DOCTYPE html>
 </html>`;
 
 writeFileSync(join(outDir, 'libro.html'), html, 'utf8');
+copyFileSync(join(root, 'docs', 'triad-logo.webp'), join(outDir, 'triad-logo.webp'));
 console.log('scritto', join(outDir, 'libro.html'));
