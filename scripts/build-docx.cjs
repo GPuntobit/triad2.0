@@ -3,10 +3,30 @@ const path = require('path');
 const htmlToDocx = require('html-to-docx');
 
 const root = path.join(__dirname, '..');
-let html = fs.readFileSync(path.join(root, 'docs', 'libro', 'libro.html'), 'utf8');
+const libroDir = path.join(root, 'docs', 'libro');
+let html = fs.readFileSync(path.join(libroDir, 'libro.html'), 'utf8');
 
 // Rimuovi immagini webp (non supportate da tutte le versioni di Word)
 html = html.replace(/<img[^>]*webp[^>]*>/gi, '');
+
+// html-to-docx incorpora solo immagini http(s) o data-URI: le immagini locali
+// (copertina, logo) vanno trasformate in data-URI, altrimenti vengono perse.
+const mimeByExt = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp'
+};
+html = html.replace(/<img\b([^>]*?)\bsrc="([^"]+)"([^>]*)>/gi, (match, before, src, after) => {
+  if (/^(?:data:|https?:)/i.test(src)) return match;
+  const file = path.join(libroDir, decodeURIComponent(src));
+  if (!fs.existsSync(file)) return match;
+  const mime = mimeByExt[path.extname(file).toLowerCase()] || 'application/octet-stream';
+  const data = fs.readFileSync(file).toString('base64');
+  return `<img${before}src="data:${mime};base64,${data}"${after}>`;
+});
 
 (async () => {
   const buffer = await htmlToDocx(html, null, {

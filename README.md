@@ -57,7 +57,7 @@ Triad-Full la padronanza reale si ferma intorno al 39%. Analisi completa sul sit
   prompt di sistema e verificatore automatico.
 - **Implementazione:** il runtime di riferimento è il seed in codice macchina (S0); il piano per un Triad senza linguaggi ospiti è in [BOOTSTRAP.md](BOOTSTRAP.md).
 - **Editor:** [editors/](editors/README.md) — VS Code, Vim/Neovim e voce Linguist per GitHub.
-- **Libro:** [Il libro di Triad](docs/libro/libro.pdf) — frontespizio, manuale e tutorial in un unico PDF (generato con `scripts/build-libro.mjs`).
+- **Libro:** [Il libro di Triad](docs/libro/Il-libro-di-triad.pdf) — frontespizio, manuale e tutorial in un unico PDF (generato da `MANUALE.md` e `TUTORIAL.md` con `scripts/build-libro.mjs`).
 - **Estensione:** `.triad` (canonica), `.td` (alias storico).
 
 ## Avvio

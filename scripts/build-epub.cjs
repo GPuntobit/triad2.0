@@ -12,6 +12,26 @@ const tutorial = fs.readFileSync(path.join(root, 'TUTORIAL.md'), 'utf8');
 
 marked.setOptions({ gfm: true, breaks: false });
 
+function rewriteRepositoryLinks(html) {
+  return html.replace(/href="([^"]+)"/g, (match, target) => {
+    if (/^(?:https?:|mailto:|#)/.test(target)) return match;
+    const path = target.replace(/^\.\//, '');
+    const kind = path.endsWith('/') ? 'tree' : 'blob';
+    return `href="https://github.com/GPuntobit/triad2.0/${kind}/main/${path}"`;
+  });
+}
+
+function stripFirstH1(md) {
+  const lines = md.split(/\r?\n/);
+  let inFence = false;
+  const index = lines.findIndex((line) => {
+    if (/^```/.test(line.trim())) { inFence = !inFence; return false; }
+    return !inFence && /^#\s+/.test(line);
+  });
+  if (index !== -1) lines.splice(index, 1);
+  return lines.join('\n');
+}
+
 // Rimuovi indici interni
 function stripIndice(md, heading, endMarker) {
   const start = md.indexOf(heading);
@@ -27,11 +47,13 @@ function extractHeadings(md, maxLevel) {
   const lines = md.split(/\r?\n/);
   const out = [];
   let inFence = false;
+  let firstH1 = true;
   for (const line of lines) {
     if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
     if (inFence) continue;
     const m = line.match(/^(#{1,6})\s+(.+)$/);
     if (!m || m[1].length > maxLevel) continue;
+    if (m[1].length === 1 && firstH1) { firstH1 = false; continue; }
     const text = m[2].trim();
     if (/[.](triad|td)\b/.test(text)) continue;
     if (/^[a-z]/.test(text)) continue;
@@ -41,7 +63,7 @@ function extractHeadings(md, maxLevel) {
 }
 const manH = extractHeadings(manualeClean, 3);
 const tutH = extractHeadings(tutorialClean, 3);
-let sommarioHtml = '<h1>Sommario</h1><p>Elenco completo di tutti i capitoli e le sezioni.</p>';
+let sommarioHtml = '<p>Elenco completo di tutti i capitoli e le sezioni.</p>';
 sommarioHtml += '<h2>Manuale di Triad 2.0</h2><ul>';
 for (const h of manH) sommarioHtml += '<li>' + h.text + '</li>';
 sommarioHtml += '</ul>';
@@ -68,7 +90,7 @@ blockquote { border-left: 2pt solid #7d5157; margin: 0.8em 0; padding: 0.3em 0.8
 const content = [
   {
     title: 'Prefazione',
-    data: marked.parse(preface)
+    data: rewriteRepositoryLinks(marked.parse(stripFirstH1(preface)))
   },
   {
     title: 'Sommario',
@@ -76,11 +98,11 @@ const content = [
   },
   {
     title: 'Manuale di Triad 2.0',
-    data: marked.parse(manualeClean)
+    data: rewriteRepositoryLinks(marked.parse(stripFirstH1(manualeClean)))
   },
   {
     title: 'Tutorial di Triad 2.0',
-    data: marked.parse(tutorialClean)
+    data: rewriteRepositoryLinks(marked.parse(stripFirstH1(tutorialClean)))
   },
   {
     title: 'Quarta di copertina',
