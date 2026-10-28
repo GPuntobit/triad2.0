@@ -13,7 +13,7 @@ from pathlib import Path
 
 from book_helpers import git_show
 
-ROOT = Path(r"C:\Users\xbos\Documents\progetti\triad2.0")
+ROOT = Path(__file__).resolve().parent
 NODE = r"C:\Users\xbos\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\node\bin\node.exe"
 INTERP = ROOT / "seed" / "dev" / "triad_core.cjs"
 FILES = ["MANUALE.md", "TUTORIAL.md"]
