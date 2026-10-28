@@ -1,4 +1,5 @@
-﻿const RAW_BASE = 'https://raw.githubusercontent.com/GPuntobit/triad2.0/main/';
+﻿/* global DOMPurify */
+const RAW_BASE = 'https://raw.githubusercontent.com/GPuntobit/triad2.0/main/';
 
 const NAV = [
   { href: 'index.html', label: 'Home' },
@@ -82,7 +83,11 @@ async function loadMarkdown(targetId, file) {
     const res = await fetch(RAW_BASE + file);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const md = await res.text();
-    el.innerHTML = marked.parse(md);
+    const safeMarkdown = DOMPurify.sanitize(marked.parse(md), {
+      USE_PROFILES: { html: true },
+      RETURN_DOM_FRAGMENT: true
+    });
+    el.replaceChildren(safeMarkdown);
     el.querySelectorAll('a').forEach(a => {
       const href = a.getAttribute('href');
       if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('mailto:')) {
