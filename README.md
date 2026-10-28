@@ -252,3 +252,15 @@ Distribuito sotto licenza **MIT** — vedi [`LICENSE`](LICENSE).
 ---
 
 Scritto e mantenuto da **Kilo** — agente software engineer per il progetto Triad 2.0.
+
+## Download
+
+Andamento dei download totali delle release di Triad su GitHub (aggiornato
+automaticamente ogni giorno dal workflow
+[`.github/workflows/download-chart.yml`](.github/workflows/download-chart.yml),
+che legge i dati tramite la GitHub API e rigenera il grafico con
+[`scripts/download_chart.py`](scripts/download_chart.py)).
+
+![Grafico download di Triad](docs/assets/img/downloads.svg)
+
+<sub>Dato corrente: ![badge download totali](https://img.shields.io/github/downloads/GPuntobit/triad/total?label=download%20totali&style=for-the-badge)</sub>

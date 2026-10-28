@@ -1,0 +1,44 @@
+name: Download chart
+
+# Rigenera quotidianamente il grafico dei download delle release
+# (docs/assets/img/downloads.svg) usato in fondo al README.md.
+
+on:
+  schedule:
+    - cron: "17 3 * * *"   # ogni giorno ~03:17 UTC
+  workflow_dispatch: {}     # esecuzione manuale da Actions
+  push:
+    paths:
+      - scripts/download_chart.py
+      - .github/workflows/download-chart.yml
+
+permissions:
+  contents: write
+
+jobs:
+  chart:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Genera il grafico download
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIAD_REPO: ${{ github.repository }}
+        run: python3 scripts/download_chart.py
+
+      - name: Commit del grafico aggiornato
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain docs/assets/img/downloads.svg)" ]; then
+            git add docs/assets/img/downloads.svg
+            git commit -m "chore(chart): aggiorna grafico download [skip ci]"
+            git push
+          else
+            echo "Nessuna variazione nel grafico."
+          fi
