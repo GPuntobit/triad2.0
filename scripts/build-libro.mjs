@@ -185,7 +185,7 @@ const html = `<!DOCTYPE html>
   p + p { text-indent: 1.2em; margin-top: 0; }
   a { color: #d0405a; text-decoration: none; }
   code { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace; font-size: 9pt; background: #f3f1f4; padding: 1pt 3pt; border-radius: 2pt; }
-  pre { background: #0d0a0f; color: #f5f5f4; padding: 10pt 12pt; border-radius: 4pt; overflow-x: auto; margin: 8pt 0; border-left: 3pt solid #d0405a; }
+  pre { background: #f3f1f4; color: #1a1a1a; padding: 10pt 12pt; border-radius: 4pt; overflow-x: auto; margin: 8pt 0; border-left: 3pt solid #d0405a; }
   pre code { background: none; color: inherit; padding: 0; font-size: 8.5pt; line-height: 1.4; }
   table { border-collapse: collapse; width: 100%; margin: 10pt 0; font-size: 9.5pt; }
   th, td { border: 0.5pt solid #b8b0aa; padding: 4pt 6pt; }
