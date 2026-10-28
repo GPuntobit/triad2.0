@@ -72,3 +72,7 @@ graphify.skill
 
 # Agent/IDE local state
 .kiro/settings/*.lock
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md

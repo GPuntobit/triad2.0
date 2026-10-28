@@ -64,26 +64,6 @@ function extractHeadings(md, maxLevel) {
   return out;
 }
 
-function buildSommarioHtml() {
-  const manH = extractHeadings(manuale, 3);
-  const tutH = extractHeadings(tutorial, 3);
-  let html = '<h1>Sommario</h1>\n';
-  html += '<p class="sommario-intro">Elenco completo di tutti i capitoli e le sezioni del libro (Manuale + Tutorial).</p>\n';
-  html += '<h2>Manuale di Triad 2.0</h2>\n<ul class="sommario-list">\n';
-  for (const h of manH) {
-    html += '<li class="sl' + h.level + '">' + h.text + '</li>\n';
-  }
-  html += '</ul>\n';
-  html += '<h2>Tutorial di Triad 2.0</h2>\n<ul class="sommario-list">\n';
-  for (const h of tutH) {
-    html += '<li class="sl' + h.level + '">' + h.text + '</li>\n';
-  }
-  html += '</ul>\n';
-  return html;
-}
-
-const sommarioHtml = buildSommarioHtml();
-
 const manualeToc = [];
 const tutorialToc = [];
 const manualeHtml = addHeadingIds(marked.parse(manuale), 'man', manualeToc);
@@ -217,7 +197,6 @@ const html = `<!DOCTYPE html>
     ${prefaceHtml}
   </div>
   <div class="index-page">
-    ${sommarioHtml}
     ${tocHtml}
   </div>
   <div class="part">
