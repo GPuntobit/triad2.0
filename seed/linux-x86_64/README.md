@@ -62,4 +62,9 @@ e non fa parte della catena S0→S4.
   Windows.
 - **E3:** job CI Linux nativo senza Wine.
 
+Nel frattempo la toolchain POSIX è pronta: `./install.sh` decodifica questo seed,
+installa `bin/triad` e `bin/triad-cli` in `~/.local/bin` e i launcher usano
+automaticamente l'interprete JS di riferimento finché il seed resta uno stub E0
+(soglia: 4 KB). Il job CI `linux-toolchain` copre launcher + install + conformance.
+
 Vedi [`../dev/README.md`](../dev/README.md) e [`../../BOOTSTRAP.md`](../../BOOTSTRAP.md).

@@ -42,6 +42,13 @@ chmod +x seed/linux-x86_64/seed
 ./seed/linux-x86_64/seed          # Triad seed Linux OK
 ```
 
+Oppure, per l'installazione completa della toolchain POSIX (launcher in
+`~/.local/bin`, smoke test e voce desktop opzionale):
+
+```sh
+./install.sh              # dalla radice del repository, senza root
+```
+
 ## Verifica
 
 Windows (seed PE):
