@@ -3,6 +3,53 @@
 Le modifiche normative aggiornano anche `VERSION`, la specifica (`SPEC.md`) e, se cambia
 il comportamento, i golden di `conformance/`.
 
+## 0.8.0-beta.3 — 2026-10-29
+
+**Triad 2.0 – Beta 3.** Pre-release della serie Triad 2.0: include *tutti* gli
+aggiornamenti dalla v0.2.0 a oggi (contenuti anche nella v0.3.0, superseded).
+
+### CLI (`cli/`)
+
+- **Comando `run`**: `triad-cli run <file> [-- args]` esegue un programma `.triad`/`.td`
+  con il seed in codice macchina; su Linux/macOS usa l'interprete di riferimento
+  `seed/dev/triad_core.cjs` finché il seed ELF resta E0 (forzabile con `-n/--native`).
+  Exit code propagato, errori di file/parse gestiti con exit 1.
+- **Comandi `ext`** per l'estensione VS Code:
+  - `ext check`: valida `package.json`, grammatica tmLanguage e language-configuration
+    (tutti i JSON controllati); riporta nome, versione, linguaggi ed estensioni.
+  - `ext package`: pacchettizza il `.vsix` con `vsce` globale o `npx --yes @vscode/vsce`;
+    supporta `-o/--out`.
+- **Modularità**: nuovi moduli `cli/lib/commands/run.mjs` e `cli/lib/commands/ext.mjs`;
+  `status` e gli help aggiornati, README CLI esteso con le sezioni "Run" ed
+  "Estensione VS Code".
+
+### Tooling editor
+
+- Estensione VS Code `editors/vscode` (Triad v0.2.0, linguaggi `triad`, estensioni
+  `.triad`/`.td`) verificata e pacchetizzabile da CLI (`ext check` / `ext package`).
+
+### Conformità e standard
+
+- Nuovo caso Core `gcd` (Euclide, ricorsione e `%`); la suite Core ha 37 casi.
+- Golden versionati: `conformance/**/expected.out` e `expected.code` tracciati;
+  il runner accetta `expected.golden` come copia di riserva.
+- `conformance/run.mjs` usa l'interprete `seed/dev/triad_core.cjs` su Linux/macOS
+  (seed ELF ancora E0) e fallisce con `golden mancante` invece di confrontare con
+  stdout vuoto.
+- Julia rimossa dal repository (`triad.jl`, `syntax.jl`, `test/`,
+  `bin/build_standalone.jl`); la CI usa solo Node e il seed.
+
+### Manutenzione e dipendenze
+
+- Dipendenza `esbuild` aggiornata a 0.28.1 (PR #21, dependabot).
+- `*.vsix` aggiunto a `.gitignore` come artefatto generato.
+- Aggiunta `LICENSE` MIT; inclusi nel repository i binari del seed
+  (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`).
+
+### Documentazione
+
+- Note di rilascio `RELEASE_NOTES_v0.8.0-beta.3.md`; descrizione PR in `PULL_REQUEST.md`.
+
 ## 0.3.0 — 2026-10-29
 
 ### CLI (`cli/`)
