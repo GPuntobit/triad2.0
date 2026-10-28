@@ -1,6 +1,6 @@
 """Shared helpers for the local book validation scripts."""
 import os
-import subprocess
+import subprocess  # nosec B404
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
