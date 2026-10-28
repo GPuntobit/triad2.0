@@ -11,6 +11,8 @@ multiple dispatch, programmazione logica integrata, codice come dato. La sua def
 una specifica normativa indipendente dall'implementazione ([SPEC.md](SPEC.md), standard
 0.2.0) con una suite di conformità eseguibile ([conformance/](conformance/README.md)).
 
+https://github.com/user-attachments/assets/2e01cb37-ea17-44af-a92b-7636bdaee3d5
+
 <p align="center">
   <video src="docs/assets/video/anteprima-codice.mp4" controls width="552"></video>
   <br><sub>Un programma Triad-Core digitato ed eseguito (output reale dell'interprete JS, ~35 s in loop). Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
