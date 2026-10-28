@@ -2,16 +2,16 @@
 
 ## Descrizione breve (per l'anteprima della newsletter)
 
-**Triad — il linguaggio di programmazione nato da un'idea "impossibile"**
+### Triad — il linguaggio di programmazione nato da un'idea "impossibile"
 
 Da sogno irrealizzabile a realtà: Triad è un linguaggio di programmazione creato
 da una sola persona, con l'aiuto dell'intelligenza artificiale. Sintassi essenziale,
 un interprete trasparente, tooling completo (CLI, estensione VS Code, playground
-online) e una community che cresce release dopo release. Scopri il diario di viaggio,
-prova il playground e contribuisci al progetto open source.
+online) e una community che cresce release dopo release. Scopri il diario di
+viaggio, prova il playground e contribuisci al progetto open source.
 
-🔗 Repo: https://github.com/GPuntobit/triad
-🎮 Playground: https://gpuntobit.github.io/triad/pages/playground.html
+🔗 Repo: <https://github.com/GPuntobit/triad>
+🎮 Playground: <https://gpuntobit.github.io/triad/pages/playground.html>
 
 ---
 
@@ -54,22 +54,22 @@ storia fa per te.
 
 ### 🔗 Link utili
 
-- GitHub: https://github.com/GPuntobit/triad
-- Sito e playground: https://gpuntobit.github.io/triad/
-- Prova ora: https://gpuntobit.github.io/triad/pages/playground.html
+- GitHub: <https://github.com/GPuntobit/triad>
+- Sito e playground: <https://gpuntobit.github.io/triad/>
+- Prova ora: <https://gpuntobit.github.io/triad/pages/playground.html>
 
 💬 Quale "progetto impossibile" stai portando avanti? Raccontamelo nei commenti.
 
-\#Triad #LinguaggiDiProgrammazione #OpenSource #AI #ProgrammingLanguages
-#DevCommunity #SideProject #VSCode #GitHubPages #IntelligenzaArtificiale
+\#Triad \#LinguaggiDiProgrammazione \#OpenSource \#AI \#ProgrammingLanguages
+\#DevCommunity \#SideProject \#VSCode \#GitHubPages \#IntelligenzaArtificiale
 
 ---
 
 ## Variante breve (max ~500 caratteri, per anteprima mobile)
 
 🚀 Da idea "impossibile" a linguaggio vero: **Triad 2.0 Beta 3** è pronto.
-Parser, interprete, CLI, estensione VS Code, playground online e documentazione —
-tutto creato da una sola persona con l'aiuto dell'IA.
-Provalo nel browser 👉 https://gpuntobit.github.io/triad/pages/playground.html
-Repo 👉 https://github.com/GPuntobit/triad
+Parser, interprete, CLI, estensione VS Code, playground online e
+documentazione — tutto creato da una sola persona con l'aiuto dell'IA.
+Provalo nel browser 👉 <https://gpuntobit.github.io/triad/pages/playground.html>
+Repo 👉 <https://github.com/GPuntobit/triad>
 \#Triad \#OpenSource \#AI \#ProgrammingLanguages
