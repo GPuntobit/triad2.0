@@ -47,6 +47,43 @@ function stripIndice(md, heading, endMarker) {
 const manuale = stripIndice(manualeRaw, '### Indice', '\n<a id="parte-1">');
 const tutorial = stripIndice(tutorialRaw, '## Indice', '\n<a id="parte-1">');
 
+function extractHeadings(md, maxLevel) {
+  const lines = md.split(/\r?\n/);
+  const out = [];
+  let inFence = false;
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    const m = line.match(/^(#{1,6})\s+(.+)$/);
+    if (!m || m[1].length > maxLevel) continue;
+    const text = m[2].trim();
+    if (/[.](triad|td)\b/.test(text)) continue;
+    if (/^[a-zàèéìòù]/.test(text)) continue;
+    out.push({ level: m[1].length, text });
+  }
+  return out;
+}
+
+function buildSommarioHtml() {
+  const manH = extractHeadings(manuale, 3);
+  const tutH = extractHeadings(tutorial, 3);
+  let html = '<h1>Sommario</h1>\n';
+  html += '<p class="sommario-intro">Elenco completo di tutti i capitoli e le sezioni del libro (Manuale + Tutorial).</p>\n';
+  html += '<h2>Manuale di Triad 2.0</h2>\n<ul class="sommario-list">\n';
+  for (const h of manH) {
+    html += '<li class="sl' + h.level + '">' + h.text + '</li>\n';
+  }
+  html += '</ul>\n';
+  html += '<h2>Tutorial di Triad 2.0</h2>\n<ul class="sommario-list">\n';
+  for (const h of tutH) {
+    html += '<li class="sl' + h.level + '">' + h.text + '</li>\n';
+  }
+  html += '</ul>\n';
+  return html;
+}
+
+const sommarioHtml = buildSommarioHtml();
+
 const manualeToc = [];
 const tutorialToc = [];
 const manualeHtml = addHeadingIds(marked.parse(manuale), 'man', manualeToc);
@@ -150,6 +187,12 @@ const html = `<!DOCTYPE html>
   hr { border: none; border-top: 0.5pt solid #7d5157; margin: 14pt 0; }
   .cover { page-break-after: always; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; text-align: center; }
   .cover img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; margin: auto; }
+  .sommario-page { page-break-after: always; }
+  .sommario-list { list-style: none; padding-left: 0; }
+  .sommario-list .sl1 { font-weight: bold; margin-top: 8pt; }
+  .sommario-list .sl2 { padding-left: 14pt; font-size: 10pt; }
+  .sommario-list .sl3 { padding-left: 28pt; font-size: 9pt; }
+  .sommario-intro { font-style: italic; color: #555; font-size: 10pt; }
   .preface-page { page-break-after: always; }
   .backcover-page { page-break-before: always; }
   .backcover { background: #0d0a0f; color: #f5f5f4; padding: 24pt 18pt; min-height: 100%; }
@@ -172,6 +215,9 @@ const html = `<!DOCTYPE html>
   <div class="cover" style="text-align:center"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
   <div class="preface-page">
     ${prefaceHtml}
+  </div>
+  <div class="sommario-page">
+    ${sommarioHtml}
   </div>
   <div class="part">
     ${manualeHtml}
