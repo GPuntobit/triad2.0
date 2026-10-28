@@ -106,7 +106,7 @@ const options = {
   lang: 'it'
 };
 
-const epub = new Epub(options, path.join(outDir, 'libro.epub'));
+const epub = new Epub(options, path.join(outDir, 'Il-libro-di-Triad.epub'));
 epub.promise.then(() => {
   console.log('scritto libro.epub');
 }).catch(err => {
