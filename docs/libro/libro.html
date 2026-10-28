@@ -4,25 +4,34 @@
 <meta charset="utf-8">
 <title>Il libro di Triad</title>
 <style>
-  @page { size: A4; margin: 20mm 18mm; }
-  html, body { font-family: 'Liberation Serif', 'Times New Roman', 'DejaVu Serif', Georgia, serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; }
-  h1, h2, h3, h4 { font-family: 'Liberation Sans', 'Helvetica Neue', Arial, sans-serif; color: #0d0a0f; page-break-after: avoid; }
-  h1 { font-size: 20pt; margin-top: 24pt; border-bottom: 1pt solid #7d5157; padding-bottom: 4pt; }
-  h2 { font-size: 15pt; margin-top: 18pt; }
-  h3 { font-size: 12.5pt; margin-top: 14pt; }
-  p { margin: 6pt 0; text-align: justify; }
+  @page { size: 152.4mm 228.6mm; margin: 15mm 12mm; @bottom-center { content: counter(page); font-size: 9pt; color: #666; } }
+  @page :first { margin: 0; }
+  html, body { font-family: 'Liberation Serif', 'Times New Roman', 'DejaVu Serif', Georgia, serif; font-size: 10.5pt; line-height: 1.6; color: #1a1a1a; }
+  h1, h2, h3, h4 { font-family: 'Liberation Sans', 'Helvetica Neue', Arial, sans-serif; color: #0d0a0f; page-break-after: avoid; margin-top: 18pt; margin-bottom: 6pt; }
+  h1 { font-size: 18pt; margin-top: 24pt; border-bottom: 1.2pt solid #7d5157; padding-bottom: 4pt; }
+  h2 { font-size: 13.5pt; margin-top: 16pt; color: #2a1a1f; }
+  h3 { font-size: 11.5pt; margin-top: 12pt; color: #3a2a2f; }
+  p { margin: 6pt 0 8pt 0; text-align: justify; orphans: 3; widows: 3; text-indent: 0; }
+  p + p { text-indent: 1.2em; margin-top: 0; }
   a { color: #d0405a; text-decoration: none; }
-  code { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace; font-size: 9.5pt; background: #f3f1f4; padding: 1pt 3pt; border-radius: 2pt; }
-  pre { background: #0d0a0f; color: #f5f5f4; padding: 10pt; border-radius: 4pt; overflow-x: auto; page-break-inside: avoid; }
-  pre code { background: none; color: inherit; padding: 0; font-size: 9pt; }
-  table { border-collapse: collapse; width: 100%; margin: 8pt 0; page-break-inside: avoid; }
-  th, td { border: 0.5pt solid #b8b0aa; padding: 4pt 6pt; font-size: 9.5pt; }
+  code { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace; font-size: 9pt; background: #f3f1f4; padding: 1pt 3pt; border-radius: 2pt; }
+  pre { background: #0d0a0f; color: #f5f5f4; padding: 10pt 12pt; border-radius: 4pt; overflow-x: auto; page-break-inside: avoid; margin: 8pt 0; border-left: 3pt solid #d0405a; }
+  pre code { background: none; color: inherit; padding: 0; font-size: 8.5pt; line-height: 1.4; }
+  table { border-collapse: collapse; width: 100%; margin: 10pt 0; page-break-inside: avoid; font-size: 9.5pt; }
+  th, td { border: 0.5pt solid #b8b0aa; padding: 4pt 6pt; }
   th { background: #ece8e4; font-weight: bold; }
+  tr:nth-child(even) td { background: #f7f5f3; }
   img { max-width: 100%; }
-  blockquote { border-left: 2pt solid #7d5157; margin: 8pt 0; padding: 4pt 10pt; color: #444; font-style: italic; }
-  hr { border: none; border-top: 0.5pt solid #7d5157; margin: 12pt 0; }
-  .cover { page-break-after: always; text-align: center; }
-  .cover img { width: 100%; height: auto; }
+  blockquote { border-left: 2pt solid #7d5157; margin: 8pt 0; padding: 4pt 10pt; color: #444; font-style: italic; background: #f9f7f5; }
+  hr { border: none; border-top: 0.5pt solid #7d5157; margin: 14pt 0; }
+  .cover { page-break-after: always; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; text-align: center; }
+  .cover img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; margin: auto; }
+  .preface-page { page-break-after: always; }
+  .backcover-page { page-break-before: always; }
+  .backcover { background: #0d0a0f; color: #f5f5f4; padding: 24pt 18pt; min-height: 100%; }
+  .backcover h1 { color: #f5f5f4; border-color: #7d5157; }
+  .backcover p { text-align: justify; font-size: 10.5pt; line-height: 1.6; }
+  .backcover code { background: #1a1520; color: #f5f5f4; }
   .toc { page-break-after: always; }
   .toc-list { list-style: none; padding-left: 0; }
   .toc-list li { margin: 2pt 0; font-size: 10pt; }
@@ -30,250 +39,55 @@
   .toc-list .toc-l2 { padding-left: 14pt; }
   .toc-list .toc-l3 { padding-left: 28pt; font-size: 9pt; }
   .part { page-break-before: always; }
-  ul, ol { margin: 6pt 0 6pt 18pt; }
-  li { margin: 2pt 0; }
+  ul, ol { margin: 6pt 0 8pt 18pt; }
+  li { margin: 3pt 0; }
+  strong { color: #0d0a0f; }
 </style>
 </head>
 <body>
-  <div class="cover"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
-  <div class="toc"><h1>Indice</h1>
-<h2>Manuale di Triad 2.0</h2>
-<ul class="toc-list">
-<li class="toc-l2"><a href="#man-come-leggere-questo-manuale">Come leggere questo manuale</a></li>
-<li class="toc-l3"><a href="#man-a-chi-e-indirizzato">A chi è indirizzato</a></li>
-<li class="toc-l3"><a href="#man-due-profili-una-sola-lingua">Due profili, una sola lingua</a></li>
-<li class="toc-l3"><a href="#man-convenzioni-di-notazione">Convenzioni di notazione</a></li>
-<li class="toc-l3"><a href="#man-come-eseguire-gli-esempi">Come eseguire gli esempi</a></li>
-<li class="toc-l3"><a href="#man-indice">Indice</a></li>
-<li class="toc-l1"><a href="#man-parte-i-il-linguaggio">Parte I — Il linguaggio</a></li>
-<li class="toc-l2"><a href="#man-1-lessico">1. Lessico</a></li>
-<li class="toc-l3"><a href="#man-1-1-identificatori">1.1 Identificatori</a></li>
-<li class="toc-l3"><a href="#man-1-2-numeri">1.2 Numeri</a></li>
-<li class="toc-l3"><a href="#man-1-3-stringhe">1.3 Stringhe</a></li>
-<li class="toc-l3"><a href="#man-1-4-simboli">1.4 Simboli</a></li>
-<li class="toc-l3"><a href="#man-1-5-commenti">1.5 Commenti</a></li>
-<li class="toc-l3"><a href="#man-1-6-separatori-e-fine-riga">1.6 Separatori e fine-riga</a></li>
-<li class="toc-l3"><a href="#man-1-7-la-regola-dei-due-punti-e-del-punto-interrogativo">1.7 La regola dei due punti e del punto interrogativo</a></li>
-<li class="toc-l3"><a href="#man-1-8-parole-chiave">1.8 Parole chiave</a></li>
-<li class="toc-l2"><a href="#man-2-valori-e-tipi">2. Valori e tipi</a></li>
-<li class="toc-l3"><a href="#man-2-1-i-tipi">2.1 I tipi</a></li>
-<li class="toc-l3"><a href="#man-2-2-gerarchia-dei-tipi">2.2 Gerarchia dei tipi</a></li>
-<li class="toc-l3"><a href="#man-2-3-struct">2.3 Struct</a></li>
-<li class="toc-l3"><a href="#man-2-4-conversioni">2.4 Conversioni</a></li>
-<li class="toc-l3"><a href="#man-2-5-asserzione-di-tipo">2.5 Asserzione di tipo</a></li>
-<li class="toc-l3"><a href="#man-2-6-il-vincolo-del-dichiarato">2.6 Il vincolo del dichiarato</a></li>
-<li class="toc-l3"><a href="#man-2-7-le-condizioni-accettano-solo-bool">2.7 Le condizioni accettano solo Bool</a></li>
-<li class="toc-l3"><a href="#man-2-8-come-stampa-un-valore">2.8 Come stampa un valore</a></li>
-<li class="toc-l2"><a href="#man-3-variabili-e-assegnamento">3. Variabili e assegnamento</a></li>
-<li class="toc-l2"><a href="#man-4-operatori-e-precedenza">4. Operatori e precedenza</a></li>
-<li class="toc-l3"><a href="#man-4-1-aritmetica-intera">4.1 Aritmetica intera</a></li>
-<li class="toc-l3"><a href="#man-4-2-logica-e-confronti">4.2 Logica e confronti</a></li>
-<li class="toc-l2"><a href="#man-5-controllo-di-flusso">5. Controllo di flusso</a></li>
-<li class="toc-l3"><a href="#man-5-1-if-elseif-else-core">5.1 if / elseif / else [Core]</a></li>
-<li class="toc-l3"><a href="#man-5-2-while-break-continue-core">5.2 while, break, continue [Core]</a></li>
-<li class="toc-l3"><a href="#man-5-3-let-e-begin-core">5.3 let e begin [Core]</a></li>
-<li class="toc-l3"><a href="#man-5-4-for-e-i-range-full">5.4 for e i range [Full]</a></li>
-<li class="toc-l3"><a href="#man-5-5-le-comprehension-full">5.5 Le comprehension [Full]</a></li>
-<li class="toc-l3"><a href="#man-5-6-try-catch-full">5.6 try / catch [Full]</a></li>
-<li class="toc-l2"><a href="#man-6-funzioni">6. Funzioni</a></li>
-<li class="toc-l3"><a href="#man-6-1-tre-forme-di-definizione-core">6.1 Tre forme di definizione [Core]</a></li>
-<li class="toc-l3"><a href="#man-6-2-return-ricorsione-arita">6.2 return, ricorsione, arità</a></li>
-<li class="toc-l3"><a href="#man-6-3-funzioni-di-ordine-superiore">6.3 Funzioni di ordine superiore</a></li>
-<li class="toc-l3"><a href="#man-6-4-l-39-annotazione-di-effetto-io">6.4 L&#39;annotazione di effetto !io</a></li>
-<li class="toc-l2"><a href="#man-7-tipi-e-multiple-dispatch">7. Tipi e multiple dispatch</a></li>
-<li class="toc-l3"><a href="#man-7-1-il-tipo-di-ritorno">7.1 Il tipo di ritorno</a></li>
-<li class="toc-l3"><a href="#man-7-2-funzioni-locali">7.2 Funzioni locali</a></li>
-<li class="toc-l2"><a href="#man-8-lambda-chiusure-e-scope">8. Lambda, chiusure e scope</a></li>
-<li class="toc-l3"><a href="#man-8-1-lambda-core">8.1 Lambda [Core]</a></li>
-<li class="toc-l3"><a href="#man-8-2-chiusure">8.2 Chiusure</a></li>
-<li class="toc-l3"><a href="#man-8-3-le-regole-di-scope">8.3 Le regole di scope</a></li>
-<li class="toc-l2"><a href="#man-9-liste">9. Liste</a></li>
-<li class="toc-l2"><a href="#man-10-stringhe-simboli-e-conversioni">10. Stringhe, simboli e conversioni</a></li>
-<li class="toc-l2"><a href="#man-11-errori-come-dati">11. Errori come dati</a></li>
-<li class="toc-l3"><a href="#man-11-1-la-forma-err">11.1 La forma Err</a></li>
-<li class="toc-l3"><a href="#man-11-2-produrre-e-propagare">11.2 Produrre e propagare</a></li>
-<li class="toc-l3"><a href="#man-11-3-le-categorie-di-errore">11.3 Le categorie di errore</a></li>
-<li class="toc-l3"><a href="#man-11-4-in-core-errori-come-liste-taggate">11.4 In Core: errori come liste taggate</a></li>
-<li class="toc-l2"><a href="#man-12-contratti">12. Contratti</a></li>
-<li class="toc-l2"><a href="#man-13-budget">13. Budget</a></li>
-<li class="toc-l2"><a href="#man-14-tracce">14. Tracce</a></li>
-<li class="toc-l3"><a href="#man-glossario-degli-eventi-di-traccia-porte-di-byrd">Glossario degli eventi di traccia (porte di Byrd)</a></li>
-<li class="toc-l2"><a href="#man-15-effetti-dichiarati">15. Effetti dichiarati</a></li>
-<li class="toc-l2"><a href="#man-16-logica">16. Logica</a></li>
-<li class="toc-l3"><a href="#man-16-1-fatti-regole-termini">16.1 Fatti, regole, termini</a></li>
-<li class="toc-l3"><a href="#man-16-2-i-goal">16.2 I goal</a></li>
-<li class="toc-l3"><a href="#man-16-3-solve-e-un-valore">16.3 solve è un valore</a></li>
-<li class="toc-l3"><a href="#man-16-4-un-predicato-usato-come-funzione">16.4 Un predicato usato come funzione</a></li>
-<li class="toc-l3"><a href="#man-16-5-esempi">16.5 Esempi</a></li>
-<li class="toc-l2"><a href="#man-17-codice-come-dato">17. Codice come dato</a></li>
-<li class="toc-l3"><a href="#man-17-1-quote-unquote-eval">17.1 Quote, unquote, eval</a></li>
-<li class="toc-l2"><a href="#man-18-macro">18. Macro</a></li>
-<li class="toc-l3"><a href="#man-18-1-codice-che-genera-codice">18.1 Codice che genera codice</a></li>
-<li class="toc-l2"><a href="#man-19-builtin">19. Builtin</a></li>
-<li class="toc-l2"><a href="#man-20-riga-di-comando-e-repl">20. Riga di comando e REPL</a></li>
-<li class="toc-l3"><a href="#man-20-1-il-repl">20.1 Il REPL</a></li>
-<li class="toc-l2"><a href="#man-21-primitivi-di-bootstrap">21. Primitivi di bootstrap</a></li>
-<li class="toc-l2"><a href="#man-22-stile-e-pattern-idiomatici">22. Stile e pattern idiomatici</a></li>
-<li class="toc-l3"><a href="#man-22-1-funzioni-di-ordine-superiore-scritte-in-core">22.1 Funzioni di ordine superiore scritte in Core</a></li>
-<li class="toc-l3"><a href="#man-22-2-record-come-liste-taggate">22.2 Record come liste taggate</a></li>
-<li class="toc-l3"><a href="#man-22-3-ambiente-come-lista-di-associazioni">22.3 Ambiente come lista di associazioni</a></li>
-<li class="toc-l3"><a href="#man-22-4-stato-mutabile-condiviso">22.4 Stato mutabile condiviso</a></li>
-<li class="toc-l3"><a href="#man-22-5-costruire-stringhe">22.5 Costruire stringhe</a></li>
-<li class="toc-l3"><a href="#man-22-6-regole-di-stile">22.6 Regole di stile</a></li>
-<li class="toc-l1"><a href="#man-parte-ii-esercizi">Parte II — Esercizi</a></li>
-<li class="toc-l2"><a href="#man-23-esercizi-guidati-triad-core">23. Esercizi guidati (Triad-Core)</a></li>
-<li class="toc-l3"><a href="#man-esercizio-1-potenza-e-somme">Esercizio 1 — Potenza e somme</a></li>
-<li class="toc-l3"><a href="#man-esercizio-2-numeri-primi">Esercizio 2 — Numeri primi</a></li>
-<li class="toc-l3"><a href="#man-esercizio-3-inverti-una-lista">Esercizio 3 — Inverti una lista</a></li>
-<li class="toc-l3"><a href="#man-esercizio-4-ordinamento-per-inserzione">Esercizio 4 — Ordinamento per inserzione</a></li>
-<li class="toc-l3"><a href="#man-esercizio-5-contatore-di-parole">Esercizio 5 — Contatore di parole</a></li>
-<li class="toc-l3"><a href="#man-esercizio-6-un-mini-tokenizer">Esercizio 6 — Un mini-tokenizer</a></li>
-<li class="toc-l3"><a href="#man-esercizio-7-valutare-un-39-espressione">Esercizio 7 — Valutare un&#39;espressione</a></li>
-<li class="toc-l3"><a href="#man-esercizio-8-un-ambiente-a-dizionario">Esercizio 8 — Un ambiente a dizionario</a></li>
-<li class="toc-l2"><a href="#man-24-esercizi-su-triad-full">24. Esercizi su Triad-Full</a></li>
-<li class="toc-l3"><a href="#man-esercizio-9-dispatch-su-struct">Esercizio 9 — Dispatch su struct</a></li>
-<li class="toc-l3"><a href="#man-esercizio-10-una-base-di-conoscenza">Esercizio 10 — Una base di conoscenza</a></li>
-<li class="toc-l3"><a href="#man-esercizio-11-contratti-in-pratica">Esercizio 11 — Contratti in pratica</a></li>
-<li class="toc-l3"><a href="#man-esercizio-12-una-macro-che-misura">Esercizio 12 — Una macro che misura</a></li>
-<li class="toc-l1"><a href="#man-parte-iii-riferimento">Parte III — Riferimento</a></li>
-<li class="toc-l2"><a href="#man-25-grammatica">25. Grammatica</a></li>
-<li class="toc-l3"><a href="#man-25-1-triad-core-ebnf-normativa">25.1 Triad-Core (EBNF normativa)</a></li>
-<li class="toc-l3"><a href="#man-25-2-triad-full-ebnf-normativa">25.2 Triad-Full (EBNF normativa)</a></li>
-<li class="toc-l2"><a href="#man-26-schede-rapide">26. Schede rapide</a></li>
-<li class="toc-l3"><a href="#man-26-1-valori">26.1 Valori</a></li>
-<li class="toc-l3"><a href="#man-26-2-controllo-di-flusso">26.2 Controllo di flusso</a></li>
-<li class="toc-l3"><a href="#man-26-3-funzioni">26.3 Funzioni</a></li>
-<li class="toc-l2"><a href="#man-27-tabella-degli-errori">27. Tabella degli errori</a></li>
-<li class="toc-l3"><a href="#man-27-1-in-core">27.1 In Core</a></li>
-<li class="toc-l3"><a href="#man-27-2-in-triad-full">27.2 In Triad-Full</a></li>
-<li class="toc-l2"><a href="#man-28-glossario">28. Glossario</a></li>
-<li class="toc-l2"><a href="#man-29-cosa-gira-oggi">29. Cosa gira oggi</a></li>
-<li class="toc-l1"><a href="#man-appendice-a-influenze-dichiarate">Appendice A — Influenze dichiarate</a></li>
-<li class="toc-l1"><a href="#man-appendice-b-dove-guardare">Appendice B — Dove guardare</a></li>
-</ul>
-<h2>Tutorial di Triad 2.0</h2>
-<ul class="toc-list">
-<li class="toc-l2"><a href="#tut-come-usare-questa-wiki">Come usare questa wiki</a></li>
-<li class="toc-l2"><a href="#tut-indice">Indice</a></li>
-<li class="toc-l1"><a href="#tut-parte-i-primi-passi">Parte I — Primi passi</a></li>
-<li class="toc-l2"><a href="#tut-1-cos-39-e-triad">1. Cos&#39;è Triad</a></li>
-<li class="toc-l3"><a href="#tut-1-1-due-profili-core-e-full">1.1 Due profili: Core e Full</a></li>
-<li class="toc-l3"><a href="#tut-1-2-la-catena-di-bootstrap">1.2 La catena di bootstrap</a></li>
-<li class="toc-l2"><a href="#tut-2-installare-ed-eseguire">2. Installare ed eseguire</a></li>
-<li class="toc-l3"><a href="#tut-2-1-requisiti">2.1 Requisiti</a></li>
-<li class="toc-l3"><a href="#tut-2-2-eseguire-un-file">2.2 Eseguire un file</a></li>
-<li class="toc-l3"><a href="#tut-2-3-materializzare-il-seed">2.3 Materializzare il seed</a></li>
-<li class="toc-l3"><a href="#tut-2-4-launcher-bin-triad-e-bin-triad-cmd">2.4 Launcher bin/triad e bin/triad.cmd</a></li>
-<li class="toc-l3"><a href="#tut-2-5-codici-di-uscita">2.5 Codici di uscita</a></li>
-<li class="toc-l3"><a href="#tut-2-6-la-cli-di-sviluppo-in-breve">2.6 La CLI di sviluppo in breve</a></li>
-<li class="toc-l2"><a href="#tut-3-il-primo-programma">3. Il primo programma</a></li>
-<li class="toc-l3"><a href="#tut-3-1-argomenti-da-riga-di-comando">3.1 Argomenti da riga di comando</a></li>
-<li class="toc-l3"><a href="#tut-3-2-il-ciclo-di-lavoro-consigliato">3.2 Il ciclo di lavoro consigliato</a></li>
-<li class="toc-l1"><a href="#tut-parte-ii-triad-core-passo-per-passo-eseguibile-oggi">Parte II — Triad-Core passo per passo (eseguibile oggi)</a></li>
-<li class="toc-l2"><a href="#tut-4-lessico">4. Lessico</a></li>
-<li class="toc-l2"><a href="#tut-5-valori-tipi-e-stampa">5. Valori, tipi e stampa</a></li>
-<li class="toc-l3"><a href="#tut-5-1-regole-di-stampa-di-print-println">5.1 Regole di stampa di print/println</a></li>
-<li class="toc-l3"><a href="#tut-5-2-uguaglianza">5.2 Uguaglianza</a></li>
-<li class="toc-l2"><a href="#tut-6-variabili-e-assegnamento">6. Variabili e assegnamento</a></li>
-<li class="toc-l2"><a href="#tut-7-operatori-ed-espressioni">7. Operatori ed espressioni</a></li>
-<li class="toc-l3"><a href="#tut-7-1-precedenza-dalla-piu-bassa-alla-piu-alta">7.1 Precedenza (dalla più bassa alla più alta)</a></li>
-<li class="toc-l3"><a href="#tut-7-2-aritmetica-intera">7.2 Aritmetica intera</a></li>
-<li class="toc-l3"><a href="#tut-7-3-logica-e-condizioni">7.3 Logica e condizioni</a></li>
-<li class="toc-l2"><a href="#tut-8-controllo-di-flusso">8. Controllo di flusso</a></li>
-<li class="toc-l3"><a href="#tut-8-1-if-elseif-else">8.1 if / elseif / else</a></li>
-<li class="toc-l3"><a href="#tut-8-2-while-break-continue">8.2 while, break, continue</a></li>
-<li class="toc-l3"><a href="#tut-8-3-let-e-begin">8.3 let e begin</a></li>
-<li class="toc-l2"><a href="#tut-9-funzioni">9. Funzioni</a></li>
-<li class="toc-l3"><a href="#tut-9-1-tre-modi-di-definire-una-funzione">9.1 Tre modi di definire una funzione</a></li>
-<li class="toc-l3"><a href="#tut-9-2-return-ricorsione-arita">9.2 return, ricorsione, arità</a></li>
-<li class="toc-l3"><a href="#tut-9-3-annotazione-di-effetto-io">9.3 Annotazione di effetto !io</a></li>
-<li class="toc-l2"><a href="#tut-10-lambda-chiusure-e-scope">10. Lambda, chiusure e scope</a></li>
-<li class="toc-l3"><a href="#tut-10-1-lambda">10.1 Lambda</a></li>
-<li class="toc-l3"><a href="#tut-10-2-chiusure">10.2 Chiusure</a></li>
-<li class="toc-l3"><a href="#tut-10-3-regole-di-scope">10.3 Regole di scope</a></li>
-<li class="toc-l2"><a href="#tut-11-liste">11. Liste</a></li>
-<li class="toc-l2"><a href="#tut-12-stringhe-simboli-e-conversioni">12. Stringhe, simboli e conversioni</a></li>
-<li class="toc-l2"><a href="#tut-13-primitivi-di-bootstrap">13. Primitivi di bootstrap</a></li>
-<li class="toc-l2"><a href="#tut-14-errori-di-esecuzione">14. Errori di esecuzione</a></li>
-<li class="toc-l3"><a href="#tut-14-1-errori-come-valori-in-core">14.1 Errori come valori, in Core</a></li>
-<li class="toc-l2"><a href="#tut-15-interprete-js-e-seed-windows-differenze">15. Interprete JS e seed Windows: differenze</a></li>
-<li class="toc-l2"><a href="#tut-16-pattern-idiomatici-triad-core">16. Pattern idiomatici Triad-Core</a></li>
-<li class="toc-l3"><a href="#tut-16-1-funzioni-di-ordine-superiore-scritte-in-core">16.1 Funzioni di ordine superiore scritte in Core</a></li>
-<li class="toc-l3"><a href="#tut-16-2-record-come-liste-taggate">16.2 Record come liste taggate</a></li>
-<li class="toc-l3"><a href="#tut-16-3-ambiente-come-lista-di-associazioni">16.3 Ambiente come lista di associazioni</a></li>
-<li class="toc-l3"><a href="#tut-16-4-stato-mutabile-condiviso">16.4 Stato mutabile condiviso</a></li>
-<li class="toc-l3"><a href="#tut-16-5-costruire-stringhe">16.5 Costruire stringhe</a></li>
-<li class="toc-l3"><a href="#tut-16-6-stile">16.6 Stile</a></li>
-<li class="toc-l2"><a href="#tut-17-esercizi-guidati">17. Esercizi guidati</a></li>
-<li class="toc-l3"><a href="#tut-esercizio-1-potenza-e-somme">Esercizio 1 — Potenza e somme</a></li>
-<li class="toc-l3"><a href="#tut-esercizio-2-numeri-primi">Esercizio 2 — Numeri primi</a></li>
-<li class="toc-l3"><a href="#tut-esercizio-3-inverti-una-lista">Esercizio 3 — Inverti una lista</a></li>
-<li class="toc-l3"><a href="#tut-esercizio-4-ordinamento-per-inserzione">Esercizio 4 — Ordinamento per inserzione</a></li>
-<li class="toc-l3"><a href="#tut-esercizio-5-contatore-di-parole">Esercizio 5 — Contatore di parole</a></li>
-<li class="toc-l3"><a href="#tut-esercizio-6-un-mini-tokenizer">Esercizio 6 — Un mini-tokenizer</a></li>
-<li class="toc-l3"><a href="#tut-esercizio-7-valutare-un-39-espressione">Esercizio 7 — Valutare un&#39;espressione</a></li>
-<li class="toc-l1"><a href="#tut-parte-iii-triad-full-lo-standard-completo">Parte III — Triad-Full (lo standard completo)</a></li>
-<li class="toc-l2"><a href="#tut-18-lessico-e-tipi-full-spec-1-4">18. Lessico e tipi Full (SPEC §1, §4)</a></li>
-<li class="toc-l2"><a href="#tut-19-funzioni-tipate-e-multiple-dispatch-spec-5">19. Funzioni tipate e multiple dispatch (SPEC §5)</a></li>
-<li class="toc-l2"><a href="#tut-20-struct-spec-4">20. Struct (SPEC §4)</a></li>
-<li class="toc-l2"><a href="#tut-21-controllo-di-flusso-full-for-range-comprehension-try-spec-2">21. Controllo di flusso Full: for, range, comprehension, try (SPEC §2)</a></li>
-<li class="toc-l2"><a href="#tut-22-logica-fatti-regole-solve-spec-6">22. Logica: fatti, regole, solve (SPEC §6)</a></li>
-<li class="toc-l2"><a href="#tut-23-destrutturazione-spec-2">23. Destrutturazione (SPEC §2)</a></li>
-<li class="toc-l2"><a href="#tut-24-errori-come-dati-spec-8">24. Errori come dati (SPEC §8)</a></li>
-<li class="toc-l2"><a href="#tut-25-contratti-spec-9">25. Contratti (SPEC §9)</a></li>
-<li class="toc-l2"><a href="#tut-26-budget-spec-10">26. Budget (SPEC §10)</a></li>
-<li class="toc-l2"><a href="#tut-27-tracce-spec-11">27. Tracce (SPEC §11)</a></li>
-<li class="toc-l2"><a href="#tut-28-effetti-dichiarati-spec-12">28. Effetti dichiarati (SPEC §12)</a></li>
-<li class="toc-l2"><a href="#tut-29-codice-come-dato-albero-uniforme-e-macro-spec-3-7">29. Codice come dato, albero uniforme e macro (SPEC §3, §7)</a></li>
-<li class="toc-l3"><a href="#tut-29-1-l-39-albero-uniforme">29.1 L&#39;albero uniforme</a></li>
-<li class="toc-l3"><a href="#tut-29-2-quote-unquote-eval">29.2 Quote, unquote, eval</a></li>
-<li class="toc-l3"><a href="#tut-29-3-macro">29.3 Macro</a></li>
-<li class="toc-l3"><a href="#tut-29-4-codice-che-genera-codice">29.4 Codice che genera codice</a></li>
-<li class="toc-l2"><a href="#tut-30-builtin-full-spec-13">30. Builtin Full (SPEC §13)</a></li>
-<li class="toc-l2"><a href="#tut-31-riga-di-comando-e-repl-spec-14">31. Riga di comando e REPL (SPEC §14)</a></li>
-<li class="toc-l2"><a href="#tut-32-esempi-full-con-output-golden">32. Esempi Full con output golden</a></li>
-<li class="toc-l3"><a href="#tut-32-1-assaggio-td">32.1 assaggio.td</a></li>
-<li class="toc-l3"><a href="#tut-32-2-famiglia-td">32.2 famiglia.td</a></li>
-<li class="toc-l3"><a href="#tut-32-3-garanzie-td">32.3 garanzie.td</a></li>
-<li class="toc-l3"><a href="#tut-32-4-macro-td">32.4 macro.td</a></li>
-<li class="toc-l3"><a href="#tut-32-5-contratti-e-budget-insieme">32.5 Contratti e budget insieme</a></li>
-<li class="toc-l1"><a href="#tut-parte-iv-il-codice-del-progetto">Parte IV — Il codice del progetto</a></li>
-<li class="toc-l2"><a href="#tut-33-mappa-del-repository">33. Mappa del repository</a></li>
-<li class="toc-l2"><a href="#tut-34-l-39-interprete-di-riferimento-js-seed-dev-triad-core-cjs">34. L&#39;interprete di riferimento JS (seed/dev/triad_core.cjs)</a></li>
-<li class="toc-l3"><a href="#tut-34-1-architettura">34.1 Architettura</a></li>
-<li class="toc-l3"><a href="#tut-34-2-esempio-aggiungere-un-builtin">34.2 Esempio: aggiungere un builtin</a></li>
-<li class="toc-l3"><a href="#tut-34-3-esempio-aggiungere-sintassi">34.3 Esempio: aggiungere sintassi</a></li>
-<li class="toc-l2"><a href="#tut-35-il-seed-s0-windows-e-il-suo-generatore">35. Il seed S0 Windows e il suo generatore</a></li>
-<li class="toc-l3"><a href="#tut-35-1-cos-39-e">35.1 Cos&#39;è</a></li>
-<li class="toc-l3"><a href="#tut-35-2-convenzioni-interne">35.2 Convenzioni interne</a></li>
-<li class="toc-l3"><a href="#tut-35-3-il-generatore-seed-dev-gen-seed-js">35.3 Il generatore seed/dev/gen_seed.js</a></li>
-<li class="toc-l3"><a href="#tut-35-4-flusso-per-modificare-il-seed">35.4 Flusso per modificare il seed</a></li>
-<li class="toc-l2"><a href="#tut-36-il-seed-linux-e0">36. Il seed Linux (E0)</a></li>
-<li class="toc-l2"><a href="#tut-37-self-hosting-s1-in-selfhost">37. Self-hosting: S1 in selfhost/</a></li>
-<li class="toc-l3"><a href="#tut-37-1-come-si-scrive-codice-s1-oggi">37.1 Come si scrive codice S1 oggi</a></li>
-<li class="toc-l3"><a href="#tut-37-2-dove-va-s1">37.2 Dove va S1</a></li>
-<li class="toc-l2"><a href="#tut-38-conformance-leggere-scrivere-e-verificare-casi">38. Conformance: leggere, scrivere e verificare casi</a></li>
-<li class="toc-l3"><a href="#tut-38-1-formato">38.1 Formato</a></li>
-<li class="toc-l3"><a href="#tut-38-2-il-runner-conformance-run-mjs">38.2 Il runner conformance/run.mjs</a></li>
-<li class="toc-l3"><a href="#tut-38-3-aggiungere-un-caso-core">38.3 Aggiungere un caso Core</a></li>
-<li class="toc-l2"><a href="#tut-39-la-cli-di-sviluppo-triad-cli">39. La CLI di sviluppo triad-cli</a></li>
-<li class="toc-l3"><a href="#tut-39-1-uso">39.1 Uso</a></li>
-<li class="toc-l3"><a href="#tut-39-2-struttura-del-codice">39.2 Struttura del codice</a></li>
-<li class="toc-l3"><a href="#tut-39-3-aggiungere-un-comando">39.3 Aggiungere un comando</a></li>
-<li class="toc-l3"><a href="#tut-39-4-eseguibile-standalone">39.4 Eseguibile standalone</a></li>
-<li class="toc-l2"><a href="#tut-40-benchmark-ai-ai">40. Benchmark AI (ai/)</a></li>
-<li class="toc-l2"><a href="#tut-41-editor-launcher-e-sito">41. Editor, launcher e sito</a></li>
-<li class="toc-l2"><a href="#tut-42-integrazione-continua">42. Integrazione continua</a></li>
-<li class="toc-l2"><a href="#tut-43-flusso-di-contributo">43. Flusso di contributo</a></li>
-<li class="toc-l1"><a href="#tut-parte-v-riferimento">Parte V — Riferimento</a></li>
-<li class="toc-l2"><a href="#tut-44-grammatica-triad-core-ebnf">44. Grammatica Triad-Core (EBNF)</a></li>
-<li class="toc-l2"><a href="#tut-45-schede-rapide-core-e-full">45. Schede rapide Core e Full</a></li>
-<li class="toc-l2"><a href="#tut-46-debug-e-problemi-comuni">46. Debug e problemi comuni</a></li>
-<li class="toc-l2"><a href="#tut-47-glossario">47. Glossario</a></li>
-<li class="toc-l2"><a href="#tut-48-stato-limiti-noti-e-fix-storici">48. Stato, limiti noti e fix storici</a></li>
-<li class="toc-l2"><a href="#tut-49-faq">49. FAQ</a></li>
-</ul>
-</div>
+  <div class="cover" style="text-align:center"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
+  <div class="preface-page">
+    <h1>Prefazione</h1>
+<p>Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple
+dispatch, programmazione logica integrata, codice come dato. La sua definizione è una specifica
+normativa indipendente dall&#39;implementazione, accompagnata da una specifica eseguibile e da una
+suite di conformità con golden verificabili. Questo libro ne è il percorso di studio.</p>
+<p>Il libro nasce da un&#39;esigenza semplice: imparare Triad non significa solo leggere la specifica,
+ma costruire un modello mentale del linguaggio, dei suoi costrutti e del suo runtime. La specifica
+è normativa e precisa, ma è scritta per essere implementata, non per essere letta come un romanzo.
+Questo volume la traduce in un percorso: spiegazioni, esempi, esercizi, marcatori di profilo.</p>
+<p>Il lettore ideale sa già programmare in un altro linguaggio: sa cosa sono una variabile, una
+funzione, un ciclo, una ricorsione. Questo libro non insegna la programmazione in generale, insegna
+Triad. Le influenze del linguaggio (Julia, Prolog, Lisp) sono documentate nell&#39;Appendice A della
+specifica: sono note informative, non definizioni. Triad non è un dialetto di nessuno dei tre.</p>
+<p>Il volume è organizzato in cinque parti. La prima, <em>Fondamenti</em>, introduce il lessico, i valori e
+i tipi, il controllo di flusso, le funzioni, il dispatch, la logica, il codice come dato, gli errori,
+i contratti, il budget, le tracce e gli effetti. La seconda, <em>Triad-Core</em>, copre il sottoinsieme
+eseguibile oggi dall&#39;interprete di riferimento, con tutti i 37 casi di conformance. La terza,
+<em>Triad-Full</em>, presenta i costrutti dello standard completo, oggi studiabili ma non ancora
+eseguibili dal runtime corrente. La quarta, <em>Dentro il progetto</em>, accompagna il lettore nel codice
+del repository: il seed in codice macchina, la suite di conformance, la CLI, gli strumenti per
+gli editor. La quinta, <em>Sul campo</em>, affronta il lavoro quotidiano: scegliere il costrutto
+giusto per ogni problema, portare un programma esistente a Triad, verificare il codice con
+sonde, golden e benchmark, proporre una modifica al linguaggio.</p>
+<p>In coda al volume, l&#39;appendice riporta per intero i due testi normativi, <code>SPEC.md</code> e
+<code>SPEC-CORE.md</code>. Il volume è così autosufficiente: ogni affermazione del manuale può essere
+controllata sulla fonte che la definisce.</p>
+<p>Due profili di conformità attraversano tutto il libro. Triad-Core è il sottoinsieme di bootstrap:
+valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è lo standard
+completo. Ogni programma Core è anche un programma Full valido e deve comportarsi allo stesso modo.
+I marcatori <strong>[Core]</strong> e <strong>[Full]</strong> indicano in quale profilo esiste ciascun costrutto; i blocchi
+di codice sono marcati <code>triad</code> (eseguibile oggi) o <code>triad-full</code> (specificato
+ma non ancora eseguibile).</p>
+<p>Il runtime di riferimento è il seed S0: un interprete Triad-Core scritto direttamente in codice
+macchina x86-64, senza alcun linguaggio ospite. Il piano di bootstrap prevede S1 (un interprete
+Triad scritto in Triad-Core), S2 (compilatore nativo), S3 (self-hosting) e S4 (parità
+cross-platform). Il libro riflette questo stato: dove il runtime non copre un costrutto, il testo
+lo dice esplicitamente.</p>
+<p>Buona lettura, e buon codice.</p>
+<p>— GPuntobit</p>
+
+  </div>
   <div class="part">
     <h1>Manuale di Triad 2.0</h1>
 <blockquote>
@@ -382,26 +196,6 @@ println(6 * 7)
 <pre><code class="language-text">ciao, Triad
 42
 </code></pre>
-<h3 id="man-indice">Indice</h3>
-<p><strong>Parte I — Il linguaggio</strong></p>
-<ol>
-<li><a href="#cap-1">Lessico</a> · 2. <a href="#cap-2">Valori e tipi</a> · 3. <a href="#cap-3">Variabili e assegnamento</a> ·</li>
-<li><a href="#cap-4">Operatori e precedenza</a> · 5. <a href="#cap-5">Controllo di flusso</a> ·</li>
-<li><a href="#cap-6">Funzioni</a> · 7. <a href="#cap-7">Tipi e multiple dispatch</a> ·</li>
-<li><a href="#cap-8">Lambda, chiusure e scope</a> · 9. <a href="#cap-9">Liste</a> ·</li>
-<li><a href="#cap-10">Stringhe, simboli e conversioni</a> · 11. <a href="#cap-11">Errori come dati</a> ·</li>
-<li><a href="#cap-12">Contratti</a> · 13. <a href="#cap-13">Budget</a> · 14. <a href="#cap-14">Tracce</a> ·</li>
-<li><a href="#cap-15">Effetti dichiarati</a> · 16. <a href="#cap-16">Logica</a> ·</li>
-<li><a href="#cap-17">Codice come dato</a> · 18. <a href="#cap-18">Macro</a> ·</li>
-<li><a href="#cap-19">Builtin</a> · 20. <a href="#cap-20">Riga di comando e REPL</a> ·</li>
-<li><a href="#cap-21">Primitivi di bootstrap</a> · 22. <a href="#cap-22">Stile e pattern idiomatici</a></li>
-</ol>
-<p><strong>Parte II — Esercizi</strong> · <a href="#cap-23">23. Esercizi guidati</a> · <a href="#cap-24">24. Esercizi su Triad-Full</a></p>
-<p><strong>Parte III — Riferimento</strong> · <a href="#cap-25">25. Grammatica</a> · <a href="#cap-26">26. Schede rapide</a> ·
-<a href="#cap-27">27. Tabella degli errori</a> · <a href="#cap-28">28. Glossario</a> ·
-<a href="#cap-29">29. Cosa gira oggi</a></p>
-<p><strong>Appendici</strong> · <a href="#app-a">A. Influenze dichiarate</a> · <a href="#app-b">B. Dove guardare</a></p>
-<hr>
 <p><a id="parte-1"></a></p>
 <h1 id="man-parte-i-il-linguaggio">Parte I — Il linguaggio</h1>
 <p><a id="cap-1"></a></p>
@@ -556,6 +350,57 @@ true false nothing isa is
 <pre><code>limit depth steps trace
 </code></pre>
 <p><code>true</code>, <code>false</code> e <code>nothing</code> sono valori, non parole strutturali.</p>
+<h3 id="man-1-9-identificatori-avanzati-e-convenzioni">1.9 Identificatori avanzati e convenzioni</h3>
+<p>In Triad-Core gli identificatori sono limitati all&#39;ASCII: lettere, cifre e <code>_</code>. In Triad-Full si
+ammettono anche lettere non ASCII (accentate, greche, cirilliche): <code>età</code>, <code>π</code>, <code>Δx</code> sono nomi
+validi. <strong>[Full]</strong></p>
+<pre><code class="language-triad-full">età = 42
+π = 3.14159
+Δx = 0.001
+println(età + π)
+</code></pre>
+<p>La convenzione del <code>!</code> finale (<code>push!</code>, <code>sort!</code>) indica funzioni che <strong>mutano</strong> il loro argomento.
+La convenzione del <code>?</code> finale (<code>valido?</code>, <code>vuoto?</code>) indica predicati che restituiscono un <code>Bool</code>.
+Entrambe sono solo convenzioni: il parser le accetta come parte del nome. <strong>[Core]</strong></p>
+<pre><code class="language-triad">function push!(xs, v)
+    # muta xs e lo restituisce
+    xs
+end
+
+function vuoto?(xs)
+    length(xs) == 0
+end
+</code></pre>
+<p>Gli identificatori che coincidono con una parola chiave non sono ammessi: <code>function</code>, <code>end</code>,
+<code>if</code> non possono essere usati come nomi di variabile o funzione. <strong>[Core]</strong></p>
+<h3 id="man-1-10-escape-e-stringhe-avanzate">1.10 Escape e stringhe avanzate</h3>
+<p>Oltre agli escape base (<code>\n</code>, <code>\t</code>, <code>\&quot;</code>, <code>\\</code>), Triad-Full aggiunge <code>\r</code>, <code>\0</code>, <code>\u{…}</code> per
+code point Unicode e <code>\x{…}</code> per byte esadecimali. <strong>[Full]</strong></p>
+<pre><code class="language-triad-full">println(&quot;a\r\nb&quot;)          # ritorno a capo CRLF
+println(&quot;unicode: \u{1F600}&quot;)  # emoji
+println(&quot;hex: \x{41}&quot;)     # &#39;A&#39;
+</code></pre>
+<p>Una stringa può contenere qualsiasi byte UTF-8 valido; un byte non valido produce un errore di
+parsing. Le stringhe sono <strong>immutabili</strong>: ogni operazione di concatenazione crea una nuova
+stringa. <strong>[Core]</strong></p>
+<pre><code class="language-triad">a = &quot;ciao&quot;
+b = a * &quot; mondo&quot;
+println(a)        # &quot;ciao&quot; — inalterato
+println(b)        # &quot;ciao mondo&quot;
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code class="language-text">ciao
+ciao mondo
+</code></pre>
+<h3 id="man-1-11-esercizi-sul-lessico">1.11 Esercizi sul lessico</h3>
+<ol>
+<li>Scrivi un programma che stampi il tuo nome e la tua età su due righe, usando <code>\n</code> e
+concatenazione di stringhe.</li>
+<li>Definisci un identificatore con <code>_</code> iniziale e uno con <code>!</code> finale; stampali.</li>
+<li>Prova a scrivere <code>x = 1_000_000</code> e verifica che l&#39;output sia <code>1000000</code>.</li>
+<li>(Full) Scrivi una stringa con interpolazione <code>$x</code> e <code>$(x + 1)</code>.</li>
+<li>(Full) Definisci il simbodo <code>:ok</code> e confrontalo con <code>Symbol(&quot;ok&quot;)</code>.</li>
+</ol>
 <hr>
 <p><a id="cap-2"></a></p>
 <h2 id="man-2-valori-e-tipi">2. Valori e tipi</h2>
@@ -3265,72 +3110,6 @@ Linux/macOS e dal runner di conformance. &quot;Seed&quot; = <code>seed/windows-x
 Triad-Core in codice macchina (S0). Dove si comportano diversamente lo dice il
 <a href="#cap-15">capitolo 15</a>.</li>
 </ul>
-<h2 id="tut-indice">Indice</h2>
-<p><strong><a href="#parte-1">Parte I — Primi passi</a></strong></p>
-<ol>
-<li><a href="#cap-1">Cos&#39;è Triad</a></li>
-<li><a href="#cap-2">Installare ed eseguire</a></li>
-<li><a href="#cap-3">Il primo programma</a></li>
-</ol>
-<p><strong><a href="#parte-2">Parte II — Triad-Core passo per passo (eseguibile oggi)</a></strong></p>
-<ol start="4">
-<li><a href="#cap-4">Lessico</a></li>
-<li><a href="#cap-5">Valori, tipi e stampa</a></li>
-<li><a href="#cap-6">Variabili e assegnamento</a></li>
-<li><a href="#cap-7">Operatori ed espressioni</a></li>
-<li><a href="#cap-8">Controllo di flusso</a></li>
-<li><a href="#cap-9">Funzioni</a></li>
-<li><a href="#cap-10">Lambda, chiusure e scope</a></li>
-<li><a href="#cap-11">Liste</a></li>
-<li><a href="#cap-12">Stringhe, simboli e conversioni</a></li>
-<li><a href="#cap-13">Primitivi di bootstrap</a></li>
-<li><a href="#cap-14">Errori di esecuzione</a></li>
-<li><a href="#cap-15">Interprete JS e seed Windows: differenze</a></li>
-<li><a href="#cap-16">Pattern idiomatici Triad-Core</a></li>
-<li><a href="#cap-17">Esercizi guidati</a></li>
-</ol>
-<p><strong><a href="#parte-3">Parte III — Triad-Full (lo standard completo)</a></strong></p>
-<ol start="18">
-<li><a href="#cap-18">Lessico e tipi Full</a></li>
-<li><a href="#cap-19">Funzioni tipate e multiple dispatch</a></li>
-<li><a href="#cap-20">Struct</a></li>
-<li><a href="#cap-21">Controllo di flusso Full: <code>for</code>, range, comprehension, <code>try</code></a></li>
-<li><a href="#cap-22">Logica: fatti, regole, <code>solve</code></a></li>
-<li><a href="#cap-23">Destrutturazione</a></li>
-<li><a href="#cap-24">Errori come dati</a></li>
-<li><a href="#cap-25">Contratti</a></li>
-<li><a href="#cap-26">Budget</a></li>
-<li><a href="#cap-27">Tracce</a></li>
-<li><a href="#cap-28">Effetti dichiarati</a></li>
-<li><a href="#cap-29">Codice come dato, albero uniforme e macro</a></li>
-<li><a href="#cap-30">Builtin Full</a></li>
-<li><a href="#cap-31">Riga di comando e REPL (SPEC §14)</a></li>
-<li><a href="#cap-32">Esempi Full con output golden</a></li>
-</ol>
-<p><strong><a href="#parte-4">Parte IV — Il codice del progetto</a></strong></p>
-<ol start="33">
-<li><a href="#cap-33">Mappa del repository</a></li>
-<li><a href="#cap-34">L&#39;interprete di riferimento JS (<code>seed/dev/triad_core.cjs</code>)</a></li>
-<li><a href="#cap-35">Il seed S0 Windows e il suo generatore</a></li>
-<li><a href="#cap-36">Il seed Linux (E0)</a></li>
-<li><a href="#cap-37">Self-hosting: S1 in <code>selfhost/</code></a></li>
-<li><a href="#cap-38">Conformance: leggere, scrivere e verificare casi</a></li>
-<li><a href="#cap-39">La CLI di sviluppo <code>triad-cli</code></a></li>
-<li><a href="#cap-40">Benchmark AI (<code>ai/</code>)</a></li>
-<li><a href="#cap-41">Editor, launcher e sito</a></li>
-<li><a href="#cap-42">Integrazione continua</a></li>
-<li><a href="#cap-43">Flusso di contributo</a></li>
-</ol>
-<p><strong><a href="#parte-5">Parte V — Riferimento</a></strong></p>
-<ol start="44">
-<li><a href="#cap-44">Grammatica Triad-Core (EBNF)</a></li>
-<li><a href="#cap-45">Schede rapide Core e Full</a></li>
-<li><a href="#cap-46">Debug e problemi comuni</a></li>
-<li><a href="#cap-47">Glossario</a></li>
-<li><a href="#cap-48">Stato, limiti noti e fix storici</a></li>
-<li><a href="#cap-49">FAQ</a></li>
-</ol>
-<hr>
 <p><a id="parte-1"></a></p>
 <h1 id="tut-parte-i-primi-passi">Parte I — Primi passi</h1>
 <p><a id="cap-1"></a></p>
@@ -6298,6 +6077,60 @@ voce in <code>CHANGELOG.md</code> e casi di conformance; poi nelle implementazio
 strumenti, aggiorna il capitolo corrispondente. Gli esempi Core marcati <strong>Output:</strong> si
 verificano eseguendoli con <code>node seed/dev/triad_core.cjs</code>.</p>
 
+  </div>
+  <div class="backcover-page">
+    <div class="backcover">
+  <h1>Il libro di Triad</h1>
+  <p>Triad 2.0 Ã¨ un linguaggio di programmazione autonomo, definito da una specifica normativa
+  indipendente da qualsiasi implementazione. Non Ã¨ un dialetto di Julia, Prolog o Lisp, pur avendo
+  preso da ciascuno di essi idee fondamentali: blocchi <code>function â€¦ end</code> e tipi con
+  <code>::</code> da Julia, unificazione con occurs-check, backtracking e <code>solve</code> con
+  variabili logiche <code>?x</code> da Prolog, codice come dato e macro da Lisp. CiÃ² che Ã¨ proprio
+  di Triad, e non in prestito, Ã¨ l'integrazione dei tre modelli â€” imperativo, logico,
+  metaprogrammatorio â€” in una sola sintassi a blocchi, accompagnata da errori come dati
+  (<code>Err</code>), contratti (<code>requires</code>/<code>ensures</code>), budget
+  (<code>with budget</code>), tracce (<code>with trace</code>) ed effetti dichiarati
+  (<code>!io</code>, <code>!state</code>) come parte del linguaggio e non di una libreria.</p>
+  <p>Il linguaggio si presenta in due profili di conformitÃ . Triad-Core Ã¨ il sottoinsieme di
+  bootstrap: valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full Ã¨
+  lo standard completo: tipi dichiarati, multiple dispatch, logica integrata, macro, contratti,
+  budget, tracce, effetti. Ogni programma Core Ã¨ anche un programma Full valido e deve comportarsi
+  allo stesso modo. Il runtime di riferimento Ã¨ il seed S0: un interprete Triad-Core scritto
+  direttamente in codice macchina x86-64 (PE su Windows, ELF su Linux), senza alcun linguaggio
+  ospite. Il piano di bootstrap prevede S1 (un interprete Triad scritto in Triad-Core), S2
+  (compilatore nativo), S3 (self-hosting) e S4 (paritÃ  cross-platform).</p>
+  <p>Questo libro Ã¨ il percorso di studio del linguaggio per come Ã¨ definito dallo standard. La
+  prima parte, Fondamenti, introduce il lessico, i valori e i tipi, il controllo di flusso, le
+  funzioni, il dispatch, la logica, il codice come dato, gli errori, i contratti, il budget, le
+  tracce e gli effetti. La seconda, Triad-Core, copre il sottoinsieme eseguibile oggi dall'interprete
+  di riferimento, con tutti i 37 casi di conformance. La terza, Triad-Full, presenta i costrutti
+  dello standard completo, oggi studiabili ma non ancora eseguibili dal runtime. La quarta, Dentro
+  il progetto, accompagna il lettore nel codice del repository: il seed, la suite di conformance,
+  la CLI, gli strumenti per gli editor.</p>
+  <p>Il progetto Ã¨ rilasciato sotto licenza MIT. La specifica normativa Ã¨ in SPEC.md (standard
+  0.2.0), il sottoinsieme di bootstrap in SPEC-CORE.md, la suite di conformance in
+  conformance/ con golden verificabili. Il repository include anche un benchmark per la generazione
+  di codice Triad da LLM (ai/), grammatiche per VS Code e Vim, e un sito con la curva di
+  apprendimento. L'obiettivo Ã¨ un linguaggio autonomo e riconosciuto: standard proprio,
+  conformance eseguibile, estensione .triad, tooling editor, bootstrap senza linguaggi ospiti e,
+  infine, self-hosting.</p>
+  <p>La suite di conformance Ã¨ il contratto eseguibile del linguaggio: 37 casi Triad-Core e 12 casi
+  Triad-Full, ognuno con golden verificabili byte per byte, inclusi l'exit code. Il runner Ã¨ scritto
+  in Node e non dipende da Julia: il seed Windows passa 33 casi Core sul PE, il seed Linux Ã¨ in
+  fase E0. Ogni caso dichiara il profilo (Core o Full) e un golden mancante fa fallire il caso,
+  cosÃ¬ che nessuna implementazione possa registrare comportamenti scorretti come attesi. I test del
+  progetto (unit e end-to-end) coprono parser, valutatore, unificazione, macro e CLI.</p>
+  <p>Gli strumenti per gli editor includono grammatiche per VS Code e Vim/Neovim e una voce per
+  GitHub Linguist, cosÃ¬ che i file <code>.triad</code> (canonica) e <code>.td</code> (alias storico)
+  siano riconosciuti ovunque. Il sito del progetto espone la curva di apprendimento, i grafici delle
+  fasi e una demo animata della battitura di un programma Triad-Core eseguito dall'interprete. Il
+  repository Ã¨ organizzato per essere esplorato: esempi progressivi in <code>examples/</code>,
+  task guidati in <code>ai/tasks/</code>, benchmark LLM in <code>ai/</code>. Ogni modifica Ã¨
+  accompagnata da test e da aggiornamenti a STATUS.md, BOOTSTRAP.md e CHANGELOG.md.</p>
+  <p>Questo libro Ã¨ scritto per lo standard 0.2.0. In caso di divergenza tra manuale e specifica,
+  prevale la specifica: SPEC.md e SPEC-CORE.md sono la fonte di veritÃ  normativa, e questo volume
+  ne Ã¨ il percorso di studio, con spiegazioni, esempi ed esercizi.</p>
+</div>
   </div>
 </body>
 </html>

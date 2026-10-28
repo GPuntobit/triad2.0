@@ -303,6 +303,75 @@ limit depth steps trace
 
 `true`, `false` e `nothing` sono valori, non parole strutturali.
 
+### 1.9 Identificatori avanzati e convenzioni
+
+In Triad-Core gli identificatori sono limitati all'ASCII: lettere, cifre e `_`. In Triad-Full si
+ammettono anche lettere non ASCII (accentate, greche, cirilliche): `età`, `π`, `Δx` sono nomi
+validi. **[Full]**
+
+```triad-full
+età = 42
+π = 3.14159
+Δx = 0.001
+println(età + π)
+```
+
+La convenzione del `!` finale (`push!`, `sort!`) indica funzioni che **mutano** il loro argomento.
+La convenzione del `?` finale (`valido?`, `vuoto?`) indica predicati che restituiscono un `Bool`.
+Entrambe sono solo convenzioni: il parser le accetta come parte del nome. **[Core]**
+
+```triad
+function push!(xs, v)
+    # muta xs e lo restituisce
+    xs
+end
+
+function vuoto?(xs)
+    length(xs) == 0
+end
+```
+
+Gli identificatori che coincidono con una parola chiave non sono ammessi: `function`, `end`,
+`if` non possono essere usati come nomi di variabile o funzione. **[Core]**
+
+### 1.10 Escape e stringhe avanzate
+
+Oltre agli escape base (`\n`, `\t`, `\"`, `\\`), Triad-Full aggiunge `\r`, `\0`, `\u{…}` per
+code point Unicode e `\x{…}` per byte esadecimali. **[Full]**
+
+```triad-full
+println("a\r\nb")          # ritorno a capo CRLF
+println("unicode: \u{1F600}")  # emoji
+println("hex: \x{41}")     # 'A'
+```
+
+Una stringa può contenere qualsiasi byte UTF-8 valido; un byte non valido produce un errore di
+parsing. Le stringhe sono **immutabili**: ogni operazione di concatenazione crea una nuova
+stringa. **[Core]**
+
+```triad
+a = "ciao"
+b = a * " mondo"
+println(a)        # "ciao" — inalterato
+println(b)        # "ciao mondo"
+```
+
+**Output:**
+
+```text
+ciao
+ciao mondo
+```
+
+### 1.11 Esercizi sul lessico
+
+1. Scrivi un programma che stampi il tuo nome e la tua età su due righe, usando `\n` e
+   concatenazione di stringhe.
+2. Definisci un identificatore con `_` iniziale e uno con `!` finale; stampali.
+3. Prova a scrivere `x = 1_000_000` e verifica che l'output sia `1000000`.
+4. (Full) Scrivi una stringa con interpolazione `$x` e `$(x + 1)`.
+5. (Full) Definisci il simbodo `:ok` e confrontalo con `Symbol("ok")`.
+
 ---
 
 <a id="cap-2"></a>
