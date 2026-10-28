@@ -10,13 +10,22 @@ if (-not (Test-Path -LiteralPath $executable -PathType Leaf)) {
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
+Add-Type -Namespace TriadSmoke -Name NativeMethods -MemberDefinition @'
+    [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "SendMessageW")]
+    public static extern System.IntPtr SendMessage(
+        System.IntPtr window, uint message, System.IntPtr wParam, System.IntPtr lParam);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "SendMessageW", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    public static extern System.IntPtr SendMessageText(
+        System.IntPtr window, uint message, System.IntPtr wParam, System.Text.StringBuilder text);
+'@
 
 $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($executable)
 if ($null -eq $icon) {
     throw 'Desktop executable does not contain an application icon'
 }
 
-$process = Start-Process -FilePath $executable -PassThru
+$process = Start-Process -FilePath $executable -WorkingDirectory $repositoryRoot -PassThru
 try {
     $window = $null
     $condition = [System.Windows.Automation.PropertyCondition]::new(
@@ -38,7 +47,8 @@ try {
     if ($null -eq $window) {
         throw 'Desktop application did not open a window'
     }
-    if ($window.Current.Name -ne 'Triad 2.0 — CLI') {
+    $expectedTitle = 'Triad 2.0 ' + [char]0x2014 + ' CLI'
+    if ($window.Current.Name -ne $expectedTitle) {
         throw "Unexpected window title: $($window.Current.Name)"
     }
 
@@ -53,21 +63,38 @@ try {
         throw 'Status action is not available in the desktop window'
     }
 
-    $statusButton.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
-    $outputCondition = [System.Windows.Automation.PropertyCondition]::new(
-        [System.Windows.Automation.AutomationElement]::NameProperty,
-        'outputConsole'
-    )
-    $output = $window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $outputCondition)
+    if (-not $statusButton.Current.IsEnabled) {
+        throw 'Status action is not enabled'
+    }
+    $buttonHandle = [IntPtr]$statusButton.Current.NativeWindowHandle
+    if ($buttonHandle -eq [IntPtr]::Zero) {
+        throw 'Status action does not expose a native button handle'
+    }
+    [TriadSmoke.NativeMethods]::SendMessage($buttonHandle, 0x00F5, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+
+    $output = $window.FindAll(
+        [System.Windows.Automation.TreeScope]::Descendants,
+        [System.Windows.Automation.Condition]::TrueCondition
+    ) | Where-Object { $_.Current.ClassName -match 'RichEdit' } | Select-Object -First 1
     if ($null -eq $output) {
         throw 'Output console is missing from the desktop window'
     }
+    $outputHandle = [IntPtr]$output.Current.NativeWindowHandle
+    if ($outputHandle -eq [IntPtr]::Zero) {
+        throw 'Output console does not expose a native text handle'
+    }
 
-    $textPattern = $output.GetCurrentPattern([System.Windows.Automation.TextPattern]::Pattern)
     $outputDeadline = [DateTime]::UtcNow.AddSeconds(15)
     $text = ''
     while ($text -notmatch 'Triad 2\.0 CLI Status' -and [DateTime]::UtcNow -lt $outputDeadline) {
-        $text = $textPattern.DocumentRange.GetText(-1)
+        $buffer = [System.Text.StringBuilder]::new(8192)
+        [TriadSmoke.NativeMethods]::SendMessageText(
+            $outputHandle,
+            0x000D,
+            [IntPtr]$buffer.Capacity,
+            $buffer
+        ) | Out-Null
+        $text = $buffer.ToString()
         if ($text -notmatch 'Triad 2\.0 CLI Status') {
             Start-Sleep -Milliseconds 200
         }

@@ -30,6 +30,23 @@ npm run build:exe                         # eseguibile per la piattaforma corren
 node build-exe.mjs path/to/win/node.exe   # triad-cli.exe per Windows (anche da Linux)
 ```
 
+### Interfaccia desktop Windows
+
+`TriadDesktop.exe` apre una finestra grafica con l'icona Triad e avvia i comandi
+`status`, `test run`, `test conformance` e `ai verify`. Richiede
+`triad-cli.exe` nella cartella `cli\dist`, `bin` o nella root del repository,
+oltre alla cartella del progetto Triad. I comandi vengono avviati senza shell e
+solo con argomenti predefiniti; i risultati sono mostrati nella finestra.
+
+Per compilare la GUI su Windows con il compilatore .NET Framework:
+
+```powershell
+.\cli\windows-gui\build.ps1
+```
+
+Il file viene creato in `cli\dist\TriadDesktop.exe`. Per test unitari,
+conformance e AI verify e' necessario anche Node.js nel `PATH`.
+
 ## Comandi
 
 ### Status
