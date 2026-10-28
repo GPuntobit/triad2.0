@@ -42,6 +42,8 @@ facendo (37/37 casi eseguibili), Triad-Full oggi si può solo studiare (1/12). A
 Triad-Full la padronanza reale si ferma intorno al 39%. Analisi completa sul sito:
 [Curva e soglia di apprendimento](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
 
+https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
+
 <p align="center">
   <video src="docs/assets/video/test-curva-apprendimento.mp4" controls width="800"></video>
   <br><sub>Demo del sito (velocità 3×). Video completo: <a href="docs/assets/video/test-curva-apprendimento.mp4">MP4</a>.</sub>
