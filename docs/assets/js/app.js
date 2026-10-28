@@ -1,4 +1,4 @@
-/* global DOMPurify, document, fetch, location, marked, URLSearchParams, window */
+/* global DOMPurify, marked */
 const RAW_BASE = 'https://raw.githubusercontent.com/GPuntobit/triad2.0/main/';
 
 const NAV = [
@@ -64,8 +64,8 @@ function renderFooter() {
 }
 
 function mount(active) {
-  const headerSlot = document.getElementById('site-header');
-  const footerSlot = document.getElementById('site-footer');
+  const headerSlot = globalThis.document.getElementById('site-header');
+  const footerSlot = globalThis.document.getElementById('site-footer');
   if (headerSlot) {
     headerSlot.replaceChildren(DOMPurify.sanitize(renderHeader(active), { RETURN_DOM_FRAGMENT: true }));
     const navToggle = headerSlot.querySelector('.nav-toggle');
@@ -76,7 +76,7 @@ function mount(active) {
     }
   }
   if (footerSlot) footerSlot.replaceChildren(DOMPurify.sanitize(renderFooter(), { RETURN_DOM_FRAGMENT: true }));
-  const prefix = /\/pages\/[^/]*$/.test(location.pathname) ? '../' : '';
+  const prefix = /\/pages\/[^/]*$/.test(globalThis.location.pathname) ? '../' : '';
   if (prefix) [headerSlot, footerSlot].forEach(slot => slot && slot.querySelectorAll('a[href]').forEach(a => {
     const href = a.getAttribute('href');
     if (!/^([a-z]+:|#|\/)/i.test(href)) a.setAttribute('href', prefix + href);
@@ -84,11 +84,11 @@ function mount(active) {
 }
 
 async function loadMarkdown(targetId, file) {
-  const el = document.getElementById(targetId);
+  const el = globalThis.document.getElementById(targetId);
   if (!el) return;
   el.innerHTML = '<div class="doc-loading">Caricamento…</div>';
   try {
-    const res = await fetch(RAW_BASE + file);
+    const res = await globalThis.fetch(RAW_BASE + file);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const md = await res.text();
     const safeMarkdown = DOMPurify.sanitize(marked.parse(md), {
@@ -103,7 +103,7 @@ async function loadMarkdown(targetId, file) {
         a.target = '_blank';
       }
     });
-    const siteRoot = /\/pages\/[^/]*$/.test(location.pathname) ? '../' : '';
+    const siteRoot = /\/pages\/[^/]*$/.test(globalThis.location.pathname) ? '../' : '';
     const fileDir = file.includes('/') ? file.slice(0, file.lastIndexOf('/') + 1) : '';
     el.querySelectorAll('img[src]').forEach(img => {
       const src = img.getAttribute('src');
@@ -112,7 +112,7 @@ async function loadMarkdown(targetId, file) {
       img.src = path.startsWith('docs/') ? siteRoot + path.slice(5) : RAW_BASE + path;
     });
   } catch (e) {
-    const errorMessage = document.createElement('div');
+    const errorMessage = globalThis.document.createElement('div');
     errorMessage.className = 'doc-loading';
     errorMessage.textContent = 'Impossibile caricare il documento: ' + e.message;
     el.replaceChildren(errorMessage);
@@ -120,12 +120,12 @@ async function loadMarkdown(targetId, file) {
 }
 
 function initDocViewer() {
-  const params = new URLSearchParams(location.search);
+  const params = new globalThis.URLSearchParams(globalThis.location.search);
   const file = params.get('file');
   const title = params.get('title');
-  const t = document.getElementById('doc-title');
+  const t = globalThis.document.getElementById('doc-title');
   if (t && title) t.textContent = title;
   if (file) loadMarkdown('doc-content', file);
 }
 
-window.TriadSite = { mount, loadMarkdown, initDocViewer };
+globalThis.TriadSite = { mount, loadMarkdown, initDocViewer };
