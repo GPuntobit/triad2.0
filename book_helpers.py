@@ -9,7 +9,13 @@ ROOT = Path(__file__).resolve().parent
 def git_show(rel: str) -> str:
     """Return a UTF-8 file from the repository's HEAD revision."""
     relative_path = Path(rel.replace("\\", "/"))
-    if not rel or relative_path.is_absolute() or ".." in relative_path.parts:
+    if (
+        not rel
+        or rel.endswith(("/", "\\"))
+        or not relative_path.name
+        or relative_path.is_absolute()
+        or ".." in relative_path.parts
+    ):
         raise ValueError(f"Git path must be repository-relative: {rel!r}")
 
     git_path = relative_path.as_posix()
