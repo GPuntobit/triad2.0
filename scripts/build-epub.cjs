@@ -23,6 +23,32 @@ function stripIndice(md, heading, endMarker) {
 const manualeClean = stripIndice(manuale, '### Indice', '\n<a id="parte-1">');
 const tutorialClean = stripIndice(tutorial, '## Indice', '\n<a id="parte-1">');
 
+function extractHeadings(md, maxLevel) {
+  const lines = md.split(/\r?\n/);
+  const out = [];
+  let inFence = false;
+  for (const line of lines) {
+    if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    const m = line.match(/^(#{1,6})\s+(.+)$/);
+    if (!m || m[1].length > maxLevel) continue;
+    const text = m[2].trim();
+    if (/[.](triad|td)\b/.test(text)) continue;
+    if (/^[a-z]/.test(text)) continue;
+    out.push({ level: m[1].length, text });
+  }
+  return out;
+}
+const manH = extractHeadings(manualeClean, 3);
+const tutH = extractHeadings(tutorialClean, 3);
+let sommarioHtml = '<h1>Sommario</h1><p>Elenco completo di tutti i capitoli e le sezioni.</p>';
+sommarioHtml += '<h2>Manuale di Triad 2.0</h2><ul>';
+for (const h of manH) sommarioHtml += '<li>' + h.text + '</li>';
+sommarioHtml += '</ul>';
+sommarioHtml += '<h2>Tutorial di Triad 2.0</h2><ul>';
+for (const h of tutH) sommarioHtml += '<li>' + h.text + '</li>';
+sommarioHtml += '</ul>';
+
 const css = `
 body { font-family: serif; font-size: 1em; line-height: 1.6; color: #1a1a1a; }
 h1, h2, h3 { font-family: sans-serif; color: #0d0a0f; page-break-before: always; }
@@ -43,6 +69,10 @@ const content = [
   {
     title: 'Prefazione',
     data: marked.parse(preface)
+  },
+  {
+    title: 'Sommario',
+    data: sommarioHtml
   },
   {
     title: 'Manuale di Triad 2.0',
