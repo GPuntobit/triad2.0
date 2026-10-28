@@ -8,6 +8,7 @@ const NAV = [
   { href: 'pages/tutorial.html', label: 'Tutorial' },
   { href: 'pages/apprendimento.html', label: 'Apprendimento' },
   { href: 'pages/examples.html', label: 'Esempi' },
+  { href: 'pages/playground.html', label: 'Playground' },
   { href: 'pages/conformance.html', label: 'Conformance' },
   { href: 'pages/bootstrap.html', label: 'Bootstrap' },
   { href: 'pages/editors.html', label: 'Editor' },
