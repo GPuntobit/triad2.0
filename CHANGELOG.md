@@ -3,6 +3,29 @@
 Le modifiche normative aggiornano anche `VERSION`, la specifica (`SPEC.md`) e, se cambia
 il comportamento, i golden di `conformance/`.
 
+## 0.3.0 — 2026-10-29
+
+### CLI (`cli/`)
+
+- **Comando `run`**: `triad-cli run <file> [-- args]` esegue un programma `.triad`/`.td`
+  con il seed in codice macchina; su Linux/macOS usa l'interprete di riferimento
+  `seed/dev/triad_core.cjs` finché il seed ELF resta E0 (forzabile con `-n/--native`).
+  Exit code propagato, errori di file/parse gestiti con exit 1.
+- **Comandi `ext`** per l'estensione VS Code:
+  - `ext check`: valida `package.json`, grammatica tmLanguage e language-configuration
+    (tutti i JSON controllati); riporta nome, versione, linguaggi ed estensioni.
+  - `ext package`: pacchettizza il `.vsix` con `vsce` globale o `npx --yes @vscode/vsce`;
+    supporta `-o/--out`.
+- **Modularità**: nuovi moduli `cli/lib/commands/run.mjs` e `cli/lib/commands/ext.mjs`;
+  `status` e gli help aggiornati, README CLI esteso con le sezioni "Run" ed
+  "Estensione VS Code".
+- **Manutenzione**: dipendenza `esbuild` aggiornata a 0.28.1 (PR #21); `*.vsix` aggiunto
+  a `.gitignore` come artefatto generato.
+
+### Documentazione
+
+- Aggiunta la descrizione della Pull Request in `PULL_REQUEST.md`.
+
 ## Non rilasciato — 2026-10-26
 
 - **Conformità**: nuovo caso Core `gcd` (Euclide, ricorsione e `%`); la suite Core ha 37 casi.
