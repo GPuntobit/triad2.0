@@ -11,6 +11,7 @@ multiple dispatch, programmazione logica integrata, codice come dato. La sua def
 una specifica normativa indipendente dall'implementazione ([SPEC.md](SPEC.md), standard
 0.2.0) con una suite di conformità eseguibile ([conformance/](conformance/README.md)).
 
+https://github.com/user-attachments/assets/2e01cb37-ea17-44af-a92b-7636bdaee3d5
 <p align="center">
   <video src="docs/assets/video/anteprima-codice.mp4" controls width="552"></video>
   <br><sub>Un programma Triad-Core digitato ed eseguito (output reale dell'interprete JS, ~35 s in loop). Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
@@ -40,6 +41,7 @@ facendo (37/37 casi eseguibili), Triad-Full oggi si può solo studiare (1/12). A
 Triad-Full la padronanza reale si ferma intorno al 39%. Analisi completa sul sito:
 [Curva e soglia di apprendimento](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
 
+https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
 <p align="center">
   <video src="docs/assets/video/test-curva-apprendimento.mp4" controls width="800"></video>
   <br><sub>Demo del sito (velocità 3×). Video completo: <a href="docs/assets/video/test-curva-apprendimento.mp4">MP4</a>.</sub>
