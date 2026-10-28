@@ -6,9 +6,10 @@
     "organization": "GPuntobit",
     "repositoryId": "917582",
     "repositoryName": "triad2.0",
-    "createdAt": "2026-10-28T12:24:36.894Z",
-    "updatedAt": "2026-10-28T12:24:36.894Z",
+    "createdAt": "2026-10-28T21:22:11.244Z",
+    "updatedAt": "2026-10-28T21:22:11.244Z",
     "languages": [
+      "CSharp",
       "CSS",
       "HTML",
       "Javascript",
@@ -923,6 +924,365 @@
       ]
     },
     {
+      "toolId": "SonarCSharp",
+      "patterns": [
+        {
+          "patternId": "SonarCSharp_S6781"
+        },
+        {
+          "patternId": "SonarCSharp_S6377"
+        },
+        {
+          "patternId": "SonarCSharp_S5344"
+        },
+        {
+          "patternId": "SonarCSharp_S4347"
+        },
+        {
+          "patternId": "SonarCSharp_S6444"
+        },
+        {
+          "patternId": "SonarCSharp_S4502"
+        },
+        {
+          "patternId": "SonarCSharp_S2115"
+        },
+        {
+          "patternId": "SonarCSharp_S5753"
+        },
+        {
+          "patternId": "SonarCSharp_S5332"
+        },
+        {
+          "patternId": "SonarCSharp_S4423"
+        },
+        {
+          "patternId": "SonarCSharp_S3329"
+        },
+        {
+          "patternId": "SonarCSharp_S2612"
+        },
+        {
+          "patternId": "SonarCSharp_S2257"
+        },
+        {
+          "patternId": "SonarCSharp_S2053"
+        },
+        {
+          "patternId": "SonarCSharp_S5773"
+        },
+        {
+          "patternId": "SonarCSharp_S5766"
+        },
+        {
+          "patternId": "SonarCSharp_S5659"
+        },
+        {
+          "patternId": "SonarCSharp_S2755"
+        },
+        {
+          "patternId": "SonarCSharp_S5542"
+        },
+        {
+          "patternId": "SonarCSharp_S4830"
+        },
+        {
+          "patternId": "SonarCSharp_S5547"
+        },
+        {
+          "patternId": "SonarCSharp_S2068",
+          "parameters": {
+            "credentialWords": "password, passwd, pwd, passphrase"
+          }
+        },
+        {
+          "patternId": "SonarCSharp_S2245"
+        },
+        {
+          "patternId": "SonarCSharp_S4790"
+        },
+        {
+          "patternId": "SonarCSharp_S5042"
+        },
+        {
+          "patternId": "SonarCSharp_S4426"
+        },
+        {
+          "patternId": "SonarCSharp_S4433"
+        },
+        {
+          "patternId": "SonarCSharp_S1215"
+        },
+        {
+          "patternId": "SonarCSharp_S3610"
+        },
+        {
+          "patternId": "SonarCSharp_S1764"
+        },
+        {
+          "patternId": "SonarCSharp_S2934"
+        },
+        {
+          "patternId": "SonarCSharp_S131"
+        },
+        {
+          "patternId": "SonarCSharp_S3217"
+        },
+        {
+          "patternId": "SonarCSharp_S3005"
+        },
+        {
+          "patternId": "SonarCSharp_S1226"
+        },
+        {
+          "patternId": "SonarCSharp_S112"
+        },
+        {
+          "patternId": "SonarCSharp_S2688"
+        },
+        {
+          "patternId": "SonarCSharp_S2743"
+        },
+        {
+          "patternId": "SonarCSharp_S3447"
+        },
+        {
+          "patternId": "SonarCSharp_S2551"
+        },
+        {
+          "patternId": "SonarCSharp_S3440"
+        },
+        {
+          "patternId": "SonarCSharp_S1699"
+        },
+        {
+          "patternId": "SonarCSharp_S2692"
+        },
+        {
+          "patternId": "SonarCSharp_S2674"
+        },
+        {
+          "patternId": "SonarCSharp_S2995"
+        },
+        {
+          "patternId": "SonarCSharp_S2190"
+        },
+        {
+          "patternId": "SonarCSharp_S3880"
+        },
+        {
+          "patternId": "SonarCSharp_S3600"
+        },
+        {
+          "patternId": "SonarCSharp_S3397"
+        },
+        {
+          "patternId": "SonarCSharp_S3251"
+        },
+        {
+          "patternId": "SonarCSharp_S3877"
+        },
+        {
+          "patternId": "SonarCSharp_S3466"
+        },
+        {
+          "patternId": "SonarCSharp_S2955"
+        },
+        {
+          "patternId": "SonarCSharp_S127"
+        },
+        {
+          "patternId": "SonarCSharp_S1210"
+        },
+        {
+          "patternId": "SonarCSharp_S3443"
+        },
+        {
+          "patternId": "SonarCSharp_S3216"
+        },
+        {
+          "patternId": "SonarCSharp_S2996"
+        },
+        {
+          "patternId": "SonarCSharp_S3263"
+        },
+        {
+          "patternId": "SonarCSharp_S3456"
+        },
+        {
+          "patternId": "SonarCSharp_S3449"
+        },
+        {
+          "patternId": "SonarCSharp_S2583"
+        },
+        {
+          "patternId": "SonarCSharp_S3898"
+        },
+        {
+          "patternId": "SonarCSharp_S2123"
+        },
+        {
+          "patternId": "SonarCSharp_S2681"
+        },
+        {
+          "patternId": "SonarCSharp_S3453"
+        },
+        {
+          "patternId": "SonarCSharp_S3220"
+        },
+        {
+          "patternId": "SonarCSharp_S1163"
+        },
+        {
+          "patternId": "SonarCSharp_S2997"
+        },
+        {
+          "patternId": "SonarCSharp_S2757"
+        },
+        {
+          "patternId": "SonarCSharp_S2184"
+        },
+        {
+          "patternId": "SonarCSharp_S2930"
+        },
+        {
+          "patternId": "SonarCSharp_S2275"
+        },
+        {
+          "patternId": "SonarCSharp_S2345"
+        },
+        {
+          "patternId": "SonarCSharp_S2178"
+        },
+        {
+          "patternId": "SonarCSharp_S3457"
+        },
+        {
+          "patternId": "SonarCSharp_S2328"
+        },
+        {
+          "patternId": "SonarCSharp_S3926"
+        },
+        {
+          "patternId": "SonarCSharp_S3168"
+        },
+        {
+          "patternId": "SonarCSharp_S3451"
+        },
+        {
+          "patternId": "SonarCSharp_S1643"
+        },
+        {
+          "patternId": "SonarCSharp_S1944"
+        },
+        {
+          "patternId": "SonarCSharp_S3869"
+        },
+        {
+          "patternId": "SonarCSharp_S1698"
+        },
+        {
+          "patternId": "SonarCSharp_S2223"
+        },
+        {
+          "patternId": "SonarCSharp_S3244"
+        },
+        {
+          "patternId": "SonarCSharp_S2952"
+        },
+        {
+          "patternId": "SonarCSharp_S1313"
+        },
+        {
+          "patternId": "SonarCSharp_S1206"
+        },
+        {
+          "patternId": "SonarCSharp_S3249"
+        },
+        {
+          "patternId": "SonarCSharp_S3237"
+        },
+        {
+          "patternId": "SonarCSharp_S3172"
+        },
+        {
+          "patternId": "SonarCSharp_S1854"
+        },
+        {
+          "patternId": "SonarCSharp_S2696"
+        },
+        {
+          "patternId": "SonarCSharp_S2760"
+        },
+        {
+          "patternId": "SonarCSharp_S2201"
+        },
+        {
+          "patternId": "SonarCSharp_S1449"
+        },
+        {
+          "patternId": "SonarCSharp_S2761"
+        },
+        {
+          "patternId": "SonarCSharp_S3603"
+        },
+        {
+          "patternId": "SonarCSharp_S3241"
+        },
+        {
+          "patternId": "SonarCSharp_S1862"
+        },
+        {
+          "patternId": "SonarCSharp_S3010"
+        },
+        {
+          "patternId": "SonarCSharp_S3444"
+        },
+        {
+          "patternId": "SonarCSharp_S3655"
+        },
+        {
+          "patternId": "SonarCSharp_S1656"
+        },
+        {
+          "patternId": "SonarCSharp_S3247"
+        },
+        {
+          "patternId": "SonarCSharp_S3597"
+        },
+        {
+          "patternId": "SonarCSharp_S3445"
+        },
+        {
+          "patternId": "SonarCSharp_S1244"
+        },
+        {
+          "patternId": "SonarCSharp_S2197"
+        },
+        {
+          "patternId": "SonarCSharp_S2330"
+        },
+        {
+          "patternId": "SonarCSharp_S2259"
+        },
+        {
+          "patternId": "SonarCSharp_S3169"
+        },
+        {
+          "patternId": "SonarCSharp_S3889"
+        },
+        {
+          "patternId": "SonarCSharp_S2931"
+        },
+        {
+          "patternId": "SonarCSharp_S2486"
+        },
+        {
+          "patternId": "SonarCSharp_S2225"
+        }
+      ]
+    },
+    {
       "toolId": "Prospector",
       "patterns": [
         {
@@ -1495,10 +1855,43 @@
       "toolId": "Agentlinter",
       "patterns": [
         {
+          "patternId": "Agentlinter_token-budget_under-150-tokens"
+        },
+        {
+          "patternId": "Agentlinter_token-budget_total-tokens"
+        },
+        {
           "patternId": "Agentlinter_token-budget_section-weight"
         },
         {
           "patternId": "Agentlinter_token-budget_compressible-padding"
+        },
+        {
+          "patternId": "Agentlinter_structure_position-risk-warning"
+        },
+        {
+          "patternId": "Agentlinter_structure_no-empty-sections"
+        },
+        {
+          "patternId": "Agentlinter_structure_modular-files"
+        },
+        {
+          "patternId": "Agentlinter_structure_heading-hierarchy"
+        },
+        {
+          "patternId": "Agentlinter_structure_has-version-or-update-date"
+        },
+        {
+          "patternId": "Agentlinter_structure_has-sections"
+        },
+        {
+          "patternId": "Agentlinter_structure_has-main-file"
+        },
+        {
+          "patternId": "Agentlinter_structure_has-file-map"
+        },
+        {
+          "patternId": "Agentlinter_structure_file-size"
         },
         {
           "patternId": "Agentlinter_structure_dead-import"
@@ -1507,10 +1900,19 @@
           "patternId": "Agentlinter_structure_circular-import"
         },
         {
+          "patternId": "Agentlinter_skill-safety_skill-name-match-dir"
+        },
+        {
+          "patternId": "Agentlinter_skill-safety_skill-description-when-to-use"
+        },
+        {
           "patternId": "Agentlinter_skill-safety_sensitive-paths"
         },
         {
           "patternId": "Agentlinter_skill-safety_injection-vectors"
+        },
+        {
+          "patternId": "Agentlinter_skill-safety_has-metadata"
         },
         {
           "patternId": "Agentlinter_skill-safety_excessive-permissions"
@@ -1561,25 +1963,199 @@
           "patternId": "Agentlinter_runtime_config-secrets"
         },
         {
+          "patternId": "Agentlinter_runtime_config-exists"
+        },
+        {
           "patternId": "Agentlinter_runtime_auth-mode"
+        },
+        {
+          "patternId": "Agentlinter_remote-ready_workspace-path-specified"
+        },
+        {
+          "patternId": "Agentlinter_remote-ready_model-settings-specified"
+        },
+        {
+          "patternId": "Agentlinter_remote-ready_env-vars-documented"
+        },
+        {
+          "patternId": "Agentlinter_memory_no-mental-notes"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-state-tracking"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-memory-strategy"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-learning-loop"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-handoff-protocol"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-file-based-notes"
+        },
+        {
+          "patternId": "Agentlinter_memory_has-context-window-awareness"
+        },
+        {
+          "patternId": "Agentlinter_consistency_tone-voice-alignment"
+        },
+        {
+          "patternId": "Agentlinter_consistency_timezone-locale-drift"
+        },
+        {
+          "patternId": "Agentlinter_consistency_stale-package-reference"
+        },
+        {
+          "patternId": "Agentlinter_consistency_stale-file-reference"
+        },
+        {
+          "patternId": "Agentlinter_consistency_stale-date"
+        },
+        {
+          "patternId": "Agentlinter_consistency_priority-conflict"
+        },
+        {
+          "patternId": "Agentlinter_consistency_permission-conflict"
+        },
+        {
+          "patternId": "Agentlinter_consistency_outdated-cross-references"
+        },
+        {
+          "patternId": "Agentlinter_consistency_no-duplicate-instructions"
+        },
+        {
+          "patternId": "Agentlinter_consistency_naming-convention"
+        },
+        {
+          "patternId": "Agentlinter_consistency_language-mixing"
+        },
+        {
+          "patternId": "Agentlinter_consistency_identity-alignment"
         },
         {
           "patternId": "Agentlinter_consistency_circular-dependency"
         },
         {
+          "patternId": "Agentlinter_completeness_verification-criteria-required"
+        },
+        {
+          "patternId": "Agentlinter_completeness_session-learning-hooks"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-workflow"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-user-context"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-tools"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-priorities"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-output-format"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-identity"
+        },
+        {
           "patternId": "Agentlinter_completeness_has-error-handling"
+        },
+        {
+          "patternId": "Agentlinter_completeness_has-boundaries"
+        },
+        {
+          "patternId": "Agentlinter_completeness_freshness-file-paths"
+        },
+        {
+          "patternId": "Agentlinter_completeness_command-coverage"
         },
         {
           "patternId": "Agentlinter_claude-code_skills-vs-commands"
         },
         {
+          "patternId": "Agentlinter_claude-code_relevance-trap"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_progressive-disclosure"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_instruction-count"
+        },
+        {
           "patternId": "Agentlinter_claude-code_hooks-structure"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_descriptive-ratio"
+        },
+        {
+          "patternId": "Agentlinter_claude-code_agent-focus"
+        },
+        {
+          "patternId": "Agentlinter_clarity_undefined-term"
         },
         {
           "patternId": "Agentlinter_clarity_token-efficiency-score"
         },
         {
+          "patternId": "Agentlinter_clarity_token-budget-range"
+        },
+        {
+          "patternId": "Agentlinter_clarity_sentence-complexity"
+        },
+        {
+          "patternId": "Agentlinter_clarity_priority-signal-missing"
+        },
+        {
+          "patternId": "Agentlinter_clarity_obvious-statements"
+        },
+        {
           "patternId": "Agentlinter_consistency_referenced-files-exist"
+        },
+        {
+          "patternId": "Agentlinter_clarity_no-vague-instructions"
+        },
+        {
+          "patternId": "Agentlinter_clarity_no-contradictions"
+        },
+        {
+          "patternId": "Agentlinter_clarity_naked-conditional"
+        },
+        {
+          "patternId": "Agentlinter_clarity_instruction-density"
+        },
+        {
+          "patternId": "Agentlinter_clarity_has-examples"
+        },
+        {
+          "patternId": "Agentlinter_clarity_escape-hatch-missing"
+        },
+        {
+          "patternId": "Agentlinter_clarity_english-config-files"
+        },
+        {
+          "patternId": "Agentlinter_clarity_duplicate-content"
+        },
+        {
+          "patternId": "Agentlinter_clarity_compound-instruction"
+        },
+        {
+          "patternId": "Agentlinter_clarity_ambiguous-pronoun"
+        },
+        {
+          "patternId": "Agentlinter_clarity_action-without-context"
+        },
+        {
+          "patternId": "Agentlinter_clarity_actionable-instructions"
+        },
+        {
+          "patternId": "Agentlinter_blueprint_identity-defined"
+        },
+        {
+          "patternId": "Agentlinter_blueprint_coverage"
         },
         {
           "patternId": "Agentlinter_blueprint_constraints-defined"

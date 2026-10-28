@@ -13,7 +13,7 @@ una specifica normativa indipendente dall'implementazione ([SPEC.md](SPEC.md), s
 
 <p align="center">
   <img src="docs/assets/img/anteprima-codice.svg" alt="Anteprima animata: un programma Triad-Core digitato carattere per carattere, poi eseguito con node seed/dev/triad_core.cjs" width="552">
-  <br><sub>Un programma Triad-Core digitato ed eseguito (output reale dell'interprete JS, ~20 s in loop). Sorgente: <a href="scripts/anteprima.td">scripts/anteprima.td</a>.</sub>
+  <br><sub>Un programma Triad-Core digitato ed eseguito (output reale dell'interprete JS, ~35 s in loop). Sorgente: <a href="scripts/anteprima.td">scripts/anteprima.td</a>.</sub>
 </p>
 
 Sintassi e semantica sono definite da Triad, non da altri linguaggi. Le influenze sono
@@ -57,7 +57,6 @@ Triad-Full la padronanza reale si ferma intorno al 39%. Analisi completa sul sit
   prompt di sistema e verificatore automatico.
 - **Implementazione:** il runtime di riferimento è il seed in codice macchina (S0); il piano per un Triad senza linguaggi ospiti è in [BOOTSTRAP.md](BOOTSTRAP.md).
 - **Editor:** [editors/](editors/README.md) — VS Code, Vim/Neovim e voce Linguist per GitHub.
-- **Libro:** [Il libro di Triad](docs/libro/Il-libro-di-triad.pdf) — frontespizio, manuale e tutorial in un unico PDF (generato da `MANUALE.md` e `TUTORIAL.md` con `scripts/build-libro.mjs`).
 - **Estensione:** `.triad` (canonica), `.td` (alias storico).
 
 ## Avvio

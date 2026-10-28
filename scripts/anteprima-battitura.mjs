@@ -16,7 +16,7 @@ const command = '$ node seed/dev/triad_core.cjs scripts/anteprima.td';
 const C = { bg: '#0b1220', bar: '#111827', border: '#263248', text: '#e5e7eb', muted: '#94a3b8',
   kw: '#c084fc', fn: '#60a5fa', str: '#34d399', cm: '#64748b', num: '#fbbf24', out: '#e5e7eb', prompt: '#34d399' };
 const FS = 15, CW = 9, LH = 23, PAD = 24, BAR = 38;
-const CHAR = 0.035, EOL = 0.25, START = 0.8, OUT_STEP = 0.35, HOLD = 4;
+const CHAR = 0.06, EOL = 0.425, START = 0.8, OUT_STEP = 0.6, HOLD = 7;
 
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const KW = new Set(['function', 'end', 'if', 'elseif', 'else', 'while', 'return', 'let', 'begin', 'break', 'continue', 'true', 'false', 'nothing']);
@@ -44,8 +44,8 @@ code.forEach((line, i) => {
 });
 const sepY = codeTop + code.length * LH - FS + 10;
 const cmdY = sepY + 18 + FS;
-typed.push({ text: command, html: `<tspan fill="${C.prompt}">$</tspan>${esc(command.slice(1))}`, x: PAD, y: cmdY, start: t + 0.3 });
-t = typed.at(-1).start + command.length * CHAR * 0.6 + 0.5;
+typed.push({ text: command, html: `<tspan fill="${C.prompt}">$</tspan>${esc(command.slice(1))}`, x: PAD, y: cmdY, start: t + 0.5 });
+t = typed.at(-1).start + command.length * CHAR * 0.6 + 0.85;
 const outs = output.map((line, i) => ({ line, y: cmdY + (i + 1) * LH, at: t + i * OUT_STEP }));
 const D = +(outs.at(-1).at + HOLD).toFixed(2);
 
