@@ -104,7 +104,10 @@ async function loadMarkdown(targetId, file) {
       img.src = path.startsWith('docs/') ? siteRoot + path.slice(5) : RAW_BASE + path;
     });
   } catch (e) {
-    el.innerHTML = '<div class="doc-loading">Impossibile caricare il documento: ' + e.message + '</div>';
+    const errorMessage = document.createElement('div');
+    errorMessage.className = 'doc-loading';
+    errorMessage.textContent = 'Impossibile caricare il documento: ' + e.message;
+    el.replaceChildren(errorMessage);
   }
 }
 
