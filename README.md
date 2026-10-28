@@ -13,7 +13,7 @@ una specifica normativa indipendente dall'implementazione ([SPEC.md](SPEC.md), s
 
 <p align="center">
   <img src="docs/assets/img/anteprima-codice.svg" alt="Anteprima animata: un programma Triad-Core digitato carattere per carattere, poi eseguito con node seed/dev/triad_core.cjs" width="552">
-  <br><sub>Un programma Triad-Core digitato ed eseguito (output reale dell'interprete JS, ~20 s in loop). Sorgente: <a href="scripts/anteprima.td">scripts/anteprima.td</a>.</sub>
+  <br><sub>Un programma Triad-Core digitato ed eseguito (output reale dell'interprete JS, ~35 s in loop). Sorgente: <a href="scripts/anteprima.td">scripts/anteprima.td</a>.</sub>
 </p>
 
 Sintassi e semantica sono definite da Triad, non da altri linguaggi. Le influenze sono
