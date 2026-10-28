@@ -11,24 +11,17 @@ Controlla, per MANUALE.md e TUTORIAL.md:
 - occorrenze della parola "wiki".
 """
 import re
-import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+
+from book_helpers import git_show
 
 ROOT = Path(r"C:\Users\xbos\Documents\progetti\triad2.0")
 FILES = ["MANUALE.md", "TUTORIAL.md"]
 
 FENCE_RE = re.compile(r"^```([A-Za-z0-9_+-]*)\s*$")
 OUTPUT_RE = re.compile(r"^\s*(?:\*\*)?Output(?:\s*\(golden Full\))?(?:\*\*)?:?\s*$", re.I)
-
-
-def head_text(rel: str) -> str:
-    out = subprocess.run(
-        ["git", "-C", str(ROOT), "show", f"HEAD:{rel}"],
-        capture_output=True, check=True,
-    )
-    return out.stdout.decode("utf-8")
 
 
 def parse_blocks(text: str):
@@ -143,7 +136,7 @@ def main():
     for rel in FILES:
         path = ROOT / rel
         cur = path.read_text(encoding="utf-8")
-        head = head_text(rel)
+        head = git_show(rel)
         problems, notes = compare(rel, head, cur)
         print(f"=== {rel}: {len(head.splitlines())} -> {len(cur.splitlines())} righe")
         for n in notes:

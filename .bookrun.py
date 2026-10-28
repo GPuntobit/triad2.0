@@ -11,20 +11,14 @@ import sys
 import tempfile
 from pathlib import Path
 
+from book_helpers import git_show
+
 ROOT = Path(r"C:\Users\xbos\Documents\progetti\triad2.0")
 NODE = r"C:\Users\xbos\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\node\bin\node.exe"
 INTERP = ROOT / "seed" / "dev" / "triad_core.cjs"
 FILES = ["MANUALE.md", "TUTORIAL.md"]
 
 FENCE_OPEN = re.compile(r"^```([A-Za-z0-9_+-]*)\s*$")
-
-
-def git_show(rel: str) -> str:
-    out = subprocess.run(
-        ["git", "-C", str(ROOT), "show", f"HEAD:{rel}"],
-        capture_output=True, check=True,
-    )
-    return out.stdout.decode("utf-8")
 
 
 def extract(md: str):
