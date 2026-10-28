@@ -68,6 +68,7 @@ def run_block(body: str, node: Path, interpreter: Path):
         path = f.name
     try:
         # Intentional execution: enabled only by explicit opt-in; node and interpreter are validated.
+        # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-audit.dangerous-subprocess-use-audit
         p = subprocess.run(  # nosec B603
             [str(node), str(interpreter), path],
             capture_output=True, text=True, timeout=15,

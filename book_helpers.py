@@ -39,6 +39,7 @@ def git_show(rel: str, git_executable: str | Path) -> str:
     git_executable_path = approved_executable(git_executable, {"git", "git.exe"})
 
     try:
+        # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-audit.dangerous-subprocess-use-audit
         result = subprocess.run(  # nosec B603
             [str(git_executable_path), "-C", str(ROOT), "show", f"HEAD:{git_path}"],
             capture_output=True,
