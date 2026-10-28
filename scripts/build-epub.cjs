@@ -101,7 +101,7 @@ const options = {
   cover: path.join(outDir, 'frontespizio.png'),
   content: content,
   css: css,
-  tocTitle: 'Sommario',
+  tocTitle: 'Indice',
   version: 3,
   lang: 'it'
 };
