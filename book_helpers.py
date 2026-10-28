@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 
 
-def git_show(rel: str) -> str:
+def git_show(rel: str, git_executable: Path | str | None = None) -> str:
     """Return a UTF-8 file from the repository's HEAD revision."""
     relative_path = Path(rel.replace("\\", "/"))
     if (
@@ -24,13 +24,13 @@ def git_show(rel: str) -> str:
     except ValueError as error:
         raise ValueError(f"Git path must stay within the repository: {rel!r}") from error
 
-    git_executable = shutil.which("git")
+    git_executable = git_executable or shutil.which("git")
     if git_executable is None:
         raise RuntimeError("Unable to read HEAD: git executable was not found on PATH")
 
     try:
         result = subprocess.run(
-            [git_executable, "-C", str(ROOT), "show", f"HEAD:{git_path}"],
+            [str(git_executable), "-C", str(ROOT), "show", f"HEAD:{git_path}"],
             capture_output=True,
             check=True,
         )
