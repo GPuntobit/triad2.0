@@ -7,14 +7,13 @@ contenuto del checkout, abilitarne l'esecuzione con --execute-docs.
 Uso: python .bookrun.py --execute-docs --node <node.exe> --git <git.exe>
 """
 import argparse
-import os
 import re
-import subprocess
+import subprocess  # nosec B404
 import sys
 import tempfile
 from pathlib import Path
 
-from book_helpers import git_show
+from book_helpers import approved_executable, git_show
 
 ROOT = Path(__file__).resolve().parent
 INTERP = ROOT / "seed" / "dev" / "triad_core.cjs"
@@ -52,18 +51,6 @@ def repo_file(path: Path) -> Path:
         raise ValueError(f"Refusing to use a path outside the repository: {path}") from error
     if not resolved.is_file():
         raise ValueError(f"Expected a repository file: {path}")
-    return resolved
-
-
-def approved_executable(value: str, names: set[str]) -> Path:
-    candidate = Path(value)
-    if not candidate.is_absolute():
-        raise ValueError("Executable path must be absolute")
-    resolved = candidate.resolve(strict=True)
-    if os.path.normcase(os.path.abspath(candidate)) != os.path.normcase(str(resolved)):
-        raise ValueError("Executable path must not use symlinks")
-    if candidate.name.casefold() not in names or not resolved.is_file():
-        raise ValueError(f"Executable path must point to one of: {', '.join(sorted(names))}")
     return resolved
 
 

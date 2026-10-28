@@ -9,13 +9,15 @@ Controlla, per MANUALE.md e TUTORIAL.md:
   ogni <a id="cap-*|parte-*|app-*"> di HEAD deve ancora esistere.
 - numerazione dei capitoli "## N." e delle parti "# Parte ...".
 - occorrenze della parola "wiki".
+Uso: python .bookqa.py --git <git.exe>
 """
+import argparse
 import re
 import sys
 from collections import Counter
 from pathlib import Path
 
-from book_helpers import git_show
+from book_helpers import approved_executable, git_show
 
 ROOT = Path(__file__).resolve().parent
 FILES = ["MANUALE.md", "TUTORIAL.md"]
@@ -131,12 +133,20 @@ def compare(name, head, cur):
     return problems, notes
 
 
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Check book structure and content against HEAD.")
+    parser.add_argument("--git", required=True, help="absolute path to the approved Git executable")
+    args = parser.parse_args(argv)
+    try:
+        git = approved_executable(args.git, {"git", "git.exe"})
+    except (OSError, ValueError) as error:
+        parser.error(str(error))
+
     total = 0
     for rel in FILES:
         path = ROOT / rel
         cur = path.read_text(encoding="utf-8")
-        head = git_show(rel)
+        head = git_show(rel, git)
         problems, notes = compare(rel, head, cur)
         print(f"=== {rel}: {len(head.splitlines())} -> {len(cur.splitlines())} righe")
         for n in notes:

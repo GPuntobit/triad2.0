@@ -1,12 +1,24 @@
 """Shared helpers for the local book validation scripts."""
-import shutil
+import os
 import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
 
-def git_show(rel: str, git_executable: Path | str | None = None) -> str:
+def approved_executable(value: str | Path, names: set[str]) -> Path:
+    candidate = Path(value)
+    if not candidate.is_absolute():
+        raise ValueError("Executable path must be absolute")
+    resolved = candidate.resolve(strict=True)
+    if os.path.normcase(os.path.abspath(candidate)) != os.path.normcase(str(resolved)):
+        raise ValueError("Executable path must not use symlinks")
+    if candidate.name.casefold() not in names or not resolved.is_file():
+        raise ValueError(f"Executable path must point to one of: {', '.join(sorted(names))}")
+    return resolved
+
+
+def git_show(rel: str, git_executable: str | Path) -> str:
     """Return a UTF-8 file from the repository's HEAD revision."""
     relative_path = Path(rel.replace("\\", "/"))
     if (
@@ -24,13 +36,11 @@ def git_show(rel: str, git_executable: Path | str | None = None) -> str:
     except ValueError as error:
         raise ValueError(f"Git path must stay within the repository: {rel!r}") from error
 
-    git_executable = git_executable or shutil.which("git")
-    if git_executable is None:
-        raise RuntimeError("Unable to read HEAD: git executable was not found on PATH")
+    git_executable_path = approved_executable(git_executable, {"git", "git.exe"})
 
     try:
-        result = subprocess.run(
-            [str(git_executable), "-C", str(ROOT), "show", f"HEAD:{git_path}"],
+        result = subprocess.run(  # nosec B603
+            [str(git_executable_path), "-C", str(ROOT), "show", f"HEAD:{git_path}"],
             capture_output=True,
             check=True,
         )
