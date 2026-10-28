@@ -12,6 +12,15 @@ const tutorial = fs.readFileSync(path.join(root, 'TUTORIAL.md'), 'utf8');
 
 marked.setOptions({ gfm: true, breaks: false });
 
+function rewriteRepositoryLinks(html) {
+  return html.replace(/href="([^"]+)"/g, (match, target) => {
+    if (/^(?:https?:|mailto:|#)/.test(target)) return match;
+    const path = target.replace(/^\.\//, '');
+    const kind = path.endsWith('/') ? 'tree' : 'blob';
+    return `href="https://github.com/GPuntobit/triad2.0/${kind}/main/${path}"`;
+  });
+}
+
 // Rimuovi indici interni
 function stripIndice(md, heading, endMarker) {
   const start = md.indexOf(heading);
@@ -68,7 +77,7 @@ blockquote { border-left: 2pt solid #7d5157; margin: 0.8em 0; padding: 0.3em 0.8
 const content = [
   {
     title: 'Prefazione',
-    data: marked.parse(preface)
+    data: rewriteRepositoryLinks(marked.parse(preface))
   },
   {
     title: 'Sommario',
@@ -76,11 +85,11 @@ const content = [
   },
   {
     title: 'Manuale di Triad 2.0',
-    data: marked.parse(manualeClean)
+    data: rewriteRepositoryLinks(marked.parse(manualeClean))
   },
   {
     title: 'Tutorial di Triad 2.0',
-    data: marked.parse(tutorialClean)
+    data: rewriteRepositoryLinks(marked.parse(tutorialClean))
   },
   {
     title: 'Quarta di copertina',

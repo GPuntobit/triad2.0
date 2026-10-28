@@ -2,40 +2,71 @@
   <img src="https://raw.githubusercontent.com/GPuntobit/triad2.0/main/docs/triad-logo.webp" alt="Logo di Triad" width="160">
 </p>
 
-# Triad 2.0 — Wiki: imparare il linguaggio e il codice del progetto
+# Triad 2.0 — Tutorial: imparare il linguaggio e il codice del progetto
 
-Questa wiki è il punto di ingresso per **imparare Triad** e per **imparare a scrivere il
-codice presente in questo repository**: programmi Triad, l'interprete di riferimento, il seed
-in codice macchina, l'implementazione self-hosted (S1), la suite di conformità, la CLI di
-sviluppo, il benchmark AI, i file per gli editor.
+Questo tutorial è il percorso guidato con cui impari Triad partendo da zero. Non dà per
+scontato che tu conosca il linguaggio: dà per scontato solo che tu sappia programmare in
+qualche altro linguaggio. Se sai già scrivere cicli, funzioni e liste, hai tutto il necessario;
+il resto — la sintassi di Triad, il comportamento dei valori, la distinzione tra il
+sottoinsieme eseguibile e lo standard completo — è spiegato qui, nell'ordine in cui conviene
+impararlo.
 
-- **Standard:** [`SPEC.md`](SPEC.md) (Triad-Full, versione in [`VERSION`](VERSION), `0.2.0`) e
-  [`SPEC-CORE.md`](SPEC-CORE.md) (Triad-Core, il sottoinsieme di bootstrap).
-- **Contratto eseguibile:** [`conformance/`](conformance/README.md).
-- **Piano di bootstrap:** [`BOOTSTRAP.md`](BOOTSTRAP.md); stato in [`STATUS.md`](STATUS.md);
-  task in [`TASK.md`](TASK.md) e [`plan.md`](plan.md).
-- **Estensioni dei sorgenti:** `.triad` (canonica) e `.td` (alias storico).
+Il percorso porta a tre risultati. Primo, **scrivere programmi Triad-Core che girano davvero**,
+cioè programmi completi, eseguibili oggi con l'interprete di riferimento. Secondo, **conoscere
+Triad-Full**, il linguaggio completo definito dallo standard, comprese le parti che il runtime
+attuale non esegue ancora. Terzo, **saper leggere il codice del progetto**: l'interprete di
+riferimento, il seed in codice macchina, la suite di conformità e gli strumenti di sviluppo.
+Il tutorial non rimanda altrove per capire i concetti: la specifica (`SPEC.md`, `SPEC-CORE.md`)
+e i casi di `conformance/` sono approfondimenti facoltativi, non prerequisiti.
 
-> **Cosa gira oggi — leggere prima di iniziare.**
->
-> | profilo | dove è definito | eseguibile oggi? |
-> |---|---|---|
-> | **Triad-Core** | `SPEC-CORE.md` | **sì**: interprete di riferimento JavaScript `seed/dev/triad_core.cjs` (37/37 casi Core) e, in parte, il seed Windows `seed/windows-x86_64/seed.exe` (33 casi Core verificati in CI) |
-> | **Triad-Full** | `SPEC.md` | **no**: struct, dispatch, logica, macro, contratti, budget, tracce, effetti, destrutturazione, `for`, `try`, `Float` sono specifica; nella conformance Full passa solo `errore` |
->
-> L'implementazione Julia (`triad.jl`, `syntax.jl`, `test/`) è stata rimossa: Triad non
-> dipende da Julia. Gli output Triad-Full mostrati in questa wiki sono i **golden** prodotti a
-> suo tempo da quella implementazione e congelati in `conformance/cases/`.
->
-> In questa wiki ogni esempio marcato **Output:** è un programma Triad-Core verificato con
-> `node seed/dev/triad_core.cjs`; gli esempi Full sono marcati **Output (golden Full):** oppure
-> non riportano output.
+## Che cosa impari e come è organizzato
+
+Il tutorial è un libro in cinque parti, pensate per essere lette in ordine ma abbastanza
+autonome da poter essere consultate separatamente.
+
+- **Parte I — Primi passi.** Che cos'è Triad, come si installa e si esegue, il primo
+  programma spiegato riga per riga.
+- **Parte II — Triad-Core passo per passo.** Il sottoinsieme eseguibile oggi, costrutto per
+  costrutto: lessico, valori, variabili, espressioni, controllo di flusso, funzioni, chiusure,
+  liste, stringhe, primitivi di bootstrap, errori e differenze tra i runtime. Gli esercizi
+  guidati in fondo alla parte servono a fissare quello che hai letto.
+- **Parte III — Triad-Full (lo standard completo).** Tipi dichiarati, multiple dispatch,
+  struct, `for` e comprehension, logica con fatti e regole, macro, contratti, budget, tracce
+  ed effetti. È il linguaggio definito dalla specifica: qui lo studi, ma il runtime attuale non
+  lo esegue ancora.
+- **Parte IV — Il codice del progetto.** Una visita guidata al repository: l'interprete di
+  riferimento, il seed, S1, i casi di conformità, la CLI, il benchmark, il flusso di contributo.
+  Serve a capire come il linguaggio è implementato, non solo come si usa.
+- **Parte V — Riferimento.** Grammatica, schede rapide, messaggi di errore, glossario, stato
+  del progetto e FAQ: capitoli da consultare, più che da leggere di seguito.
+
+**Che cosa significa «eseguibile oggi».** Lo standard Triad definisce due profili di
+conformità. Un esempio è *eseguibile oggi* quando gira, senza modifiche, su
+un'implementazione che esiste già nel repository; è *definito dallo standard* quando la
+specifica lo descrive ma nessun runtime attuale lo esegue. Il tutorial distingue sempre i due
+casi, e ogni blocco di codice dichiara il profilo a cui appartiene.
+
+| profilo | dove è definito | eseguibile oggi? |
+|---|---|---|
+| **Triad-Core** | `SPEC-CORE.md` | **sì**: interprete di riferimento JavaScript `seed/dev/triad_core.cjs` (37/37 casi Core) e, in parte, il seed Windows `seed/windows-x86_64/seed.exe` (33 casi Core verificati in CI) |
+| **Triad-Full** | `SPEC.md` | **no**: struct, dispatch, logica, macro, contratti, budget, tracce, effetti, destrutturazione, `for`, `try`, `Float` sono specifica; nella conformance Full passa solo `errore` |
+
+Due precisazioni sul contesto, utili per non confondere il libro con il progetto. La versione
+dello standard è la `0.2.0`, registrata in `VERSION`. Triad non dipende da Julia: quella
+vecchia implementazione è stata rimossa, e gli output Triad-Full che leggi nel libro sono i
+**golden**, cioè i risultati attesi prodotti a suo tempo da quell'implementazione e congelati
+in `conformance/cases/`; non sono stati riprodotti dal runtime attuale. Al contrario, ogni
+esempio marcato **Output:** è un programma Triad-Core verificato con
+`node seed/dev/triad_core.cjs`; gli esempi Full sono marcati **Output (golden Full):** oppure
+non riportano output.
 
 ---
 
-## Come usare questa wiki
+## Come usare questo tutorial
 
-Scegli un percorso:
+Non c'è un solo modo di leggere il libro: dipende da quello che ti serve. La tabella qui sotto
+riassume i percorsi principali. Chi non conosce Triad, però, dovrebbe cominciare dalla Parte I:
+i capitoli successivi danno per acquisito il lessico del linguaggio.
 
 | vuoi… | leggi |
 |---|---|
@@ -44,16 +75,16 @@ Scegli un percorso:
 | contribuire all'interprete JS, al seed, a S1, alla CLI o alla conformance | [Parte IV](#parte-4) (capitoli 33–43) |
 | consultare grammatica, schede rapide, errori, glossario | [Parte V](#parte-5) (capitoli 44–49) |
 
-Convenzioni:
-
-- I comandi sono mostrati per Linux/macOS (`sh`) e, quando diversi, per Windows (`cmd`/PowerShell).
-- I blocchi `triad` mostrano codice Core, normalmente eseguibile con l'interprete JS; i frammenti
-  specifici del seed Windows sono indicati nel testo. I blocchi `triad-full` mostrano codice
-  definito dallo standard Full, non ancora eseguibile dal runtime corrente.
-- "Interprete JS" = `seed/dev/triad_core.cjs`, interprete di riferimento Triad-Core usato su
-  Linux/macOS e dal runner di conformance. "Seed" = `seed/windows-x86_64/seed.exe`, interprete
-  Triad-Core in codice macchina (S0). Dove si comportano diversamente lo dice il
-  [capitolo 15](#cap-15).
+Alcune convenzioni rendono più facile seguire gli esempi. I comandi sono mostrati per
+Linux/macOS (`sh`) e, quando sono diversi, per Windows (`cmd`/PowerShell). I blocchi `triad`
+contengono codice Core, normalmente eseguibile con l'interprete JS; i frammenti specifici del
+seed Windows sono indicati nel testo. I blocchi `triad-full` mostrano codice definito dallo
+standard Full, non ancora eseguibile dal runtime corrente. Con **interprete JS** si intende
+`seed/dev/triad_core.cjs`, l'interprete di riferimento Triad-Core usato su Linux/macOS e dal
+runner di conformità; con **seed** si intende `seed/windows-x86_64/seed.exe`, l'interprete
+Triad-Core in codice macchina (S0). Dove i due si comportano diversamente lo dice il
+[capitolo 15](#cap-15). I sorgenti si scrivono in file `.triad` (estensione canonica) o `.td`
+(alias storico).
 
 ## Indice
 
@@ -130,8 +161,15 @@ Convenzioni:
 
 ## 1. Cos'è Triad
 
-Triad è un linguaggio di programmazione autonomo che unisce tre paradigmi in una sintassi a
-blocchi:
+Triad è un linguaggio di programmazione autonomo che riunisce tre paradigmi — imperativo,
+logico e metaprogrammatorio — in un'unica sintassi a blocchi. L'idea di fondo è che questi
+paradigmi non vadano tenuti in linguaggi separati: un programma Triad può definire funzioni e
+cicli come un linguaggio imperativo, dichiarare fatti e regole come Prolog e trattare il codice
+come un valore costruibile e trasformabile come in Lisp, e le tre cose convivono nello stesso
+file senza strati né interfacce.
+
+Le influenze dichiarate sono tre, e per ciascuna il libro mostrerà via via che cosa Triad ha
+ripreso:
 
 | influenza | idea ripresa in Triad |
 |---|---|
@@ -142,6 +180,22 @@ blocchi:
 A questi si aggiungono, come parte del linguaggio e non di una libreria: **errori come dati**
 (`Err`), **contratti** (`requires`/`ensures`), **budget** (`with budget`), **tracce**
 (`with trace`) ed **effetti dichiarati** (`!io`, `!state`).
+
+La distinzione tra «parte del linguaggio» e «libreria» non è nominale, e vale la pena capirla
+subito. Un errore che è un valore può essere restituito, ispezionato e composto come qualsiasi
+altro dato, invece di interrompere il programma; un contratto scritto nella firma è visibile
+all'implementazione, che può controllarlo; un effetto dichiarato permette al runtime di
+verificare che una funzione pura non stampi. Sono tutte funzionalità che un linguaggio può
+offrire solo se le conosce, e per questo Triad le definisce nello standard anziché lasciarle a
+convenzioni tra programmatori.
+
+Da Julia arriva l'ossatura della sintassi: blocchi `function … end`, tipi con `::`, struct e
+multiple dispatch. Da Prolog arriva il motore logico: fatti, regole, unificazione con
+occurs-check, backtracking e `solve` con variabili logiche. Da Lisp arriva l'idea che il codice
+sia un albero uniforme, quindi un valore come gli altri, e la macchina delle macro che su
+quell'idea si appoggia. Tenere insieme i tre modelli è la parte propriamente nuova: non esiste
+un «linguaggio del lunedì» e un «linguaggio del martedì», esiste un solo programma con una sola
+semantica di espressioni e di blocchi.
 
 ### 1.1 Due profili: Core e Full
 
@@ -154,12 +208,24 @@ Lo standard definisce due profili di conformità (SPEC §16.1):
   l'interprete di tutto Triad.
 - **Triad-Full** ([`SPEC.md`](SPEC.md)): tutto il linguaggio.
 
+La separazione risponde a un vincolo pratico, non a una scelta di comodo. Il primo interprete
+di Triad deve esistere prima che esista un compilatore Triad, quindi va scritto a mano in codice
+macchina: più il linguaggio è piccolo, più quel compito è realistico. Allo stesso tempo il
+sottoinsieme deve bastare a scrivere l'interprete completo nella seconda fase. Triad-Core è
+esattamente il punto di equilibrio tra le due esigenze, e per questo è definito da una
+specifica a sé.
+
 Ogni programma Triad-Core (esclusi i primitivi di bootstrap) è anche un programma Triad-Full
-valido e deve comportarsi allo stesso modo.
+valido e deve comportarsi allo stesso modo. Il contrario non vale: un programma che usa `struct`,
+`for` o `float` è Full, e il runtime Core non lo eseguirà. È la distinzione che ritroverai in
+tutto il libro: la Parte II insegna il profilo che gira oggi, la Parte III aggiunge il resto.
 
 ### 1.2 La catena di bootstrap
 
-Triad non vuole dipendere da nessun linguaggio ospite. Il piano ([`BOOTSTRAP.md`](BOOTSTRAP.md)):
+Triad non vuole dipendere da nessun linguaggio ospite, ma ogni linguaggio deve pur partire da
+qualcosa. La catena di bootstrap risolve il problema in tappe: si comincia con un interprete
+scritto a mano in codice macchina, lo si usa per eseguire un interprete scritto in Triad, e
+così via fino a un compilatore che compila se stesso. Il piano ([`BOOTSTRAP.md`](BOOTSTRAP.md)):
 
 ```
 S0  seed: interprete Triad-Core in codice macchina x86-64 (dump esadecimale nel repo)
@@ -169,14 +235,32 @@ S3  compilatore self-hosted: S2 compilato da S2          (non iniziato)
 S4  Triad completo: REPL, CLI, tooling, parità Linux     (non iniziato)
 ```
 
+Il seed S0 non è distribuito come eseguibile ma come dump esadecimale: è il modo più semplice
+per versionare un binario in un repository testuale, e si materializza con lo strumento di
+decodifica del sistema operativo ([capitolo 2](#cap-2)). Gli stadi S1–S4 sono la direzione del
+progetto, non ciò che serve per leggere questo libro: per seguire il tutorial basta il seed S0
+o l'interprete JS.
+
 Gli strumenti in Node.js (`seed/dev/*.js`, `conformance/run.mjs`, `cli/`) sono **strumenti di
-sviluppo**: aiutano a generare e verificare, ma non fanno parte della catena S0→S4.
+sviluppo**: aiutano a generare e verificare, ma non fanno parte della catena S0→S4. La Parte IV
+del libro li presenta uno per uno, spiegando che cosa fanno e perché sono esterni al bootstrap.
 
 ---
 
 <a id="cap-2"></a>
 
 ## 2. Installare ed eseguire
+
+«Installare» Triad qui non significa installare un pacchetto: significa avere il repository e
+uno dei due runtime disponibili. Non esiste ancora un compilatore da aggiungere al sistema, né
+un gestore di pacchetti del linguaggio. Il capitolo risponde quindi a due domande concrete: come
+si esegue un file e da quale runtime conviene partire.
+
+La scelta consigliata per chi comincia è l'**interprete JS**: si avvia con Node.js, non richiede
+di decodificare binari ed è quello con cui vengono verificati i casi di conformità. Il seed
+Windows è interessante quando vuoi vedere il linguaggio eseguito senza runtime ospiti; i suoi
+limiti sono elencati nel [capitolo 15](#cap-15). Per seguire il libro puoi usare solo l'interprete
+JS, e passare al seed quando un capitolo lo richiede.
 
 ### 2.1 Requisiti
 
@@ -185,7 +269,14 @@ sviluppo**: aiutano a generare e verificare, ma non fanno parte della catena S0�
   `certutil`.
 - Git per clonare il repository: `git clone https://github.com/GPuntobit/triad2.0.git`.
 
+I requisiti sono pochi di proposito: Triad non vuole dipendenze da altri linguaggi per eseguire i
+programmi, e l'unica dipendenza dello strumentario di sviluppo è Node.js. Se hai Node.js, hai già
+tutto ciò che serve per eseguire gli esempi della Parte II.
+
 ### 2.2 Eseguire un file
+
+Un programma Triad è un file di testo che il runtime legge, analizza ed esegue. La tabella
+mostra come avviarlo sulle due piattaforme e come passargli lo script da stdin:
 
 | piattaforma | comando |
 |---|---|
@@ -193,7 +284,8 @@ sviluppo**: aiutano a generare e verificare, ma non fanno parte della catena S0�
 | Windows (seed) | `seed\windows-x86_64\seed.exe file.triad` oppure `bin\triad.cmd file.triad` |
 | qualsiasi (stdin, interprete JS) | `echo 'println(7 * 6)' \| node seed/dev/triad_core.cjs -` |
 
-Esempi pronti che girano oggi: tutti i `conformance/core/cases/*/program.td`.
+Esempi pronti che girano oggi: tutti i `conformance/core/cases/*/program.td`, cioè i casi che
+il libro cita come riferimento normativo in fondo a ogni capitolo.
 
 ```sh
 node seed/dev/triad_core.cjs conformance/core/cases/ricorsione/program.td   # 120, 55
@@ -203,10 +295,15 @@ node seed/dev/triad_core.cjs conformance/core/cases/ricorsione/program.td   # 12
 bin\triad.cmd conformance\core\cases\ricorsione\program.td
 ```
 
+Il commento `# 120, 55` non fa parte del comando: indica l'output atteso, cioè quello che
+dovresti vedere comparire. Il trattino `-` al posto del nome del file dice all'interprete JS di
+leggere il programma dallo standard input. Lo stesso file può essere eseguito dai due runtime,
+ma non sempre con lo stesso risultato: la differenza è l'argomento del [capitolo 15](#cap-15).
+
 ### 2.3 Materializzare il seed
 
 Il sorgente del seed è il dump esadecimale; l'eseguibile si ottiene con un decodificatore di
-sistema:
+sistema. Serve solo se vuoi provare il seed: l'interprete JS non richiede questo passaggio.
 
 ```powershell
 Remove-Item seed\windows-x86_64\seed.exe -ErrorAction SilentlyContinue
@@ -218,18 +315,32 @@ certutil -decodehex seed\windows-x86_64\seed.hex seed\windows-x86_64\seed.exe
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed
 ```
 
+Il comando Windows cancella prima l'eseguibile precedente, se c'è, e poi lo ricrea dal dump; su
+Linux il risultato è un ELF minimale, lo stadio E0, che per ora si limita a stampare un messaggio
+di avvio: non è ancora un interprete. Non è un errore di installazione, è lo stato del port
+descritto in [`STATUS.md`](STATUS.md).
+
 ### 2.4 Launcher `bin/triad` e `bin/triad.cmd`
 
-Aggiungendo `bin/` al `PATH` si usa `triad file.triad`. I launcher cercano, in ordine:
+Un launcher serve a non dover ricordare ogni volta quale binario usare e in quale cartella si
+trova. Non è obbligatorio, ma è comodo: quando `bin/` è nel `PATH` basta `triad file.triad`, come
+con un linguaggio installato nel sistema. La ricerca del runtime segue un ordine preciso, dal
+runtime migliore a quello disponibile:
 
 1. `bin/triad-native` (eseguibile standalone, **non ancora prodotto**: arriverà con S2–S3);
 2. `seed/<piattaforma>/seed` (su Windows `seed\windows-x86_64\seed.exe`).
 
 Su Linux il launcher trova il seed ELF E0, che **non interpreta ancora programmi**: per
-eseguire codice su Linux usa direttamente l'interprete JS. `triad --build` stampa un messaggio
-ed esce con codice 2.
+eseguire codice su Linux usa direttamente l'interprete JS. `triad --build` è un residuo della
+vecchia implementazione Julia: stampa un messaggio che spiega perché la build non è più
+supportata ed esce con codice 2. Quando nessun runtime è disponibile, il launcher non fallisce in
+silenzio: stampa le istruzioni per materializzare il seed.
 
 ### 2.5 Codici di uscita
+
+I codici di uscita sono parte del contratto del linguaggio, non un dettaglio di comodità: la
+suite di conformità confronta anche il codice, quindi un programma che stampa l'output giusto ma
+esce con il codice sbagliato non passa.
 
 | codice | significato |
 |---|---|
@@ -238,10 +349,16 @@ ed esce con codice 2.
 | `2` | uso non valido (es. nessun file) |
 
 Le opzioni di SPEC §14 (`-e`, `-E`, `-l`, `-i`, `--tree`, `--help`, REPL) **non sono ancora
-implementate**: il seed Windows esce con codice 0 senza output, l'interprete JS le tratta come
-nome di file.
+implementate**: l'interprete JS le tratta come un nome di file, e il seed Windows, che documenta
+solo l'uso `seed.exe FILE`, non le riconosce. Per questo, quando un esempio non funziona, la prima
+domanda da farsi è quale dei tre codici hai ottenuto: un `2` indica un problema nel comando, un
+`1` un problema nel programma.
 
 ### 2.6 La CLI di sviluppo in breve
+
+La CLI è facoltativa: raccoglie in un solo comando le operazioni che altrimenti faresti a mano
+nel repository. Le righe seguenti mostrano le più usate, ciascuna con il commento che dice che
+cosa fa.
 
 ```sh
 bin/triad-cli status                 # ambiente e seed trovato (Windows: bin\triad-cli.cmd)
@@ -254,13 +371,18 @@ node conformance/run.mjs             # runner di conformance diretto (Core)
 I launcher `bin/triad-cli*` eseguono `npm install` in `cli/` al primo avvio. In alternativa si
 usa l'eseguibile standalone `triad-cli.exe` / `triad-cli` allegato alla
 [release beta](https://github.com/GPuntobit/triad2.0/releases). Dettagli nel
-[capitolo 39](#cap-39).
+[capitolo 39](#cap-39). Per seguire la Parte II la CLI non serve: gli esempi si eseguono
+direttamente con `node`.
 
 ---
 
 <a id="cap-3"></a>
 
 ## 3. Il primo programma
+
+Un programma Triad non richiede cerimonie: non c'è un file di configurazione, non ci sono import
+da dichiarare, non c'è una funzione `main` da invocare. Il primo programma è un file di testo che
+contiene le istruzioni nell'ordine in cui devono essere eseguite.
 
 Crea `ciao.triad`:
 
@@ -330,6 +452,9 @@ node seed/dev/triad_core.cjs args.triad uno due      # [uno, due]  poi  2
 4. se è un comportamento del linguaggio da fissare, trasformalo in un caso di conformance
    ([capitolo 38](#cap-38)).
 
+Lo stesso ciclo vale per gli esercizi del capitolo 17: prima si scrive il programma, poi si
+confronta l'output con quello atteso, e solo alla fine, se serve, si guarda la soluzione.
+
 ---
 <a id="parte-2"></a>
 
@@ -339,9 +464,22 @@ Ogni capitolo di questa parte usa solo Triad-Core. Gli esempi con **Output:** so
 eseguiti con l'interprete JS; il caso di conformance indicato in fondo a ogni capitolo è il
 riferimento normativo da leggere e far girare.
 
+La struttura dei capitoli è sempre la stessa, così sai sempre dove guardare: prima la
+spiegazione del costrutto e del problema che risolve, poi la sintassi e le regole, quindi un
+esempio completo con il suo output, e infine il caso di conformance da cui l'esempio deriva.
+Quando una regola nasconde una trappola, il testo la segnala esplicitamente.
+
 <a id="cap-4"></a>
 
 ## 4. Lessico
+
+Il lessico è l'insieme dei mattoni con cui si scrive un programma: che cosa è un nome, come si
+scrive un numero o una stringa, che cosa il runtime considera separatore tra un'istruzione e
+l'altra. Non è un elenco da imparare a memoria: serve a capire perché un certo testo viene letto
+in un modo e non in un altro, e quindi perché un programma che sembra giusto produce un
+`parse error`.
+
+La tabella raccoglie gli elementi di Triad-Core, con la forma ammessa e un esempio per ciascuno:
 
 | elemento | forma | esempi |
 |---|---|---|
@@ -362,6 +500,20 @@ continue true false nothing`.
 Non fanno parte di Core: letterali `Float` (`1.5`), variabili logiche `?x`, macro `@nome`,
 interpolazione `$x`, l'operatore `/`.
 
+L'operatore `->` costruisce una lambda, mentre `?` e `:` formano il condizionale: sono token del
+lessico, ma il loro significato è argomento del [capitolo 7](#cap-7) e del
+[capitolo 10](#cap-10). Le parole riservate non possono essere usate come nomi di variabile: il
+parser le riconosce come costruzioni, e un assegnamento come `let = 3` produce un errore di
+sintassi. L'elenco delle parole riservate è breve perché Core è un linguaggio piccolo: tutto
+ciò che non figura qui appartiene a Triad-Full, e usarlo in un programma Core non è «codice
+eseguibile oggi».
+
+Un'altra distinzione da tenere a mente è quella tra spazi e separatori. Spazi e tabulazioni
+separano i token ma non le istruzioni; il punto e virgola e il ritorno a capo sì. Per questo
+`println(1); println(2)` mette due istruzioni sulla stessa riga, mentre una riga vuota non
+produce un'istruzione. Il punto e virgola, insomma, ha lo stesso ruolo del ritorno a capo: è un
+separatore, non una fine di blocco.
+
 ```triad
 #= commento
    su più righe =#
@@ -381,7 +533,14 @@ alice +
 > **Attenzione.** `"x = $x"` in Core stampa letteralmente `x = $x`: l'interpolazione è solo
 > Triad-Full. In Core si concatena: `"x = " * string(x)`.
 >
-> I commenti `#= … =#` **non si annidano** nell'interprete JS (SPEC Full richiede l'annidamento).
+> I commenti `#= … =#` **non si annidano** nell'interprete JS: il commento si chiude al primo
+> `=#` incontrato. Non contare sull'annidamento; se devi commentare codice che contiene già un
+> blocco `#= … =#`, usa commenti di riga.
+
+I due avvertimenti hanno la stessa radice: in Core il lessico è volutamente minimo, e ciò che in
+un altro linguaggio è «solo un dettaglio» qui può non esistere. Il testo di un programma Core
+non va interpretato con le abitudini di un altro linguaggio: se un escape o un simbolo non
+compare nella tabella, il runtime non lo riconosce.
 
 Riferimento: `conformance/core/cases/aritmetica`, `simboli_base`, `stringhe_base`.
 
@@ -390,6 +549,14 @@ Riferimento: `conformance/core/cases/aritmetica`, `simboli_base`, `stringhe_base
 <a id="cap-5"></a>
 
 ## 5. Valori, tipi e stampa
+
+Triad è un linguaggio a tipi dinamici: ogni valore ha un tipo ben preciso, ma le variabili no.
+Una stessa variabile può contenere un intero e poi una stringa, e il tipo viene controllato al
+momento dell'operazione, non della dichiarazione. Da qui deriva una conseguenza pratica: per
+sapere che cosa contiene un valore devi chiederlo al runtime con `typeof`, e per scrivere codice
+robusto devi pensare ai tipi che possono arrivare, non solo a quelli che intendevi passare.
+
+La tabella elenca i tipi che un programma Core può incontrare:
 
 | tipo | valori | `typeof(v)` |
 |---|---|---|
@@ -402,6 +569,17 @@ Riferimento: `conformance/core/cases/aritmetica`, `simboli_base`, `stringhe_base
 | `Nothing` | `nothing` | `Nothing` |
 
 `typeof` restituisce il **nome del tipo come simbolo**.
+
+Il dettaglio del simbolo non è pedanteria: `typeof(1)` vale `:Int`, non `"Int"`. Confrontare il
+risultato con una stringa non funziona, e il confronto corretto è `typeof(v) == :Int`. In
+generale, in Triad un tipo si nomina con un simbolo; la stringa serve a chi stampa un messaggio,
+non a chi programma un controllo.
+
+I tipi non sono un ornamento: da essi dipende che cosa un'operazione accetta. `Int` è a 64 bit
+perché deve stare in una parola di macchina, che è l'unità con cui il seed lavora; `String` è
+immutabile perché il linguaggio non offre modi per modificarla in loco; `Symbol` è pensato per
+i nomi e gli identificatori interni; `List` è mutabile perché è la struttura dati di lavoro del
+linguaggio; `Nothing` rappresenta l'assenza di un valore utile, non un errore.
 
 ### 5.1 Regole di stampa di `print`/`println`
 
@@ -470,11 +648,33 @@ Riferimento: `conformance/core/cases/valori`, `nothing_base`, `confronti`.
 
 ## 6. Variabili e assegnamento
 
+Una variabile, in Triad, è un nome legato a un valore. Non la dichiari e non ne annunci il tipo:
+il primo assegnamento crea il legame, i successivi lo aggiornano. Questo rende il codice breve,
+ma sposta l'attenzione su due domande che in un linguaggio con le dichiarazioni sarebbero
+automatiche: quale valore c'è dentro un nome in questo punto del programma, e in quale ambiente
+quel nome è visibile.
+
+Le regole di base sono queste:
+
 - `nome = espr` lega o aggiorna un nome; l'assegnamento è un'espressione e vale il valore
   assegnato.
 - `+=`, `-=`, `*=` aggiornano una variabile esistente (il lato sinistro è valutato una volta).
 - Usare un nome mai assegnato è un errore di esecuzione (`undefined variable`).
 - Non ci sono dichiarazioni né tipi: le variabili sono dinamiche.
+
+Che l'assegnamento sia un'espressione, e non un'istruzione, è la regola meno ovvia. Significa
+che `x = 42` non «fa qualcosa e basta»: produce il valore `42`, e quel valore può essere usato
+dove compare l'assegnamento. Nella pratica serve quando un assegnamento compare dentro un blocco
+che restituisce un valore, ma è anche il motivo per cui non trovi una distinzione rigida tra
+«istruzione» e «espressione» nel resto del libro. L'assegnamento composto (`+=`, `-=`, `*=`) è
+zucchero per una lettura e una scrittura della stessa variabile, con la garanzia che il lato
+sinistro venga valutato una sola volta: se contiene un indice, quell'indice non viene calcolato
+due volte.
+
+Un nome usato prima di essere assegnato non vale `nothing` e non vale zero: è un errore che
+interrompe il programma. È una scelta voluta, perché un valore «vuoto» implicito nasconderebbe
+un errore di logica; il [capitolo 14](#cap-14) spiega come si riconosce questo caso e che cosa
+si vede sul terminale.
 
 ```triad
 x = 42
@@ -521,6 +721,12 @@ Riferimento: `conformance/core/cases/variabili`.
 
 ## 7. Operatori ed espressioni
 
+Un'espressione è un modo di combinare valori per produrne un altro. Triad non ha una
+distinzione rigida tra espressioni e istruzioni: quasi tutto è un'espressione, e anche i
+costrutti di controllo hanno un valore. Per leggere un'espressione senza ambiguità servono due
+informazioni: quanto «lega forte» ogni operatore e in che direzione si raggruppano gli operatori
+dello stesso livello.
+
 ### 7.1 Precedenza (dalla più bassa alla più alta)
 
 | livello | operatori | associatività |
@@ -535,6 +741,17 @@ Riferimento: `conformance/core/cases/variabili`.
 | 8 | `^` | **destra** |
 | 9 | unari `-` `!` | prefissi |
 | 10 | `f(args)` `xs[i]` | postfissi |
+
+La tabella va letta come una classifica: il livello 1 lega meno, il livello 10 di più. In
+`2 + 3 * 4` convivono il livello 6 (`+`) e il livello 7 (`*`); vince il più alto, quindi si
+calcola prima `3 * 4`. Quando due operatori stanno sullo stesso livello decide l'associatività:
+`-` è a sinistra, quindi `8 - 3 - 2` è `(8 - 3) - 2` e non `8 - (3 - 2)`. L'eccezione più
+importante è `^`, che è a destra: `2 ^ 3 ^ 2` significa `2 ^ (3 ^ 2)` e vale 512, non 64.
+
+Questa tabella descrive Triad-Core. Triad-Full aggiunge altri operatori e altri livelli — il
+range `a:b`, `in`/`isa`/`is`, l'asserzione di tipo `e::T`, la lambda `x -> e` — descritti nella
+specifica (SPEC §2). Chi scrive solo Core può ragionare con questa tabella; chi passa a Full
+deve consultare quella completa.
 
 ### 7.2 Aritmetica intera
 
@@ -556,6 +773,15 @@ Output:
 1 -1 2
 -9223372036854775808
 ```
+
+Il risultato `-9223372036854775808` è la faccia visibile del wrap: il massimo intero più uno non
+produce un errore, produce il minimo. Triad-Core non ha un tipo «intero grande» né controlli di
+overflow, perché deve restare implementabile con poche istruzioni di macchina; se un calcolo
+deve restare nel dominio, il controllo va scritto nel programma.
+
+Il resto negativo segue la stessa logica: `-7 % 3` vale `-1` perché il segno lo dà il dividendo,
+non il divisore. È il comportamento di `rem` in Julia e va tenuto presente quando si usa `%` per
+calcolare posizioni cicliche: con valori negativi serve una correzione esplicita.
 
 ### 7.3 Logica e condizioni
 
@@ -586,6 +812,16 @@ che un calcolo non necessario produca un errore. Un controllo del tipo `i <= len
 xs[i] > 0` può quindi verificare il limite prima di accedere alla lista, purché `i` sia un intero
 valido. Entrambi gli operandi valutati devono comunque essere booleani.
 
+La scelta di accettare solo `Bool` evita una classe intera di ambiguità: in molti linguaggi `0`,
+`""` e `nothing` sono «falsi» per convenzione, e ogni programmatore arriva con una convenzione
+diversa. In Triad non ci sono convenzioni da ricordare: una condizione è vera o falsa, e
+qualsiasi altro tipo è un errore. Per questo `1 < 2 < 3` non funziona: i confronti si associano a
+sinistra, quindi il parser legge `(1 < 2) < 3`, cioè un `Bool` confrontato con un `Int`.
+
+Una trappola collegata riguarda `=` e `==`: `if x = 0` non confronta `x` con zero, assegna zero e
+produce `0` come valore della condizione; il runtime rifiuta quel valore perché non è un `Bool`.
+Il confronto è `==`, e vale la pena prendere l'abitudine di scriverlo sempre.
+
 La tabella di precedenza descrive il raggruppamento: `a + b * c` equivale a `a + (b * c)`.
 Quando due operatori hanno lo stesso livello, entra in gioco l'associatività. In caso di dubbio,
 usa parentesi: rendono esplicita la struttura che vuoi e aiutano a distinguere un errore di
@@ -599,8 +835,12 @@ Riferimento: `conformance/core/cases/aritmetica`, `operatori`, `interi`, `confro
 
 ## 8. Controllo di flusso
 
-In Triad **tutto è un'espressione**: `if`, `while`, `let`, `begin` hanno un valore (quello
-dell'ultima istruzione eseguita, `nothing` se nessuna).
+Il controllo di flusso decide quali istruzioni eseguire e quante volte. Triad ha un vincolo che
+semplifica il modello mentale: **tutto è un'espressione**, e anche `if`, `while`, `let` e
+`begin` hanno un valore (quello dell'ultima istruzione eseguita, `nothing` se non ne esegue
+nessuna). Non esistono quindi due mondi separati — istruzioni che non valgono niente ed
+espressioni che valgono qualcosa — ma un solo meccanismo, e i blocchi sono espressioni che
+contengono altre espressioni.
 
 ### 8.1 `if` / `elseif` / `else`
 
@@ -625,6 +865,18 @@ Output:
 negativo zero positivo
 si
 ```
+
+L'`if` valuta una condizione alla volta, dalla prima all'ultima, ed esegue solo il ramo
+corrispondente al primo valore `true`; se nessuna condizione è vera ed esiste un `else`, esegue
+quello, altrimenti non esegue niente e vale `nothing`. `elseif` non è uno zucchero per un `else`
+che contiene un altro `if`: è un ramo della stessa catena, e questo evita di accumulare `end` a
+ogni livello. L'ultima riga dell'esempio mostra che un `if` può stare a destra di un
+assegnamento: il suo valore è quello del ramo scelto, qui il simbolo `:si`.
+
+Due trappole ricorrenti: dimenticare l'`end` (che chiude `if`, `while`, `function` e `let`) e
+scrivere `else if` al posto di `elseif`: in Core `elseif` è un unico ramo della catena, mentre
+`else if` annida un secondo `if` e richiede un `end` in più. Il `? :` del capitolo 7 è la
+versione compatta dello stesso schema, comoda quando i due rami sono espressioni brevissime.
 
 ### 8.2 `while`, `break`, `continue`
 
@@ -652,8 +904,16 @@ Output:
 fine
 ```
 
-`break` e `continue` agiscono sul `while` più interno. Non esiste `for` in Core: si itera con un
-contatore e `while`.
+Il `while` è l'unico ciclo di Triad-Core: non c'è `for`, e l'iterazione su una lista si scrive
+con un contatore e un limite, come farà il [capitolo 11](#cap-11). La scelta è coerente con il
+bootstrap: un solo costrutto di ciclo è più facile da implementare in codice macchina, e `for`
+può essere aggiunto dopo, in S1, senza cambiare la semantica del `while`.
+
+La trappola classica del `while` è l'ordine delle istruzioni dentro il corpo: se `continue`
+salta l'aggiornamento del contatore, il ciclo non termina. Nell'esempio il contatore viene
+incrementato prima di ogni `continue`, e non è un caso: la condizione di uscita deve essere
+raggiungibile lungo tutti i percorsi del corpo. `break` e `continue` agiscono sempre sul `while`
+più interno, quindi in cicli annidati vanno letti con attenzione.
 
 ### 8.3 `let` e `begin`
 
@@ -685,6 +945,15 @@ Output:
 42
 ```
 
+Un blocco `begin … end` raggruppa istruzioni e vale l'ultima: serve a usare più istruzioni dove
+ne serve una sola, per esempio a destra di un assegnamento. `let` invece apre un ambiente nuovo,
+e i nomi che lega lì dentro possono nascondere quelli esterni senza toccarli: è il meccanismo con
+cui Triad-Core isola un calcolo. L'esempio mostra i tre legami di `x` (`20`, `10`, `1`) e poi il
+valore del `begin` (`42`), che arriva all'assegnamento come qualsiasi altro valore.
+
+La differenza tra i due costrutti è la stessa che c'è tra «raggruppare» e «isolare»: usa `begin`
+quando vuoi solo tenere insieme istruzioni, `let` quando un nome locale deve restare locale.
+
 Riferimento: `conformance/core/cases/controllo`, `if_else`, `if_elseif`, `if_nested`,
 `if_no_else`, `while_loop`, `let_annidato`, `begin_block`.
 
@@ -693,6 +962,10 @@ Riferimento: `conformance/core/cases/controllo`, `if_else`, `if_elseif`, `if_nes
 <a id="cap-9"></a>
 
 ## 9. Funzioni
+
+Una funzione è un pezzo di programma a cui dai un nome, con dei parametri, che restituisce un
+valore. È il mattone con cui si costruisce tutto il resto: in Triad-Core non ci sono struct né
+metodi, quindi la funzione è anche l'unico modo per dare un nome a un'operazione e riusarla.
 
 ### 9.1 Tre modi di definire una funzione
 
@@ -762,6 +1035,12 @@ avvicina a un caso base, la funzione continua a chiamarsi; nel runtime Core il b
 non è un costrutto del linguaggio, quindi è responsabilità del programma evitare ricorsioni
 illimitate.
 
+Senza `return`, il valore della funzione è l'ultima espressione eseguita, anche quando il corpo
+termina dentro un `if`. Una funzione è un valore legato a un nome quando l'istruzione di
+definizione viene eseguita: per questo chiamarla prima della sua riga di definizione produce
+`undefined variable`, non una risoluzione anticipata. Non ci sono argomenti di default né
+variadici: l'arità deve coincidere esattamente con i parametri.
+
 ### 9.3 Annotazione di effetto `!io`
 
 In Triad-Full una funzione che stampa deve dichiarare `!io` ([capitolo 28](#cap-28)). Core
@@ -782,6 +1061,12 @@ hello from block
 42
 ```
 
+L'annotazione fa parte della firma in Triad-Full: lì una funzione che stampa senza `!io` viola il
+controllo degli effetti e il chiamante ottiene `Err(:effect)` ([capitolo 28](#cap-28)). In Core
+il controllo non esiste, quindi l'annotazione viene accettata e ignorata: il programma gira, ma
+non hai alcuna garanzia in più. Scriverla fin da subito resta comunque utile, perché il codice
+sarà valido quando passerà a Full e perché documenta l'intenzione di chi l'ha scritto.
+
 Riferimento: `conformance/core/cases/funzioni`, `funzioni_semplici`, `funzioni_blocco`,
 `funzioni_io`, `ricorsione`, `gcd`, `formula`.
 
@@ -790,6 +1075,13 @@ Riferimento: `conformance/core/cases/funzioni`, `funzioni_semplici`, `funzioni_b
 <a id="cap-10"></a>
 
 ## 10. Lambda, chiusure e scope
+
+Una lambda è una funzione che non ha bisogno di un nome: la scrivi dove serve, e il suo valore è
+la funzione stessa. Serve ogni volta che vuoi passare un comportamento a un'altra funzione —
+«applica questa trasformazione a ogni elemento», «chiama questo controllo su ogni valore» —
+senza inventare un nome che userai una volta sola. Una chiusura è una lambda che ricorda
+l'ambiente in cui è nata; è il meccanismo che rende possibile costruire funzioni parametriche
+senza ricorrere a variabili globali.
 
 ### 10.1 Lambda
 
@@ -885,8 +1177,17 @@ Output:
 0
 ```
 
-Per far "uscire" un risultato da una funzione restituiscilo, oppure usa una lista (che è
-mutabile, [capitolo 11](#cap-11)).
+Il punto delicato è che le regole 2 e 3 sembrano in contraddizione: una funzione nominata non
+modifica un globale, una lambda sì. La differenza non è capricciosa, dipende da come vengono
+catturati gli ambienti. La lambda porta con sé il riferimento all'ambiente in cui è stata creata,
+quindi l'assegnamento trova il legame esterno e lo aggiorna. La funzione nominata è pensata per
+essere richiamabile da sola, senza effetti nascosti sui nomi dello scope globale: l'assegnamento
+crea un legame locale, e il globale resta quello che era. L'esempio lo mostra con `x` (che resta
+`1`) e con `c` (che resta `0` anche dopo `incrementa()`).
+
+Se ti serve comunicare un risultato, ci sono due strade coerenti con questo modello: restituire
+il valore con `return`, oppure mettere lo stato in una lista, che è mutabile e quindi condivisa
+anche da una funzione nominata ([capitolo 11](#cap-11)).
 
 Riferimento: `conformance/core/cases/lambda`, `closure`, `chiusure`, `chiusure_local`,
 `chiusura_in_if`, `let_chiusura`, `scope`.
@@ -896,6 +1197,15 @@ Riferimento: `conformance/core/cases/lambda`, `closure`, `chiusure`, `chiusure_l
 <a id="cap-11"></a>
 
 ## 11. Liste
+
+Una lista è una sequenza ordinata di valori, raggiungibili per posizione. In Triad-Core è la
+struttura dati di lavoro: non ci sono struct né dizionari, quindi liste, liste di liste e liste
+taggate sono il modo in cui si rappresentano record, ambienti e alberi. Capire come si comporta
+una lista — che è mutabile e che gli indici partono da 1 — è il passaggio che apre tutta la
+programmazione non banale in Core.
+
+Le operazioni di base sono poche, e vale la pena leggerle pensando a che cosa fanno alla lista
+come oggetto, non solo al valore che restituiscono:
 
 - Letterale: `[1, 2, 3]`, `[]`, eterogenee e annidabili.
 - Indici **da 1**: `xs[1]` è il primo elemento; fuori range è un errore.
@@ -957,6 +1267,14 @@ deve essere confuso con `xs[i]`.
 
 ## 12. Stringhe, simboli e conversioni
 
+Stringhe e simboli sembrano parenti stretti — entrambi contengono testo — ma hanno ruoli
+diversi. Una stringa è un dato che si costruisce, si concatena e si stampa; un simbolo è un nome
+che il linguaggio tratta come valore atomico, adatto a etichette, chiavi, tag di record e nomi di
+tipo. Le conversioni tra i due, e tra testo e numeri, sono il ponte che serve quando un programma
+legge input, costruisce messaggi o confronta valori che arrivano come testo.
+
+La tabella riassume le operazioni disponibili in Core:
+
 | operazione | significato |
 |---|---|
 | `a * b` | concatenazione di stringhe |
@@ -987,6 +1305,28 @@ true
 Per accedere ai singoli byte di una stringa servono i primitivi di bootstrap del capitolo
 successivo.
 
+Tre cose meritano attenzione. Primo, le stringhe sono **immutabili**: `saluto = "ciao " * nome`
+non modifica `"ciao "`, costruisce una nuova stringa. Questo è coerente con il resto del
+linguaggio, dove solo le liste sono mutabili, e rende innocuo passare una stringa a una funzione:
+chi la riceve non può alterarla. Secondo, la concatenazione usa `*` e non `+`: `+` resta
+l'addizione numerica, e la scelta evita di dover indovinare il tipo degli operandi in un'espressione
+come `a + b`. Terzo, `length` conta i **byte**, non i caratteri percepiti: una lettera accentata
+può occupare due byte, quindi in Core «lunghezza di una stringa» significa «dimensione in byte
+UTF-8», e le operazioni sui singoli caratteri si fanno a livello di byte con i primitivi del
+[capitolo 13](#cap-13).
+
+`string(x)` è una rappresentazione pensata per la lettura, non una promessa che il risultato si
+possa rileggere come sorgente: `string(:a)` produce `"a"` (senza i due punti), e la stampa di una
+lista non è necessariamente codice Triad valido. Per i messaggi va benissimo; per ricostruire un
+valore servono le conversioni esplicite. Anche la conversione non è una validazione: `Int("42")`
+presuppone che il testo sia nel formato giusto, e che cosa faccia `Int` su un testo che non è un
+numero **non è specificato**; il programma deve controllare prima, non sperare in un risultato
+utile.
+
+L'ultima trappola riguarda i simboli. `println(:ok)` stampa `ok`, ma il valore è ancora un
+simbolo: `:ok == "ok"` è `false`, e il confronto corretto è con `:ok` oppure con
+`Symbol("ok")`. L'aspetto stampato di un valore non è il valore.
+
 Riferimento: `conformance/core/cases/stringhe`, `stringhe_concat`, `stringhe_multi`,
 `simboli_base`.
 
@@ -999,6 +1339,15 @@ Riferimento: `conformance/core/cases/stringhe`, `stringhe_concat`, `stringhe_mul
 Servono a S1 per leggere e analizzare sorgente Triad. **Non** fanno parte di Triad-Full
 (SPEC-CORE §8): usali solo nel codice di bootstrap.
 
+Il nome «bootstrap» spiega la loro esistenza. Per scrivere in Triad un interprete di Triad serve
+la capacità di leggere un file, di guardare i singoli byte di quel file e di estrarne pezzi: sono
+operazioni che il linguaggio non offre con i tipi normali, perché le stringhe sono immutabili e
+non indicizzabili. I primitivi colmano questa lacuna al livello più basso possibile, quello dei
+byte, e restano fuori dal linguaggio normale perché una libreria di stringhe completa arriverà
+con S1, scritta in Triad.
+
+La tabella elenca i cinque primitivi e la loro semantica:
+
 | primitiva | semantica |
 |---|---|
 | `readfile(path)` | contenuto del file come `String`; errore se non leggibile |
@@ -1006,6 +1355,12 @@ Servono a S1 per leggere e analizzare sorgente Triad. **Non** fanno parte di Tri
 | `strbyte(s, i)` | byte (`Int` 0–255) alla posizione `i`, da 1 |
 | `strsub(s, a, b)` | sottostringa dai byte `a` a `b` inclusi, da 1 |
 | `exit(n)` | termina il processo con codice `n` |
+
+Tutte le posizioni sono **1-based**, come gli indici delle liste, e `strsub` include entrambi gli
+estremi: `strsub(s, 1, 3)` restituisce i primi tre byte. `strbyte` restituisce un intero tra 0 e
+255, non un carattere: il programma deve sapere quali codici gli interessano. Un indice fuori
+intervallo è un errore di esecuzione, non un byte zero; per questo chi analizza un sorgente
+controlla sempre i limiti prima di leggere.
 
 Esempio: contare le cifre di una stringa e separare la prima parola.
 
@@ -1035,17 +1390,34 @@ Output:
 abc
 ```
 
+Il primo ciclo conta le cifre confrontando il byte con i codici ASCII `48`–`57`: `strbyte` non
+dice «questo è un carattere», dice «questo è il numero 48», e il programma deve sapere che 48 è
+la cifra `0`. Il secondo ciclo cerca il primo spazio (codice `32`) e poi `strsub` estrae i byte
+fino a quello precedente; nota che `fine - 1` può valere `0` se la stringa comincia con uno
+spazio, ed è un caso che un tokenizer reale deve gestire esplicitamente.
+
 Un programma può leggere se stesso o un altro sorgente con `readfile(ARGS[1])`: è esattamente
-il primo passo di un interprete self-hosted ([capitolo 37](#cap-37)).
+il primo passo di un interprete self-hosted ([capitolo 37](#cap-37)). Vale però la pena ribadire
+il confine: un programma che usa `readfile`, `strlen`, `strbyte`, `strsub` o `exit` **non** è un
+programma Triad-Full valido. È una delle poche eccezioni alla regola «Core è un sottoinsieme di
+Full», ed è il motivo per cui questi primitivi compaiono in un capitolo a parte invece che tra le
+operazioni normali sulle stringhe.
 
 ---
 <a id="cap-14"></a>
 
 ## 14. Errori di esecuzione
 
-Core non ha `try`/`catch` né valori `Err` (SPEC-CORE §9): un errore **termina il processo con
-exit code 1** e stampa un messaggio diagnostico su stderr. Quello che era già stato stampato su
-stdout resta.
+Un errore di esecuzione è un punto in cui il programma non può più andare avanti: un nome che non
+esiste, un tipo sbagliato, un indice fuori intervallo. In Triad-Full gli errori sono valori e si
+possono gestire; in Triad-Core no, e la differenza è importante: qui un errore **termina il
+processo con exit code 1** e stampa un messaggio diagnostico su stderr. Quello che era già stato
+stampato su stdout resta.
+
+Poiché non c'è modo di catturare l'errore, la strategia di un programma Core non è «gestirlo» ma
+«non provocarlo»: controllare i limiti prima di un accesso, convertire i valori prima di usarli,
+verificare le ipotesi all'inizio di una funzione. Il messaggio del runtime serve a capire dove e
+perché il programma si è fermato.
 
 ```triad
 println("prima")
@@ -1124,6 +1496,18 @@ errore domain: divisione per zero
 3
 ```
 
+La convenzione `[:Err, kind, msg]` non è un tipo del linguaggio: è un protocollo tra funzioni,
+scritto con i mezzi che Core offre (liste e simboli). Chi rileva un errore lo costruisce con
+`err`; chi lo riceve deve controllare il tag prima di leggere i campi, ed è per questo che
+`is_err` esiste. Il vantaggio è che l'errore viaggia come qualsiasi altro valore: può essere
+restituito, salvato, confrontato, stampato. Il limite è che nulla obbliga una funzione a
+rispettare il protocollo: se restituisce una lista normale, il controllo del tag fallisce e il
+programma prosegue con il valore sbagliato.
+
+Quando S1 eseguirà Triad-Full, il linguaggio avrà i valori `Err` veri
+([capitolo 24](#cap-24)) e questa convenzione diventerà superflua; nel frattempo è il modo di far
+convivere «errore come dato» con un runtime che non lo prevede.
+
 Nota: `&&` cortocircuita, quindi `v[1]` è valutato solo se `v` è una lista di 3 elementi.
 
 ---
@@ -1131,6 +1515,13 @@ Nota: `&&` cortocircuita, quindi `v[1]` è valutato solo se `v` è una lista di 
 <a id="cap-15"></a>
 
 ## 15. Interprete JS e seed Windows: differenze
+
+Triad-Core ha due implementazioni, e non sono la stessa cosa. L'interprete JS è lo strumento di
+sviluppo: gira ovunque ci sia Node.js, è facile da modificare ed è il riferimento usato per
+verificare i casi di conformità. Il seed Windows è il primo passo del bootstrap: un interprete in
+codice macchina, senza runtime ospiti, più limitato perché scritto a mano. Sapere che cosa
+funziona su entrambi è essenziale se un programma deve girare anche sul seed, come il codice di
+S1.
 
 Il contratto è `conformance/core/`: entrambi i runtime devono produrre gli stessi golden. Oggi
 l'interprete JS li passa tutti, il seed Windows i 33 casi elencati nel job `seed-windows` della
@@ -1155,6 +1546,13 @@ CI. Fuori da quei casi i due runtime differiscono:
 | `triad -` (stdin) | ✅ | no |
 | messaggi d'errore | su stderr | solo exit code |
 
+La tabella va letta come una mappa di portabilità: la colonna di sinistra è il comportamento che
+un programma Core corretto può usare, la destra dice che cosa il seed sa fare oggi. «Non elencato
+nel README» non significa automaticamente «non funziona», ma significa che non è un comportamento
+su cui puoi contare senza provarlo. Le differenze più insidiose sono quelle semantiche, non quelle
+sintattiche: il seed può accettare una lambda e catturarla in modo diverso, quindi un programma
+che viene eseguito non è detto che dia lo stesso risultato.
+
 Regola pratica: **scrivi codice che rispetta SPEC-CORE e verificalo con l'interprete JS**; se
 deve girare sul seed (come `selfhost/`), restringiti alla colonna di destra e verificalo su
 Windows.
@@ -1164,6 +1562,12 @@ Windows.
 <a id="cap-16"></a>
 
 ## 16. Pattern idiomatici Triad-Core
+
+I capitoli precedenti hanno spiegato i singoli costrutti; questo li mette insieme in alcuni
+schemi ricorrenti. Non sono l'unico modo di scrivere Triad-Core, ma sono i modi in cui il
+linguaggio viene effettivamente usato nel repository, compreso il codice di S1 in `selfhost/`.
+Riconoscerli aiuta a leggere il codice altrui e a scegliere una struttura quando non ne hai già
+una in mente.
 
 ### 16.1 Funzioni di ordine superiore scritte in Core
 
@@ -1212,6 +1616,12 @@ Output:
 21
 ```
 
+Questi tre schemi mostrano che le funzioni di ordine superiore non richiedono supporto
+sintattico: una funzione che riceve un'altra funzione è già possibile, e `while` basta per
+scorrere la lista. `mappa` costruisce una lista nuova, `filtra` decide elemento per elemento,
+`riduci` porta avanti un accumulatore. Sono anche il punto di partenza quando il tuo programma
+deve trasformare dati senza le comodità di Triad-Full.
+
 ### 16.2 Record come liste taggate
 
 Core non ha `struct`: un record è una lista con un simbolo come tag nella prima posizione.
@@ -1230,6 +1640,12 @@ Output:
 ```text
 [:Punto, 11, 22] true
 ```
+
+Il tag non è decorazione: è il discriminante che permette di riconoscere il tipo di record a
+runtime e di scrivere funzioni come `px` e `py` che assumono una forma precisa. In Full lo stesso
+ruolo sarà dello `struct` ([capitolo 20](#cap-20)), con il vantaggio di un controllo dei campi; in
+Core la lista taggata dà la stessa struttura senza quel controllo, e sta al programmatore
+rispettare la convenzione.
 
 ### 16.3 Ambiente come lista di associazioni
 
@@ -1272,6 +1688,12 @@ Output:
 [:x, 11, :y, 20] 11 nothing
 ```
 
+La lista piatta alterna nome e valore: `env_get` avanza di due posizioni, `env_set` aggiorna se
+trova il nome e altrimenti aggiunge in coda. Il `while i < length(env)` (non `<=`) è deliberato:
+l'ultima posizione utile è `length(env) - 1`, perché `env[i + 1]` deve restare dentro la lista.
+È la stessa struttura che rende possibile un interprete scritto in Core: gli ambienti sono dati
+come gli altri, non un meccanismo nascosto del linguaggio.
+
 ### 16.4 Stato mutabile condiviso
 
 Poiché una funzione nominata non può riassegnare un globale, lo stato condiviso si tiene in
@@ -1292,6 +1714,11 @@ Output:
 ```text
 2
 ```
+
+La lista fa da cella condivisa: la funzione nominata non può riassegnare `stato`, ma può
+modificare l'oggetto a cui `stato` punta, e la mutazione resta visibile fuori. È il modo più
+semplice di ottenere stato mutabile in Core senza chiusure; la chiusura
+([capitolo 10](#cap-10)) è l'alternativa quando lo stato deve restare privato.
 
 ### 16.5 Costruire stringhe
 
@@ -1327,7 +1754,16 @@ ababab
 1, 2, 3
 ```
 
+Costruire una stringa per concatenazioni successive è corretto ma costa: ogni `*` crea una nuova
+stringa, quindi il ciclo costruisce tante stringhe intermedie quante sono le iterazioni. In Core
+non ci sono alternative migliori — non c'è una struttura di appoggio — e per i programmi di
+studio va bene; in un interprete reale conviene accumulare i pezzi in una lista e unirli una
+volta sola alla fine.
+
 ### 16.6 Stile
+
+Le regole seguenti non sono estetiche: nascono dal fatto che lo stesso codice potrebbe dover
+passare a Triad-Full e che il repository è scritto in italiano.
 
 - Funzioni piccole con nomi chiari (in italiano, come nel resto del repository).
 - Caso base esplicito in ogni ricorsione; per profondità grandi preferisci `while`.
@@ -1336,14 +1772,26 @@ ababab
   il codice deve restare valido anche in Triad-Full.
 - Scrivi `!io` sulle funzioni che stampano: Core lo ignora, Full lo richiede.
 
+Sono convenzioni, non regole del linguaggio: il runtime non le controlla. Ma un programma che le
+rispetta resta valido sia in Core sia in Full, e questa è la qualità che rende il codice del
+progetto riutilizzabile negli stadi successivi del bootstrap.
+
 ---
 
 <a id="cap-17"></a>
 
 ## 17. Esercizi guidati
 
-Ogni esercizio ha una soluzione verificata (aprila solo dopo averci provato). Per controllare
-la tua soluzione: salvala in un file ed eseguila con `node seed/dev/triad_core.cjs`.
+Gli esercizi mettono in pratica i capitoli 4–16 e, letti di seguito, raccontano un percorso: si
+parte da calcolo e ricorsione, si passa a liste e stringhe, e si finisce con un piccolo tokenizer
+e un valutatore di espressioni, cioè con i primi due pezzi di un interprete. Ogni esercizio ha
+una soluzione verificata, nascosta in un riquadro: aprila solo dopo averci provato, perché il
+punto non è leggere la soluzione ma scriverne una che produca lo stesso output.
+
+Per controllare la tua soluzione, salvala in un file ed eseguila con
+`node seed/dev/triad_core.cjs`; confronta poi l'output con quello mostrato nella soluzione. Se
+l'output coincide ma il codice è diverso, va bene: gli esercizi descrivono un comportamento, non
+un'unica scrittura possibile.
 
 ### Esercizio 1 — Potenza e somme
 
@@ -2430,7 +2878,7 @@ codice che contiene.
 | `bin/` | sh / cmd | launcher `triad`, `triad.cmd`, `triad-cli`, `triad-cli.cmd` |
 | `ai/` | Triad + Node | benchmark di generazione codice per LLM, prompt, task con golden |
 | `editors/` | JSON / Vim script | grammatica VS Code (TextMate), sintassi Vim, voce Linguist |
-| `docs/` | HTML/CSS/JS | sito GitHub Pages; carica i Markdown del repo (questa wiki compresa) |
+| `docs/` | HTML/CSS/JS | sito GitHub Pages e materiali pubblicati dal repository |
 | `obsidian-triad/` | Markdown | vault Obsidian con indice dei file e grafo del progetto |
 | `.github/workflows/` | YAML | CI (`ci.yml`) e pubblicazione del sito (`pages.yml`, `static.yml`) |
 | `test_*.td`, `min_*.td` (root) | Triad-Core | piccoli probe usati durante lo sviluppo del seed (es. `test_get.td` in CI) |
@@ -2898,7 +3346,7 @@ Checklist per tipo di modifica:
 | S1 (`selfhost/`) | gira su `seed.exe`; se cambia l'output di `main.td`, aggiorna lo smoke test in CI |
 | CLI | handler che restituisce un booleano; `cli/README.md`; ricostruisci l'eseguibile se serve |
 | editor | grammatiche VS Code e Vim allineate alle parole chiave di SPEC §1 |
-| documentazione | questa wiki, `README.md`, `STATUS.md` coerenti con ciò che gira davvero |
+| documentazione | `README.md`, `STATUS.md` e i testi del repository descrivono ciò che gira davvero |
 
 Regole generali: non dichiarare funzionante ciò che non è verificato; i golden si scrivono
 ragionando sulla specifica; i nuovi strumenti di sviluppo non devono entrare nella catena S0→S4.
@@ -3088,7 +3536,7 @@ richiesto da SPEC.md per ogni implementazione:
 macchina (Windows) o sull'interprete JS di sviluppo.
 
 **Perché i miei esempi con `struct` o `fact` non girano?** Sono Triad-Full: il runtime attuale
-esegue solo Triad-Core. Vedi la tabella in testa alla wiki.
+esegue solo Triad-Core. Vedi la tabella dei profili all'inizio del Tutorial.
 
 **`.td` o `.triad`?** `.triad` è canonica; `.td` è accettata come alias (ed è anche
 l'estensione di LLVM TableGen, quindi per il riconoscimento esterno conviene `.triad`).
@@ -3105,6 +3553,5 @@ voce in `CHANGELOG.md` e casi di conformance; poi nelle implementazioni.
 
 ---
 
-Wiki mantenuta insieme allo standard: quando cambia `SPEC.md`, `SPEC-CORE.md`, il runtime o gli
-strumenti, aggiorna il capitolo corrispondente. Gli esempi Core marcati **Output:** si
-verificano eseguendoli con `node seed/dev/triad_core.cjs`.
+Gli esempi Core marcati **Output:** si verificano eseguendoli con
+`node seed/dev/triad_core.cjs`.

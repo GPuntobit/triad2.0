@@ -134,13 +134,14 @@ const backCoverHtml = `<div class="backcover">
   ancora un test di avvio E0, non un interprete. Il piano di bootstrap prevede S1 (un interprete
   Triad scritto in Triad-Core), S2
   (compilatore nativo), S3 (self-hosting) e S4 (parità cross-platform).</p>
-  <p>Questo libro è il percorso di studio del linguaggio per come è definito dallo standard. La
-  Manuale e Tutorial alternano spiegazioni concettuali, semantica tecnica, esempi annotati,
-  esercizi e riferimenti alla specifica. Il Tutorial accompagna prima il lettore nei costrutti Core
-  eseguibili oggi, poi presenta Triad-Full come standard da studiare e infine mostra come leggere
-  le implementazioni, il bootstrap e la suite di conformance nel repository. Le etichette dei
-  blocchi distinguono il codice eseguibile dal codice definito dallo standard ma non ancora
-  supportato dal runtime.</p>
+  <p>Questo libro è il percorso di studio del linguaggio per come è definito dallo standard. Il
+  Manuale e il Tutorial alternano spiegazioni concettuali, semantica tecnica, esempi annotati,
+  esercizi e riferimenti alla specifica. Ciascun testo presenta i concetti nel punto in cui servono
+  e distingue i costrutti eseguibili oggi da quelli definiti dallo standard ma non ancora supportati.
+  Il Tutorial accompagna prima il lettore nei costrutti Core eseguibili oggi, poi
+  presenta Triad-Full come standard da studiare e infine mostra come leggere le implementazioni,
+  il bootstrap e la suite di conformance nel repository. Le etichette dei blocchi distinguono il
+  codice eseguibile dal codice definito dallo standard ma non ancora supportato dal runtime.</p>
   <p>Il progetto è rilasciato sotto licenza MIT. La specifica normativa è in SPEC.md (standard
   0.2.0), il sottoinsieme di bootstrap in SPEC-CORE.md, la suite di conformance in
   conformance/ con golden verificabili. Il repository include anche un benchmark per la generazione

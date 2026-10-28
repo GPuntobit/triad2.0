@@ -9,17 +9,20 @@ Il libro nasce da un'esigenza semplice: imparare Triad non significa solo legger
 ma costruire un modello mentale del linguaggio, dei suoi costrutti e del suo runtime. La specifica
 è normativa e precisa, ma è scritta per essere implementata, non per essere letta come un romanzo.
 Questo volume la traduce in un percorso: spiegazioni, esempi, esercizi, marcatori di profilo.
+Le spiegazioni, gli esempi e gli esercizi costruiscono passo dopo passo il modello mentale del
+linguaggio. La specifica resta la fonte normativa di riferimento, non un prerequisito di lettura.
 
 Il lettore ideale sa già programmare in un altro linguaggio: sa cosa sono una variabile, una
 funzione, un ciclo, una ricorsione. Questo libro non insegna la programmazione in generale, insegna
 Triad. Le influenze del linguaggio (Julia, Prolog, Lisp) sono documentate nell'Appendice A della
 specifica: sono note informative, non definizioni. Triad non è un dialetto di nessuno dei tre.
 
-Il volume riunisce due testi complementari. Il *Manuale di Triad 2.0* spiega il linguaggio,
-propone esercizi e chiude con grammatica, schede rapide, tabella degli errori, glossario e
-appendici. Il *Tutorial di Triad 2.0* è diviso in cinque parti: primi passi, Triad-Core,
-Triad-Full, codice del progetto e riferimento. I due indici che seguono questa prefazione sono
-indipendenti: il primo appartiene al Manuale, il secondo al Tutorial.
+Il volume riunisce due testi complementari e indipendenti. Il *Manuale di Triad 2.0* spiega il
+linguaggio, propone esercizi e chiude con grammatica, schede rapide, tabella degli errori,
+glossario e appendici. Il *Tutorial di Triad 2.0* è diviso in cinque parti: primi passi,
+Triad-Core, Triad-Full, codice del progetto e riferimento. Si può leggere il Manuale per intero
+senza il Tutorial, e il Tutorial per intero senza il Manuale: ciascuno spiega ciò che gli serve.
+L'indice che segue raccoglie i capitoli di entrambi i testi, così da ritrovarli in un unico posto.
 
 Se vuoi scrivere programmi eseguibili oggi, comincia dal Tutorial, parti I e II; usa il Manuale
 per approfondire i concetti e fare gli esercizi. Per studiare lo standard completo, prosegui con
@@ -27,8 +30,10 @@ la parte III del Tutorial e i capitoli corrispondenti del Manuale. La parte IV �
 vuole esplorare o modificare il repository.
 
 Le appendici del Manuale orientano tra le influenze del linguaggio e le fonti del progetto. I
-testi normativi integrali non sono riprodotti nel volume: sono disponibili nei file `SPEC.md` e
-`SPEC-CORE.md` del repository, che restano le fonti definitive in caso di divergenza.
+testi normativi integrali non sono riprodotti nel volume: chi vuole il dettaglio formale li trova
+nei file `SPEC.md` e `SPEC-CORE.md` del repository, che restano le fonti definitive in caso di
+divergenza. Il volume contiene comunque le regole necessarie a capire e usare il linguaggio: il
+rinvio alla specifica è un approfondimento, non una dipendenza.
 
 Due profili di conformità attraversano tutto il libro. Triad-Core è il sottoinsieme di bootstrap:
 valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è lo standard
