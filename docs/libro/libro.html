@@ -386,6 +386,18 @@ perché Full sia &quot;più avanti&quot;, ma perché sono due facce della stessa
 <li><strong>[Core]</strong> — il costrutto esiste nel sottoinsieme di bootstrap;</li>
 <li><strong>[Full]</strong> — il costrutto esiste solo nello standard completo.</li>
 </ul>
+<p>Un marcatore di profilo descrive ciò che lo standard definisce, non ciò che ogni programma
+installato sa già eseguire. Per questo il manuale distingue tre livelli: la regola normativa
+(che cosa deve significare il costrutto), la disponibilità nel profilo Core o Full e lo stato
+delle implementazioni presenti nel repository. Un esempio Full può essere corretto secondo lo
+standard e, allo stesso tempo, non essere ancora eseguibile dal runtime corrente. Quando un
+esempio riporta <strong>Output (golden Full)</strong>, il risultato è un valore atteso conservato dalla suite,
+non una verifica appena eseguita da un interprete Full completo.</p>
+<p>Per studiare un costrutto senza confondere questi livelli, chiediti nell&#39;ordine: che forma
+accetta la grammatica? quali valori legge e produce? quali effetti o errori può generare? in quale
+profilo è definito? quale implementazione e quale caso di conformance lo verificano? Questa
+sequenza permette di passare dal codice alla semantica e poi alle prove, invece di trattare
+l&#39;output di un singolo runtime come definizione del linguaggio.</p>
 <h3 id="man-convenzioni-di-notazione">Convenzioni di notazione</h3>
 <table>
 <thead>
@@ -737,6 +749,20 @@ concatenazione di stringhe.</li>
 <code>Nothing</code>. In Core non esistono <code>Float</code>, <code>Term</code>, <code>Solution</code>, <code>Err</code> come valori del linguaggio: un
 errore è una lista taggata <code>[Err, kind, msg]</code> (cap. 11) e una struct è <code>[Point, x, y]</code>.</p>
 <p><code>typeof</code> restituisce il <strong>nome del tipo come simbolo</strong>.</p>
+<p>È utile separare tre idee che nella sintassi possono sembrare la stessa cosa. Il <strong>valore</strong> è il
+dato concreto, per esempio <code>5</code> o <code>&quot;ciao&quot;</code>; il <strong>tipo dinamico</strong> descrive la categoria del valore
+che il programma sta manipolando; un <strong>vincolo dichiarato</strong> restringe invece quali valori può
+assumere un nome o un parametro. In Core il tipo si osserva con <code>typeof</code>, ma non si dichiara una
+variabile come <code>x::Int</code>. In Full i tipi entrano anche nelle firme, nelle struct e nel dispatch.
+Una conversione come <code>Float(3)</code> costruisce un valore compatibile; un&#39;asserzione come <code>x::Int</code>
+controlla un valore già ottenuto. Sono operazioni diverse: convertire può cambiare il valore,
+asserire non è una richiesta di conversione.</p>
+<p>Un&#39;altra distinzione importante è tra tipo <strong>nominale</strong> e forma strutturale. In Full una
+<code>struct Point</code> dichiara un&#39;identità di tipo, quindi un valore <code>Point</code> non diventa un altro tipo
+solo perché possiede campi simili. In Core, dove non ci sono struct, la stessa informazione è
+convenzionale: una lista come <code>[:Point, 3, 4]</code> porta il tag <code>:Point</code> e i campi in posizioni
+concordate dal programma. Il tag rende possibile riconoscere il record, ma non aggiunge da solo
+controlli di campo, immutabilità o dispatch.</p>
 <pre><code class="language-triad">xs = [1, :a, &quot;s&quot;]
 println(typeof(1), &quot; &quot;, typeof(&quot;s&quot;), &quot; &quot;, typeof(:a), &quot; &quot;, typeof(xs))
 println(typeof(nothing), &quot; &quot;, typeof(true), &quot; &quot;, typeof(x -&gt; x))
@@ -910,6 +936,17 @@ println(n)
 </code></pre>
 <p>Non esistono dichiarazioni: le variabili sono dinamiche. Le regole di <strong>visibilità</strong> si vedono nel
 capitolo 8.</p>
+<p>Leggi l&#39;esempio distinguendo il <strong>nome</strong> dal valore: dopo <code>x = 42</code>, <code>x</code> è un legame
+dell&#39;ambiente corrente; <code>y = x + 8</code> legge quel legame e memorizza il risultato <code>50</code> in un legame
+diverso; <code>x = x + 1</code> calcola prima <code>43</code> e poi rimpiazza il valore associato a <code>x</code>. Di conseguenza
+<code>y</code> resta <code>50</code>: non è un alias automatico dell&#39;espressione che lo ha prodotto. L&#39;assegnamento
+ritorna il nuovo valore, perciò può comparire dentro un&#39;espressione, ma questo non significa che
+ogni assegnamento sia globale: funzione, lambda e <code>let</code> definiscono regole di scope distinte.</p>
+<p>Infine, riassegnare un nome non equivale a mutare un oggetto. Con <code>x = 43</code> cambia il legame di
+<code>x</code>; con <code>xs[1] = 43</code> cambia un elemento della lista a cui <code>xs</code> fa riferimento. Se un secondo nome
+indica la stessa lista, vedrà la mutazione; una riassegnazione locale di <code>xs</code>, invece, non cambia
+automaticamente il legame dell&#39;altro nome. Questa differenza diventa essenziale quando una
+funzione condivide una lista con il chiamante.</p>
 <hr>
 <p><a id="man-cap-4"></a></p>
 <h2 id="man-4-operatori-e-precedenza">4. Operatori e precedenza</h2>
@@ -985,6 +1022,19 @@ capitolo 8.</p>
 </tbody></table>
 <p>I livelli 6, 8 (la divisione), 9 (<code>$x</code>), 11 (<code>::</code>) e alcuni operatori di confronto esistono solo in
 Triad-Full.</p>
+<p>La precedenza decide <strong>come il parser raggruppa</strong> gli operatori, non quale calcolo avviene per
+primo in ogni possibile programma. Per esempio, <code>2 + 3 * 4</code> viene letto come <code>2 + (3 * 4)</code>: la
+moltiplicazione appartiene a un livello più forte della somma. Le parentesi non cambiano la regola
+del linguaggio; rendono esplicita una scelta del programmatore e aiutano chi legge.
+L&#39;associatività risolve invece la parità di precedenza: <code>2 ^ 3 ^ 2</code> è <code>2 ^ (3 ^ 2)</code>, mentre le
+sottrazioni a catena si raggruppano a sinistra. Quando la precedenza è poco familiare, scrivere le
+parentesi è una forma di documentazione eseguibile.</p>
+<p>Il raggruppamento non va confuso con la valutazione. <code>&amp;&amp;</code> e <code>||</code> sono operatori a cortocircuito:
+il secondo operando viene valutato solo se il primo non determina già il risultato. Ciò consente
+di mettere a destra un controllo che dipende da un valore valido a sinistra, per esempio prima
+verificare che un indice sia entro i limiti e poi leggere la lista. In Core ogni condizione deve
+comunque produrre un <code>Bool</code>; un intero o una lista non vengono convertiti implicitamente in
+vero/falso.</p>
 <h3 id="man-4-1-aritmetica-intera">4.1 Aritmetica intera</h3>
 <ul>
 <li><code>+ - * ^</code> su <code>Int</code> con <strong>wrap a 64 bit</strong> (complemento a due);</li>
@@ -1017,6 +1067,16 @@ true
 <h2 id="man-5-controllo-di-flusso">5. Controllo di flusso</h2>
 <p>In Triad <strong>tutto è un&#39;espressione</strong>: <code>if</code>, <code>while</code>, <code>let</code>, <code>begin</code> hanno un valore, quello
 dell&#39;ultima istruzione eseguita (<code>nothing</code> se non ce n&#39;è).</p>
+<p>Questa regola unifica due usi che in altri linguaggi spesso hanno sintassi separate: scegliere un
+ramo e calcolare un risultato. In <code>v = if condizione ... end</code>, l&#39;espressione completa produce il
+valore dell&#39;ultima espressione del ramo scelto; il codice dei rami non scelti non viene eseguito.
+Le istruzioni che producono output o mutano una lista possono stare nello stesso blocco di
+un&#39;espressione che restituisce un valore: il risultato del blocco è l&#39;ultima espressione, non una
+combinazione automatica di tutti i risultati intermedi.</p>
+<p>Le condizioni sono intenzionalmente restrittive: <code>if</code>, <code>while</code>, ternario, <code>&amp;&amp;</code> e <code>||</code> chiedono
+un valore <code>Bool</code>. Non si usa una regola di &quot;truthiness&quot; che interpreti <code>0</code>, stringhe vuote o liste
+vuote come falsi. Questo rende visibili gli errori di tipo vicino alla decisione che li ha
+provocati, invece di trasformarli in rami inattesi.</p>
 <h3 id="man-5-1-if-elseif-else-core">5.1 <code>if</code> / <code>elseif</code> / <code>else</code> <strong>[Core]</strong></h3>
 <pre><code class="language-triad">function classifica(x)
     if x &lt; 0
@@ -1166,6 +1226,15 @@ println(fattoriale(10), &quot; &quot;, fib(15), &quot; &quot;, mcd(48, 18))
 <pre><code class="language-text">grande piccola
 3628800 610 6
 </code></pre>
+<p>Una chiamata può essere letta come una sequenza precisa: si valutano gli argomenti, si crea il
+contesto della funzione, si associano i valori ai parametri e si esegue il corpo. Il corpo termina
+in uno di due modi: raggiunge la fine e restituisce l&#39;ultima espressione, oppure esegue <code>return</code>,
+che interrompe immediatamente il corpo e restituisce il valore indicato. <code>return</code> senza
+espressione restituisce <code>nothing</code>. Una ricorsione è una nuova chiamata con un proprio insieme di
+parametri locali; il caso base impedisce di continuare a creare chiamate senza fine.</p>
+<p>L&#39;arità è parte della firma anche in Core: <code>somma(1, 2)</code> non è intercambiabile con <code>somma(1)</code>.
+Triad-Full aggiunge i tipi alle firme e consente più metodi con lo stesso nome; questo non cambia
+la nozione di chiamata, ma aggiunge una fase di selezione del metodo prima di eseguirne il corpo.</p>
 <h3 id="man-6-3-funzioni-di-ordine-superiore">6.3 Funzioni di ordine superiore</h3>
 <p>Le funzioni sono valori di prima classe: si passano, si restituiscono, si compongono. In Core
 <code>map</code>, <code>filter</code> e <code>reduce</code> <strong>non esistono</strong>: si scrivono a mano (cap. 22.1). In Full sono builtin.
@@ -1221,6 +1290,14 @@ e le firme differiscono.</p>
 <li>Se più metodi sono massimali: <code>Err(:ambiguous)</code>.</li>
 <li>Se il nome è anche un builtin (per esempio <code>+</code> sui numeri), si usa il builtin.</li>
 </ul>
+<p>Il dispatch si può modellare come una ricerca in due passaggi. Prima si eliminano i metodi con
+arità errata o con almeno un argomento che non soddisfa il tipo dichiarato; poi si confrontano
+quelli rimasti secondo la relazione di sottotipo, parametro per parametro. Un metodo è più
+specifico solo se non è più generale in nessuna posizione e lo è in almeno una. Non basta quindi
+scegliere il metodo aggiunto più di recente. Se restano due firme incomparabili, la chiamata è
+ambigua e produce <code>Err(:ambiguous)</code> invece di dipendere dall&#39;ordine dei file o dall&#39;ordine di
+registrazione. Questo comportamento consente di aggiungere metodi specializzati senza riscrivere
+la funzione generica, mantenendo però espliciti i casi che non hanno una risposta univoca.</p>
 <p>Gli operatori si estendono come funzioni, ridefinendoli:</p>
 <pre><code class="language-triad-full">struct Point
     x::Float
@@ -1302,6 +1379,13 @@ println(acc(10))
 accumulatore come <code>contatore</code> può non funzionare sul seed. L&#39;interprete JS e la specifica usano il
 modello condiviso.</p>
 </blockquote>
+<p>Una chiusura non conserva una fotografia del solo testo della lambda: mantiene accesso ai legami
+che il suo corpo può leggere. Nel primo esempio la funzione restituita da <code>add(10)</code> mantiene il
+valore <code>n = 10</code> anche dopo che la chiamata a <code>add</code> è terminata; <code>add(100)</code> crea una chiusura
+distinta. Nel contatore, invece, la variabile <code>v</code> è un legame condiviso: ogni chiamata aggiorna
+lo stesso stato e la successiva lo osserva. È il motivo per cui una chiusura può rappresentare
+un piccolo oggetto con stato privato. È anche il motivo per cui il comportamento specifico del
+seed Windows va verificato separatamente dall&#39;interprete di riferimento.</p>
 <h3 id="man-8-3-le-regole-di-scope">8.3 Le regole di scope</h3>
 <ol>
 <li><code>function</code>, lambda, <code>let</code>, <code>while</code>, <code>for</code> e le comprehension introducono <strong>ambienti</strong>; un nome è
@@ -1351,6 +1435,16 @@ println(xs)
 </code></pre>
 <p><code>push!</code> <strong>muta</strong> la lista e la restituisce. Le liste sono riferimenti: due nomi possono indicare la
 stessa lista, come si vede sopra.</p>
+<p>Una lista è un oggetto mutabile; una variabile contiene un riferimento a quell&#39;oggetto. Se <code>ys = xs</code>, i due nomi permettono di raggiungere la stessa lista: <code>push!(ys, valore)</code> e <code>xs[i] = valore</code>
+sono osservabili anche leggendo <code>xs</code>. Se invece scrivi <code>ys = [1, 2]</code>, hai sostituito soltanto il
+legame <code>ys</code>; <code>xs</code> continua a riferirsi alla lista precedente. Questa distinzione spiega perché
+assegnare una lista non ne crea automaticamente una copia e perché gli argomenti lista possono
+essere usati per condividere stato tra funzioni.</p>
+<p>La convenzione 1-based è coerente con esempi e specifica: per visitare <code>n</code> elementi, il contatore
+inizia da 1 e la condizione tipica è <code>i &lt;= length(xs)</code>. In un ciclo, aggiornare il contatore
+dopo aver letto l&#39;elemento evita di saltare il primo elemento; aumentarlo in ogni iterazione
+assicura che la condizione prima o poi diventi falsa. Sul seed Windows l&#39;helper sperimentale
+<code>get(xs, i)</code> è diverso e 0-based: non va usato come se fosse la semantica standard delle liste.</p>
 <p>La somma degli elementi con un ciclo esplicito:</p>
 <pre><code class="language-triad">xs = [101, 2, 3, 4, 5]
 tot = 0
@@ -1473,6 +1567,17 @@ println(r)
 true
 5
 </code></pre>
+<p>È utile distinguere tre momenti: <strong>produrre</strong>, <strong>propagare</strong> e <strong>gestire</strong> un errore. <code>err(...)</code>
+costruisce un dato e non interrompe nulla; un&#39;operazione che fallisce produce un <code>Err</code> secondo la
+specifica; <code>try</code> stabilisce il punto in cui quel valore viene osservato o recuperato. In Full,
+<code>try espressione end</code> restituisce l&#39;errore come valore, mentre <code>try ... catch nome ... end</code>
+permette al ramo di recupero di esaminare la categoria, il messaggio o i dettagli. Se l&#39;errore
+non viene gestito, arriva al livello superiore e diventa un codice di uscita non riuscito: &quot;errore
+come dato&quot; non significa che il programma continui automaticamente dopo qualunque operazione.</p>
+<p>Il tipo del dato permette di scrivere politiche diverse per categorie diverse. Per esempio, un
+errore <code>:bounds</code> può essere presentato come input non valido, mentre <code>:method</code> può indicare che
+manca un&#39;implementazione. Separare la categoria stabile (<code>kind</code>) dal testo leggibile (<code>msg</code>) evita
+di dover analizzare stringhe di diagnostica per decidere come reagire.</p>
 <h3 id="man-11-3-le-categorie-di-errore">11.3 Le categorie di errore</h3>
 <table>
 <thead>
@@ -1593,6 +1698,14 @@ contract
 requires
 safe_div
 </code></pre>
+<p>La sequenza di controllo è significativa: il corpo valuta le clausole nell&#39;ordine in cui
+compaiono; le precondizioni vengono verificate nel punto in cui sono dichiarate, mentre le
+postcondizioni vengono conservate fino al completamento della funzione. Il valore finale viene
+prima sottoposto al vincolo di ritorno e poi esposto come <code>result</code> alle clausole <code>ensures</code>.
+Un errore di contratto include quale clausola è fallita e il codice che la rappresenta, così chi
+chiama può distinguere una violazione d&#39;ingresso da una promessa d&#39;uscita non mantenuta. I
+contratti controllano un&#39;invariante osservabile, ma non provano matematicamente che valga per ogni
+input possibile: vengono valutati per le esecuzioni che avvengono.</p>
 <hr>
 <p><a id="man-cap-13"></a></p>
 <h2 id="man-13-budget">13. Budget</h2>
@@ -1612,6 +1725,12 @@ proprio budget, mentre quello di un budget esterno continua a propagarsi. <code>
 budget specifico di una query.</p>
 <p>Il motore logico usa uno stack esplicito: la ricorsione infinita, anche sinistra, finisce in
 <code>Err(:budget)</code> e <strong>non</strong> in uno stack overflow.</p>
+<p>Il limite è parte del risultato del calcolo perché il programma può scegliere come trattarlo:
+mostrare una diagnosi, ridurre il problema o restituire un risultato parziale solo se la propria
+logica lo consente. Non confondere <code>limit n</code>, che limita il numero di soluzioni restituite,
+<code>depth d</code>, che taglia i rami oltre una profondità, e <code>steps s</code>, che limita il lavoro complessivo.
+Una query che ha esplorato lo spazio previsto senza trovare soluzioni restituisce una lista vuota;
+una query fermata dall&#39;esaurimento dei passi segnala invece <code>Err(:budget)</code>.</p>
 <hr>
 <p><a id="man-cap-14"></a></p>
 <h2 id="man-14-tracce">14. Tracce</h2>
@@ -1636,6 +1755,12 @@ funzione generica chiamata nel corpo. <code>solve … trace</code> restituisce <
 <code>result</code> è la lista delle soluzioni e gli eventi sono le porte del modello a scatole di Byrd
 (<code>call</code>, <code>exit</code>, <code>redo</code>, <code>fail</code>) più <code>depth</code>, quando un ramo viene tagliato da <code>depth</code>.</p>
 <p>Gli eventi sono record: si filtrano e si contano come ogni altro valore.</p>
+<p>Una traccia aggiunge una dimensione temporale ai dati di debug: due esecuzioni possono avere lo
+stesso risultato ma seguire percorsi diversi, per esempio se una query ha dovuto provare e
+scartare alternative. Invece di scrivere log dentro ogni funzione, il chiamante racchiude il
+calcolo in <code>with trace</code> oppure chiede <code>trace</code> a <code>solve</code>; il risultato e gli eventi vengono
+restituiti insieme. Questo mantiene separati il risultato applicativo e la diagnostica, e consente
+di analizzare la traccia con gli stessi strumenti usati per liste e record.</p>
 <h3 id="man-glossario-degli-eventi-di-traccia-porte-di-byrd">Glossario degli eventi di traccia (porte di Byrd)</h3>
 <p>Quando si usa <code>solve … trace</code>, ogni passo della ricerca produce un evento che registra <strong>a che
 riferimento</strong> (quale goal, quale clausola, quali variabili logiche) si sta lavorando. Le quattro
@@ -1727,6 +1852,12 @@ end
 <p>Il controllo è <strong>dinamico</strong>. Una funzione viene eseguita solo con gli effetti che dichiara, e solo
 se il chiamante li permette. Se una funzione pura chiama <code>println</code>, o chiama una funzione <code>!io</code>, si
 ottiene <code>Err(:effect)</code>; <code>data</code> contiene <code>fn</code>, <code>caller</code> e <code>missing</code>.</p>
+<p>La purezza di default significa che una funzione può calcolare e restituire valori senza
+modificare lo stato esterno né produrre I/O; non significa che il runtime analizzi staticamente
+ogni possibile percorso prima dell&#39;esecuzione. Il controllo dinamico osserva gli effetti mentre
+avvengono e li confronta con il contesto attivo. Le mutazioni locali e quelle di liste non sono
+classificate come effetti dichiarati in questa specifica: <code>!state</code> si riferisce alla modifica
+della knowledge base tramite <code>fact</code> e <code>rule</code>, non a qualunque assegnamento.</p>
 <ul>
 <li>Il top level permette tutti gli effetti.</li>
 <li>Le lambda ereditano gli effetti del contesto in cui vengono eseguite.</li>
@@ -1774,6 +1905,19 @@ valutato</strong>;</li>
 </ul>
 <p>Le variabili di una clausola vengono <strong>rinominate a ogni uso</strong> (standardizzazione a parte).
 L&#39;unificazione fa l&#39;<strong>occurs-check</strong>: <code>solve ?x = f(?x)</code> non ha soluzioni.</p>
+<p>Per leggere una query occorre distinguere i <strong>termini</strong> dai normali valori calcolati. Un simbolo
+come <code>:alice</code> è un termine costante; <code>?who</code> è una variabile logica che cerca un valore; una forma
+come <code>parent(:alice, ?who)</code> descrive un goal da dimostrare. Le variabili logiche non sono variabili
+locali Triad assegnate con <code>=</code>: il motore cerca associazioni che rendano compatibile il goal con
+fatti e regole. In particolare, <code>?x + 1</code> dentro un termine non si calcola da sé; l&#39;operatore <code>is</code>
+esprime esplicitamente la richiesta di valutare un&#39;espressione usando variabili già legate.</p>
+<p>L&#39;unificazione costruisce progressivamente un insieme di associazioni. Se si confrontano
+<code>parent(:alice, ?who)</code> e <code>parent(:alice, :bob)</code>, gli argomenti corrispondenti coincidono e il
+motore può legare <code>?who</code> a <code>:bob</code>; se un argomento è diverso, quel tentativo fallisce. Quando più
+clausole possono soddisfare un goal, il backtracking torna al punto di scelta e prova la clausola
+successiva. Ogni soluzione è una fotografia delle variabili richieste dalla query; una lista
+vuota significa &quot;nessuna dimostrazione trovata&quot;, non un errore di esecuzione. I limiti <code>limit</code>,
+<code>depth</code> e <code>steps</code> controllano quante soluzioni o quanti passi di ricerca sono ammessi.</p>
 <h3 id="man-16-2-i-goal">16.2 I goal</h3>
 <table>
 <thead>
@@ -2003,6 +2147,12 @@ println(eval(quadrato))
 innestato, se è un numero o una lista diventa una costante, se è un Symbol diventa un identificatore.
 <code>eval(c)</code> esegue codice <strong>nello scope globale</strong>. Gli altri builtin del gruppo &quot;codice&quot; sono <code>parse</code>,
 <code>unparse</code>, <code>sexpr</code>, <code>Expr</code> e <code>gensym</code>.</p>
+<p>Quotare e valutare sono operazioni opposte ma non intercambiabili. Il parser normalmente trasforma
+il sorgente in un albero e il valutatore esegue quell&#39;albero; <code>:(...)</code> ferma il processo al
+confine tra le due fasi e restituisce l&#39;albero come valore <code>Expr</code>. <code>eval(expr)</code> lo consegna di
+nuovo al valutatore, nello scope globale. L&#39;unquote <code>$x</code> dentro una quote inserisce il valore
+calcolato di <code>x</code> nel nuovo albero: se è un <code>Expr</code>, innesta codice; se è un numero, crea un nodo
+costante. <code>sexpr</code> serve a ispezionare la struttura e non esegue il programma.</p>
 <hr>
 <p><a id="man-cap-18"></a></p>
 <h2 id="man-18-macro">18. Macro</h2>
@@ -2030,6 +2180,13 @@ println(x, &quot; &quot;, y)
 <pre><code class="language-text">2 1
 </code></pre>
 <p>L&#39;espansione è <strong>pura</strong> (§15) e <strong>non è igienica</strong>: per i nomi temporanei si usa <code>gensym()</code>.</p>
+<p>Questa distinzione è importante per gli effetti. Una funzione riceve normalmente valori già
+calcolati; una macro riceve la forma sorgente e può quindi decidere se inserirla una volta, più
+volte o non inserirla. Le macro di Triad non sono igieniche: un nome temporaneo introdotto dalla
+macro può collidere con un nome del chiamante. <code>gensym</code> crea un simbolo fresco per i temporanei,
+ma non rende automaticamente sicuro ogni riferimento libero. Per questo conviene limitare le
+macro a trasformazioni piccole e ispezionare l&#39;albero espanso prima di attribuire al risultato
+un comportamento inatteso.</p>
 <h3 id="man-18-1-codice-che-genera-codice">18.1 Codice che genera codice</h3>
 <pre><code class="language-triad-full">function poly(coeffs)
     acc = :(0)
@@ -3202,7 +3359,7 @@ per riga;</li>
 standard <code>get(xs, i)</code>, con indici <strong>da 0</strong>.</li>
 </ul>
 <hr>
-<p><a id="app-a"></a></p>
+<p><a id="man-app-a"></a></p>
 <h1 id="man-appendice-a-influenze-dichiarate">Appendice A — Influenze dichiarate</h1>
 <p>Triad nasce da idee di Julia, Prolog e Lisp, ma <strong>non è un dialetto di nessuno dei tre</strong>: la
 definizione del linguaggio è la specifica.</p>
@@ -3229,7 +3386,7 @@ definizione del linguaggio è la specifica.</p>
 <p><strong>Propri di Triad</strong>, non presi in prestito: errori come dati, contratti, budget, tracce ed effetti
 dichiarati come parte del linguaggio, e l&#39;integrazione dei tre modelli in una sintassi a blocchi.</p>
 <hr>
-<p><a id="app-b"></a></p>
+<p><a id="man-app-b"></a></p>
 <h1 id="man-appendice-b-dove-guardare">Appendice B — Dove guardare</h1>
 <table>
 <thead>
@@ -3277,11 +3434,13 @@ dichiarati come parte del linguaggio, e l&#39;integrazione dei tre modelli in un
 </tbody></table>
 <hr>
 <p><em>Manuale scritto per lo standard Triad <code>0.2.0</code>. Le sezioni normative sono in <a href="https://github.com/GPuntobit/triad2.0/blob/main/SPEC.md"><code>SPEC.md</code></a> e
-<a href="https://github.com/GPuntobit/triad2.0/blob/main/SPEC-CORE.md"><code>SPEC-CORE.md</code></a>; in caso di divergenza, la specifica prevale.</em></p>
+<a href="https://github.com/GPuntobit/triad2.0/blob/main/SPEC-CORE.md"><code>SPEC-CORE.md</code></a>; in caso di divergenza, prevale la specifica.</em></p>
 
   </div>
   <div class="part">
-    <h1>Triad 2.0 — Wiki: imparare il linguaggio e il codice del progetto</h1>
+    <p align="center">
+  <img src="../triad-logo.webp" alt="Logo di Triad" width="160">
+</p><h1>Triad 2.0 — Wiki: imparare il linguaggio e il codice del progetto</h1>
 <p>Questa wiki è il punto di ingresso per <strong>imparare Triad</strong> e per <strong>imparare a scrivere il
 codice presente in questo repository</strong>: programmi Triad, l&#39;interprete di riferimento, il seed
 in codice macchina, l&#39;implementazione self-hosted (S1), la suite di conformità, la CLI di
@@ -3352,7 +3511,9 @@ non riportano output.</p>
 <p>Convenzioni:</p>
 <ul>
 <li>I comandi sono mostrati per Linux/macOS (<code>sh</code>) e, quando diversi, per Windows (<code>cmd</code>/PowerShell).</li>
-<li>I blocchi <code>triad</code> mostrano codice Core, normalmente eseguibile con l&#39;interprete JS; i frammenti specifici del seed Windows sono indicati nel testo. I blocchi <code>triad-full</code> mostrano codice definito dallo standard Full, non ancora eseguibile dal runtime corrente.</li>
+<li>I blocchi <code>triad</code> mostrano codice Core, normalmente eseguibile con l&#39;interprete JS; i frammenti
+specifici del seed Windows sono indicati nel testo. I blocchi <code>triad-full</code> mostrano codice
+definito dallo standard Full, non ancora eseguibile dal runtime corrente.</li>
 <li>&quot;Interprete JS&quot; = <code>seed/dev/triad_core.cjs</code>, interprete di riferimento Triad-Core usato su
 Linux/macOS e dal runner di conformance. &quot;Seed&quot; = <code>seed/windows-x86_64/seed.exe</code>, interprete
 Triad-Core in codice macchina (S0). Dove si comportano diversamente lo dice il
@@ -3524,6 +3685,17 @@ println(6 * 7)
 <li><code>*</code> tra stringhe è la <strong>concatenazione</strong> (non <code>+</code>);</li>
 <li>non c&#39;è una funzione <code>main</code>: le istruzioni al top level si eseguono in ordine.</li>
 </ul>
+<p>Puoi seguire l&#39;esecuzione riga per riga. La riga <code>nome = &quot;Triad&quot;</code> valuta la stringa e associa
+quel valore al nome <code>nome</code>. Nella riga seguente il runtime legge <code>nome</code>, concatena i due valori
+stringa con <code>*</code> e passa il risultato a <code>println</code>. Nell&#39;ultima riga, <code>6 * 7</code> viene valutato prima
+della chiamata: a <code>println</code> arriva il valore intero <code>42</code>, non il testo del calcolo. Ogni
+istruzione viene eseguita una sola volta e nell&#39;ordine in cui compare; una funzione chiamata può
+naturalmente eseguire il proprio corpo prima che il programma passi all&#39;istruzione successiva.</p>
+<p>La riga <code>#!</code> non è una direttiva necessaria per l&#39;interprete: in questi esempi è una forma
+convenzionale utile quando il sistema operativo può avviare direttamente un file eseguibile. Il
+runtime Triad la ignora perché la tratta come commento. Se un esempio non funziona, verifica
+separatamente che il file sia salvato con estensione <code>.triad</code> o <code>.td</code>, che il comando punti al
+runtime giusto e che il sorgente usi soltanto costrutti supportati dal profilo dichiarato.</p>
 <h3 id="tut-3-1-argomenti-da-riga-di-comando">3.1 Argomenti da riga di comando</h3>
 <p>Gli argomenti dopo il nome del file sono in <code>ARGS</code>, una lista di stringhe (senza il nome del
 programma). Esempio con l&#39;interprete JS:</p>
@@ -3701,6 +3873,18 @@ println(&quot;ab&quot; == &quot;a&quot; * &quot;b&quot;, &quot; &quot;, :a == :a
 <pre><code class="language-text">true
 true true false
 </code></pre>
+<p>Il valore stampato non è sempre una rappresentazione da riutilizzare come sorgente. Per esempio,
+un simbolo passato direttamente a <code>println</code> appare senza i due punti (<code>alice</code>), mentre dentro una
+lista viene mostrato come <code>:alice</code>; le stringhe dentro una lista sono mostrate senza virgolette.
+<code>typeof</code> è quindi il modo corretto per verificare il tipo del valore, mentre la forma visiva di
+<code>println</code> serve soprattutto alla lettura umana. Analogamente, <code>==</code> confronta il contenuto per
+numeri, stringhe, simboli e liste, ma le funzioni per identità: due funzioni scritte con lo stesso
+testo non sono per questo lo stesso oggetto funzione.</p>
+<p>La rappresentazione UTF-8 è misurata in byte, non necessariamente in lettere visibili. Una lettera
+accentata può occupare più byte; perciò <code>length</code> su una stringa non è sempre il conteggio dei
+caratteri percepiti da una persona. In Core non ci sono operazioni di indicizzazione dei caratteri:
+i primitivi di bootstrap lavorano esplicitamente sui byte e vanno usati solo per il compito di
+lettura e analisi del sorgente.</p>
 <p>Riferimento: <code>conformance/core/cases/valori</code>, <code>nothing_base</code>, <code>confronti</code>.</p>
 <hr>
 <p><a id="tut-cap-6"></a></p>
@@ -3728,6 +3912,46 @@ println(n)
 24
 </code></pre>
 <p>Le regole di <strong>visibilità</strong> (dentro funzioni, <code>let</code>, lambda) sono nel <a href="#tut-cap-10">capitolo 10</a>.</p>
+<p>Un modo utile di seguire il programma è tenere una piccola tabella dei legami correnti:</p>
+<table>
+<thead>
+<tr>
+<th>istruzione conclusa</th>
+<th align="right"><code>x</code></th>
+<th align="right"><code>y</code></th>
+<th align="right"><code>z</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>x = 42</code></td>
+<td align="right">42</td>
+<td align="right">—</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td><code>y = x + 8</code></td>
+<td align="right">42</td>
+<td align="right">50</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td><code>x = x + 1</code></td>
+<td align="right">43</td>
+<td align="right">50</td>
+<td align="right">—</td>
+</tr>
+<tr>
+<td><code>z = (x + y) * 2</code></td>
+<td align="right">43</td>
+<td align="right">50</td>
+<td align="right">186</td>
+</tr>
+</tbody></table>
+<p>Questa tabella mostra perché l&#39;assegnamento non è una formula reattiva: <code>y</code> conserva il risultato
+calcolato quando la sua riga viene eseguita, anche dopo che <code>x</code> cambia. Per contro, una lista è
+mutabile e può essere raggiunta da più nomi; modificare un suo elemento agisce sull&#39;oggetto
+condiviso, non solo su una singola associazione nome-valore. Il capitolo 11 mostra come riconoscere
+questa differenza nel codice.</p>
 <p>Riferimento: <code>conformance/core/cases/variabili</code>.</p>
 <hr>
 <p><a id="tut-cap-7"></a></p>
@@ -3826,6 +4050,14 @@ println(x &gt; 2 ? &quot;grande&quot; : &quot;piccolo&quot;)
 true
 grande
 </code></pre>
+<p>Il <strong>cortocircuito</strong> è osservabile: con <code>a &amp;&amp; b</code>, se <code>a</code> è <code>false</code>, <code>b</code> non viene valutato; con
+<code>a || b</code>, se <code>a</code> è <code>true</code>, <code>b</code> non viene valutato. Non è solo un&#39;ottimizzazione: impedisce anche
+che un calcolo non necessario produca un errore. Un controllo del tipo <code>i &lt;= length(xs) &amp;&amp; xs[i] &gt; 0</code> può quindi verificare il limite prima di accedere alla lista, purché <code>i</code> sia un intero
+valido. Entrambi gli operandi valutati devono comunque essere booleani.</p>
+<p>La tabella di precedenza descrive il raggruppamento: <code>a + b * c</code> equivale a <code>a + (b * c)</code>.
+Quando due operatori hanno lo stesso livello, entra in gioco l&#39;associatività. In caso di dubbio,
+usa parentesi: rendono esplicita la struttura che vuoi e aiutano a distinguere un errore di
+raggruppamento da un errore nel valore degli operandi.</p>
 <p>Riferimento: <code>conformance/core/cases/aritmetica</code>, <code>operatori</code>, <code>interi</code>, <code>confronti</code>.</p>
 <hr>
 <p><a id="tut-cap-8"></a></p>
@@ -3920,6 +4152,12 @@ println(quadrato(4), &quot; &quot;, calcola(3), &quot; &quot;, moltiplica(6, 7))
 <p>Output:</p>
 <pre><code class="language-text">16 8 42
 </code></pre>
+<p>Quando <code>calcola(3)</code> viene chiamata, <code>n</code> riceve <code>3</code>; il corpo calcola <code>m = 4</code>, poi valuta <code>m * 2</code>
+e restituisce <code>8</code> perché è l&#39;ultima espressione. Il legame <code>m</code> appartiene alla chiamata e non
+diventa automaticamente una variabile globale. Con la forma breve, l&#39;espressione a destra di <code>=</code>
+è direttamente il corpo. La funzione anonima può essere assegnata a un nome, passata come
+argomento o restituita da un&#39;altra funzione: il nome è un riferimento utile, non una proprietà
+necessaria del valore funzione.</p>
 <h3 id="tut-9-2-return-ricorsione-arita">9.2 <code>return</code>, ricorsione, arità</h3>
 <ul>
 <li><code>return e</code> esce subito dalla funzione; <code>return</code> da solo restituisce <code>nothing</code>.</li>
@@ -3942,6 +4180,13 @@ println(fattoriale(10), &quot; &quot;, fib(15), &quot; &quot;, mcd(48, 18))
 <pre><code class="language-text">grande piccola
 3628800 610 6
 </code></pre>
+<p>La ricorsione si comprende seguendo una catena di chiamate, ciascuna con il proprio parametro. In
+<code>fattoriale(4)</code>, per esempio, la chiamata riduce <code>n</code> a 3, 2 e 1; arrivata al caso base restituisce
+1, poi le chiamate sospese riprendono e moltiplicano i risultati per 2, 3 e 4. Il caso base è
+quindi una condizione di terminazione, non un semplice esempio aggiuntivo. Se il parametro non si
+avvicina a un caso base, la funzione continua a chiamarsi; nel runtime Core il budget di esecuzione
+non è un costrutto del linguaggio, quindi è responsabilità del programma evitare ricorsioni
+illimitate.</p>
 <h3 id="tut-9-3-annotazione-di-effetto-io">9.3 Annotazione di effetto <code>!io</code></h3>
 <p>In Triad-Full una funzione che stampa deve dichiarare <code>!io</code> (<a href="#tut-cap-28">capitolo 28</a>). Core
 accetta l&#39;annotazione e la ignora: scriverla rende il codice già pronto per Full.</p>
@@ -4000,6 +4245,13 @@ println(acc(10))
 <p>Il seed Windows cattura <strong>per valore</strong> e copre solo l&#39;ultimo legame del frame: un
 accumulatore come <code>contatore</code> può non funzionare sul seed (<a href="#tut-cap-15">capitolo 15</a>).</p>
 </blockquote>
+<p>La differenza tra una funzione ordinaria e una chiusura è il contesto esterno che resta
+accessibile. <code>add(10)</code> termina, ma la lambda restituita conserva il legame <code>n = 10</code>; un&#39;altra
+chiamata ad <code>add</code> crea un ambiente distinto. Nel contatore, invece, la chiusura non si limita a
+leggere <code>v</code>: aggiorna il legame condiviso. L&#39;interprete JS segue il contratto Core in cui questa
+mutazione è visibile alle chiamate successive. Il seed Windows ha una cattura più limitata, quindi
+un programma che dipende da questo caso va provato con l&#39;interprete di riferimento e non inferito
+dal solo fatto che il seed accetti la sintassi.</p>
 <h3 id="tut-10-3-regole-di-scope">10.3 Regole di scope</h3>
 <ol>
 <li><code>function</code>, lambda, <code>let</code> e <code>while</code> introducono ambienti; un nome è visibile nell&#39;ambiente
@@ -4072,6 +4324,16 @@ println(tot)
 l&#39;helper non standard <code>get(xs, i)</code> con indici <strong>da 0</strong> (<a href="#tut-cap-15">capitolo 15</a>).</p>
 </blockquote>
 <p>Riferimento: <code>conformance/core/cases/liste</code>, <code>liste_base</code>, <code>liste_push</code>.</p>
+<p>Ricorda il modello di alias: dopo <code>alias = xs</code>, i nomi non identificano due copie, ma la stessa
+lista. Cambiare <code>xs[1]</code> o aggiungere un elemento attraverso <code>alias</code> modifica un oggetto osservato
+da entrambi. Se hai bisogno di un valore indipendente, costruisci esplicitamente una nuova lista e
+copi gli elementi con un ciclo. Questo comportamento è diverso da una variabile intera: assegnare
+<code>y = x</code> copia il valore numerico e una successiva riassegnazione di <code>x</code> non aggiorna <code>y</code>.</p>
+<p>Negli algoritmi con indici, la coppia <code>i = 1</code> e <code>i &lt;= length(xs)</code> esprime l&#39;intervallo completo
+delle posizioni Core. Prima di leggere <code>xs[i]</code>, assicurati che <code>i</code> sia dentro quell&#39;intervallo;
+un indice fuori limite è un errore, non un elemento <code>nothing</code>. Il caso di conformance <code>liste</code>
+verifica proprio le operazioni standard, mentre l&#39;helper <code>get</code> del seed ha indici 0-based e non
+deve essere confuso con <code>xs[i]</code>.</p>
 <hr>
 <p><a id="tut-cap-12"></a></p>
 <h2 id="tut-12-stringhe-simboli-e-conversioni">12. Stringhe, simboli e conversioni</h2>
@@ -4250,6 +4512,17 @@ exit:    1
 </tbody></table>
 <p>Il seed Windows non stampa messaggi dettagliati: esce con codice <code>1</code> (sintassi, variabile o
 funzione non definita, arità, lettura) o <code>2</code> (nessun argomento).</p>
+<p>Per diagnosticare un errore, separa il <strong>livello</strong> dal <strong>punto del programma</strong>. Un <code>parse error</code>
+indica che il testo non è stato riconosciuto come grammatica Core: controlla prima il profilo,
+parentesi e <code>end</code>, poi gli operatori non Core. Un <code>undefined variable</code> o un errore di tipo arriva
+invece durante la valutazione: controlla l&#39;ordine delle definizioni, l&#39;ambiente in cui nasce il
+nome e il tipo effettivo degli argomenti. Se il programma stampa una prima riga e poi fallisce,
+quell&#39;output precedente non viene annullato; riproduci il caso minimo e confronta stdout, stderr
+e codice di uscita separatamente.</p>
+<p>Non copiare automaticamente il testo dell&#39;errore prodotto da un runtime in un test. La suite
+Core confronta stdout e codice di uscita, non stderr: il contratto importante è la classe di
+comportamento dichiarata dallo standard. I dettagli diagnostici possono cambiare tra runtime,
+mentre un test del valore restituito o dell&#39;uscita deve restare ripetibile.</p>
 <h3 id="tut-14-1-errori-come-valori-in-core">14.1 Errori come valori, in Core</h3>
 <p>Per propagare errori senza terminare il processo (come farà S1 per i programmi Full) si usa
 una convenzione con liste: <code>[:Err, kind, msg]</code>.</p>
@@ -4882,6 +5155,17 @@ end
 <li>funzioni e operatori sono valori: <code>reduce(+, xs)</code>, <code>map(sq, xs)</code>;</li>
 <li>lambda tipate: <code>function (x::Int) x end</code> → <code>f(2.0)</code> è <code>Err(:type)</code>.</li>
 </ul>
+<p>Per prevedere quale implementazione verrà chiamata, controlla prima il numero di argomenti e poi
+il tipo di ciascuno. Con i metodi <code>area(n::Number)</code> e <code>area(n::Int)</code>, l&#39;intero <code>1</code> è compatibile
+con entrambi, ma <code>Int</code> è più specifico di <code>Number</code>; il <code>Float</code> <code>1.5</code> è compatibile solo con il
+metodo su <code>Number</code>. Nei metodi con più parametri il confronto è per tupla: una firma può essere
+più specifica sul primo parametro ma più generale sul secondo. Se nessuna firma domina tutte le
+altre, non si indovina l&#39;intenzione: il risultato è l&#39;errore <code>:ambiguous</code>, che richiede una firma
+più specifica o una revisione delle firme esistenti.</p>
+<p>Il controllo del tipo di ritorno avviene dopo il corpo. Per questo <code>::Float</code> non converte gli
+argomenti in anticipo e non garantisce che ogni operazione intermedia sia valida; richiede che il
+valore prodotto alla fine sia convertibile o compatibile con il tipo dichiarato. Le annotazioni
+di parametro e di ritorno sono quindi parti distinte del contratto del metodo.</p>
 <hr>
 <p><a id="tut-cap-20"></a></p>
 <h2 id="tut-20-struct-spec-4">20. Struct (SPEC §4)</h2>
@@ -4900,6 +5184,12 @@ p isa Point          # true
 <li>Campo inesistente → <code>Err(:field)</code>; tipo sbagliato → <code>Err(:type)</code>.</li>
 <li>In Core lo stesso concetto si rappresenta con una lista taggata (<a href="#tut-cap-16">§16.2</a>).</li>
 </ul>
+<p>Una struct fornisce un record <strong>nominato</strong>: il nome del tipo distingue <code>Point</code> da un altro record,
+mentre i nomi dei campi (<code>x</code>, <code>y</code>) evitano di ricordare posizioni numeriche. La costruzione
+controlla i valori rispetto ai tipi dei campi; l&#39;accesso <code>p.x</code> risolve il campo per nome. La
+struttura è immutabile nello standard, quindi i campi descrivono lo stato dell&#39;istanza creata e
+non si aggiornano con un&#39;assegnazione successiva. La lista taggata Core è più flessibile, ma
+sposta queste garanzie sul codice che costruisce, legge e modifica il record.</p>
 <hr>
 <p><a id="tut-cap-21"></a></p>
 <h2 id="tut-21-controllo-di-flusso-full-for-range-comprehension-try-spec-2">21. Controllo di flusso Full: <code>for</code>, range, comprehension, <code>try</code> (SPEC §2)</h2>
@@ -4932,6 +5222,16 @@ function fact_(n::Int)::Int
 end; fact_(10)                                 # 3628800
 </code></pre>
 <p><code>requires c</code> al top level è un&#39;asserzione; <code>ensures c</code> è ammesso solo dentro <code>function</code>.</p>
+<p>Nel ciclo, il range <code>1:10</code> rappresenta i valori interi inclusivi da 1 a 10: non è una lista
+letterale che devi scrivere a mano. <code>for</code> associa a <code>i</code> ciascun valore successivo, esegue il corpo
+per quell&#39;associazione e prosegue fino alla fine dell&#39;iterabile. Una comprehension combina lo
+stesso schema con la costruzione del risultato: valuta il filtro per ogni elemento e aggiunge
+all&#39;output solo le espressioni corrispondenti. L&#39;ordine di lettura è quindi &quot;iteratore, filtro,
+espressione&quot;, non una valutazione simultanea.</p>
+<p><code>try</code> delimita invece il punto in cui un errore può essere trasformato in risultato. Senza
+<code>catch</code>, l&#39;espressione restituisce direttamente l&#39;<code>Err</code>; con <code>catch err</code>, il nome locale <code>err</code>
+identifica l&#39;errore e il valore finale è quello del blocco di recupero. Questo rende possibile
+gestire un caso senza confondere un errore con un valore di successo dello stesso tipo.</p>
 <hr>
 <p><a id="tut-cap-22"></a></p>
 <h2 id="tut-22-logica-fatti-regole-solve-spec-6">22. Logica: fatti, regole, <code>solve</code> (SPEC §6)</h2>
@@ -4958,6 +5258,17 @@ si può usare in <code>if</code>.</li>
 <li>Liste stile Prolog nei pattern: <code>[?h | ?t]</code>.</li>
 <li><code>vars(s)</code> restituisce i nomi legati in una <code>Solution</code>; si accede con <code>s.nome</code> o <code>s[:nome]</code>.</li>
 </ul>
+<p>Per leggere una regola, separa la <strong>testa</strong> dal <strong>corpo</strong>. In
+<code>grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)</code>, la testa descrive quali valori la regola
+può dimostrare; il corpo richiede due prove in sequenza. Il motore cerca un <code>parent</code> per il primo
+goal, conserva il legame trovato per <code>?y</code>, poi usa quel legame nel secondo goal. Se il secondo
+goal fallisce, torna alla scelta precedente e prova il prossimo fatto compatibile: è il
+backtracking. Se entrambi riescono, <code>?z</code> viene restituito nella soluzione.</p>
+<p>Le variabili con lo stesso nome in clausole diverse non condividono accidentalmente il loro
+stato: a ogni uso della regola vengono rinominate. L&#39;occurs-check impedisce legami ricorsivi
+impossibili come <code>?x = f(?x)</code>. Il limite <code>depth</code> taglia i rami troppo profondi; <code>steps</code> limita il
+lavoro totale; <code>limit</code> limita quante soluzioni vengono raccolte. Sono controlli differenti, e
+una lista vuota ottenuta entro i limiti non è equivalente a una ricerca interrotta da <code>Err(:budget)</code>.</p>
 <p>Esempi:</p>
 <pre><code class="language-triad-full"># percorso con costo
 fact edge(:a, :b, 2)
@@ -5019,6 +5330,13 @@ end
 <p>Kinds standard: <code>:syntax</code>, <code>:undef</code>, <code>:type</code>, <code>:method</code>, <code>:ambiguous</code>, <code>:field</code>, <code>:bounds</code>,
 <code>:domain</code>, <code>:instantiation</code>, <code>:contract</code>, <code>:budget</code>, <code>:effect</code>, <code>:host</code>.</p>
 <p><code>Err(:syntax)</code> porta in <code>data</code> la posizione (<code>e.data.line</code>, <code>e.data.col</code>).</p>
+<p>La gestione degli errori separa l&#39;operazione fallita dal punto in cui il programma decide come
+reagire. <code>try</code> non ripara automaticamente lo stato: converte l&#39;esito in un valore <code>Err</code> oppure
+passa quel valore al blocco <code>catch</code>. Il chiamante può quindi scegliere tra mostrare un messaggio,
+provare un&#39;alternativa o propagare l&#39;errore restituendolo. Se nessun <code>try</code> lo intercetta, il
+runtime lo segnala al livello superiore e il processo termina con codice non riuscito. In questo
+modo la gestione è esplicita, ma un errore non diventa un successo solo perché è rappresentato da
+un valore.</p>
 <hr>
 <p><a id="tut-cap-25"></a></p>
 <h2 id="tut-25-contratti-spec-9">25. Contratti (SPEC §9)</h2>
@@ -5042,6 +5360,13 @@ controllo del tipo di ritorno.</li>
 <li>I contratti sono <strong>puri</strong>: un effetto dentro un contratto → <code>Err(:effect)</code>.</li>
 <li><code>ensures</code> fuori da <code>function</code> → <code>Err(:syntax)</code>.</li>
 </ul>
+<p>Pensa a <code>requires</code> come alla condizione d&#39;ingresso dell&#39;operazione e a <code>ensures</code> come alla
+condizione d&#39;uscita. Una precondizione specifica ciò che il chiamante deve garantire; una
+postcondizione specifica ciò che la funzione promette quando termina correttamente. Le clausole
+non sostituiscono il controllo dei tipi: una funzione può ricevere argomenti del tipo giusto e
+violare comunque una precondizione di dominio, oppure restituire un valore tipato che viola la
+postcondizione. Poiché i contratti sono puri, la loro valutazione non può stampare o modificare la
+base di conoscenza: il controllo non deve cambiare il programma che sta verificando.</p>
 <hr>
 <p><a id="tut-cap-26"></a></p>
 <h2 id="tut-26-budget-spec-10">26. Budget (SPEC §10)</h2>
@@ -5057,6 +5382,12 @@ quello esterno si propaga.</li>
 <li><code>solve … steps N</code> è il budget di una singola query.</li>
 <li>La ricorsione infinita non fa stack overflow: finisce in <code>Err(:budget)</code> (stack esplicito).</li>
 </ul>
+<p>Il budget misura unità di lavoro definite dallo standard, non secondi di CPU e non memoria
+allocata. È quindi un limite riproducibile sul numero di passi del modello di esecuzione, non un
+timeout generale del sistema operativo. Usalo per rendere limitate le computazioni potenzialmente
+lunghe, in particolare la risoluzione logica o un ciclo che potrebbe non terminare. Il risultato
+<code>Err(:budget)</code> è distinto dal risultato valido del corpo e può essere gestito con <code>try</code> o con il
+controllo del valore restituito dal <code>with</code>.</p>
 <hr>
 <p><a id="tut-cap-27"></a></p>
 <h2 id="tut-27-tracce-spec-11">27. Tracce (SPEC §11)</h2>
@@ -5073,6 +5404,11 @@ t.trace       # porte Byrd: :call, :exit, :redo, :fail, :depth
 </code></pre>
 <p>Gli eventi sono record con <code>port</code>, <code>goal</code>/<code>fn</code>, <code>depth</code> (e <code>value</code>/<code>args</code> per le funzioni):
 si filtrano come qualsiasi valore.</p>
+<p>La traccia registra la storia del calcolo, non solo il suo risultato. In una traccia di funzione
+<code>call</code> indica l&#39;ingresso e <code>exit</code> l&#39;uscita; in una query logica compaiono anche <code>redo</code> e <code>fail</code>,
+perché la ricerca può provare più alternative. Il valore <code>result</code> resta disponibile accanto agli
+eventi: puoi confrontare il risultato finale con il percorso seguito. La traccia non è un log
+stampato automaticamente; decide il programma quali eventi filtrare, contare o presentare.</p>
 <hr>
 <p><a id="tut-cap-28"></a></p>
 <h2 id="tut-28-effetti-dichiarati-spec-12">28. Effetti dichiarati (SPEC §12)</h2>
@@ -5092,6 +5428,12 @@ end
 <li>Macro e contratti sono puri; leggere la KB (<code>solve</code>, predicati) è puro.</li>
 <li>Mutare liste o variabili locali non è un effetto.</li>
 </ul>
+<p>La dichiarazione di effetto è una verifica dinamica dei permessi di esecuzione, non un&#39;annotazione
+puramente descrittiva. Il runtime controlla la catena delle chiamate quando una funzione tenta
+un&#39;operazione con effetto: una funzione <code>!io</code> può stampare solo se il contesto chiamante lo
+consente. Il top level è il contesto più permissivo; una funzione pura chiamata da lì non diventa
+per questo autorizzata a stampare. Elencare <code>!io</code> nella firma documenta il requisito per i
+chiamanti e permette al runtime di rifiutare l&#39;effetto nel punto in cui violerebbe la dichiarazione.</p>
 <hr>
 <p><a id="tut-cap-29"></a></p>
 <h2 id="tut-29-codice-come-dato-albero-uniforme-e-macro-spec-3-7">29. Codice come dato, albero uniforme e macro (SPEC §3, §7)</h2>
@@ -5186,6 +5528,15 @@ esegue, che <code>:( … )</code> restituisce e che <code>--tree</code> stampa c
 <td><code>(with (tuple (call budget (assign steps N)) trace) body)</code></td>
 </tr>
 </tbody></table>
+<p>Leggi una riga della tabella come una mappa tra <strong>sintassi visibile</strong> e <strong>rappresentazione
+interna</strong>. Per esempio <code>a + b</code> non richiede un tipo di nodo speciale per la somma: è una chiamata
+al nome <code>+</code> con due argomenti. Al contrario <code>&amp;&amp;</code> diventa un nodo dedicato perché il valutatore
+deve poter evitare di valutare il secondo operando. La forma dell&#39;albero quindi non è una
+decorazione: codifica le decisioni che il runtime deve prendere per rispettare la semantica.</p>
+<p>Questo modello è utile anche quando si legge un errore: se <code>sexpr</code> mostra un albero che non
+corrisponde al raggruppamento atteso, il problema nasce nel parsing; se l&#39;albero è corretto ma il
+risultato è sbagliato, il problema è più probabilmente nella valutazione. La distinzione tra forma
+del programma e valore del programma è il fondamento della metaprogrammazione.</p>
 <h3 id="tut-29-2-quote-unquote-eval">29.2 Quote, unquote, eval</h3>
 <pre><code class="language-triad-full">c = :(a.x + f(b, 2))
 c.head        # :call
@@ -5226,6 +5577,14 @@ end
 @unless(x &lt; y, println(&quot;x non è minore di y&quot;))
 @time_it(&quot;somma&quot;, reduce(+, 1:100))     # stampa &quot;somma -&gt; 5050&quot;
 </code></pre>
+<p>Per valutare una macro, confronta l&#39;argomento sorgente con il codice che essa costruisce. In
+<code>@unless(c, body)</code>, <code>c</code> e <code>body</code> arrivano come nodi; la macro li inserisce in un <code>if</code> con la
+condizione negata. Il corpo verrà eseguito solo se la condizione originale è falsa, proprio come
+se il programmatore avesse scritto quel codice manualmente. Se la macro usasse una funzione
+ordinaria, gli argomenti verrebbero calcolati prima della chiamata e non sarebbe possibile
+controllare se <code>body</code> viene valutato. Questa capacità è potente, ma rende più difficile leggere
+l&#39;esecuzione: l&#39;espansione esplicita e i nomi temporanei generati sono strumenti essenziali per
+evitare sorprese.</p>
 <h3 id="tut-29-4-codice-che-genera-codice">29.4 Codice che genera codice</h3>
 <pre><code class="language-triad-full">function poly(coeffs)
     acc = :(0)
@@ -5601,6 +5960,14 @@ legame esterno; altrimenti crea un locale.</li>
 <code>parse error: …</code>, errori di esecuzione → <code>error: …</code>, entrambi con exit 1; nessun file →
 exit 2.</li>
 </ol>
+<p>Questo flusso separa responsabilità che conviene diagnosticare una alla volta. Se il token
+prodotto da <code>tokenize</code> è sbagliato, il problema è prima del parser; se il parser genera la forma
+errata, l&#39;albero AST non corrisponde alla grammatica; se l&#39;albero è giusto ma il risultato no, il
+difetto è nell&#39;ambiente, nella valutazione o in un builtin. Un caso di conformance piccolo
+permette di fissare il comportamento osservato mentre si corregge il livello responsabile. Quando
+si modifica sintassi o semantica, il test, l&#39;interprete e la specifica devono restare coerenti:
+aggiungere un ramo al parser senza la corrispondente valutazione crea una forma riconosciuta ma
+non eseguibile.</p>
 <h3 id="tut-34-2-esempio-aggiungere-un-builtin">34.2 Esempio: aggiungere un builtin</h3>
 <p>Supponiamo di voler sperimentare un builtin <code>abs</code> (non è in Core: va prima proposto nello
 standard, vedi <a href="#tut-cap-43">§43</a>). Servono due modifiche:</p>
@@ -5848,6 +6215,14 @@ standard <code>xs[i]</code>: il runner stampa quindi 36 casi. Per provare il cas
 <li><code>PASS  nome</code> / <code>FAIL  nome  (exit X, atteso Y, stdout N byte, attesi M)</code>;</li>
 <li><code>golden mancante</code>: il checkout non ha <code>expected.out</code> (di solito basta <code>git pull</code>).</li>
 </ul>
+<p>Un golden è un&#39;aspettativa versionata, non la fonte normativa della semantica. Il file
+<code>program.td</code> definisce l&#39;input, <code>args.txt</code> gli argomenti, <code>expected.out</code> l&#39;output byte per byte e
+<code>expected.code</code> il codice d&#39;uscita. Il runner confronta questi risultati con il runtime scelto;
+così uno stesso caso può essere eseguito da più interpreti e rendere visibili le divergenze. Se
+il comportamento del runtime è in dubbio, confronta prima il caso con SPEC-CORE e poi correggi il
+golden solo quando la specifica conferma il nuovo valore atteso. L&#39;opzione <code>--update</code> copia il
+comportamento corrente nei risultati attesi: usarla senza revisione trasformerebbe un bug in una
+pretesa di correttezza.</p>
 <h3 id="tut-38-3-aggiungere-un-caso-core">38.3 Aggiungere un caso Core</h3>
 <ol>
 <li>scegli un nome descrittivo in italiano (<code>liste_annidate</code>, <code>stringhe_vuote</code>, …);</li>
@@ -6348,18 +6723,18 @@ verificano eseguendoli con <code>node seed/dev/triad_core.cjs</code>.</p>
   bootstrap: valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è
   lo standard completo: tipi dichiarati, multiple dispatch, logica integrata, macro, contratti,
   budget, tracce, effetti. Ogni programma Core è anche un programma Full valido e deve comportarsi
-  allo stesso modo. Il runtime di riferimento è il seed S0: un interprete Triad-Core scritto
-  direttamente in codice macchina x86-64 (PE su Windows, ELF su Linux), senza alcun linguaggio
-  ospite. Il piano di bootstrap prevede S1 (un interprete Triad scritto in Triad-Core), S2
+  allo stesso modo. L'interprete di riferimento JavaScript esegue Triad-Core; il seed S0 Windows
+  è un interprete in codice macchina x86-64 distinto e più limitato. Il seed Linux attuale è
+  ancora un test di avvio E0, non un interprete. Il piano di bootstrap prevede S1 (un interprete
+  Triad scritto in Triad-Core), S2
   (compilatore nativo), S3 (self-hosting) e S4 (parità cross-platform).</p>
   <p>Questo libro è il percorso di studio del linguaggio per come è definito dallo standard. La
-  prima parte, Fondamenti, introduce il lessico, i valori e i tipi, il controllo di flusso, le
-  funzioni, il dispatch, la logica, il codice come dato, gli errori, i contratti, il budget, le
-  tracce e gli effetti. La seconda, Triad-Core, copre il sottoinsieme eseguibile oggi dall'interprete
-  di riferimento, con tutti i 37 casi di conformance. La terza, Triad-Full, presenta i costrutti
-  dello standard completo, oggi studiabili ma non ancora eseguibili dal runtime. La quarta, Dentro
-  il progetto, accompagna il lettore nel codice del repository: il seed, la suite di conformance,
-  la CLI, gli strumenti per gli editor.</p>
+  Manuale e Tutorial alternano spiegazioni concettuali, semantica tecnica, esempi annotati,
+  esercizi e riferimenti alla specifica. Il Tutorial accompagna prima il lettore nei costrutti Core
+  eseguibili oggi, poi presenta Triad-Full come standard da studiare e infine mostra come leggere
+  le implementazioni, il bootstrap e la suite di conformance nel repository. Le etichette dei
+  blocchi distinguono il codice eseguibile dal codice definito dallo standard ma non ancora
+  supportato dal runtime.</p>
   <p>Il progetto è rilasciato sotto licenza MIT. La specifica normativa è in SPEC.md (standard
   0.2.0), il sottoinsieme di bootstrap in SPEC-CORE.md, la suite di conformance in
   conformance/ con golden verificabili. Il repository include anche un benchmark per la generazione
@@ -6367,12 +6742,14 @@ verificano eseguendoli con <code>node seed/dev/triad_core.cjs</code>.</p>
   apprendimento. L'obiettivo è un linguaggio autonomo e riconosciuto: standard proprio,
   conformance eseguibile, estensione .triad, tooling editor, bootstrap senza linguaggi ospiti e,
   infine, self-hosting.</p>
-  <p>La suite di conformance è il contratto eseguibile del linguaggio: 37 casi Triad-Core e 12 casi
-  Triad-Full, ognuno con golden verificabili byte per byte, inclusi l'exit code. Il runner è scritto
-  in Node e non dipende da Julia: il seed Windows passa 33 casi Core sul PE, il seed Linux è in
-  fase E0. Ogni caso dichiara il profilo (Core o Full) e un golden mancante fa fallire il caso,
-  così che nessuna implementazione possa registrare comportamenti scorretti come attesi. I test del
-  progetto (unit e end-to-end) coprono parser, valutatore, unificazione, macro e CLI.</p>
+  <p>La suite di conformance è il contratto eseguibile del linguaggio. L'interprete di riferimento
+  JavaScript passa tutti i 37 casi Core; il seed Windows passa i casi supportati e lascia fuori
+  per default il caso <code>liste</code>, che richiede l'indicizzazione standard. Il seed Linux è
+  ancora allo stadio E0 e stampa solo un messaggio di avvio. Il profilo Full è definito dallo
+  standard, ma il runtime corrente non implementa ancora il linguaggio completo; gli output
+  etichettati golden sono risultati attesi conservati nei file della suite. Ogni caso Core dichiara
+  output e codice di uscita, così che un'implementazione possa essere confrontata con un contratto
+  riproducibile, non con un esempio isolato.</p>
   <p>Gli strumenti per gli editor includono grammatiche per VS Code e Vim/Neovim e una voce per
   GitHub Linguist, così che i file <code>.triad</code> (canonica) e <code>.td</code> (alias storico)
   siano riconosciuti ovunque. Il sito del progetto espone la curva di apprendimento, i grafici delle

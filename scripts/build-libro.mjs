@@ -32,7 +32,7 @@ function addHeadingIds(html, prefix, toc) {
 }
 
 const preface = readFileSync(join(root, 'PREFazione.md'), 'utf8');
-const prefaceHtml = marked.parse(preface);
+const prefaceHtml = rewriteRepositoryLinks(marked.parse(preface));
 const manualeRaw = readFileSync(join(root, 'MANUALE.md'), 'utf8');
 const tutorialRaw = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
 
@@ -44,8 +44,35 @@ function stripIndice(md, heading, endMarker) {
   return md.slice(0, start) + md.slice(end);
 }
 
-const manuale = stripIndice(manualeRaw, '### Indice', '\n<a id="parte-1">');
-const tutorial = stripIndice(tutorialRaw, '## Indice', '\n<a id="parte-1">');
+function namespaceAnchors(md, prefix) {
+  const anchor = '(cap-\\d+|parte-\\d+|app-[a-z])';
+  return md
+    .replace(new RegExp(`id="${anchor}"`, 'g'), (_, id) => `id="${prefix}-${id}"`)
+    .replace(new RegExp(`href="#${anchor}"`, 'g'), (_, id) => `href="#${prefix}-${id}"`)
+    .replace(new RegExp(`\\]\\(#${anchor}\\)`, 'g'), (_, id) => `](#${prefix}-${id})`);
+}
+
+function rewriteRepositoryLinks(html) {
+  const withLocalLogo = html.replace(
+    'src="https://raw.githubusercontent.com/GPuntobit/triad2.0/main/docs/triad-logo.webp"',
+    'src="../triad-logo.webp"'
+  );
+  return withLocalLogo.replace(/href="([^"]+)"/g, (match, target) => {
+    if (/^(?:https?:|mailto:|#)/.test(target)) return match;
+    const path = target.replace(/^\.\//, '');
+    const kind = path.endsWith('/') ? 'tree' : 'blob';
+    return `href="https://github.com/GPuntobit/triad2.0/${kind}/main/${path}"`;
+  });
+}
+
+const manuale = namespaceAnchors(
+  stripIndice(manualeRaw, '### Indice', '\n<a id="parte-1">'),
+  'man'
+);
+const tutorial = namespaceAnchors(
+  stripIndice(tutorialRaw, '## Indice', '\n<a id="parte-1">'),
+  'tut'
+);
 
 function extractHeadings(md, maxLevel) {
   const lines = md.split(/\r?\n/);
@@ -66,8 +93,8 @@ function extractHeadings(md, maxLevel) {
 
 const manualeToc = [];
 const tutorialToc = [];
-const manualeHtml = addHeadingIds(marked.parse(manuale), 'man', manualeToc);
-const tutorialHtml = addHeadingIds(marked.parse(tutorial), 'tut', tutorialToc);
+const manualeHtml = rewriteRepositoryLinks(addHeadingIds(marked.parse(manuale), 'man', manualeToc));
+const tutorialHtml = rewriteRepositoryLinks(addHeadingIds(marked.parse(tutorial), 'tut', tutorialToc));
 
 function buildToc(groups) {
   let html = '<h1>Indice</h1>\n';
@@ -102,18 +129,18 @@ const backCoverHtml = `<div class="backcover">
   bootstrap: valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è
   lo standard completo: tipi dichiarati, multiple dispatch, logica integrata, macro, contratti,
   budget, tracce, effetti. Ogni programma Core è anche un programma Full valido e deve comportarsi
-  allo stesso modo. Il runtime di riferimento è il seed S0: un interprete Triad-Core scritto
-  direttamente in codice macchina x86-64 (PE su Windows, ELF su Linux), senza alcun linguaggio
-  ospite. Il piano di bootstrap prevede S1 (un interprete Triad scritto in Triad-Core), S2
+  allo stesso modo. L'interprete di riferimento JavaScript esegue Triad-Core; il seed S0 Windows
+  è un interprete in codice macchina x86-64 distinto e più limitato. Il seed Linux attuale è
+  ancora un test di avvio E0, non un interprete. Il piano di bootstrap prevede S1 (un interprete
+  Triad scritto in Triad-Core), S2
   (compilatore nativo), S3 (self-hosting) e S4 (parità cross-platform).</p>
   <p>Questo libro è il percorso di studio del linguaggio per come è definito dallo standard. La
-  prima parte, Fondamenti, introduce il lessico, i valori e i tipi, il controllo di flusso, le
-  funzioni, il dispatch, la logica, il codice come dato, gli errori, i contratti, il budget, le
-  tracce e gli effetti. La seconda, Triad-Core, copre il sottoinsieme eseguibile oggi dall'interprete
-  di riferimento, con tutti i 37 casi di conformance. La terza, Triad-Full, presenta i costrutti
-  dello standard completo, oggi studiabili ma non ancora eseguibili dal runtime. La quarta, Dentro
-  il progetto, accompagna il lettore nel codice del repository: il seed, la suite di conformance,
-  la CLI, gli strumenti per gli editor.</p>
+  Manuale e Tutorial alternano spiegazioni concettuali, semantica tecnica, esempi annotati,
+  esercizi e riferimenti alla specifica. Il Tutorial accompagna prima il lettore nei costrutti Core
+  eseguibili oggi, poi presenta Triad-Full come standard da studiare e infine mostra come leggere
+  le implementazioni, il bootstrap e la suite di conformance nel repository. Le etichette dei
+  blocchi distinguono il codice eseguibile dal codice definito dallo standard ma non ancora
+  supportato dal runtime.</p>
   <p>Il progetto è rilasciato sotto licenza MIT. La specifica normativa è in SPEC.md (standard
   0.2.0), il sottoinsieme di bootstrap in SPEC-CORE.md, la suite di conformance in
   conformance/ con golden verificabili. Il repository include anche un benchmark per la generazione
@@ -121,12 +148,14 @@ const backCoverHtml = `<div class="backcover">
   apprendimento. L'obiettivo è un linguaggio autonomo e riconosciuto: standard proprio,
   conformance eseguibile, estensione .triad, tooling editor, bootstrap senza linguaggi ospiti e,
   infine, self-hosting.</p>
-  <p>La suite di conformance è il contratto eseguibile del linguaggio: 37 casi Triad-Core e 12 casi
-  Triad-Full, ognuno con golden verificabili byte per byte, inclusi l'exit code. Il runner è scritto
-  in Node e non dipende da Julia: il seed Windows passa 33 casi Core sul PE, il seed Linux è in
-  fase E0. Ogni caso dichiara il profilo (Core o Full) e un golden mancante fa fallire il caso,
-  così che nessuna implementazione possa registrare comportamenti scorretti come attesi. I test del
-  progetto (unit e end-to-end) coprono parser, valutatore, unificazione, macro e CLI.</p>
+  <p>La suite di conformance è il contratto eseguibile del linguaggio. L'interprete di riferimento
+  JavaScript passa tutti i 37 casi Core; il seed Windows passa i casi supportati e lascia fuori
+  per default il caso <code>liste</code>, che richiede l'indicizzazione standard. Il seed Linux è
+  ancora allo stadio E0 e stampa solo un messaggio di avvio. Il profilo Full è definito dallo
+  standard, ma il runtime corrente non implementa ancora il linguaggio completo; gli output
+  etichettati golden sono risultati attesi conservati nei file della suite. Ogni caso Core dichiara
+  output e codice di uscita, così che un'implementazione possa essere confrontata con un contratto
+  riproducibile, non con un esempio isolato.</p>
   <p>Gli strumenti per gli editor includono grammatiche per VS Code e Vim/Neovim e una voce per
   GitHub Linguist, così che i file <code>.triad</code> (canonica) e <code>.td</code> (alias storico)
   siano riconosciuti ovunque. Il sito del progetto espone la curva di apprendimento, i grafici delle
@@ -156,9 +185,9 @@ const html = `<!DOCTYPE html>
   p + p { text-indent: 1.2em; margin-top: 0; }
   a { color: #d0405a; text-decoration: none; }
   code { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace; font-size: 9pt; background: #f3f1f4; padding: 1pt 3pt; border-radius: 2pt; }
-  pre { background: #0d0a0f; color: #f5f5f4; padding: 10pt 12pt; border-radius: 4pt; overflow-x: auto; page-break-inside: avoid; margin: 8pt 0; border-left: 3pt solid #d0405a; }
+  pre { background: #0d0a0f; color: #f5f5f4; padding: 10pt 12pt; border-radius: 4pt; overflow-x: auto; margin: 8pt 0; border-left: 3pt solid #d0405a; }
   pre code { background: none; color: inherit; padding: 0; font-size: 8.5pt; line-height: 1.4; }
-  table { border-collapse: collapse; width: 100%; margin: 10pt 0; page-break-inside: avoid; font-size: 9.5pt; }
+  table { border-collapse: collapse; width: 100%; margin: 10pt 0; font-size: 9.5pt; }
   th, td { border: 0.5pt solid #b8b0aa; padding: 4pt 6pt; }
   th { background: #ece8e4; font-weight: bold; }
   tr:nth-child(even) td { background: #f7f5f3; }

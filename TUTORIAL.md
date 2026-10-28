@@ -296,6 +296,19 @@ Cosa notare:
 - `*` tra stringhe è la **concatenazione** (non `+`);
 - non c'è una funzione `main`: le istruzioni al top level si eseguono in ordine.
 
+Puoi seguire l'esecuzione riga per riga. La riga `nome = "Triad"` valuta la stringa e associa
+quel valore al nome `nome`. Nella riga seguente il runtime legge `nome`, concatena i due valori
+stringa con `*` e passa il risultato a `println`. Nell'ultima riga, `6 * 7` viene valutato prima
+della chiamata: a `println` arriva il valore intero `42`, non il testo del calcolo. Ogni
+istruzione viene eseguita una sola volta e nell'ordine in cui compare; una funzione chiamata può
+naturalmente eseguire il proprio corpo prima che il programma passi all'istruzione successiva.
+
+La riga `#!` non è una direttiva necessaria per l'interprete: in questi esempi è una forma
+convenzionale utile quando il sistema operativo può avviare direttamente un file eseguibile. Il
+runtime Triad la ignora perché la tratta come commento. Se un esempio non funziona, verifica
+separatamente che il file sia salvato con estensione `.triad` o `.td`, che il comando punti al
+runtime giusto e che il sorgente usi soltanto costrutti supportati dal profilo dichiarato.
+
 ### 3.1 Argomenti da riga di comando
 
 Gli argomenti dopo il nome del file sono in `ARGS`, una lista di stringhe (senza il nome del
@@ -435,6 +448,20 @@ true
 true true false
 ```
 
+Il valore stampato non è sempre una rappresentazione da riutilizzare come sorgente. Per esempio,
+un simbolo passato direttamente a `println` appare senza i due punti (`alice`), mentre dentro una
+lista viene mostrato come `:alice`; le stringhe dentro una lista sono mostrate senza virgolette.
+`typeof` è quindi il modo corretto per verificare il tipo del valore, mentre la forma visiva di
+`println` serve soprattutto alla lettura umana. Analogamente, `==` confronta il contenuto per
+numeri, stringhe, simboli e liste, ma le funzioni per identità: due funzioni scritte con lo stesso
+testo non sono per questo lo stesso oggetto funzione.
+
+La rappresentazione UTF-8 è misurata in byte, non necessariamente in lettere visibili. Una lettera
+accentata può occupare più byte; perciò `length` su una stringa non è sempre il conteggio dei
+caratteri percepiti da una persona. In Core non ci sono operazioni di indicizzazione dei caratteri:
+i primitivi di bootstrap lavorano esplicitamente sui byte e vanno usati solo per il compito di
+lettura e analisi del sorgente.
+
 Riferimento: `conformance/core/cases/valori`, `nothing_base`, `confronti`.
 
 ---
@@ -470,6 +497,21 @@ Output:
 ```
 
 Le regole di **visibilità** (dentro funzioni, `let`, lambda) sono nel [capitolo 10](#cap-10).
+
+Un modo utile di seguire il programma è tenere una piccola tabella dei legami correnti:
+
+| istruzione conclusa | `x` | `y` | `z` |
+|---|---:|---:|---:|
+| `x = 42` | 42 | — | — |
+| `y = x + 8` | 42 | 50 | — |
+| `x = x + 1` | 43 | 50 | — |
+| `z = (x + y) * 2` | 43 | 50 | 186 |
+
+Questa tabella mostra perché l'assegnamento non è una formula reattiva: `y` conserva il risultato
+calcolato quando la sua riga viene eseguita, anche dopo che `x` cambia. Per contro, una lista è
+mutabile e può essere raggiunta da più nomi; modificare un suo elemento agisce sull'oggetto
+condiviso, non solo su una singola associazione nome-valore. Il capitolo 11 mostra come riconoscere
+questa differenza nel codice.
 
 Riferimento: `conformance/core/cases/variabili`.
 
@@ -537,6 +579,17 @@ true false true
 true
 grande
 ```
+
+Il **cortocircuito** è osservabile: con `a && b`, se `a` è `false`, `b` non viene valutato; con
+`a || b`, se `a` è `true`, `b` non viene valutato. Non è solo un'ottimizzazione: impedisce anche
+che un calcolo non necessario produca un errore. Un controllo del tipo `i <= length(xs) &&
+xs[i] > 0` può quindi verificare il limite prima di accedere alla lista, purché `i` sia un intero
+valido. Entrambi gli operandi valutati devono comunque essere booleani.
+
+La tabella di precedenza descrive il raggruppamento: `a + b * c` equivale a `a + (b * c)`.
+Quando due operatori hanno lo stesso livello, entra in gioco l'associatività. In caso di dubbio,
+usa parentesi: rendono esplicita la struttura che vuoi e aiutano a distinguere un errore di
+raggruppamento da un errore nel valore degli operandi.
 
 Riferimento: `conformance/core/cases/aritmetica`, `operatori`, `interi`, `confronti`.
 
@@ -667,6 +720,13 @@ Output:
 16 8 42
 ```
 
+Quando `calcola(3)` viene chiamata, `n` riceve `3`; il corpo calcola `m = 4`, poi valuta `m * 2`
+e restituisce `8` perché è l'ultima espressione. Il legame `m` appartiene alla chiamata e non
+diventa automaticamente una variabile globale. Con la forma breve, l'espressione a destra di `=`
+è direttamente il corpo. La funzione anonima può essere assegnata a un nome, passata come
+argomento o restituita da un'altra funzione: il nome è un riferimento utile, non una proprietà
+necessaria del valore funzione.
+
 ### 9.2 `return`, ricorsione, arità
 
 - `return e` esce subito dalla funzione; `return` da solo restituisce `nothing`.
@@ -693,6 +753,14 @@ Output:
 grande piccola
 3628800 610 6
 ```
+
+La ricorsione si comprende seguendo una catena di chiamate, ciascuna con il proprio parametro. In
+`fattoriale(4)`, per esempio, la chiamata riduce `n` a 3, 2 e 1; arrivata al caso base restituisce
+1, poi le chiamate sospese riprendono e moltiplicano i risultati per 2, 3 e 4. Il caso base è
+quindi una condizione di terminazione, non un semplice esempio aggiuntivo. Se il parametro non si
+avvicina a un caso base, la funzione continua a chiamarsi; nel runtime Core il budget di esecuzione
+non è un costrutto del linguaggio, quindi è responsabilità del programma evitare ricorsioni
+illimitate.
 
 ### 9.3 Annotazione di effetto `!io`
 
@@ -775,6 +843,14 @@ Output:
 
 > Il seed Windows cattura **per valore** e copre solo l'ultimo legame del frame: un
 > accumulatore come `contatore` può non funzionare sul seed ([capitolo 15](#cap-15)).
+
+La differenza tra una funzione ordinaria e una chiusura è il contesto esterno che resta
+accessibile. `add(10)` termina, ma la lambda restituita conserva il legame `n = 10`; un'altra
+chiamata ad `add` crea un ambiente distinto. Nel contatore, invece, la chiusura non si limita a
+leggere `v`: aggiorna il legame condiviso. L'interprete JS segue il contratto Core in cui questa
+mutazione è visibile alle chiamate successive. Il seed Windows ha una cattura più limitata, quindi
+un programma che dipende da questo caso va provato con l'interprete di riferimento e non inferito
+dal solo fatto che il seed accetti la sintassi.
 
 ### 10.3 Regole di scope
 
@@ -862,6 +938,18 @@ Core non ha `map`, `filter`, `reduce`, `sum`, `sort`: si scrivono in Core (vedi
 > l'helper non standard `get(xs, i)` con indici **da 0** ([capitolo 15](#cap-15)).
 
 Riferimento: `conformance/core/cases/liste`, `liste_base`, `liste_push`.
+
+Ricorda il modello di alias: dopo `alias = xs`, i nomi non identificano due copie, ma la stessa
+lista. Cambiare `xs[1]` o aggiungere un elemento attraverso `alias` modifica un oggetto osservato
+da entrambi. Se hai bisogno di un valore indipendente, costruisci esplicitamente una nuova lista e
+copi gli elementi con un ciclo. Questo comportamento è diverso da una variabile intera: assegnare
+`y = x` copia il valore numerico e una successiva riassegnazione di `x` non aggiorna `y`.
+
+Negli algoritmi con indici, la coppia `i = 1` e `i <= length(xs)` esprime l'intervallo completo
+delle posizioni Core. Prima di leggere `xs[i]`, assicurati che `i` sia dentro quell'intervallo;
+un indice fuori limite è un errore, non un elemento `nothing`. Il caso di conformance `liste`
+verifica proprio le operazioni standard, mentre l'helper `get` del seed ha indici 0-based e non
+deve essere confuso con `xs[i]`.
 
 ---
 
@@ -989,6 +1077,19 @@ Messaggi dell'interprete JS (stderr) e cause tipiche:
 
 Il seed Windows non stampa messaggi dettagliati: esce con codice `1` (sintassi, variabile o
 funzione non definita, arità, lettura) o `2` (nessun argomento).
+
+Per diagnosticare un errore, separa il **livello** dal **punto del programma**. Un `parse error`
+indica che il testo non è stato riconosciuto come grammatica Core: controlla prima il profilo,
+parentesi e `end`, poi gli operatori non Core. Un `undefined variable` o un errore di tipo arriva
+invece durante la valutazione: controlla l'ordine delle definizioni, l'ambiente in cui nasce il
+nome e il tipo effettivo degli argomenti. Se il programma stampa una prima riga e poi fallisce,
+quell'output precedente non viene annullato; riproduci il caso minimo e confronta stdout, stderr
+e codice di uscita separatamente.
+
+Non copiare automaticamente il testo dell'errore prodotto da un runtime in un test. La suite
+Core confronta stdout e codice di uscita, non stderr: il contratto importante è la classe di
+comportamento dichiarata dallo standard. I dettagli diagnostici possono cambiare tra runtime,
+mentre un test del valore restituito o dell'uscita deve restare ripetibile.
 
 ### 14.1 Errori come valori, in Core
 
@@ -1640,6 +1741,19 @@ Regole:
 - funzioni e operatori sono valori: `reduce(+, xs)`, `map(sq, xs)`;
 - lambda tipate: `function (x::Int) x end` → `f(2.0)` è `Err(:type)`.
 
+Per prevedere quale implementazione verrà chiamata, controlla prima il numero di argomenti e poi
+il tipo di ciascuno. Con i metodi `area(n::Number)` e `area(n::Int)`, l'intero `1` è compatibile
+con entrambi, ma `Int` è più specifico di `Number`; il `Float` `1.5` è compatibile solo con il
+metodo su `Number`. Nei metodi con più parametri il confronto è per tupla: una firma può essere
+più specifica sul primo parametro ma più generale sul secondo. Se nessuna firma domina tutte le
+altre, non si indovina l'intenzione: il risultato è l'errore `:ambiguous`, che richiede una firma
+più specifica o una revisione delle firme esistenti.
+
+Il controllo del tipo di ritorno avviene dopo il corpo. Per questo `::Float` non converte gli
+argomenti in anticipo e non garantisce che ogni operazione intermedia sia valida; richiede che il
+valore prodotto alla fine sia convertibile o compatibile con il tipo dichiarato. Le annotazioni
+di parametro e di ritorno sono quindi parti distinte del contratto del metodo.
+
 ---
 
 <a id="cap-20"></a>
@@ -1661,6 +1775,13 @@ p isa Point          # true
 - Immutabili; campi tipizzati.
 - Campo inesistente → `Err(:field)`; tipo sbagliato → `Err(:type)`.
 - In Core lo stesso concetto si rappresenta con una lista taggata ([§16.2](#cap-16)).
+
+Una struct fornisce un record **nominato**: il nome del tipo distingue `Point` da un altro record,
+mentre i nomi dei campi (`x`, `y`) evitano di ricordare posizioni numeriche. La costruzione
+controlla i valori rispetto ai tipi dei campi; l'accesso `p.x` risolve il campo per nome. La
+struttura è immutabile nello standard, quindi i campi descrivono lo stato dell'istanza creata e
+non si aggiornano con un'assegnazione successiva. La lista taggata Core è più flessibile, ma
+sposta queste garanzie sul codice che costruisce, legge e modifica il record.
 
 ---
 
@@ -1703,6 +1824,18 @@ end; fact_(10)                                 # 3628800
 
 `requires c` al top level è un'asserzione; `ensures c` è ammesso solo dentro `function`.
 
+Nel ciclo, il range `1:10` rappresenta i valori interi inclusivi da 1 a 10: non è una lista
+letterale che devi scrivere a mano. `for` associa a `i` ciascun valore successivo, esegue il corpo
+per quell'associazione e prosegue fino alla fine dell'iterabile. Una comprehension combina lo
+stesso schema con la costruzione del risultato: valuta il filtro per ogni elemento e aggiunge
+all'output solo le espressioni corrispondenti. L'ordine di lettura è quindi "iteratore, filtro,
+espressione", non una valutazione simultanea.
+
+`try` delimita invece il punto in cui un errore può essere trasformato in risultato. Senza
+`catch`, l'espressione restituisce direttamente l'`Err`; con `catch err`, il nome locale `err`
+identifica l'errore e il valore finale è quello del blocco di recupero. Questo rende possibile
+gestire un caso senza confondere un errore con un valore di successo dello stesso tipo.
+
 ---
 
 <a id="cap-22"></a>
@@ -1735,6 +1868,19 @@ sols = solve grandparent(:alice, ?who) limit 5
 - Occurs-check attivo: `solve ?x = f(?x)` non ha soluzioni (non va in ciclo).
 - Liste stile Prolog nei pattern: `[?h | ?t]`.
 - `vars(s)` restituisce i nomi legati in una `Solution`; si accede con `s.nome` o `s[:nome]`.
+
+Per leggere una regola, separa la **testa** dal **corpo**. In
+`grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)`, la testa descrive quali valori la regola
+può dimostrare; il corpo richiede due prove in sequenza. Il motore cerca un `parent` per il primo
+goal, conserva il legame trovato per `?y`, poi usa quel legame nel secondo goal. Se il secondo
+goal fallisce, torna alla scelta precedente e prova il prossimo fatto compatibile: è il
+backtracking. Se entrambi riescono, `?z` viene restituito nella soluzione.
+
+Le variabili con lo stesso nome in clausole diverse non condividono accidentalmente il loro
+stato: a ogni uso della regola vengono rinominate. L'occurs-check impedisce legami ricorsivi
+impossibili come `?x = f(?x)`. Il limite `depth` taglia i rami troppo profondi; `steps` limita il
+lavoro totale; `limit` limita quante soluzioni vengono raccolte. Sono controlli differenti, e
+una lista vuota ottenuta entro i limiti non è equivalente a una ricerca interrotta da `Err(:budget)`.
 
 Esempi:
 
@@ -1813,6 +1959,14 @@ Kinds standard: `:syntax`, `:undef`, `:type`, `:method`, `:ambiguous`, `:field`,
 
 `Err(:syntax)` porta in `data` la posizione (`e.data.line`, `e.data.col`).
 
+La gestione degli errori separa l'operazione fallita dal punto in cui il programma decide come
+reagire. `try` non ripara automaticamente lo stato: converte l'esito in un valore `Err` oppure
+passa quel valore al blocco `catch`. Il chiamante può quindi scegliere tra mostrare un messaggio,
+provare un'alternativa o propagare l'errore restituendolo. Se nessun `try` lo intercetta, il
+runtime lo segnala al livello superiore e il processo termina con codice non riuscito. In questo
+modo la gestione è esplicita, ma un errore non diventa un successo solo perché è rappresentato da
+un valore.
+
 ---
 
 <a id="cap-25"></a>
@@ -1840,6 +1994,14 @@ e.data.fn                 # :safe_div
 - I contratti sono **puri**: un effetto dentro un contratto → `Err(:effect)`.
 - `ensures` fuori da `function` → `Err(:syntax)`.
 
+Pensa a `requires` come alla condizione d'ingresso dell'operazione e a `ensures` come alla
+condizione d'uscita. Una precondizione specifica ciò che il chiamante deve garantire; una
+postcondizione specifica ciò che la funzione promette quando termina correttamente. Le clausole
+non sostituiscono il controllo dei tipi: una funzione può ricevere argomenti del tipo giusto e
+violare comunque una precondizione di dominio, oppure restituire un valore tipato che viola la
+postcondizione. Poiché i contratti sono puri, la loro valutazione non può stampare o modificare la
+base di conoscenza: il controllo non deve cambiare il programma che sta verificando.
+
 ---
 
 <a id="cap-26"></a>
@@ -1858,6 +2020,13 @@ r.kind                    # :budget — il ciclo infinito diventa un valore
   quello esterno si propaga.
 - `solve … steps N` è il budget di una singola query.
 - La ricorsione infinita non fa stack overflow: finisce in `Err(:budget)` (stack esplicito).
+
+Il budget misura unità di lavoro definite dallo standard, non secondi di CPU e non memoria
+allocata. È quindi un limite riproducibile sul numero di passi del modello di esecuzione, non un
+timeout generale del sistema operativo. Usalo per rendere limitate le computazioni potenzialmente
+lunghe, in particolare la risoluzione logica o un ciclo che potrebbe non terminare. Il risultato
+`Err(:budget)` è distinto dal risultato valido del corpo e può essere gestito con `try` o con il
+controllo del valore restituito dal `with`.
 
 ---
 
@@ -1882,6 +2051,12 @@ t.trace       # porte Byrd: :call, :exit, :redo, :fail, :depth
 Gli eventi sono record con `port`, `goal`/`fn`, `depth` (e `value`/`args` per le funzioni):
 si filtrano come qualsiasi valore.
 
+La traccia registra la storia del calcolo, non solo il suo risultato. In una traccia di funzione
+`call` indica l'ingresso e `exit` l'uscita; in una query logica compaiono anche `redo` e `fail`,
+perché la ricerca può provare più alternative. Il valore `result` resta disponibile accanto agli
+eventi: puoi confrontare il risultato finale con il percorso seguito. La traccia non è un log
+stampato automaticamente; decide il programma quali eventi filtrare, contare o presentare.
+
 ---
 
 <a id="cap-28"></a>
@@ -1905,6 +2080,13 @@ end
 - Il top level permette tutti gli effetti; le lambda ereditano quelli del contesto.
 - Macro e contratti sono puri; leggere la KB (`solve`, predicati) è puro.
 - Mutare liste o variabili locali non è un effetto.
+
+La dichiarazione di effetto è una verifica dinamica dei permessi di esecuzione, non un'annotazione
+puramente descrittiva. Il runtime controlla la catena delle chiamate quando una funzione tenta
+un'operazione con effetto: una funzione `!io` può stampare solo se il contesto chiamante lo
+consente. Il top level è il contesto più permissivo; una funzione pura chiamata da lì non diventa
+per questo autorizzata a stampare. Elencare `!io` nella firma documenta il requisito per i
+chiamanti e permette al runtime di rifiutare l'effetto nel punto in cui violerebbe la dichiarazione.
 
 ---
 
@@ -1939,6 +2121,17 @@ esegue, che `:( … )` restituisce e che `--tree` stampa come S-expression.
 | `solve g limit 5 trace` | `(solve g (tuple (assign limit 5) (assign trace true)))` |
 | `try b catch e h end` | `(try b e h)` |
 | `with budget(steps = N), trace … end` | `(with (tuple (call budget (assign steps N)) trace) body)` |
+
+Leggi una riga della tabella come una mappa tra **sintassi visibile** e **rappresentazione
+interna**. Per esempio `a + b` non richiede un tipo di nodo speciale per la somma: è una chiamata
+al nome `+` con due argomenti. Al contrario `&&` diventa un nodo dedicato perché il valutatore
+deve poter evitare di valutare il secondo operando. La forma dell'albero quindi non è una
+decorazione: codifica le decisioni che il runtime deve prendere per rispettare la semantica.
+
+Questo modello è utile anche quando si legge un errore: se `sexpr` mostra un albero che non
+corrisponde al raggruppamento atteso, il problema nasce nel parsing; se l'albero è corretto ma il
+risultato è sbagliato, il problema è più probabilmente nella valutazione. La distinzione tra forma
+del programma e valore del programma è il fondamento della metaprogrammazione.
 
 ### 29.2 Quote, unquote, eval
 
@@ -1986,6 +2179,15 @@ end
 @unless(x < y, println("x non è minore di y"))
 @time_it("somma", reduce(+, 1:100))     # stampa "somma -> 5050"
 ```
+
+Per valutare una macro, confronta l'argomento sorgente con il codice che essa costruisce. In
+`@unless(c, body)`, `c` e `body` arrivano come nodi; la macro li inserisce in un `if` con la
+condizione negata. Il corpo verrà eseguito solo se la condizione originale è falsa, proprio come
+se il programmatore avesse scritto quel codice manualmente. Se la macro usasse una funzione
+ordinaria, gli argomenti verrebbero calcolati prima della chiamata e non sarebbe possibile
+controllare se `body` viene valutato. Questa capacità è potente, ma rende più difficile leggere
+l'esecuzione: l'espansione esplicita e i nomi temporanei generati sono strumenti essenziali per
+evitare sorprese.
 
 ### 29.4 Codice che genera codice
 
@@ -2279,6 +2481,15 @@ sorgente ──tokenize()──▶ token ──Parser──▶ AST {kind: …} �
    `parse error: …`, errori di esecuzione → `error: …`, entrambi con exit 1; nessun file →
    exit 2.
 
+Questo flusso separa responsabilità che conviene diagnosticare una alla volta. Se il token
+prodotto da `tokenize` è sbagliato, il problema è prima del parser; se il parser genera la forma
+errata, l'albero AST non corrisponde alla grammatica; se l'albero è giusto ma il risultato no, il
+difetto è nell'ambiente, nella valutazione o in un builtin. Un caso di conformance piccolo
+permette di fissare il comportamento osservato mentre si corregge il livello responsabile. Quando
+si modifica sintassi o semantica, il test, l'interprete e la specifica devono restare coerenti:
+aggiungere un ramo al parser senza la corrispondente valutazione crea una forma riconosciuta ma
+non eseguibile.
+
 ### 34.2 Esempio: aggiungere un builtin
 
 Supponiamo di voler sperimentare un builtin `abs` (non è in Core: va prima proposto nello
@@ -2499,6 +2710,15 @@ node seed/dev/triad_core.cjs conformance/core/cases/liste/program.td
 Messaggi:
 - `PASS  nome` / `FAIL  nome  (exit X, atteso Y, stdout N byte, attesi M)`;
 - `golden mancante`: il checkout non ha `expected.out` (di solito basta `git pull`).
+
+Un golden è un'aspettativa versionata, non la fonte normativa della semantica. Il file
+`program.td` definisce l'input, `args.txt` gli argomenti, `expected.out` l'output byte per byte e
+`expected.code` il codice d'uscita. Il runner confronta questi risultati con il runtime scelto;
+così uno stesso caso può essere eseguito da più interpreti e rendere visibili le divergenze. Se
+il comportamento del runtime è in dubbio, confronta prima il caso con SPEC-CORE e poi correggi il
+golden solo quando la specifica conferma il nuovo valore atteso. L'opzione `--update` copia il
+comportamento corrente nei risultati attesi: usarla senza revisione trasformerebbe un bug in una
+pretesa di correttezza.
 
 ### 38.3 Aggiungere un caso Core
 

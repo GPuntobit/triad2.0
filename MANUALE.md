@@ -41,6 +41,20 @@ Dove la differenza conta, trovi due marcatori:
 - **[Core]** — il costrutto esiste nel sottoinsieme di bootstrap;
 - **[Full]** — il costrutto esiste solo nello standard completo.
 
+Un marcatore di profilo descrive ciò che lo standard definisce, non ciò che ogni programma
+installato sa già eseguire. Per questo il manuale distingue tre livelli: la regola normativa
+(che cosa deve significare il costrutto), la disponibilità nel profilo Core o Full e lo stato
+delle implementazioni presenti nel repository. Un esempio Full può essere corretto secondo lo
+standard e, allo stesso tempo, non essere ancora eseguibile dal runtime corrente. Quando un
+esempio riporta **Output (golden Full)**, il risultato è un valore atteso conservato dalla suite,
+non una verifica appena eseguita da un interprete Full completo.
+
+Per studiare un costrutto senza confondere questi livelli, chiediti nell'ordine: che forma
+accetta la grammatica? quali valori legge e produce? quali effetti o errori può generare? in quale
+profilo è definito? quale implementazione e quale caso di conformance lo verificano? Questa
+sequenza permette di passare dal codice alla semantica e poi alle prove, invece di trattare
+l'output di un singolo runtime come definizione del linguaggio.
+
 ### Convenzioni di notazione
 
 | notazione | significa |
@@ -403,6 +417,22 @@ errore è una lista taggata `[Err, kind, msg]` (cap. 11) e una struct è `[Point
 
 `typeof` restituisce il **nome del tipo come simbolo**.
 
+È utile separare tre idee che nella sintassi possono sembrare la stessa cosa. Il **valore** è il
+dato concreto, per esempio `5` o `"ciao"`; il **tipo dinamico** descrive la categoria del valore
+che il programma sta manipolando; un **vincolo dichiarato** restringe invece quali valori può
+assumere un nome o un parametro. In Core il tipo si osserva con `typeof`, ma non si dichiara una
+variabile come `x::Int`. In Full i tipi entrano anche nelle firme, nelle struct e nel dispatch.
+Una conversione come `Float(3)` costruisce un valore compatibile; un'asserzione come `x::Int`
+controlla un valore già ottenuto. Sono operazioni diverse: convertire può cambiare il valore,
+asserire non è una richiesta di conversione.
+
+Un'altra distinzione importante è tra tipo **nominale** e forma strutturale. In Full una
+`struct Point` dichiara un'identità di tipo, quindi un valore `Point` non diventa un altro tipo
+solo perché possiede campi simili. In Core, dove non ci sono struct, la stessa informazione è
+convenzionale: una lista come `[:Point, 3, 4]` porta il tag `:Point` e i campi in posizioni
+concordate dal programma. Il tag rende possibile riconoscere il record, ma non aggiunge da solo
+controlli di campo, immutabilità o dispatch.
+
 ```triad
 xs = [1, :a, "s"]
 println(typeof(1), " ", typeof("s"), " ", typeof(:a), " ", typeof(xs))
@@ -620,6 +650,19 @@ println(n)
 Non esistono dichiarazioni: le variabili sono dinamiche. Le regole di **visibilità** si vedono nel
 capitolo 8.
 
+Leggi l'esempio distinguendo il **nome** dal valore: dopo `x = 42`, `x` è un legame
+dell'ambiente corrente; `y = x + 8` legge quel legame e memorizza il risultato `50` in un legame
+diverso; `x = x + 1` calcola prima `43` e poi rimpiazza il valore associato a `x`. Di conseguenza
+`y` resta `50`: non è un alias automatico dell'espressione che lo ha prodotto. L'assegnamento
+ritorna il nuovo valore, perciò può comparire dentro un'espressione, ma questo non significa che
+ogni assegnamento sia globale: funzione, lambda e `let` definiscono regole di scope distinte.
+
+Infine, riassegnare un nome non equivale a mutare un oggetto. Con `x = 43` cambia il legame di
+`x`; con `xs[1] = 43` cambia un elemento della lista a cui `xs` fa riferimento. Se un secondo nome
+indica la stessa lista, vedrà la mutazione; una riassegnazione locale di `xs`, invece, non cambia
+automaticamente il legame dell'altro nome. Questa differenza diventa essenziale quando una
+funzione condivide una lista con il chiamante.
+
 ---
 
 <a id="cap-4"></a>
@@ -645,6 +688,21 @@ Il parser è un **Pratt** con dodici livelli. Dalla precedenza più bassa alla p
 
 I livelli 6, 8 (la divisione), 9 (`$x`), 11 (`::`) e alcuni operatori di confronto esistono solo in
 Triad-Full.
+
+La precedenza decide **come il parser raggruppa** gli operatori, non quale calcolo avviene per
+primo in ogni possibile programma. Per esempio, `2 + 3 * 4` viene letto come `2 + (3 * 4)`: la
+moltiplicazione appartiene a un livello più forte della somma. Le parentesi non cambiano la regola
+del linguaggio; rendono esplicita una scelta del programmatore e aiutano chi legge.
+L'associatività risolve invece la parità di precedenza: `2 ^ 3 ^ 2` è `2 ^ (3 ^ 2)`, mentre le
+sottrazioni a catena si raggruppano a sinistra. Quando la precedenza è poco familiare, scrivere le
+parentesi è una forma di documentazione eseguibile.
+
+Il raggruppamento non va confuso con la valutazione. `&&` e `||` sono operatori a cortocircuito:
+il secondo operando viene valutato solo se il primo non determina già il risultato. Ciò consente
+di mettere a destra un controllo che dipende da un valore valido a sinistra, per esempio prima
+verificare che un indice sia entro i limiti e poi leggere la lista. In Core ogni condizione deve
+comunque produrre un `Bool`; un intero o una lista non vengono convertiti implicitamente in
+vero/falso.
 
 ### 4.1 Aritmetica intera
 
@@ -694,6 +752,18 @@ true
 
 In Triad **tutto è un'espressione**: `if`, `while`, `let`, `begin` hanno un valore, quello
 dell'ultima istruzione eseguita (`nothing` se non ce n'è).
+
+Questa regola unifica due usi che in altri linguaggi spesso hanno sintassi separate: scegliere un
+ramo e calcolare un risultato. In `v = if condizione ... end`, l'espressione completa produce il
+valore dell'ultima espressione del ramo scelto; il codice dei rami non scelti non viene eseguito.
+Le istruzioni che producono output o mutano una lista possono stare nello stesso blocco di
+un'espressione che restituisce un valore: il risultato del blocco è l'ultima espressione, non una
+combinazione automatica di tutti i risultati intermedi.
+
+Le condizioni sono intenzionalmente restrittive: `if`, `while`, ternario, `&&` e `||` chiedono
+un valore `Bool`. Non si usa una regola di "truthiness" che interpreti `0`, stringhe vuote o liste
+vuote come falsi. Questo rende visibili gli errori di tipo vicino alla decisione che li ha
+provocati, invece di trasformarli in rami inattesi.
 
 ### 5.1 `if` / `elseif` / `else` **[Core]**
 
@@ -904,6 +974,17 @@ grande piccola
 3628800 610 6
 ```
 
+Una chiamata può essere letta come una sequenza precisa: si valutano gli argomenti, si crea il
+contesto della funzione, si associano i valori ai parametri e si esegue il corpo. Il corpo termina
+in uno di due modi: raggiunge la fine e restituisce l'ultima espressione, oppure esegue `return`,
+che interrompe immediatamente il corpo e restituisce il valore indicato. `return` senza
+espressione restituisce `nothing`. Una ricorsione è una nuova chiamata con un proprio insieme di
+parametri locali; il caso base impedisce di continuare a creare chiamate senza fine.
+
+L'arità è parte della firma anche in Core: `somma(1, 2)` non è intercambiabile con `somma(1)`.
+Triad-Full aggiunge i tipi alle firme e consente più metodi con lo stesso nome; questo non cambia
+la nozione di chiamata, ma aggiunge una fase di selezione del metodo prima di eseguirne il corpo.
+
 ### 6.3 Funzioni di ordine superiore
 
 Le funzioni sono valori di prima classe: si passano, si restituiscono, si compongono. In Core
@@ -982,6 +1063,15 @@ e le firme differiscono.
 - Se nessun metodo è applicabile: `Err(:method)`.
 - Se più metodi sono massimali: `Err(:ambiguous)`.
 - Se il nome è anche un builtin (per esempio `+` sui numeri), si usa il builtin.
+
+Il dispatch si può modellare come una ricerca in due passaggi. Prima si eliminano i metodi con
+arità errata o con almeno un argomento che non soddisfa il tipo dichiarato; poi si confrontano
+quelli rimasti secondo la relazione di sottotipo, parametro per parametro. Un metodo è più
+specifico solo se non è più generale in nessuna posizione e lo è in almeno una. Non basta quindi
+scegliere il metodo aggiunto più di recente. Se restano due firme incomparabili, la chiamata è
+ambigua e produce `Err(:ambiguous)` invece di dipendere dall'ordine dei file o dall'ordine di
+registrazione. Questo comportamento consente di aggiungere metodi specializzati senza riscrivere
+la funzione generica, mantenendo però espliciti i casi che non hanno una risposta univoca.
 
 Gli operatori si estendono come funzioni, ridefinendoli:
 
@@ -1097,6 +1187,14 @@ println(acc(10))
 > accumulatore come `contatore` può non funzionare sul seed. L'interprete JS e la specifica usano il
 > modello condiviso.
 
+Una chiusura non conserva una fotografia del solo testo della lambda: mantiene accesso ai legami
+che il suo corpo può leggere. Nel primo esempio la funzione restituita da `add(10)` mantiene il
+valore `n = 10` anche dopo che la chiamata a `add` è terminata; `add(100)` crea una chiusura
+distinta. Nel contatore, invece, la variabile `v` è un legame condiviso: ogni chiamata aggiorna
+lo stesso stato e la successiva lo osserva. È il motivo per cui una chiusura può rappresentare
+un piccolo oggetto con stato privato. È anche il motivo per cui il comportamento specifico del
+seed Windows va verificato separatamente dall'interprete di riferimento.
+
 ### 8.3 Le regole di scope
 
 1. `function`, lambda, `let`, `while`, `for` e le comprehension introducono **ambienti**; un nome è
@@ -1161,6 +1259,19 @@ println(xs)
 
 `push!` **muta** la lista e la restituisce. Le liste sono riferimenti: due nomi possono indicare la
 stessa lista, come si vede sopra.
+
+Una lista è un oggetto mutabile; una variabile contiene un riferimento a quell'oggetto. Se `ys =
+xs`, i due nomi permettono di raggiungere la stessa lista: `push!(ys, valore)` e `xs[i] = valore`
+sono osservabili anche leggendo `xs`. Se invece scrivi `ys = [1, 2]`, hai sostituito soltanto il
+legame `ys`; `xs` continua a riferirsi alla lista precedente. Questa distinzione spiega perché
+assegnare una lista non ne crea automaticamente una copia e perché gli argomenti lista possono
+essere usati per condividere stato tra funzioni.
+
+La convenzione 1-based è coerente con esempi e specifica: per visitare `n` elementi, il contatore
+inizia da 1 e la condizione tipica è `i <= length(xs)`. In un ciclo, aggiornare il contatore
+dopo aver letto l'elemento evita di saltare il primo elemento; aumentarlo in ogni iterazione
+assicura che la condizione prima o poi diventi falsa. Sul seed Windows l'helper sperimentale
+`get(xs, i)` è diverso e 0-based: non va usato come se fosse la semantica standard delle liste.
 
 La somma degli elementi con un ciclo esplicito:
 
@@ -1272,6 +1383,19 @@ true
 5
 ```
 
+È utile distinguere tre momenti: **produrre**, **propagare** e **gestire** un errore. `err(...)`
+costruisce un dato e non interrompe nulla; un'operazione che fallisce produce un `Err` secondo la
+specifica; `try` stabilisce il punto in cui quel valore viene osservato o recuperato. In Full,
+`try espressione end` restituisce l'errore come valore, mentre `try ... catch nome ... end`
+permette al ramo di recupero di esaminare la categoria, il messaggio o i dettagli. Se l'errore
+non viene gestito, arriva al livello superiore e diventa un codice di uscita non riuscito: "errore
+come dato" non significa che il programma continui automaticamente dopo qualunque operazione.
+
+Il tipo del dato permette di scrivere politiche diverse per categorie diverse. Per esempio, un
+errore `:bounds` può essere presentato come input non valido, mentre `:method` può indicare che
+manca un'implementazione. Separare la categoria stabile (`kind`) dal testo leggibile (`msg`) evita
+di dover analizzare stringhe di diagnostica per decidere come reagire.
+
 ### 11.3 Le categorie di errore
 
 | kind | quando |
@@ -1374,6 +1498,15 @@ requires
 safe_div
 ```
 
+La sequenza di controllo è significativa: il corpo valuta le clausole nell'ordine in cui
+compaiono; le precondizioni vengono verificate nel punto in cui sono dichiarate, mentre le
+postcondizioni vengono conservate fino al completamento della funzione. Il valore finale viene
+prima sottoposto al vincolo di ritorno e poi esposto come `result` alle clausole `ensures`.
+Un errore di contratto include quale clausola è fallita e il codice che la rappresenta, così chi
+chiama può distinguere una violazione d'ingresso da una promessa d'uscita non mantenuta. I
+contratti controllano un'invariante osservabile, ma non provano matematicamente che valga per ogni
+input possibile: vengono valutati per le esecuzioni che avvengono.
+
 ---
 
 <a id="cap-13"></a>
@@ -1403,6 +1536,13 @@ budget specifico di una query.
 
 Il motore logico usa uno stack esplicito: la ricorsione infinita, anche sinistra, finisce in
 `Err(:budget)` e **non** in uno stack overflow.
+
+Il limite è parte del risultato del calcolo perché il programma può scegliere come trattarlo:
+mostrare una diagnosi, ridurre il problema o restituire un risultato parziale solo se la propria
+logica lo consente. Non confondere `limit n`, che limita il numero di soluzioni restituite,
+`depth d`, che taglia i rami oltre una profondità, e `steps s`, che limita il lavoro complessivo.
+Una query che ha esplorato lo spazio previsto senza trovare soluzioni restituisce una lista vuota;
+una query fermata dall'esaurimento dei passi segnala invece `Err(:budget)`.
 
 ---
 
@@ -1439,6 +1579,13 @@ funzione generica chiamata nel corpo. `solve … trace` restituisce `Traced(resu
 (`call`, `exit`, `redo`, `fail`) più `depth`, quando un ramo viene tagliato da `depth`.
 
 Gli eventi sono record: si filtrano e si contano come ogni altro valore.
+
+Una traccia aggiunge una dimensione temporale ai dati di debug: due esecuzioni possono avere lo
+stesso risultato ma seguire percorsi diversi, per esempio se una query ha dovuto provare e
+scartare alternative. Invece di scrivere log dentro ogni funzione, il chiamante racchiude il
+calcolo in `with trace` oppure chiede `trace` a `solve`; il risultato e gli eventi vengono
+restituiti insieme. Questo mantiene separati il risultato applicativo e la diagnostica, e consente
+di analizzare la traccia con gli stessi strumenti usati per liste e record.
 
 ### Glossario degli eventi di traccia (porte di Byrd)
 
@@ -1514,6 +1661,13 @@ Il controllo è **dinamico**. Una funzione viene eseguita solo con gli effetti c
 se il chiamante li permette. Se una funzione pura chiama `println`, o chiama una funzione `!io`, si
 ottiene `Err(:effect)`; `data` contiene `fn`, `caller` e `missing`.
 
+La purezza di default significa che una funzione può calcolare e restituire valori senza
+modificare lo stato esterno né produrre I/O; non significa che il runtime analizzi staticamente
+ogni possibile percorso prima dell'esecuzione. Il controllo dinamico osserva gli effetti mentre
+avvengono e li confronta con il contesto attivo. Le mutazioni locali e quelle di liste non sono
+classificate come effetti dichiarati in questa specifica: `!state` si riferisce alla modifica
+della knowledge base tramite `fact` e `rule`, non a qualunque assegnamento.
+
 - Il top level permette tutti gli effetti.
 - Le lambda ereditano gli effetti del contesto in cui vengono eseguite.
 - Macro e contratti sono puri.
@@ -1572,6 +1726,21 @@ Dentro un termine:
 
 Le variabili di una clausola vengono **rinominate a ogni uso** (standardizzazione a parte).
 L'unificazione fa l'**occurs-check**: `solve ?x = f(?x)` non ha soluzioni.
+
+Per leggere una query occorre distinguere i **termini** dai normali valori calcolati. Un simbolo
+come `:alice` è un termine costante; `?who` è una variabile logica che cerca un valore; una forma
+come `parent(:alice, ?who)` descrive un goal da dimostrare. Le variabili logiche non sono variabili
+locali Triad assegnate con `=`: il motore cerca associazioni che rendano compatibile il goal con
+fatti e regole. In particolare, `?x + 1` dentro un termine non si calcola da sé; l'operatore `is`
+esprime esplicitamente la richiesta di valutare un'espressione usando variabili già legate.
+
+L'unificazione costruisce progressivamente un insieme di associazioni. Se si confrontano
+`parent(:alice, ?who)` e `parent(:alice, :bob)`, gli argomenti corrispondenti coincidono e il
+motore può legare `?who` a `:bob`; se un argomento è diverso, quel tentativo fallisce. Quando più
+clausole possono soddisfare un goal, il backtracking torna al punto di scelta e prova la clausola
+successiva. Ogni soluzione è una fotografia delle variabili richieste dalla query; una lista
+vuota significa "nessuna dimostrazione trovata", non un errore di esecuzione. I limiti `limit`,
+`depth` e `steps` controllano quante soluzioni o quanti passi di ricerca sono ammessi.
 
 ### 16.2 I goal
 
@@ -1746,6 +1915,13 @@ innestato, se è un numero o una lista diventa una costante, se è un Symbol div
 `eval(c)` esegue codice **nello scope globale**. Gli altri builtin del gruppo "codice" sono `parse`,
 `unparse`, `sexpr`, `Expr` e `gensym`.
 
+Quotare e valutare sono operazioni opposte ma non intercambiabili. Il parser normalmente trasforma
+il sorgente in un albero e il valutatore esegue quell'albero; `:(...)` ferma il processo al
+confine tra le due fasi e restituisce l'albero come valore `Expr`. `eval(expr)` lo consegna di
+nuovo al valutatore, nello scope globale. L'unquote `$x` dentro una quote inserisce il valore
+calcolato di `x` nel nuovo albero: se è un `Expr`, innesta codice; se è un numero, crea un nodo
+costante. `sexpr` serve a ispezionare la struttura e non esegue il programma.
+
 ---
 
 <a id="cap-18"></a>
@@ -1782,6 +1958,14 @@ println(x, " ", y)
 ```
 
 L'espansione è **pura** (§15) e **non è igienica**: per i nomi temporanei si usa `gensym()`.
+
+Questa distinzione è importante per gli effetti. Una funzione riceve normalmente valori già
+calcolati; una macro riceve la forma sorgente e può quindi decidere se inserirla una volta, più
+volte o non inserirla. Le macro di Triad non sono igieniche: un nome temporaneo introdotto dalla
+macro può collidere con un nome del chiamante. `gensym` crea un simbolo fresco per i temporanei,
+ma non rende automaticamente sicuro ogni riferimento libero. Per questo conviene limitare le
+macro a trasformazioni piccole e ispezionare l'albero espanso prima di attribuire al risultato
+un comportamento inatteso.
 
 ### 18.1 Codice che genera codice
 
