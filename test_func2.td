@@ -1,1 +1,0 @@
-function sq(n) = n * n

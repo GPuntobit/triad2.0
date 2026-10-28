@@ -1,1 +1,0 @@
-& 'seed\windows-x86_64\seed.exe' 'selfhost\parser.td' > output.txt 2> error.txt
