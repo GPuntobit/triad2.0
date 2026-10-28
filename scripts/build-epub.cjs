@@ -3,7 +3,7 @@ const path = require('path');
 const marked = require('marked');
 const Epub = require('epub-gen');
 
-const root = 'c:\\\\Users\\\\xbos\\\\Documents\\\\progetti\\\\triad2.0';
+const root = path.join(__dirname, '..');
 const outDir = path.join(root, 'docs', 'libro');
 
 const preface = fs.readFileSync(path.join(root, 'PREFazione.md'), 'utf8');
@@ -57,7 +57,7 @@ h2 { font-size: 1.3em; }
 h3 { font-size: 1.1em; }
 p { text-align: justify; margin: 0.6em 0; }
 code { font-family: monospace; font-size: 0.9em; background: #f3f1f4; padding: 0.1em 0.3em; }
-pre { background: transparent; color: inherit; padding: 0.8em; border: 1px solid #ccc; border-radius: 4px; overflow-x: auto; }
+pre { background: #f3f1f4; color: #1a1a1a; padding: 0.8em; border: 1px solid #ccc; border-radius: 4px; overflow-x: auto; }
 pre code { background: none; color: inherit; }
 table { border-collapse: collapse; width: 100%; margin: 0.8em 0; }
 th, td { border: 0.5pt solid #b8b0aa; padding: 0.3em 0.5em; }

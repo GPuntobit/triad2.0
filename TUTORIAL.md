@@ -47,6 +47,9 @@ Scegli un percorso:
 Convenzioni:
 
 - I comandi sono mostrati per Linux/macOS (`sh`) e, quando diversi, per Windows (`cmd`/PowerShell).
+- I blocchi `triad` mostrano codice Core, normalmente eseguibile con l'interprete JS; i frammenti
+  specifici del seed Windows sono indicati nel testo. I blocchi `triad-full` mostrano codice
+  definito dallo standard Full, non ancora eseguibile dal runtime corrente.
 - "Interprete JS" = `seed/dev/triad_core.cjs`, interprete di riferimento Triad-Core usato su
   Linux/macOS e dal runner di conformance. "Seed" = `seed/windows-x86_64/seed.exe`, interprete
   Triad-Core in codice macchina (S0). Dove si comportano diversamente lo dice il
@@ -261,7 +264,7 @@ usa l'eseguibile standalone `triad-cli.exe` / `triad-cli` allegato alla
 
 Crea `ciao.triad`:
 
-```julia
+```triad
 #!/usr/bin/env triad
 # il mio primo programma Triad
 nome = "Triad"
@@ -292,6 +295,19 @@ Cosa notare:
 - `println` stampa i suoi argomenti **senza separatori** e aggiunge un a capo;
 - `*` tra stringhe è la **concatenazione** (non `+`);
 - non c'è una funzione `main`: le istruzioni al top level si eseguono in ordine.
+
+Puoi seguire l'esecuzione riga per riga. La riga `nome = "Triad"` valuta la stringa e associa
+quel valore al nome `nome`. Nella riga seguente il runtime legge `nome`, concatena i due valori
+stringa con `*` e passa il risultato a `println`. Nell'ultima riga, `6 * 7` viene valutato prima
+della chiamata: a `println` arriva il valore intero `42`, non il testo del calcolo. Ogni
+istruzione viene eseguita una sola volta e nell'ordine in cui compare; una funzione chiamata può
+naturalmente eseguire il proprio corpo prima che il programma passi all'istruzione successiva.
+
+La riga `#!` non è una direttiva necessaria per l'interprete: in questi esempi è una forma
+convenzionale utile quando il sistema operativo può avviare direttamente un file eseguibile. Il
+runtime Triad la ignora perché la tratta come commento. Se un esempio non funziona, verifica
+separatamente che il file sia salvato con estensione `.triad` o `.td`, che il comando punti al
+runtime giusto e che il sorgente usi soltanto costrutti supportati dal profilo dichiarato.
 
 ### 3.1 Argomenti da riga di comando
 
@@ -346,7 +362,7 @@ continue true false nothing`.
 Non fanno parte di Core: letterali `Float` (`1.5`), variabili logiche `?x`, macro `@nome`,
 interpolazione `$x`, l'operatore `/`.
 
-```julia
+```triad
 #= commento
    su più righe =#
 x = 1_000   # commento di riga
@@ -395,7 +411,7 @@ Riferimento: `conformance/core/cases/aritmetica`, `simboli_base`, `stringhe_base
 - una `List` è stampata come `[a, b]`; le stringhe dentro una lista sono stampate senza
   virgolette.
 
-```julia
+```triad
 xs = [1, :a, "s", true, nothing, [2, 3]]
 println(xs)
 println(:alice)
@@ -420,7 +436,7 @@ senza a capo
 `==` e `!=` confrontano numeri, stringhe e simboli **per valore**, le liste **elemento per
 elemento** (anche annidate), le funzioni **per identità**.
 
-```julia
+```triad
 println([1, [2, [3]]] == [1, [2, [3]]])
 println("ab" == "a" * "b", " ", :a == :a, " ", 1 == 2)
 ```
@@ -431,6 +447,20 @@ Output:
 true
 true true false
 ```
+
+Il valore stampato non è sempre una rappresentazione da riutilizzare come sorgente. Per esempio,
+un simbolo passato direttamente a `println` appare senza i due punti (`alice`), mentre dentro una
+lista viene mostrato come `:alice`; le stringhe dentro una lista sono mostrate senza virgolette.
+`typeof` è quindi il modo corretto per verificare il tipo del valore, mentre la forma visiva di
+`println` serve soprattutto alla lettura umana. Analogamente, `==` confronta il contenuto per
+numeri, stringhe, simboli e liste, ma le funzioni per identità: due funzioni scritte con lo stesso
+testo non sono per questo lo stesso oggetto funzione.
+
+La rappresentazione UTF-8 è misurata in byte, non necessariamente in lettere visibili. Una lettera
+accentata può occupare più byte; perciò `length` su una stringa non è sempre il conteggio dei
+caratteri percepiti da una persona. In Core non ci sono operazioni di indicizzazione dei caratteri:
+i primitivi di bootstrap lavorano esplicitamente sui byte e vanno usati solo per il compito di
+lettura e analisi del sorgente.
 
 Riferimento: `conformance/core/cases/valori`, `nothing_base`, `confronti`.
 
@@ -446,7 +476,7 @@ Riferimento: `conformance/core/cases/valori`, `nothing_base`, `confronti`.
 - Usare un nome mai assegnato è un errore di esecuzione (`undefined variable`).
 - Non ci sono dichiarazioni né tipi: le variabili sono dinamiche.
 
-```julia
+```triad
 x = 42
 y = x + 8
 x = x + 1
@@ -467,6 +497,21 @@ Output:
 ```
 
 Le regole di **visibilità** (dentro funzioni, `let`, lambda) sono nel [capitolo 10](#cap-10).
+
+Un modo utile di seguire il programma è tenere una piccola tabella dei legami correnti:
+
+| istruzione conclusa | `x` | `y` | `z` |
+|---|---:|---:|---:|
+| `x = 42` | 42 | — | — |
+| `y = x + 8` | 42 | 50 | — |
+| `x = x + 1` | 43 | 50 | — |
+| `z = (x + y) * 2` | 43 | 50 | 186 |
+
+Questa tabella mostra perché l'assegnamento non è una formula reattiva: `y` conserva il risultato
+calcolato quando la sua riga viene eseguita, anche dopo che `x` cambia. Per contro, una lista è
+mutabile e può essere raggiunta da più nomi; modificare un suo elemento agisce sull'oggetto
+condiviso, non solo su una singola associazione nome-valore. Il capitolo 11 mostra come riconoscere
+questa differenza nel codice.
 
 Riferimento: `conformance/core/cases/variabili`.
 
@@ -498,7 +543,7 @@ Riferimento: `conformance/core/cases/variabili`.
 - `^` con esponente negativo è un errore; `%` per zero è un errore;
 - **non esiste `/`** in Core (la divisione è di Triad-Full).
 
-```julia
+```triad
 println(2 + 3 * 4, " ", (2 + 3) * 4, " ", 2 ^ 3 ^ 2)
 println(7 % 3, " ", -7 % 3, " ", 10 % 4)
 println(9223372036854775807 + 1)
@@ -520,7 +565,7 @@ Output:
 - I confronti non si concatenano: `1 < 2 < 3` è un errore (si confronta `Bool < Int`); scrivi
   `1 < 2 && 2 < 3`.
 
-```julia
+```triad
 println(!false, " ", true && false, " ", false || true)
 println(1 < 2 && 2 < 3)
 x = 3
@@ -535,6 +580,17 @@ true
 grande
 ```
 
+Il **cortocircuito** è osservabile: con `a && b`, se `a` è `false`, `b` non viene valutato; con
+`a || b`, se `a` è `true`, `b` non viene valutato. Non è solo un'ottimizzazione: impedisce anche
+che un calcolo non necessario produca un errore. Un controllo del tipo `i <= length(xs) &&
+xs[i] > 0` può quindi verificare il limite prima di accedere alla lista, purché `i` sia un intero
+valido. Entrambi gli operandi valutati devono comunque essere booleani.
+
+La tabella di precedenza descrive il raggruppamento: `a + b * c` equivale a `a + (b * c)`.
+Quando due operatori hanno lo stesso livello, entra in gioco l'associatività. In caso di dubbio,
+usa parentesi: rendono esplicita la struttura che vuoi e aiutano a distinguere un errore di
+raggruppamento da un errore nel valore degli operandi.
+
 Riferimento: `conformance/core/cases/aritmetica`, `operatori`, `interi`, `confronti`.
 
 ---
@@ -548,7 +604,7 @@ dell'ultima istruzione eseguita, `nothing` se nessuna).
 
 ### 8.1 `if` / `elseif` / `else`
 
-```julia
+```triad
 function classifica(x)
     if x < 0
         "negativo"
@@ -572,7 +628,7 @@ si
 
 ### 8.2 `while`, `break`, `continue`
 
-```julia
+```triad
 i = 0
 somma_dispari = 0
 while i < 10
@@ -604,7 +660,7 @@ contatore e `while`.
 `let` introduce un nuovo scope con legami locali; `begin … end` raggruppa istruzioni senza
 creare legami nuovi.
 
-```julia
+```triad
 x = 1
 let x = 10
     let x = 20
@@ -640,7 +696,7 @@ Riferimento: `conformance/core/cases/controllo`, `if_else`, `if_elseif`, `if_nes
 
 ### 9.1 Tre modi di definire una funzione
 
-```julia
+```triad
 # forma breve: il corpo è un'espressione
 quadrato(x) = x * x
 
@@ -664,13 +720,20 @@ Output:
 16 8 42
 ```
 
+Quando `calcola(3)` viene chiamata, `n` riceve `3`; il corpo calcola `m = 4`, poi valuta `m * 2`
+e restituisce `8` perché è l'ultima espressione. Il legame `m` appartiene alla chiamata e non
+diventa automaticamente una variabile globale. Con la forma breve, l'espressione a destra di `=`
+è direttamente il corpo. La funzione anonima può essere assegnata a un nome, passata come
+argomento o restituita da un'altra funzione: il nome è un riferimento utile, non una proprietà
+necessaria del valore funzione.
+
 ### 9.2 `return`, ricorsione, arità
 
 - `return e` esce subito dalla funzione; `return` da solo restituisce `nothing`.
 - Una funzione nominata è visibile nel proprio corpo: la ricorsione diretta funziona.
 - Il numero di argomenti deve coincidere con i parametri (altrimenti `arity mismatch`).
 
-```julia
+```triad
 function taglia(n)
     if n > 100
         return :grande
@@ -691,12 +754,20 @@ grande piccola
 3628800 610 6
 ```
 
+La ricorsione si comprende seguendo una catena di chiamate, ciascuna con il proprio parametro. In
+`fattoriale(4)`, per esempio, la chiamata riduce `n` a 3, 2 e 1; arrivata al caso base restituisce
+1, poi le chiamate sospese riprendono e moltiplicano i risultati per 2, 3 e 4. Il caso base è
+quindi una condizione di terminazione, non un semplice esempio aggiuntivo. Se il parametro non si
+avvicina a un caso base, la funzione continua a chiamarsi; nel runtime Core il budget di esecuzione
+non è un costrutto del linguaggio, quindi è responsabilità del programma evitare ricorsioni
+illimitate.
+
 ### 9.3 Annotazione di effetto `!io`
 
 In Triad-Full una funzione che stampa deve dichiarare `!io` ([capitolo 28](#cap-28)). Core
 accetta l'annotazione e la ignora: scriverla rende il codice già pronto per Full.
 
-```julia
+```triad
 function mostra() !io
     println("hello from block")
     20 + 22
@@ -722,7 +793,7 @@ Riferimento: `conformance/core/cases/funzioni`, `funzioni_semplici`, `funzioni_b
 
 ### 10.1 Lambda
 
-```julia
+```triad
 doppio = x -> x * 2
 somma = (a, b) -> a + b
 applica = f -> f(3)
@@ -743,7 +814,7 @@ Le lambda senza parametri (`() -> …`) **non** sono supportate: usa `function (
 Una lambda cattura l'ambiente in cui è creata. Secondo SPEC-CORE §5 le variabili catturate sono
 **condivise**: le mutazioni sono visibili.
 
-```julia
+```triad
 function add(n)
     x -> x + n
 end
@@ -773,6 +844,14 @@ Output:
 > Il seed Windows cattura **per valore** e copre solo l'ultimo legame del frame: un
 > accumulatore come `contatore` può non funzionare sul seed ([capitolo 15](#cap-15)).
 
+La differenza tra una funzione ordinaria e una chiusura è il contesto esterno che resta
+accessibile. `add(10)` termina, ma la lambda restituita conserva il legame `n = 10`; un'altra
+chiamata ad `add` crea un ambiente distinto. Nel contatore, invece, la chiusura non si limita a
+leggere `v`: aggiorna il legame condiviso. L'interprete JS segue il contratto Core in cui questa
+mutazione è visibile alle chiamate successive. Il seed Windows ha una cattura più limitata, quindi
+un programma che dipende da questo caso va provato con l'interprete di riferimento e non inferito
+dal solo fatto che il seed accetti la sintassi.
+
 ### 10.3 Regole di scope
 
 1. `function`, lambda, `let` e `while` introducono ambienti; un nome è visibile nell'ambiente
@@ -784,7 +863,7 @@ Output:
 4. **Al top level** i cicli aggiornano i globali.
 5. `let x = …` crea un nuovo `x`; assegnare `x` dentro il `let` non tocca l'`x` esterno.
 
-```julia
+```triad
 x = 1
 function f()
     x = 2
@@ -825,7 +904,7 @@ Riferimento: `conformance/core/cases/lambda`, `closure`, `chiusure`, `chiusure_l
   restituisce.
 - Le liste sono riferimenti: due nomi possono indicare la stessa lista.
 
-```julia
+```triad
 xs = [1, 2, 3]
 println(xs[1], " ", length(xs))
 push!(xs, 4)
@@ -860,6 +939,18 @@ Core non ha `map`, `filter`, `reduce`, `sum`, `sort`: si scrivono in Core (vedi
 
 Riferimento: `conformance/core/cases/liste`, `liste_base`, `liste_push`.
 
+Ricorda il modello di alias: dopo `alias = xs`, i nomi non identificano due copie, ma la stessa
+lista. Cambiare `xs[1]` o aggiungere un elemento attraverso `alias` modifica un oggetto osservato
+da entrambi. Se hai bisogno di un valore indipendente, costruisci esplicitamente una nuova lista e
+copi gli elementi con un ciclo. Questo comportamento è diverso da una variabile intera: assegnare
+`y = x` copia il valore numerico e una successiva riassegnazione di `x` non aggiorna `y`.
+
+Negli algoritmi con indici, la coppia `i = 1` e `i <= length(xs)` esprime l'intervallo completo
+delle posizioni Core. Prima di leggere `xs[i]`, assicurati che `i` sia dentro quell'intervallo;
+un indice fuori limite è un errore, non un elemento `nothing`. Il caso di conformance `liste`
+verifica proprio le operazioni standard, mentre l'helper `get` del seed ha indici 0-based e non
+deve essere confuso con `xs[i]`.
+
 ---
 
 <a id="cap-12"></a>
@@ -875,7 +966,7 @@ Riferimento: `conformance/core/cases/liste`, `liste_base`, `liste_push`.
 | `Symbol(s)` | da stringa a simbolo (`Symbol("ciao") == :ciao`) |
 | `typeof(x)` | tipo come simbolo |
 
-```julia
+```triad
 nome = "Triad"
 saluto = "ciao " * nome
 println(saluto, " (", length(saluto), " byte)")
@@ -918,7 +1009,7 @@ Servono a S1 per leggere e analizzare sorgente Triad. **Non** fanno parte di Tri
 
 Esempio: contare le cifre di una stringa e separare la prima parola.
 
-```julia
+```triad
 s = "abc 123 xyz"
 cifre = 0
 i = 1
@@ -956,7 +1047,7 @@ Core non ha `try`/`catch` né valori `Err` (SPEC-CORE §9): un errore **termina 
 exit code 1** e stampa un messaggio diagnostico su stderr. Quello che era già stato stampato su
 stdout resta.
 
-```julia
+```triad
 println("prima")
 println(non_esiste)
 println("dopo")
@@ -987,12 +1078,25 @@ Messaggi dell'interprete JS (stderr) e cause tipiche:
 Il seed Windows non stampa messaggi dettagliati: esce con codice `1` (sintassi, variabile o
 funzione non definita, arità, lettura) o `2` (nessun argomento).
 
+Per diagnosticare un errore, separa il **livello** dal **punto del programma**. Un `parse error`
+indica che il testo non è stato riconosciuto come grammatica Core: controlla prima il profilo,
+parentesi e `end`, poi gli operatori non Core. Un `undefined variable` o un errore di tipo arriva
+invece durante la valutazione: controlla l'ordine delle definizioni, l'ambiente in cui nasce il
+nome e il tipo effettivo degli argomenti. Se il programma stampa una prima riga e poi fallisce,
+quell'output precedente non viene annullato; riproduci il caso minimo e confronta stdout, stderr
+e codice di uscita separatamente.
+
+Non copiare automaticamente il testo dell'errore prodotto da un runtime in un test. La suite
+Core confronta stdout e codice di uscita, non stderr: il contratto importante è la classe di
+comportamento dichiarata dallo standard. I dettagli diagnostici possono cambiare tra runtime,
+mentre un test del valore restituito o dell'uscita deve restare ripetibile.
+
 ### 14.1 Errori come valori, in Core
 
 Per propagare errori senza terminare il processo (come farà S1 per i programmi Full) si usa
 una convenzione con liste: `[:Err, kind, msg]`.
 
-```julia
+```triad
 err(kind, msg) = [:Err, kind, msg]
 is_err(v) = typeof(v) == :List && length(v) == 3 && v[1] == :Err
 function div_intera(a, b)
@@ -1065,7 +1169,7 @@ Windows.
 
 Core non ha `map`/`filter`/`reduce`: si scrivono una volta con `while` e lambda.
 
-```julia
+```triad
 function mappa(f, xs)
     out = []
     i = 1
@@ -1112,7 +1216,7 @@ Output:
 
 Core non ha `struct`: un record è una lista con un simbolo come tag nella prima posizione.
 
-```julia
+```triad
 punto(x, y) = [:Punto, x, y]
 px(p) = p[2]
 py(p) = p[3]
@@ -1132,7 +1236,7 @@ Output:
 È la struttura usata dagli interpreti in `selfhost/`: una lista piatta `[nome1, valore1,
 nome2, valore2, …]` (in Core puoi anche usare coppie annidate).
 
-```julia
+```triad
 function env_get(env, nome)
     i = 1
     while i < length(env)
@@ -1173,7 +1277,7 @@ Output:
 Poiché una funzione nominata non può riassegnare un globale, lo stato condiviso si tiene in
 una lista (mutabile) o in una chiusura.
 
-```julia
+```triad
 stato = [0]
 function tick()
     stato[1] += 1
@@ -1191,7 +1295,7 @@ Output:
 
 ### 16.5 Costruire stringhe
 
-```julia
+```triad
 function ripeti(s, n)
     out = ""
     while n > 0
@@ -1249,7 +1353,7 @@ Senza usare `^`, scrivi `potenza(b, e)` ricorsiva e `somma_fino(n)` (somma `1 + 
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 potenza(b, e) = e == 0 ? 1 : b * potenza(b, e - 1)
 function somma_fino(n)
     s = 0
@@ -1278,7 +1382,7 @@ Stampa la lista dei numeri primi minori di 30.
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 function primo(n)
     if n < 2
         return false
@@ -1318,7 +1422,7 @@ Scrivi `inverti(xs)` che restituisce una nuova lista con gli elementi in ordine 
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 function inverti(xs)
     out = []
     i = length(xs)
@@ -1346,7 +1450,7 @@ Ordina in loco `[5, 2, 9, 1, 7]`.
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 function ordina!(xs)
     i = 2
     while i <= length(xs)
@@ -1381,7 +1485,7 @@ Conta le parole (separate da spazi) di `"il  linguaggio Triad "` usando `strbyte
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 function conta_parole(s)
     n = 0
     dentro = false
@@ -1415,7 +1519,7 @@ Trasforma `"12+x*3"` in una lista di token `[tipo, testo]`, con tipi `:num`, `:i
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 cifra(b) = b >= 48 && b <= 57
 lettera(b) = (b >= 97 && b <= 122) || (b >= 65 && b <= 90) || b == 95
 function tokenizza(s)
@@ -1464,7 +1568,7 @@ posizione corrente in una lista `pos = [1]` per poterla aggiornare dalle funzion
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 cifra(b) = b >= 48 && b <= 57
 lettera(b) = (b >= 97 && b <= 122) || b == 95
 function tokenizza(s)
@@ -1598,7 +1702,7 @@ operatore binario o una virgola di `rule`.
 
 **Variabili tipate:**
 
-```julia
+```triad-full
 x::Int = 5
 x = 6          # bene
 x = 5.5        # Err(:type): il nome mantiene il tipo dichiarato
@@ -1614,7 +1718,7 @@ Il vincolo nasce con la dichiarazione e vive nell'ambiente in cui il nome è sta
 
 ## 19. Funzioni tipate e multiple dispatch (SPEC §5)
 
-```julia
+```triad-full
 sq(x) = x * x
 area(n::Number) = :number
 area(n::Int) = :int
@@ -1637,13 +1741,26 @@ Regole:
 - funzioni e operatori sono valori: `reduce(+, xs)`, `map(sq, xs)`;
 - lambda tipate: `function (x::Int) x end` → `f(2.0)` è `Err(:type)`.
 
+Per prevedere quale implementazione verrà chiamata, controlla prima il numero di argomenti e poi
+il tipo di ciascuno. Con i metodi `area(n::Number)` e `area(n::Int)`, l'intero `1` è compatibile
+con entrambi, ma `Int` è più specifico di `Number`; il `Float` `1.5` è compatibile solo con il
+metodo su `Number`. Nei metodi con più parametri il confronto è per tupla: una firma può essere
+più specifica sul primo parametro ma più generale sul secondo. Se nessuna firma domina tutte le
+altre, non si indovina l'intenzione: il risultato è l'errore `:ambiguous`, che richiede una firma
+più specifica o una revisione delle firme esistenti.
+
+Il controllo del tipo di ritorno avviene dopo il corpo. Per questo `::Float` non converte gli
+argomenti in anticipo e non garantisce che ogni operazione intermedia sia valida; richiede che il
+valore prodotto alla fine sia convertibile o compatibile con il tipo dichiarato. Le annotazioni
+di parametro e di ritorno sono quindi parti distinte del contratto del metodo.
+
 ---
 
 <a id="cap-20"></a>
 
 ## 20. Struct (SPEC §4)
 
-```julia
+```triad-full
 struct Point
     x::Float
     y::Float
@@ -1659,13 +1776,20 @@ p isa Point          # true
 - Campo inesistente → `Err(:field)`; tipo sbagliato → `Err(:type)`.
 - In Core lo stesso concetto si rappresenta con una lista taggata ([§16.2](#cap-16)).
 
+Una struct fornisce un record **nominato**: il nome del tipo distingue `Point` da un altro record,
+mentre i nomi dei campi (`x`, `y`) evitano di ricordare posizioni numeriche. La costruzione
+controlla i valori rispetto ai tipi dei campi; l'accesso `p.x` risolve il campo per nome. La
+struttura è immutabile nello standard, quindi i campi descrivono lo stato dell'istanza creata e
+non si aggiornano con un'assegnazione successiva. La lista taggata Core è più flessibile, ma
+sposta queste garanzie sul codice che costruisce, legge e modifica il record.
+
 ---
 
 <a id="cap-21"></a>
 
 ## 21. Controllo di flusso Full: `for`, range, comprehension, `try` (SPEC §2)
 
-```julia
+```triad-full
 s = 0
 for i in 1:10
     s += i
@@ -1683,7 +1807,7 @@ r = try div(1, 0) catch err; 0 end   # con catch: err è l'Err, il valore è que
 
 Altri valori attesi (dai vecchi test dell'implementazione Julia):
 
-```julia
+```triad-full
 x = 2; y = x * 21; y                           # 42
 7 / 2                                          # 3.5
 "ab" * "cd"                                    # "abcd"
@@ -1700,13 +1824,25 @@ end; fact_(10)                                 # 3628800
 
 `requires c` al top level è un'asserzione; `ensures c` è ammesso solo dentro `function`.
 
+Nel ciclo, il range `1:10` rappresenta i valori interi inclusivi da 1 a 10: non è una lista
+letterale che devi scrivere a mano. `for` associa a `i` ciascun valore successivo, esegue il corpo
+per quell'associazione e prosegue fino alla fine dell'iterabile. Una comprehension combina lo
+stesso schema con la costruzione del risultato: valuta il filtro per ogni elemento e aggiunge
+all'output solo le espressioni corrispondenti. L'ordine di lettura è quindi "iteratore, filtro,
+espressione", non una valutazione simultanea.
+
+`try` delimita invece il punto in cui un errore può essere trasformato in risultato. Senza
+`catch`, l'espressione restituisce direttamente l'`Err`; con `catch err`, il nome locale `err`
+identifica l'errore e il valore finale è quello del blocco di recupero. Questo rende possibile
+gestire un caso senza confondere un errore con un valore di successo dello stesso tipo.
+
 ---
 
 <a id="cap-22"></a>
 
 ## 22. Logica: fatti, regole, `solve` (SPEC §6)
 
-```julia
+```triad-full
 fact parent(:alice, :bob)
 fact parent(:alice, :carol)
 fact parent(:bob, :dave)
@@ -1718,7 +1854,7 @@ rule ancestor(?a, ?d) :- parent(?a, ?x), ancestor(?x, ?d)
 
 `solve` restituisce una **lista di `Solution`** (è un valore, non stampa nulla):
 
-```julia
+```triad-full
 sols = solve grandparent(:alice, ?who) limit 5
 [s.who for s in sols]                       # [:dave]
 [s.d for s in solve ancestor(:alice, ?d)]
@@ -1733,9 +1869,22 @@ sols = solve grandparent(:alice, ?who) limit 5
 - Liste stile Prolog nei pattern: `[?h | ?t]`.
 - `vars(s)` restituisce i nomi legati in una `Solution`; si accede con `s.nome` o `s[:nome]`.
 
+Per leggere una regola, separa la **testa** dal **corpo**. In
+`grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)`, la testa descrive quali valori la regola
+può dimostrare; il corpo richiede due prove in sequenza. Il motore cerca un `parent` per il primo
+goal, conserva il legame trovato per `?y`, poi usa quel legame nel secondo goal. Se il secondo
+goal fallisce, torna alla scelta precedente e prova il prossimo fatto compatibile: è il
+backtracking. Se entrambi riescono, `?z` viene restituito nella soluzione.
+
+Le variabili con lo stesso nome in clausole diverse non condividono accidentalmente il loro
+stato: a ogni uso della regola vengono rinominate. L'occurs-check impedisce legami ricorsivi
+impossibili come `?x = f(?x)`. Il limite `depth` taglia i rami troppo profondi; `steps` limita il
+lavoro totale; `limit` limita quante soluzioni vengono raccolte. Sono controlli differenti, e
+una lista vuota ottenuta entro i limiti non è equivalente a una ricerca interrotta da `Err(:budget)`.
+
 Esempi:
 
-```julia
+```triad-full
 # percorso con costo
 fact edge(:a, :b, 2)
 fact edge(:b, :c, 3)
@@ -1763,7 +1912,7 @@ foglie = filter(p -> !parent(p, ?_), persone)   # [:bob]
 
 Pattern di lista con **arità esatta**; le parentesi attorno al pattern sono obbligatorie.
 
-```julia
+```triad-full
 (a, b) = [1, 2]                 # a == 1, b == 2
 e = try (a, b) = [1] end        # e.kind == :bounds
 e = try (a, b) = [1, 2, 3] end  # e.kind == :bounds
@@ -1789,7 +1938,7 @@ Un errore è un valore `Err(kind, msg, data)`; non diventa un'eccezione dell'hos
 sia gestito al top level (allora il processo esce con codice 1 e stdout vuoto per l'istruzione
 fallita: è il caso di conformance `errore`).
 
-```julia
+```triad-full
 e = try div(1, 0) end     # Err(:domain, ...)
 e.kind                    # :domain
 e.msg                     # messaggio
@@ -1810,13 +1959,21 @@ Kinds standard: `:syntax`, `:undef`, `:type`, `:method`, `:ambiguous`, `:field`,
 
 `Err(:syntax)` porta in `data` la posizione (`e.data.line`, `e.data.col`).
 
+La gestione degli errori separa l'operazione fallita dal punto in cui il programma decide come
+reagire. `try` non ripara automaticamente lo stato: converte l'esito in un valore `Err` oppure
+passa quel valore al blocco `catch`. Il chiamante può quindi scegliere tra mostrare un messaggio,
+provare un'alternativa o propagare l'errore restituendolo. Se nessun `try` lo intercetta, il
+runtime lo segnala al livello superiore e il processo termina con codice non riuscito. In questo
+modo la gestione è esplicita, ma un errore non diventa un successo solo perché è rappresentato da
+un valore.
+
 ---
 
 <a id="cap-25"></a>
 
 ## 25. Contratti (SPEC §9)
 
-```julia
+```triad-full
 function safe_div(a::Number, b::Number)::Float
     requires b != 0
     ensures abs(result * b - a) < 1e-9
@@ -1837,13 +1994,21 @@ e.data.fn                 # :safe_div
 - I contratti sono **puri**: un effetto dentro un contratto → `Err(:effect)`.
 - `ensures` fuori da `function` → `Err(:syntax)`.
 
+Pensa a `requires` come alla condizione d'ingresso dell'operazione e a `ensures` come alla
+condizione d'uscita. Una precondizione specifica ciò che il chiamante deve garantire; una
+postcondizione specifica ciò che la funzione promette quando termina correttamente. Le clausole
+non sostituiscono il controllo dei tipi: una funzione può ricevere argomenti del tipo giusto e
+violare comunque una precondizione di dominio, oppure restituire un valore tipato che viola la
+postcondizione. Poiché i contratti sono puri, la loro valutazione non può stampare o modificare la
+base di conoscenza: il controllo non deve cambiare il programma che sta verificando.
+
 ---
 
 <a id="cap-26"></a>
 
 ## 26. Budget (SPEC §10)
 
-```julia
+```triad-full
 r = with budget(steps = 10_000)
     while true end
 end
@@ -1856,6 +2021,13 @@ r.kind                    # :budget — il ciclo infinito diventa un valore
 - `solve … steps N` è il budget di una singola query.
 - La ricorsione infinita non fa stack overflow: finisce in `Err(:budget)` (stack esplicito).
 
+Il budget misura unità di lavoro definite dallo standard, non secondi di CPU e non memoria
+allocata. È quindi un limite riproducibile sul numero di passi del modello di esecuzione, non un
+timeout generale del sistema operativo. Usalo per rendere limitate le computazioni potenzialmente
+lunghe, in particolare la risoluzione logica o un ciclo che potrebbe non terminare. Il risultato
+`Err(:budget)` è distinto dal risultato valido del corpo e può essere gestito con `try` o con il
+controllo del valore restituito dal `with`.
+
 ---
 
 <a id="cap-27"></a>
@@ -1864,7 +2036,7 @@ r.kind                    # :budget — il ciclo infinito diventa un valore
 
 La traccia è un **valore**, non output.
 
-```julia
+```triad-full
 fib(n::Int) = n < 2 ? n : fib(n - 1) + fib(n - 2)
 t = with trace
     fib(3)
@@ -1879,6 +2051,12 @@ t.trace       # porte Byrd: :call, :exit, :redo, :fail, :depth
 Gli eventi sono record con `port`, `goal`/`fn`, `depth` (e `value`/`args` per le funzioni):
 si filtrano come qualsiasi valore.
 
+La traccia registra la storia del calcolo, non solo il suo risultato. In una traccia di funzione
+`call` indica l'ingresso e `exit` l'uscita; in una query logica compaiono anche `redo` e `fail`,
+perché la ricerca può provare più alternative. Il valore `result` resta disponibile accanto agli
+eventi: puoi confrontare il risultato finale con il percorso seguito. La traccia non è un log
+stampato automaticamente; decide il programma quali eventi filtrare, contare o presentare.
+
 ---
 
 <a id="cap-28"></a>
@@ -1888,7 +2066,7 @@ si filtrano come qualsiasi valore.
 Le funzioni sono pure per default. Effetti: `io` (`println`, `print`) e `state` (`fact`/`rule`
 dentro una funzione).
 
-```julia
+```triad-full
 function saluta(nome::String) !io
     println("ciao, ", nome)
 end
@@ -1902,6 +2080,13 @@ end
 - Il top level permette tutti gli effetti; le lambda ereditano quelli del contesto.
 - Macro e contratti sono puri; leggere la KB (`solve`, predicati) è puro.
 - Mutare liste o variabili locali non è un effetto.
+
+La dichiarazione di effetto è una verifica dinamica dei permessi di esecuzione, non un'annotazione
+puramente descrittiva. Il runtime controlla la catena delle chiamate quando una funzione tenta
+un'operazione con effetto: una funzione `!io` può stampare solo se il contesto chiamante lo
+consente. Il top level è il contesto più permissivo; una funzione pura chiamata da lì non diventa
+per questo autorizzata a stampare. Elencare `!io` nella firma documenta il requisito per i
+chiamanti e permette al runtime di rifiutare l'effetto nel punto in cui violerebbe la dichiarazione.
 
 ---
 
@@ -1937,9 +2122,20 @@ esegue, che `:( … )` restituisce e che `--tree` stampa come S-expression.
 | `try b catch e h end` | `(try b e h)` |
 | `with budget(steps = N), trace … end` | `(with (tuple (call budget (assign steps N)) trace) body)` |
 
+Leggi una riga della tabella come una mappa tra **sintassi visibile** e **rappresentazione
+interna**. Per esempio `a + b` non richiede un tipo di nodo speciale per la somma: è una chiamata
+al nome `+` con due argomenti. Al contrario `&&` diventa un nodo dedicato perché il valutatore
+deve poter evitare di valutare il secondo operando. La forma dell'albero quindi non è una
+decorazione: codifica le decisioni che il runtime deve prendere per rispettare la semantica.
+
+Questo modello è utile anche quando si legge un errore: se `sexpr` mostra un albero che non
+corrisponde al raggruppamento atteso, il problema nasce nel parsing; se l'albero è corretto ma il
+risultato è sbagliato, il problema è più probabilmente nella valutazione. La distinzione tra forma
+del programma e valore del programma è il fondamento della metaprogrammazione.
+
 ### 29.2 Quote, unquote, eval
 
-```julia
+```triad-full
 c = :(a.x + f(b, 2))
 c.head        # :call
 sexpr(c)      # "(call + (dot a x) (call f b 2))"
@@ -1957,7 +2153,7 @@ Expr(:call, :f, 1)              # costruisce un Node
 Le macro ricevono codice e restituiscono codice; l'espansione è pura e **non igienica**:
 usa `gensym()` per nomi freschi.
 
-```julia
+```triad-full
 macro unless(c, body)
     :(if !$c; $body; end)
 end
@@ -1984,9 +2180,18 @@ end
 @time_it("somma", reduce(+, 1:100))     # stampa "somma -> 5050"
 ```
 
+Per valutare una macro, confronta l'argomento sorgente con il codice che essa costruisce. In
+`@unless(c, body)`, `c` e `body` arrivano come nodi; la macro li inserisce in un `if` con la
+condizione negata. Il corpo verrà eseguito solo se la condizione originale è falsa, proprio come
+se il programmatore avesse scritto quel codice manualmente. Se la macro usasse una funzione
+ordinaria, gli argomenti verrebbero calcolati prima della chiamata e non sarebbe possibile
+controllare se `body` viene valutato. Questa capacità è potente, ma rende più difficile leggere
+l'esecuzione: l'espansione esplicita e i nomi temporanei generati sono strumenti essenziali per
+evitare sorprese.
+
 ### 29.4 Codice che genera codice
 
-```julia
+```triad-full
 function poly(coeffs)
     acc = :(0)
     i = 0
@@ -2086,7 +2291,7 @@ congelati in `conformance/cases/`.
 
 ### 32.1 `assaggio.td`
 
-```julia
+```triad-full
 struct Point
     x::Float
     y::Float
@@ -2185,7 +2390,7 @@ p(2) = 17
 
 ### 32.5 Contratti e budget insieme
 
-```julia
+```triad-full
 function safe_div(a::Number, b::Number)::Float
     requires b != 0
     ensures abs(result * b - a) < 1e-9
@@ -2275,6 +2480,15 @@ sorgente ──tokenize()──▶ token ──Parser──▶ AST {kind: …} �
 7. **`main()`**: legge il file (o stdin con `-`), lega `ARGS`, esegue; errori di parsing →
    `parse error: …`, errori di esecuzione → `error: …`, entrambi con exit 1; nessun file →
    exit 2.
+
+Questo flusso separa responsabilità che conviene diagnosticare una alla volta. Se il token
+prodotto da `tokenize` è sbagliato, il problema è prima del parser; se il parser genera la forma
+errata, l'albero AST non corrisponde alla grammatica; se l'albero è giusto ma il risultato no, il
+difetto è nell'ambiente, nella valutazione o in un builtin. Un caso di conformance piccolo
+permette di fissare il comportamento osservato mentre si corregge il livello responsabile. Quando
+si modifica sintassi o semantica, il test, l'interprete e la specifica devono restare coerenti:
+aggiungere un ramo al parser senza la corrispondente valutazione crea una forma riconosciuta ma
+non eseguibile.
 
 ### 34.2 Esempio: aggiungere un builtin
 
@@ -2432,7 +2646,7 @@ del [capitolo 15](#cap-15):
   commento in testa al file;
 - funzioni con al massimo 4 parametri, lambda a un parametro, niente cattura multi-binding.
 
-```julia
+```triad
 # stile S1: ambiente piatto e lookup con get (0-based)
 env = []
 env = push!(env, 1)      # chiave
@@ -2485,9 +2699,26 @@ Runtime scelto, in ordine: variabile `TRIAD_SEED`; su Linux/macOS l'interprete J
 `bin/triad-native.exe`, poi `seed/windows-x86_64/seed.exe`. Esempio per provare il seed con un
 percorso esplicito: `TRIAD_SEED=/percorso/seed node conformance/run.mjs`.
 
+Su Linux/macOS il runner usa l'interprete JS e verifica tutti i 37 casi. Su Windows usa il seed e
+salta per impostazione predefinita il caso `liste`, perché il seed non implementa l'indicizzazione
+standard `xs[i]`: il runner stampa quindi 36 casi. Per provare il caso escluso con l'interprete JS:
+
+```sh
+node seed/dev/triad_core.cjs conformance/core/cases/liste/program.td
+```
+
 Messaggi:
 - `PASS  nome` / `FAIL  nome  (exit X, atteso Y, stdout N byte, attesi M)`;
 - `golden mancante`: il checkout non ha `expected.out` (di solito basta `git pull`).
+
+Un golden è un'aspettativa versionata, non la fonte normativa della semantica. Il file
+`program.td` definisce l'input, `args.txt` gli argomenti, `expected.out` l'output byte per byte e
+`expected.code` il codice d'uscita. Il runner confronta questi risultati con il runtime scelto;
+così uno stesso caso può essere eseguito da più interpreti e rendere visibili le divergenze. Se
+il comportamento del runtime è in dubbio, confronta prima il caso con SPEC-CORE e poi correggi il
+golden solo quando la specifica conferma il nuovo valore atteso. L'opzione `--update` copia il
+comportamento corrente nei risultati attesi: usarla senza revisione trasformerebbe un bug in una
+pretesa di correttezza.
 
 ### 38.3 Aggiungere un caso Core
 
