@@ -3,7 +3,7 @@ const path = require('path');
 const marked = require('marked');
 const Epub = require('epub-gen');
 
-const root = 'c:\\\\Users\\\\xbos\\\\Documents\\\\progetti\\\\triad2.0';
+const root = path.join(__dirname, '..');
 const outDir = path.join(root, 'docs', 'libro');
 
 const preface = fs.readFileSync(path.join(root, 'PREFazione.md'), 'utf8');
