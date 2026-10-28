@@ -85,18 +85,30 @@ non ancora implementate dal seed (oggi escono con codice 0 senza output).
 
 L'estensione `.triad` è canonica; `.td` è accettata come alias storico.
 
-Il launcher cerca in ordine:
-1. `bin/triad-native` — eseguibile standalone (non ancora prodotto, vedi §3)
-2. `seed/<piattaforma>/seed` — interprete Triad-Core in codice macchina
+Il launcher cerca in ordine: `TRIAD_SEED` (se impostato), `bin/triad-native`
+— eseguibile standalone (non ancora prodotto, vedi §3) — poi
+`seed/<piattaforma>/seed` — interprete Triad-Core in codice macchina.
 
 Su Windows usare `triad.cmd` (`seed\windows-x86_64\seed.exe`). Su Linux il seed è ancora
-allo stadio E0 (stampa solo `Triad seed Linux OK`): per eseguire programmi su Linux si usa
-l'interprete di riferimento JavaScript, strumento di sviluppo:
+allo stadio E0 (stampa solo `Triad seed Linux OK`): `bin/triad` lo riconosce da solo e
+usa l'interprete di riferimento JavaScript, senza passi manuali. Il comando diretto resta
+comunque disponibile:
 
 ```sh
 node seed/dev/triad_core.cjs file.triad arg1 arg2
 ```
 
+### Installazione su Linux / macOS
+
+Un comando solo, senza privilegi di root e senza dipendenze obbligatorie:
+
+```sh
+./install.sh            # decodifica il seed ELF + installa i launcher in ~/.local/bin
+./install.sh --desktop  # aggiunge anche la voce menu freedesktop per .triad/.td
+```
+
+Lo script decodifica `seed/linux-x86_64/seed.hex` (con `xxd` o `python3`), esegue lo
+smoke test del seed, crea i link a `triad` e `triad-cli` e verifica l'installazione.
 Nessun runtime richiede Julia.
 
 ### 2. File .triad eseguibili direttamente (shebang)
@@ -251,3 +263,15 @@ Distribuito sotto licenza **MIT** — vedi [`LICENSE`](LICENSE).
 ---
 
 Scritto e mantenuto da **Kilo** — agente software engineer per il progetto Triad 2.0.
+
+## Download
+
+Andamento dei download totali delle release di Triad su GitHub (aggiornato
+automaticamente ogni giorno dal workflow
+[`.github/workflows/download-chart.yml`](.github/workflows/download-chart.yml),
+che legge i dati tramite la GitHub API e rigenera il grafico con
+[`scripts/download_chart.py`](scripts/download_chart.py)).
+
+![Grafico download di Triad](docs/assets/img/downloads.svg)
+
+<sub>Dato corrente: ![badge download totali](https://img.shields.io/github/downloads/GPuntobit/triad/total?label=download%20totali&style=for-the-badge)</sub>

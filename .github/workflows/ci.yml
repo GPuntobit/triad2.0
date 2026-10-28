@@ -89,3 +89,26 @@ jobs:
         run: |
           h=$(sha256sum seed/linux-x86_64/seed.hex | cut -d' ' -f1)
           test "$h" = "ad4c9f08176d9964d5be17d44c72230184434025980447395e7a3250f63ca5ea"
+
+  linux-toolchain:
+    # Verifica che l'intera toolchain POSIX funzioni su Linux: launcher,
+    # install.sh (senza root), esecuzione di programmi .td e suite di
+    # conformità tramite i launcher installati.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+      - name: Launcher bin/triad esegue un programma
+        run: ./bin/triad test_simple.td | grep -q '^test$'
+      - name: install.sh (utente non root, prefix temporaneo)
+        run: |
+          ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop
+          export PATH="$RUNNER_TEMP/triad-bin:$PATH"
+          triad test_let.td | grep -q '^15$'
+          triad-cli status >/dev/null
+      - name: Conformance via launcher installato
+        run: |
+          export PATH="$RUNNER_TEMP/triad-bin:$PATH"
+          triad-cli test conformance

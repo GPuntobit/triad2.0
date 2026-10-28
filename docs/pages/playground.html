@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Playground — Triad 2.0</title>
+<meta name="description" content="Esegui codice Triad direttamente nel browser: editor, output e esempi pronti." />
+<link rel="stylesheet" href="../assets/css/style.css" />
+<style>
+  .pg-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+  @media (max-width: 900px) { .pg-wrap { grid-template-columns: 1fr; } }
+  .pg-pane { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .pg-label { font-size: .85rem; color: var(--muted); font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
+  #pg-editor {
+    width: 100%; min-height: 340px; resize: vertical;
+    background: var(--code-bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .9rem; line-height: 1.55;
+    padding: 16px; tab-size: 4;
+  }
+  #pg-editor:focus { outline: none; border-color: var(--accent); }
+  #pg-output {
+    min-height: 340px; max-height: 520px; overflow: auto;
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius);
+    font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .88rem; line-height: 1.55;
+    padding: 16px; white-space: pre-wrap; word-break: break-word; margin: 0;
+  }
+  #pg-output.err { border-color: #f87171; }
+  .pg-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 18px; }
+  .pg-toolbar select {
+    background: var(--bg-card); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 12px; font-size: .9rem;
+  }
+  .pg-status { font-size: .85rem; color: var(--muted); }
+  .kbd-hint { font-size: .8rem; color: var(--muted); }
+  .kbd-hint kbd { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-family: inherit; }
+</style>
+</head>
+<body>
+<div id="site-header"></div>
+<main class="container">
+  <h1 style="margin-bottom:6px">Playground</h1>
+  <p style="color:var(--muted);max-width:720px">Esegui programmi Triad <strong>direttamente nel browser</strong>, senza installare nulla. Il codice è interpretato dallo stesso interprete di riferimento usato dalla suite di conformità (<code>seed/dev/triad_core.cjs</code>).</p>
+
+  <div class="pg-toolbar">
+    <button class="btn btn-primary" id="pg-run" type="button">▶ Esegui</button>
+    <select id="pg-example" aria-label="Scegli un esempio">
+      <option value="">— Carica esempio —</option>
+    </select>
+    <span class="kbd-hint"><kbd>Ctrl</kbd>+<kbd>Invio</kbd> per eseguire</span>
+    <span class="pg-status" id="pg-status"></span>
+  </div>
+
+  <div class="pg-wrap">
+    <div class="pg-pane">
+      <span class="pg-label">Programma (.triad)</span>
+      <textarea id="pg-editor" spellcheck="false" aria-label="Editor Triad"></textarea>
+    </div>
+    <div class="pg-pane">
+      <span class="pg-label">Output</span>
+      <pre id="pg-output" aria-live="polite"></pre>
+    </div>
+  </div>
+
+  <h2 style="margin-top:40px">Note</h2>
+  <ul class="feature-list">
+    <li>L'esecuzione ha un limite di tempo di 5 secondi per bloccare loop infiniti.</li>
+    <li>Il playground usa l'interprete JS di riferimento: la semantica è quella della suite di conformità, ma le prestazioni non sono quelle del seed nativo.</li>
+    <li>Nessun dato lascia il browser: tutto viene eseguito in locale.</li>
+  </ul>
+</main>
+<div id="site-footer"></div>
+<script src="triad-core.js"></script>
+<script src="../assets/js/playground.js"></script>
+<script>TriadSite.mount('Playground');</script>
+</body>
+</html>

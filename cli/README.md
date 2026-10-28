@@ -102,6 +102,38 @@ Compila l'eseguibile standalone di Triad:
 triad-cli build standalone
 ```
 
+### Run
+
+Esegue un programma Triad (`.triad`/`.td`) con il runtime:
+
+```bash
+triad-cli run test_simple.td
+triad-cli run prog.triad -- arg1 arg2     # argomenti al programma Triad
+```
+
+Opzioni:
+- `-v, --verbose` - Output dettagliato in caso di errore
+- `-n, --native` - Forza il seed in codice macchina (salta il fallback JS)
+
+Note: su Windows usa il seed (`seed/windows-x86_64/seed.exe` o `bin/triad-native.exe`);
+su Linux/Mac, finché il seed è uno stub (E0), usa l'interprete JS di riferimento
+`seed/dev/triad_core.cjs`, come fa `conformance/run.mjs`.
+
+### Estensione VS Code
+
+Verifica la struttura dell'estensione in `editors/vscode` (package.json, grammatica,
+language-configuration) e la pacchettizza in un `.vsix`:
+
+```bash
+triad-cli ext check      # validazione struttura
+triad-cli ext package    # crea triad-<versione>.vsix via vsce (o npx @vscode/vsce)
+```
+
+Opzioni di `ext package`:
+- `-o, --out <path>` - Percorso di output del `.vsix`
+
+Installazione del pacchetto: `code --install-extension triad-0.2.0.vsix`
+
 
 ### Test
 
@@ -143,6 +175,8 @@ cli/
 │       ├── seed.mjs        # Generazione seed
 │       ├── ai.mjs          # Verifica AI
 │       ├── build.mjs       # Build standalone
+│       ├── run.mjs         # Esecuzione programmi .triad/.td
+│       ├── ext.mjs         # Estensione VS Code (check, package .vsix)
 │       └── test.mjs        # Test e conformance
 └── README.md               # Questa documentazione
 ```

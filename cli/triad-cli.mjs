@@ -5,6 +5,8 @@ import { handleSeedGenerate } from './lib/commands/seed.mjs';
 import { handleAIVerify } from './lib/commands/ai.mjs';
 import { handleBuildStandalone } from './lib/commands/build.mjs';
 import { handleTestRun, handleTestConformance } from './lib/commands/test.mjs';
+import { handleRun } from './lib/commands/run.mjs';
+import { handleExtCheck, handleExtPackage } from './lib/commands/ext.mjs';
 import { findSeed, projectPath } from './lib/utils.mjs';
 
 const program = new Command();
@@ -81,6 +83,42 @@ program
       })
   );
 
+// Comando run
+program
+  .command('run')
+  .description('Run a Triad program (.triad/.td) with the machine-code seed')
+  .argument('<file>', 'Program file (e.g. test_func.triad)')
+  .argument('[args...]', 'Arguments passed to the program (after --)')
+  .option('-v, --verbose', 'Verbose output on failure')
+  .option('-n, --native', 'Force the machine-code seed runtime (skip JS fallback)')
+  .allowUnknownOption()
+  .action(async (file, args, options) => {
+    const success = await handleRun(file, args, options);
+    process.exit(success ? 0 : 1);
+  });
+
+// Comando ext (estensione VS Code)
+program
+  .command('ext')
+  .description('VS Code extension commands (editors/vscode)')
+  .addCommand(
+    new Command('check')
+      .description('Validate the extension structure (package.json, grammar, language-configuration)')
+      .action(async () => {
+        const success = await handleExtCheck();
+        process.exit(success ? 0 : 1);
+      })
+  )
+  .addCommand(
+    new Command('package')
+      .description('Package the extension into a .vsix with vsce')
+      .option('-o, --out <path>', 'Output .vsix path')
+      .action(async (options) => {
+        const success = await handleExtPackage(options);
+        process.exit(success ? 0 : 1);
+      })
+  );
+
 // Comando status
 program
   .command('status')
@@ -100,8 +138,11 @@ program
     console.log('  triad-cli seed generate <platform>  Generate seed binary');
     console.log('  triad-cli ai verify                  Verify AI solutions');
     console.log('  triad-cli build standalone           Build standalone executable');
+    console.log('  triad-cli run <file> [-- args]       Run a Triad program (.triad/.td)');
     console.log('  triad-cli test run                    Run unit tests');
     console.log('  triad-cli test conformance            Run conformance suite');
+    console.log('  triad-cli ext check                   Validate VS Code extension');
+    console.log('  triad-cli ext package                 Package VS Code extension (.vsix)');
     console.log('  triad-cli status                      Show this status');
   });
 

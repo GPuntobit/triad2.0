@@ -1,5 +1,7 @@
 'use strict';
-const fs = require('fs');
+// fs è usato solo nella modalità CLI (Node); nel browser lo shim `fs` evita
+// che il require fallisca e non viene mai invocato.
+const fs = (typeof require === 'function') ? require('fs') : { readFileSync() { throw new Error('fs non disponibile'); } };
 // ---------- Value helpers ----------
 const NOTHING = {t:'nothing'};
 const BUILTIN_NAMES = new Set(['print','println','length','push!','Int','string','Symbol','typeof','readfile','strlen','strbyte','strsub','exit']);
@@ -994,5 +996,23 @@ function main(){
   }
   process.exit(0);
 }
-main();
+
+// Browser support: when loaded in a web page (no Node CLI), expose the
+// interpreter as window.TriadCore so the playground can run programs.
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = { tokenize, Parser, evalStmt, makeFrame, L, S, I, B, Y, stringOf };
+  if (require.main === module) main();
+} else if (typeof window !== 'undefined') {
+  // Minimal process shim: stdout/stderr write into window.__TRIAD_OUT__
+  // (an array of strings provided by the playground); exit throws a
+  // catchable signal instead of killing the tab.
+  const shim = {
+    argv: [],
+    stdout: { write(s) { if (window.__TRIAD_OUT__) window.__TRIAD_OUT__.push(String(s)); } },
+    stderr: { write(s) { if (window.__TRIAD_OUT__) window.__TRIAD_OUT__.push(String(s)); } },
+    exit(code) { throw new Error('exit(' + code + ')'); },
+  };
+  window.process = window.process || shim;
+  window.TriadCore = { tokenize, Parser, evalStmt, makeFrame, L, S, I, B, Y, stringOf };
+}
 
