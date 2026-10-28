@@ -6,9 +6,10 @@
     "organization": "GPuntobit",
     "repositoryId": "917582",
     "repositoryName": "triad2.0",
-    "createdAt": "2026-10-28T17:02:02.406Z",
-    "updatedAt": "2026-10-28T17:02:02.406Z",
+    "createdAt": "2026-10-28T21:22:11.244Z",
+    "updatedAt": "2026-10-28T21:22:11.244Z",
     "languages": [
+      "CSharp",
       "CSS",
       "HTML",
       "Javascript",
@@ -919,6 +920,365 @@
         },
         {
           "patternId": "ESLint9_@typescript-eslint_await-thenable"
+        }
+      ]
+    },
+    {
+      "toolId": "SonarCSharp",
+      "patterns": [
+        {
+          "patternId": "SonarCSharp_S6781"
+        },
+        {
+          "patternId": "SonarCSharp_S6377"
+        },
+        {
+          "patternId": "SonarCSharp_S5344"
+        },
+        {
+          "patternId": "SonarCSharp_S4347"
+        },
+        {
+          "patternId": "SonarCSharp_S6444"
+        },
+        {
+          "patternId": "SonarCSharp_S4502"
+        },
+        {
+          "patternId": "SonarCSharp_S2115"
+        },
+        {
+          "patternId": "SonarCSharp_S5753"
+        },
+        {
+          "patternId": "SonarCSharp_S5332"
+        },
+        {
+          "patternId": "SonarCSharp_S4423"
+        },
+        {
+          "patternId": "SonarCSharp_S3329"
+        },
+        {
+          "patternId": "SonarCSharp_S2612"
+        },
+        {
+          "patternId": "SonarCSharp_S2257"
+        },
+        {
+          "patternId": "SonarCSharp_S2053"
+        },
+        {
+          "patternId": "SonarCSharp_S5773"
+        },
+        {
+          "patternId": "SonarCSharp_S5766"
+        },
+        {
+          "patternId": "SonarCSharp_S5659"
+        },
+        {
+          "patternId": "SonarCSharp_S2755"
+        },
+        {
+          "patternId": "SonarCSharp_S5542"
+        },
+        {
+          "patternId": "SonarCSharp_S4830"
+        },
+        {
+          "patternId": "SonarCSharp_S5547"
+        },
+        {
+          "patternId": "SonarCSharp_S2068",
+          "parameters": {
+            "credentialWords": "password, passwd, pwd, passphrase"
+          }
+        },
+        {
+          "patternId": "SonarCSharp_S2245"
+        },
+        {
+          "patternId": "SonarCSharp_S4790"
+        },
+        {
+          "patternId": "SonarCSharp_S5042"
+        },
+        {
+          "patternId": "SonarCSharp_S4426"
+        },
+        {
+          "patternId": "SonarCSharp_S4433"
+        },
+        {
+          "patternId": "SonarCSharp_S1215"
+        },
+        {
+          "patternId": "SonarCSharp_S3610"
+        },
+        {
+          "patternId": "SonarCSharp_S1764"
+        },
+        {
+          "patternId": "SonarCSharp_S2934"
+        },
+        {
+          "patternId": "SonarCSharp_S131"
+        },
+        {
+          "patternId": "SonarCSharp_S3217"
+        },
+        {
+          "patternId": "SonarCSharp_S3005"
+        },
+        {
+          "patternId": "SonarCSharp_S1226"
+        },
+        {
+          "patternId": "SonarCSharp_S112"
+        },
+        {
+          "patternId": "SonarCSharp_S2688"
+        },
+        {
+          "patternId": "SonarCSharp_S2743"
+        },
+        {
+          "patternId": "SonarCSharp_S3447"
+        },
+        {
+          "patternId": "SonarCSharp_S2551"
+        },
+        {
+          "patternId": "SonarCSharp_S3440"
+        },
+        {
+          "patternId": "SonarCSharp_S1699"
+        },
+        {
+          "patternId": "SonarCSharp_S2692"
+        },
+        {
+          "patternId": "SonarCSharp_S2674"
+        },
+        {
+          "patternId": "SonarCSharp_S2995"
+        },
+        {
+          "patternId": "SonarCSharp_S2190"
+        },
+        {
+          "patternId": "SonarCSharp_S3880"
+        },
+        {
+          "patternId": "SonarCSharp_S3600"
+        },
+        {
+          "patternId": "SonarCSharp_S3397"
+        },
+        {
+          "patternId": "SonarCSharp_S3251"
+        },
+        {
+          "patternId": "SonarCSharp_S3877"
+        },
+        {
+          "patternId": "SonarCSharp_S3466"
+        },
+        {
+          "patternId": "SonarCSharp_S2955"
+        },
+        {
+          "patternId": "SonarCSharp_S127"
+        },
+        {
+          "patternId": "SonarCSharp_S1210"
+        },
+        {
+          "patternId": "SonarCSharp_S3443"
+        },
+        {
+          "patternId": "SonarCSharp_S3216"
+        },
+        {
+          "patternId": "SonarCSharp_S2996"
+        },
+        {
+          "patternId": "SonarCSharp_S3263"
+        },
+        {
+          "patternId": "SonarCSharp_S3456"
+        },
+        {
+          "patternId": "SonarCSharp_S3449"
+        },
+        {
+          "patternId": "SonarCSharp_S2583"
+        },
+        {
+          "patternId": "SonarCSharp_S3898"
+        },
+        {
+          "patternId": "SonarCSharp_S2123"
+        },
+        {
+          "patternId": "SonarCSharp_S2681"
+        },
+        {
+          "patternId": "SonarCSharp_S3453"
+        },
+        {
+          "patternId": "SonarCSharp_S3220"
+        },
+        {
+          "patternId": "SonarCSharp_S1163"
+        },
+        {
+          "patternId": "SonarCSharp_S2997"
+        },
+        {
+          "patternId": "SonarCSharp_S2757"
+        },
+        {
+          "patternId": "SonarCSharp_S2184"
+        },
+        {
+          "patternId": "SonarCSharp_S2930"
+        },
+        {
+          "patternId": "SonarCSharp_S2275"
+        },
+        {
+          "patternId": "SonarCSharp_S2345"
+        },
+        {
+          "patternId": "SonarCSharp_S2178"
+        },
+        {
+          "patternId": "SonarCSharp_S3457"
+        },
+        {
+          "patternId": "SonarCSharp_S2328"
+        },
+        {
+          "patternId": "SonarCSharp_S3926"
+        },
+        {
+          "patternId": "SonarCSharp_S3168"
+        },
+        {
+          "patternId": "SonarCSharp_S3451"
+        },
+        {
+          "patternId": "SonarCSharp_S1643"
+        },
+        {
+          "patternId": "SonarCSharp_S1944"
+        },
+        {
+          "patternId": "SonarCSharp_S3869"
+        },
+        {
+          "patternId": "SonarCSharp_S1698"
+        },
+        {
+          "patternId": "SonarCSharp_S2223"
+        },
+        {
+          "patternId": "SonarCSharp_S3244"
+        },
+        {
+          "patternId": "SonarCSharp_S2952"
+        },
+        {
+          "patternId": "SonarCSharp_S1313"
+        },
+        {
+          "patternId": "SonarCSharp_S1206"
+        },
+        {
+          "patternId": "SonarCSharp_S3249"
+        },
+        {
+          "patternId": "SonarCSharp_S3237"
+        },
+        {
+          "patternId": "SonarCSharp_S3172"
+        },
+        {
+          "patternId": "SonarCSharp_S1854"
+        },
+        {
+          "patternId": "SonarCSharp_S2696"
+        },
+        {
+          "patternId": "SonarCSharp_S2760"
+        },
+        {
+          "patternId": "SonarCSharp_S2201"
+        },
+        {
+          "patternId": "SonarCSharp_S1449"
+        },
+        {
+          "patternId": "SonarCSharp_S2761"
+        },
+        {
+          "patternId": "SonarCSharp_S3603"
+        },
+        {
+          "patternId": "SonarCSharp_S3241"
+        },
+        {
+          "patternId": "SonarCSharp_S1862"
+        },
+        {
+          "patternId": "SonarCSharp_S3010"
+        },
+        {
+          "patternId": "SonarCSharp_S3444"
+        },
+        {
+          "patternId": "SonarCSharp_S3655"
+        },
+        {
+          "patternId": "SonarCSharp_S1656"
+        },
+        {
+          "patternId": "SonarCSharp_S3247"
+        },
+        {
+          "patternId": "SonarCSharp_S3597"
+        },
+        {
+          "patternId": "SonarCSharp_S3445"
+        },
+        {
+          "patternId": "SonarCSharp_S1244"
+        },
+        {
+          "patternId": "SonarCSharp_S2197"
+        },
+        {
+          "patternId": "SonarCSharp_S2330"
+        },
+        {
+          "patternId": "SonarCSharp_S2259"
+        },
+        {
+          "patternId": "SonarCSharp_S3169"
+        },
+        {
+          "patternId": "SonarCSharp_S3889"
+        },
+        {
+          "patternId": "SonarCSharp_S2931"
+        },
+        {
+          "patternId": "SonarCSharp_S2486"
+        },
+        {
+          "patternId": "SonarCSharp_S2225"
         }
       ]
     },
