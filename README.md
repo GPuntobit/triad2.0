@@ -12,8 +12,8 @@ una specifica normativa indipendente dall'implementazione ([SPEC.md](SPEC.md), s
 0.2.0) con una suite di conformità eseguibile ([conformance/](conformance/README.md)).
 
 <p align="center">
-  <a href="docs/assets/video/anteprima-codice.mp4"><img src="docs/assets/img/anteprima-codice.svg" alt="Anteprima animata: un programma Triad-Core digitato carattere per carattere, poi eseguito con node seed/dev/triad_core.cjs" width="552"></a>
-  <br><sub>Un programma Triad-Core digitato ed eseguito (output reale dell'interprete JS, ~35 s in loop). Sorgente: <a href="scripts/anteprima.td">scripts/anteprima.td</a>. Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
+  <video src="docs/assets/video/anteprima-codice.mp4" controls width="552"></video>
+  <br><sub>Un programma Triad-Core digitato ed eseguito (output reale dell'interprete JS, ~35 s in loop). Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
 </p>
 
 Sintassi e semantica sono definite da Triad, non da altri linguaggi. Le influenze sono
@@ -41,10 +41,8 @@ Triad-Full la padronanza reale si ferma intorno al 39%. Analisi completa sul sit
 [Curva e soglia di apprendimento](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
 
 <p align="center">
-  <a href="docs/assets/video/test-curva-apprendimento.mp4">
-    <img src="docs/assets/img/test-curva-apprendimento.gif" alt="Demo: grafici della curva di apprendimento, tooltip, tabella delle fasi e vista mobile del sito" width="800">
-  </a>
-  <br><sub>Demo del sito (velocità 3×). Clicca per il <a href="docs/assets/video/test-curva-apprendimento.mp4">video completo</a>.</sub>
+  <video src="docs/assets/video/test-curva-apprendimento.mp4" controls width="800"></video>
+  <br><sub>Demo del sito (velocità 3×). Video completo: <a href="docs/assets/video/test-curva-apprendimento.mp4">MP4</a>.</sub>
 </p>
 
 ## Standard e riconoscimento
