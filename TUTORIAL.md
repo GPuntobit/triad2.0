@@ -47,6 +47,9 @@ Scegli un percorso:
 Convenzioni:
 
 - I comandi sono mostrati per Linux/macOS (`sh`) e, quando diversi, per Windows (`cmd`/PowerShell).
+- I blocchi `triad` mostrano codice Core, normalmente eseguibile con l'interprete JS; i frammenti
+  specifici del seed Windows sono indicati nel testo. I blocchi `triad-full` mostrano codice
+  definito dallo standard Full, non ancora eseguibile dal runtime corrente.
 - "Interprete JS" = `seed/dev/triad_core.cjs`, interprete di riferimento Triad-Core usato su
   Linux/macOS e dal runner di conformance. "Seed" = `seed/windows-x86_64/seed.exe`, interprete
   Triad-Core in codice macchina (S0). Dove si comportano diversamente lo dice il
@@ -261,7 +264,7 @@ usa l'eseguibile standalone `triad-cli.exe` / `triad-cli` allegato alla
 
 Crea `ciao.triad`:
 
-```julia
+```triad
 #!/usr/bin/env triad
 # il mio primo programma Triad
 nome = "Triad"
@@ -346,7 +349,7 @@ continue true false nothing`.
 Non fanno parte di Core: letterali `Float` (`1.5`), variabili logiche `?x`, macro `@nome`,
 interpolazione `$x`, l'operatore `/`.
 
-```julia
+```triad
 #= commento
    su più righe =#
 x = 1_000   # commento di riga
@@ -395,7 +398,7 @@ Riferimento: `conformance/core/cases/aritmetica`, `simboli_base`, `stringhe_base
 - una `List` è stampata come `[a, b]`; le stringhe dentro una lista sono stampate senza
   virgolette.
 
-```julia
+```triad
 xs = [1, :a, "s", true, nothing, [2, 3]]
 println(xs)
 println(:alice)
@@ -420,7 +423,7 @@ senza a capo
 `==` e `!=` confrontano numeri, stringhe e simboli **per valore**, le liste **elemento per
 elemento** (anche annidate), le funzioni **per identità**.
 
-```julia
+```triad
 println([1, [2, [3]]] == [1, [2, [3]]])
 println("ab" == "a" * "b", " ", :a == :a, " ", 1 == 2)
 ```
@@ -446,7 +449,7 @@ Riferimento: `conformance/core/cases/valori`, `nothing_base`, `confronti`.
 - Usare un nome mai assegnato è un errore di esecuzione (`undefined variable`).
 - Non ci sono dichiarazioni né tipi: le variabili sono dinamiche.
 
-```julia
+```triad
 x = 42
 y = x + 8
 x = x + 1
@@ -498,7 +501,7 @@ Riferimento: `conformance/core/cases/variabili`.
 - `^` con esponente negativo è un errore; `%` per zero è un errore;
 - **non esiste `/`** in Core (la divisione è di Triad-Full).
 
-```julia
+```triad
 println(2 + 3 * 4, " ", (2 + 3) * 4, " ", 2 ^ 3 ^ 2)
 println(7 % 3, " ", -7 % 3, " ", 10 % 4)
 println(9223372036854775807 + 1)
@@ -520,7 +523,7 @@ Output:
 - I confronti non si concatenano: `1 < 2 < 3` è un errore (si confronta `Bool < Int`); scrivi
   `1 < 2 && 2 < 3`.
 
-```julia
+```triad
 println(!false, " ", true && false, " ", false || true)
 println(1 < 2 && 2 < 3)
 x = 3
@@ -548,7 +551,7 @@ dell'ultima istruzione eseguita, `nothing` se nessuna).
 
 ### 8.1 `if` / `elseif` / `else`
 
-```julia
+```triad
 function classifica(x)
     if x < 0
         "negativo"
@@ -572,7 +575,7 @@ si
 
 ### 8.2 `while`, `break`, `continue`
 
-```julia
+```triad
 i = 0
 somma_dispari = 0
 while i < 10
@@ -604,7 +607,7 @@ contatore e `while`.
 `let` introduce un nuovo scope con legami locali; `begin … end` raggruppa istruzioni senza
 creare legami nuovi.
 
-```julia
+```triad
 x = 1
 let x = 10
     let x = 20
@@ -640,7 +643,7 @@ Riferimento: `conformance/core/cases/controllo`, `if_else`, `if_elseif`, `if_nes
 
 ### 9.1 Tre modi di definire una funzione
 
-```julia
+```triad
 # forma breve: il corpo è un'espressione
 quadrato(x) = x * x
 
@@ -670,7 +673,7 @@ Output:
 - Una funzione nominata è visibile nel proprio corpo: la ricorsione diretta funziona.
 - Il numero di argomenti deve coincidere con i parametri (altrimenti `arity mismatch`).
 
-```julia
+```triad
 function taglia(n)
     if n > 100
         return :grande
@@ -696,7 +699,7 @@ grande piccola
 In Triad-Full una funzione che stampa deve dichiarare `!io` ([capitolo 28](#cap-28)). Core
 accetta l'annotazione e la ignora: scriverla rende il codice già pronto per Full.
 
-```julia
+```triad
 function mostra() !io
     println("hello from block")
     20 + 22
@@ -722,7 +725,7 @@ Riferimento: `conformance/core/cases/funzioni`, `funzioni_semplici`, `funzioni_b
 
 ### 10.1 Lambda
 
-```julia
+```triad
 doppio = x -> x * 2
 somma = (a, b) -> a + b
 applica = f -> f(3)
@@ -743,7 +746,7 @@ Le lambda senza parametri (`() -> …`) **non** sono supportate: usa `function (
 Una lambda cattura l'ambiente in cui è creata. Secondo SPEC-CORE §5 le variabili catturate sono
 **condivise**: le mutazioni sono visibili.
 
-```julia
+```triad
 function add(n)
     x -> x + n
 end
@@ -784,7 +787,7 @@ Output:
 4. **Al top level** i cicli aggiornano i globali.
 5. `let x = …` crea un nuovo `x`; assegnare `x` dentro il `let` non tocca l'`x` esterno.
 
-```julia
+```triad
 x = 1
 function f()
     x = 2
@@ -825,7 +828,7 @@ Riferimento: `conformance/core/cases/lambda`, `closure`, `chiusure`, `chiusure_l
   restituisce.
 - Le liste sono riferimenti: due nomi possono indicare la stessa lista.
 
-```julia
+```triad
 xs = [1, 2, 3]
 println(xs[1], " ", length(xs))
 push!(xs, 4)
@@ -875,7 +878,7 @@ Riferimento: `conformance/core/cases/liste`, `liste_base`, `liste_push`.
 | `Symbol(s)` | da stringa a simbolo (`Symbol("ciao") == :ciao`) |
 | `typeof(x)` | tipo come simbolo |
 
-```julia
+```triad
 nome = "Triad"
 saluto = "ciao " * nome
 println(saluto, " (", length(saluto), " byte)")
@@ -918,7 +921,7 @@ Servono a S1 per leggere e analizzare sorgente Triad. **Non** fanno parte di Tri
 
 Esempio: contare le cifre di una stringa e separare la prima parola.
 
-```julia
+```triad
 s = "abc 123 xyz"
 cifre = 0
 i = 1
@@ -956,7 +959,7 @@ Core non ha `try`/`catch` né valori `Err` (SPEC-CORE §9): un errore **termina 
 exit code 1** e stampa un messaggio diagnostico su stderr. Quello che era già stato stampato su
 stdout resta.
 
-```julia
+```triad
 println("prima")
 println(non_esiste)
 println("dopo")
@@ -992,7 +995,7 @@ funzione non definita, arità, lettura) o `2` (nessun argomento).
 Per propagare errori senza terminare il processo (come farà S1 per i programmi Full) si usa
 una convenzione con liste: `[:Err, kind, msg]`.
 
-```julia
+```triad
 err(kind, msg) = [:Err, kind, msg]
 is_err(v) = typeof(v) == :List && length(v) == 3 && v[1] == :Err
 function div_intera(a, b)
@@ -1065,7 +1068,7 @@ Windows.
 
 Core non ha `map`/`filter`/`reduce`: si scrivono una volta con `while` e lambda.
 
-```julia
+```triad
 function mappa(f, xs)
     out = []
     i = 1
@@ -1112,7 +1115,7 @@ Output:
 
 Core non ha `struct`: un record è una lista con un simbolo come tag nella prima posizione.
 
-```julia
+```triad
 punto(x, y) = [:Punto, x, y]
 px(p) = p[2]
 py(p) = p[3]
@@ -1132,7 +1135,7 @@ Output:
 È la struttura usata dagli interpreti in `selfhost/`: una lista piatta `[nome1, valore1,
 nome2, valore2, …]` (in Core puoi anche usare coppie annidate).
 
-```julia
+```triad
 function env_get(env, nome)
     i = 1
     while i < length(env)
@@ -1173,7 +1176,7 @@ Output:
 Poiché una funzione nominata non può riassegnare un globale, lo stato condiviso si tiene in
 una lista (mutabile) o in una chiusura.
 
-```julia
+```triad
 stato = [0]
 function tick()
     stato[1] += 1
@@ -1191,7 +1194,7 @@ Output:
 
 ### 16.5 Costruire stringhe
 
-```julia
+```triad
 function ripeti(s, n)
     out = ""
     while n > 0
@@ -1249,7 +1252,7 @@ Senza usare `^`, scrivi `potenza(b, e)` ricorsiva e `somma_fino(n)` (somma `1 + 
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 potenza(b, e) = e == 0 ? 1 : b * potenza(b, e - 1)
 function somma_fino(n)
     s = 0
@@ -1278,7 +1281,7 @@ Stampa la lista dei numeri primi minori di 30.
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 function primo(n)
     if n < 2
         return false
@@ -1318,7 +1321,7 @@ Scrivi `inverti(xs)` che restituisce una nuova lista con gli elementi in ordine 
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 function inverti(xs)
     out = []
     i = length(xs)
@@ -1346,7 +1349,7 @@ Ordina in loco `[5, 2, 9, 1, 7]`.
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 function ordina!(xs)
     i = 2
     while i <= length(xs)
@@ -1381,7 +1384,7 @@ Conta le parole (separate da spazi) di `"il  linguaggio Triad "` usando `strbyte
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 function conta_parole(s)
     n = 0
     dentro = false
@@ -1415,7 +1418,7 @@ Trasforma `"12+x*3"` in una lista di token `[tipo, testo]`, con tipi `:num`, `:i
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 cifra(b) = b >= 48 && b <= 57
 lettera(b) = (b >= 97 && b <= 122) || (b >= 65 && b <= 90) || b == 95
 function tokenizza(s)
@@ -1464,7 +1467,7 @@ posizione corrente in una lista `pos = [1]` per poterla aggiornare dalle funzion
 <details>
 <summary>Soluzione</summary>
 
-```julia
+```triad
 cifra(b) = b >= 48 && b <= 57
 lettera(b) = (b >= 97 && b <= 122) || b == 95
 function tokenizza(s)
@@ -1598,7 +1601,7 @@ operatore binario o una virgola di `rule`.
 
 **Variabili tipate:**
 
-```julia
+```triad-full
 x::Int = 5
 x = 6          # bene
 x = 5.5        # Err(:type): il nome mantiene il tipo dichiarato
@@ -1614,7 +1617,7 @@ Il vincolo nasce con la dichiarazione e vive nell'ambiente in cui il nome è sta
 
 ## 19. Funzioni tipate e multiple dispatch (SPEC §5)
 
-```julia
+```triad-full
 sq(x) = x * x
 area(n::Number) = :number
 area(n::Int) = :int
@@ -1643,7 +1646,7 @@ Regole:
 
 ## 20. Struct (SPEC §4)
 
-```julia
+```triad-full
 struct Point
     x::Float
     y::Float
@@ -1665,7 +1668,7 @@ p isa Point          # true
 
 ## 21. Controllo di flusso Full: `for`, range, comprehension, `try` (SPEC §2)
 
-```julia
+```triad-full
 s = 0
 for i in 1:10
     s += i
@@ -1683,7 +1686,7 @@ r = try div(1, 0) catch err; 0 end   # con catch: err è l'Err, il valore è que
 
 Altri valori attesi (dai vecchi test dell'implementazione Julia):
 
-```julia
+```triad-full
 x = 2; y = x * 21; y                           # 42
 7 / 2                                          # 3.5
 "ab" * "cd"                                    # "abcd"
@@ -1706,7 +1709,7 @@ end; fact_(10)                                 # 3628800
 
 ## 22. Logica: fatti, regole, `solve` (SPEC §6)
 
-```julia
+```triad-full
 fact parent(:alice, :bob)
 fact parent(:alice, :carol)
 fact parent(:bob, :dave)
@@ -1718,7 +1721,7 @@ rule ancestor(?a, ?d) :- parent(?a, ?x), ancestor(?x, ?d)
 
 `solve` restituisce una **lista di `Solution`** (è un valore, non stampa nulla):
 
-```julia
+```triad-full
 sols = solve grandparent(:alice, ?who) limit 5
 [s.who for s in sols]                       # [:dave]
 [s.d for s in solve ancestor(:alice, ?d)]
@@ -1735,7 +1738,7 @@ sols = solve grandparent(:alice, ?who) limit 5
 
 Esempi:
 
-```julia
+```triad-full
 # percorso con costo
 fact edge(:a, :b, 2)
 fact edge(:b, :c, 3)
@@ -1763,7 +1766,7 @@ foglie = filter(p -> !parent(p, ?_), persone)   # [:bob]
 
 Pattern di lista con **arità esatta**; le parentesi attorno al pattern sono obbligatorie.
 
-```julia
+```triad-full
 (a, b) = [1, 2]                 # a == 1, b == 2
 e = try (a, b) = [1] end        # e.kind == :bounds
 e = try (a, b) = [1, 2, 3] end  # e.kind == :bounds
@@ -1789,7 +1792,7 @@ Un errore è un valore `Err(kind, msg, data)`; non diventa un'eccezione dell'hos
 sia gestito al top level (allora il processo esce con codice 1 e stdout vuoto per l'istruzione
 fallita: è il caso di conformance `errore`).
 
-```julia
+```triad-full
 e = try div(1, 0) end     # Err(:domain, ...)
 e.kind                    # :domain
 e.msg                     # messaggio
@@ -1816,7 +1819,7 @@ Kinds standard: `:syntax`, `:undef`, `:type`, `:method`, `:ambiguous`, `:field`,
 
 ## 25. Contratti (SPEC §9)
 
-```julia
+```triad-full
 function safe_div(a::Number, b::Number)::Float
     requires b != 0
     ensures abs(result * b - a) < 1e-9
@@ -1843,7 +1846,7 @@ e.data.fn                 # :safe_div
 
 ## 26. Budget (SPEC §10)
 
-```julia
+```triad-full
 r = with budget(steps = 10_000)
     while true end
 end
@@ -1864,7 +1867,7 @@ r.kind                    # :budget — il ciclo infinito diventa un valore
 
 La traccia è un **valore**, non output.
 
-```julia
+```triad-full
 fib(n::Int) = n < 2 ? n : fib(n - 1) + fib(n - 2)
 t = with trace
     fib(3)
@@ -1888,7 +1891,7 @@ si filtrano come qualsiasi valore.
 Le funzioni sono pure per default. Effetti: `io` (`println`, `print`) e `state` (`fact`/`rule`
 dentro una funzione).
 
-```julia
+```triad-full
 function saluta(nome::String) !io
     println("ciao, ", nome)
 end
@@ -1939,7 +1942,7 @@ esegue, che `:( … )` restituisce e che `--tree` stampa come S-expression.
 
 ### 29.2 Quote, unquote, eval
 
-```julia
+```triad-full
 c = :(a.x + f(b, 2))
 c.head        # :call
 sexpr(c)      # "(call + (dot a x) (call f b 2))"
@@ -1957,7 +1960,7 @@ Expr(:call, :f, 1)              # costruisce un Node
 Le macro ricevono codice e restituiscono codice; l'espansione è pura e **non igienica**:
 usa `gensym()` per nomi freschi.
 
-```julia
+```triad-full
 macro unless(c, body)
     :(if !$c; $body; end)
 end
@@ -1986,7 +1989,7 @@ end
 
 ### 29.4 Codice che genera codice
 
-```julia
+```triad-full
 function poly(coeffs)
     acc = :(0)
     i = 0
@@ -2086,7 +2089,7 @@ congelati in `conformance/cases/`.
 
 ### 32.1 `assaggio.td`
 
-```julia
+```triad-full
 struct Point
     x::Float
     y::Float
@@ -2185,7 +2188,7 @@ p(2) = 17
 
 ### 32.5 Contratti e budget insieme
 
-```julia
+```triad-full
 function safe_div(a::Number, b::Number)::Float
     requires b != 0
     ensures abs(result * b - a) < 1e-9
@@ -2432,7 +2435,7 @@ del [capitolo 15](#cap-15):
   commento in testa al file;
 - funzioni con al massimo 4 parametri, lambda a un parametro, niente cattura multi-binding.
 
-```julia
+```triad
 # stile S1: ambiente piatto e lookup con get (0-based)
 env = []
 env = push!(env, 1)      # chiave
@@ -2484,6 +2487,14 @@ node conformance/run.mjs --update                     # RIGENERA i golden dal ru
 Runtime scelto, in ordine: variabile `TRIAD_SEED`; su Linux/macOS l'interprete JS; su Windows
 `bin/triad-native.exe`, poi `seed/windows-x86_64/seed.exe`. Esempio per provare il seed con un
 percorso esplicito: `TRIAD_SEED=/percorso/seed node conformance/run.mjs`.
+
+Su Linux/macOS il runner usa l'interprete JS e verifica tutti i 37 casi. Su Windows usa il seed e
+salta per impostazione predefinita il caso `liste`, perché il seed non implementa l'indicizzazione
+standard `xs[i]`: il runner stampa quindi 36 casi. Per provare il caso escluso con l'interprete JS:
+
+```sh
+node seed/dev/triad_core.cjs conformance/core/cases/liste/program.td
+```
 
 Messaggi:
 - `PASS  nome` / `FAIL  nome  (exit X, atteso Y, stdout N byte, attesi M)`;

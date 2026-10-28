@@ -2931,4 +2931,4 @@ dichiarati come parte del linguaggio, e l'integrazione dei tre modelli in una si
 ---
 
 *Manuale scritto per lo standard Triad `0.2.0`. Le sezioni normative sono in [`SPEC.md`](SPEC.md) e
-[`SPEC-CORE.md`](SPEC-CORE.md); in caso di divergenza, la specifica prevail.*
+[`SPEC-CORE.md`](SPEC-CORE.md); in caso di divergenza, prevale la specifica.*

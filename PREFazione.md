@@ -15,33 +15,36 @@ funzione, un ciclo, una ricorsione. Questo libro non insegna la programmazione i
 Triad. Le influenze del linguaggio (Julia, Prolog, Lisp) sono documentate nell'Appendice A della
 specifica: sono note informative, non definizioni. Triad non è un dialetto di nessuno dei tre.
 
-Il volume è organizzato in cinque parti. La prima, *Fondamenti*, introduce il lessico, i valori e
-i tipi, il controllo di flusso, le funzioni, il dispatch, la logica, il codice come dato, gli errori,
-i contratti, il budget, le tracce e gli effetti. La seconda, *Triad-Core*, copre il sottoinsieme
-eseguibile oggi dall'interprete di riferimento, con tutti i 37 casi di conformance. La terza,
-*Triad-Full*, presenta i costrutti dello standard completo, oggi studiabili ma non ancora
-eseguibili dal runtime corrente. La quarta, *Dentro il progetto*, accompagna il lettore nel codice
-del repository: il seed in codice macchina, la suite di conformance, la CLI, gli strumenti per
-gli editor. La quinta, *Sul campo*, affronta il lavoro quotidiano: scegliere il costrutto
-giusto per ogni problema, portare un programma esistente a Triad, verificare il codice con
-sonde, golden e benchmark, proporre una modifica al linguaggio.
+Il volume riunisce due testi complementari. Il *Manuale di Triad 2.0* spiega il linguaggio,
+propone esercizi e chiude con grammatica, schede rapide, tabella degli errori, glossario e
+appendici. Il *Tutorial di Triad 2.0* è diviso in cinque parti: primi passi, Triad-Core,
+Triad-Full, codice del progetto e riferimento. I due indici che seguono questa prefazione sono
+indipendenti: il primo appartiene al Manuale, il secondo al Tutorial.
 
-In coda al volume, l'appendice riporta per intero i due testi normativi, `SPEC.md` e
-`SPEC-CORE.md`. Il volume è così autosufficiente: ogni affermazione del manuale può essere
-controllata sulla fonte che la definisce.
+Se vuoi scrivere programmi eseguibili oggi, comincia dal Tutorial, parti I e II; usa il Manuale
+per approfondire i concetti e fare gli esercizi. Per studiare lo standard completo, prosegui con
+la parte III del Tutorial e i capitoli corrispondenti del Manuale. La parte IV è pensata per chi
+vuole esplorare o modificare il repository.
+
+Le appendici del Manuale orientano tra le influenze del linguaggio e le fonti del progetto. I
+testi normativi integrali non sono riprodotti nel volume: sono disponibili nei file `SPEC.md` e
+`SPEC-CORE.md` del repository, che restano le fonti definitive in caso di divergenza.
 
 Due profili di conformità attraversano tutto il libro. Triad-Core è il sottoinsieme di bootstrap:
 valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è lo standard
 completo. Ogni programma Core è anche un programma Full valido e deve comportarsi allo stesso modo.
 I marcatori **[Core]** e **[Full]** indicano in quale profilo esiste ciascun costrutto; i blocchi
-di codice sono marcati `triad` (eseguibile oggi) o `triad-full` (specificato
-ma non ancora eseguibile).
+di codice sono marcati `triad` per il codice Core e `triad-full` per il codice definito dallo
+standard Full, non ancora eseguibile dal runtime corrente. Gli esempi Core si possono provare
+con l'interprete JavaScript di riferimento (`node seed/dev/triad_core.cjs`); i frammenti indicati
+come specifici del seed fanno eccezione.
 
-Il runtime di riferimento è il seed S0: un interprete Triad-Core scritto direttamente in codice
-macchina x86-64, senza alcun linguaggio ospite. Il piano di bootstrap prevede S1 (un interprete
-Triad scritto in Triad-Core), S2 (compilatore nativo), S3 (self-hosting) e S4 (parità
-cross-platform). Il libro riflette questo stato: dove il runtime non copre un costrutto, il testo
-lo dice esplicitamente.
+Il seed S0 è un interprete Triad-Core scritto direttamente in codice macchina x86-64, senza un
+linguaggio ospite; oggi il seed eseguibile è quello per Windows. Non va confuso con l'interprete
+JavaScript usato per eseguire gli esempi Core e verificare la conformance. Il piano di bootstrap
+prevede S1 (un interprete Triad scritto in Triad-Core), S2 (compilatore nativo), S3 (self-hosting)
+e S4 (parità cross-platform). Dove il runtime non copre un costrutto, il testo lo dice
+esplicitamente.
 
 Buona lettura, e buon codice.
 
