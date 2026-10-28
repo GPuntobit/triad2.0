@@ -1,4 +1,4 @@
-## What's Changed
+# What's Changed
 
 - docs: align TUTORIAL.md with seed runtime, triad-cli and Julia removal by @devin-ai-integration[bot]
 - docs: add project logo to README by @devin-ai-integration[bot]
@@ -19,4 +19,4 @@
 
 - @GPuntobit made their first contribution
 
-**Full Changelog**: https://github.com/GPuntobit/triad2.0/compare/v1.0.0-beta.2...v0.8.0-beta.3
+**Full Changelog**: <https://github.com/GPuntobit/triad2.0/compare/v1.0.0-beta.2...v0.8.0-beta.3>
