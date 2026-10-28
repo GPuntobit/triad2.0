@@ -76,3 +76,6 @@ graphify.skill
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
+
+# Pacchetti estensione editor
+*.vsix
