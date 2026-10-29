@@ -59,96 +59,25 @@ The command-line interface is defined in SPEC.md §14. The `bin/triad` /
 
 Add `bin/` to your `PATH`, then use `triad` like any other command:
 
-```sh
-triad                           # REPL
-triad file.triad arg1 arg2      # runs a file and exits
-triad -l file.triad             # loads a file and opens the REPL
-triad -i file.triad             # runs a file and then opens the REPL
-triad --tree file.triad         # prints the uniform tree (S-expression)
-triad -E '1 + 2'                # evaluates and prints the value
-triad --help                    # all options
+````sh
+node triad-cli.mjs status          # project status
+node triad-cli.mjs seed generate windows  # generates seed
+node triad-cli.mjs ai verify        # verifies AI solutions
+node triad-cli.mjs test conformance # runs conformance
 ```
 
-Current state: the seed only implements file execution (`triad file.triad arg1 arg2`). The other options (REPL, `-l`, `-i`, `--tree`, `-E`, `--help`) are defined in SPEC.md §14 but are not yet implemented by the seed (they currently exit with code 0 and no output).
-
-The `.triad` extension is canonical; `.td` is accepted as a historical alias.
-
-The launcher searches in the following order: `TRIAD_SEED` (if set), `bin/triad-native` — standalone executable (not yet built, see §3) — then `seed/<platform>/seed` — Triad-Core interpreter in machine code.
-
-On Windows, use `triad.cmd` (`seed\windows-x86_64\seed.exe`). On Linux, the seed is still at stage E0 (it only prints `Triad seed Linux OK`): `bin/triad` automatically detects it and uses the reference JavaScript interpreter, requiring no manual steps. The direct command remains available:
-
-```sh
-node seed/dev/triad_core.cjs file.triad arg1 arg2
-```
-
-### Installation on Linux / macOS
-
-A single command, without root privileges and without mandatory dependencies:
-
-```sh
-./install.sh            # decodes the ELF seed + installs the launchers in ~/.local/bin
-./install.sh --desktop  # also adds the freedesktop menu entry for .triad/.td
-```
-
-The script decodes `seed/linux-x86_64/seed.hex` (using `xxd` or `python3`), runs the seed's smoke test, creates links to `triad` and `triad-cli`, and verifies the installation. 
-No runtime requires Julia.
-
-### 2. Directly Executable .triad Files (shebang)
-
-`.triad` (or `.td`) files can be made executable as standalone scripts:
-
-```sh
-# First line of the programma.triad file:
-#!/usr/bin/env triad
-
-```sh
-println("hello from the .triad file!")
-fact parent(:alice, :bob)
-result = solve parent(:alice, ?x)
-println(result)
-```
-```
-
-```sh
-chmod +x programma.triad
-./programma.triad arg1 arg2     # ARGS == ["arg1", "arg2"]
-```
-
-Lo shebang `#!` viene rimosso automaticamente prima del parsing.
-
-### 3. Packaging standalone (non disponibile)
-
-`bin/build_standalone.jl` è stato rimosso insieme all'implementazione Julia; `triad --build`
-e `triad-cli build standalone` stampano un messaggio ed escono senza produrre nulla.
-`bin/triad-native` arriverà dal compilatore nativo (S2–S3, vedi [BOOTSTRAP.md](BOOTSTRAP.md)).
-
-### 4. CLI di sviluppo (triad-cli)
-
-Per le operazioni di sviluppo è disponibile una CLI unificata che wrappa i vari tool:
-
-```sh
-cd cli
-npm install
-node triad-cli.mjs status          # stato del progetto
-node triad-cli.mjs seed generate windows  # genera seed
-node triad-cli.mjs ai verify        # verifica soluzioni AI
-node triad-cli.mjs test conformance # esegue conformance
-```
-
-Launcher pronti in `bin/` (installano le dipendenze al primo avvio):
+Launchers ready in `bin/` (they install dependencies on first run):
 
 ```sh
 bin/triad-cli status            # POSIX
 bin\triad-cli.cmd status        # Windows
 ```
 
-Eseguibile standalone (non serve installare `cli/`): scaricare `triad-cli.exe` (Windows) o
-`triad-cli` (Linux) dalla [release beta](https://github.com/GPuntobit/triad2.0/releases) e
-copiarlo nella root del repository o in `bin/`; per ricostruirlo: `cd cli && npm run build:exe`.
+Standalone executable (no need to install `cli/`): download `triad-cli.exe` (Windows) or `triad-cli` (Linux) from the [beta release](https://github.com/GPuntobit/triad2.0/releases) and copy it to the repository root or `bin/`; to rebuild it: `cd cli && npm run build:exe`.
 
-Vedi [cli/README.md](cli/README.md) per la documentazione completa della CLI di sviluppo.
+See [cli/README.md](cli/README.md) for the complete development CLI documentation.
 
-## Esempio veloce (`examples/assaggio.td`)
+## Quick Example (`examples/assaggio.td`)
 
 ```julia
 struct Point
@@ -166,96 +95,124 @@ fact parent(:bob, :dave)
 rule grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)
 
 result = solve grandparent(:alice, ?who) limit 5
-println("nipoti: ", result)     # [{who = :dave}]
-println("primo: ", result[1].who) # :dave
+println("grandchildren: ", result)     # [{who = :dave}]
+println("first: ", result[1].who) # :dave
 ```
 
-## Test e conformità
+## Testing and Conformance
 
-La specifica eseguibile è `conformance/`: casi golden (`expected.out` + `expected.code`)
-verificabili da qualunque implementazione (seed in codice macchina, implementazione in
-Triad-Core, compilatore nativo). Vedi [conformance/README.md](conformance/README.md) e
-[BOOTSTRAP.md](BOOTSTRAP.md) per il piano che porta Triad a non dipendere da altri linguaggi.
+The executable specification is `conformance/`: golden cases (`expected.out` + `expected.code`) verifiable by any implementation (machine code seed, Triad-Core implementation, native compiler). See [conformance/README.md](conformance/README.md) and [BOOTSTRAP.md](BOOTSTRAP.md) for the plan to make Triad independent of other languages.
 
 ```sh
-node conformance/run.mjs                                   # profilo Core (default, 37 casi)
-node conformance/run.mjs --cases conformance/core/cases --skip liste   # come in CI
-node conformance/run.mjs --cases conformance/cases         # profilo Full (12 casi)
-node conformance/run.mjs --update                          # rigenera i golden (solo sviluppo)
+```sh
+node triad-cli.mjs status          # project status
+node triad-cli.mjs seed generate windows  # generates seed
+node triad-cli.mjs ai verify        # verifies AI solutions
+node triad-cli.mjs test conformance # runs conformance
 ```
 
-Il runner usa `TRIAD_SEED` se impostato; altrimenti su Linux/macOS l'interprete
-`seed/dev/triad_core.cjs`, su Windows `bin/triad-native.exe` o `seed/windows-x86_64/seed.exe`.
-Stato: Core 37/37 verde; Full solo `errore` passa (il resto del linguaggio Full non è ancora
-implementato). Se un caso fallisce con `golden mancante`, il checkout non ha `expected.out`:
-esegui `git pull`.
+Launchers ready in `bin/` (they install dependencies on first run):
 
-CI (`.github/workflows/ci.yml`): `conformance-core` (Ubuntu, runner Node), `seed-windows`
-(33 casi Core sul seed PE, probe `get`, smoke test `selfhost/main.td`, hash di `seed.hex`),
-`seed-linux` (ELF E0 + hash).
-
-## Struttura del progetto
-
-```
-bin/triad                   launcher POSIX (sh)
-bin/triad.cmd               launcher Windows (cmd)
-bin/triad-cli, triad-cli.cmd launcher della CLI di sviluppo
-cli/                        CLI di sviluppo (triad-cli, Node.js)
-conformance/                suite golden: contratto eseguibile delle implementazioni
-conformance/run.mjs         runner di conformità (Node, senza Julia)
-ai/                         benchmark di generazione LLM + verificatore (strumento di sviluppo)
-seed/                       seed S0 in codice macchina (PE Windows + ELF Linux E0)
-seed/windows-x86_64/        seed.hex (fonte) e seed.exe: interprete Triad-Core
-seed/linux-x86_64/          primo ELF Linux (E0): syscall write/exit, "Triad seed Linux OK"
-seed/dev/                   generatori del seed e interprete di riferimento triad_core.cjs
-selfhost/                   S1: interprete Triad scritto in Triad-Core (in corso)
-editors/                    VS Code, Vim/Neovim e voce Linguist
-examples/*.triad, *.td      esempi Triad (.triad canonica, .td alias storico)
-docs/                       sito GitHub Pages e documenti di supporto
-obsidian-triad/             vault Obsidian con indice e grafo Graphify del repository
-.github/workflows/          CI (ci.yml) e pubblicazione Pages (pages.yml, static.yml)
-BOOTSTRAP.md                piano di indipendenza da Julia e da ogni altro linguaggio
-SPEC.md                     standard Triad: specifica normativa (0.2.0)
-SPEC-CORE.md                profilo Triad-Core (normativo, per il bootstrap self-hosted)
-STATUS.md                   stato di avanzamento e roadmap del bootstrap
-plan.md                     piano di lavoro (checklist)
-VERSION / CHANGELOG.md      versione e storia dello standard
-TUTORIAL.md                 tutorial completo d'uso
-LICENSE                     licenza MIT (open source)
+```sh
+bin/triad-cli status            # POSIX
+bin\triad-cli.cmd status        # Windows
 ```
 
-## Requisiti
+Standalone executable (no need to install `cli/`): download `triad-cli.exe` (Windows) or `triad-cli` (Linux) from the [beta release](https://github.com/GPuntobit/triad2.0/releases) and copy it to the repository root or `bin/`; to rebuild it: `cd cli && npm run build:exe`.
 
-- **Standard Triad:** nessuna dipendenza; è definito da questo repository (`SPEC.md` +
-  `conformance/`).
-- **Runtime:** seed in codice macchina (S0); nessuna dipendenza da Julia o altri linguaggi ospiti.
-- **Sviluppo:** Node.js 20 per `conformance/run.mjs`, `cli/`, i generatori in `seed/dev/` e
-  l'interprete di riferimento su Linux.
+See [cli/README.md](cli/README.md) for the complete development CLI documentation.
 
+## Quick Example (`examples/assaggio.td`)
 
-## Sito web
+```julia
+struct Point
+    x::Float
+    y::Float
+end
 
-Il sito del progetto e' in docs/ e viene pubblicato con GitHub Pages tramite
-.github/workflows/pages.yml. Per abilitarlo: Settings -> Pages -> Source:
-"GitHub Actions". Il sito include una landing page e un visualizzatore della
-documentazione (SPEC, TUTORIAL, BOOTSTRAP, STATUS, README, conformance, editor,
-AI, licenza) che carica i Markdown direttamente dal repository.
-## Licenza
+function dist(a::Point, b::Point)::Float
+    requires a.x != b.x || a.y != b.y
+    sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
+end
 
-Distribuito sotto licenza **MIT** — vedi [`LICENSE`](LICENSE).
+fact parent(:alice, :bob)
+fact parent(:bob, :dave)
+rule grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)
+
+result = solve grandparent(:alice, ?who) limit 5
+println("grandchildren: ", result)     # [{who = :dave}]
+println("first: ", result[1].who) # :dave
+```
+
+## Testing and Conformance
+
+The executable specification is `conformance/`: golden cases (`expected.out` + `expected.code`) verifiable by any implementation (machine code seed, Triad-Core implementation, native compiler). See [conformance/README.md](conformance/README.md) and [BOOTSTRAP.md](BOOTSTRAP.md) for the plan to make Triad independent of other languages.
+
+```sh
+node conformance/run.mjs                                   # Core profile (default, 37 cases)
+node conformance/run.mjs --cases conformance/core/cases --skip lists   # as in CI
+node conformance/run.mjs --cases conformance/cases         # Full profile (12 cases)
+node conformance/run.mjs --update                          # regenerates goldens (development only)
+```
+
+The runner uses `TRIAD_SEED` if set; otherwise, on Linux/macOS it uses the `seed/dev/triad_core.cjs` interpreter, and on Windows `bin/triad-native.exe` or `seed/windows-x86_64/seed.exe`. 
+Status: Core 37/37 green; Full only `error` passes (the rest of the Full language is not yet implemented). If a case fails with a missing golden, the checkout lacks `expected.out`: run `git pull`.
+
+CI (`.github/workflows/ci.yml`): `conformance-core` (Ubuntu, Node runner), `seed-windows` (33 Core cases on the PE seed, `get` probe, smoke test `selfhost/main.td`, `seed.hex` hash), `seed-linux` (ELF E0 + hash).
+
+## Project Structure
+
+```text
+bin/triad                   POSIX launcher (sh)
+bin/triad.cmd               Windows launcher (cmd)
+bin/triad-cli, triad-cli.cmd development CLI launchers
+cli/                        development CLI (triad-cli, Node.js)
+conformance/                golden suite: executable contract for implementations
+conformance/run.mjs         conformance runner (Node, without Julia)
+ai/                         LLM generation benchmark + verifier (development tool)
+seed/                       S0 machine code seed (Windows PE + Linux ELF E0)
+seed/windows-x86_64/        seed.hex (source) and seed.exe: Triad-Core interpreter
+seed/linux-x86_64/          first Linux ELF (E0): write/exit syscalls, "Triad seed Linux OK"
+seed/dev/                   seed generators and triad_core.cjs reference interpreter
+selfhost/                   S1: Triad interpreter written in Triad-Core (in progress)
+editors/                    VS Code, Vim/Neovim, and Linguist entry
+examples/*.triad, *.td      Triad examples (.triad canonical, .td historical alias)
+docs/                       GitHub Pages site and support documents
+obsidian-triad/             Obsidian vault with index and Graphify graph of the repository
+.github/workflows/          CI (ci.yml) and Pages publishing (pages.yml, static.yml)
+BOOTSTRAP.md                plan for independence from Julia and any other language
+SPEC.md                     Triad standard: normative specification (0.2.0)
+SPEC-CORE.md                Triad-Core profile (normative, for self-hosted bootstrap)
+STATUS.md                   bootstrap progress status and roadmap
+plan.md                     work plan (checklist)
+VERSION / CHANGELOG.md      standard version and history
+TUTORIAL.md                 complete usage tutorial
+LICENSE                     MIT license (open source)
+```
+
+## Requirements
+
+- **Triad Standard:** no dependencies; it is defined by this repository (`SPEC.md` + `conformance/`).
+- **Runtime:** machine code seed (S0); no dependencies on Julia or other host languages.
+- **Development:** Node.js 20 for `conformance/run.mjs`, `cli/`, the generators in `seed/dev/`, and the reference interpreter on Linux.
+
+## Website
+
+The project website is in `docs/` and is published via GitHub Pages using `.github/workflows/pages.yml`. To enable it: Settings -> Pages -> Source: "GitHub Actions". The site includes a landing page and a documentation viewer (SPEC, TUTORIAL, BOOTSTRAP, STATUS, README, conformance, editor, AI, license) that loads Markdown directly from the repository.
+
+## License
+
+Distributed under the **MIT License** — see [`LICENSE`](LICENSE).
 
 ---
 
-Scritto e mantenuto da **Kilo** — agente software engineer per il progetto Triad 2.0.
+Written and maintained by **Kilo** — software engineer agent for the Triad 2.0 project.
 
-## Download
+## Downloads
 
-Andamento dei download totali delle release di Triad su GitHub (aggiornato
-automaticamente ogni giorno dal workflow
-[`.github/workflows/download-chart.yml`](.github/workflows/download-chart.yml),
-che legge i dati tramite la GitHub API e rigenera il grafico con
-[`scripts/download_chart.py`](scripts/download_chart.py)).
+Trend of total downloads of Triad releases on GitHub (automatically updated daily by the [`.github/workflows/download-chart.yml`](.github/workflows/download-chart.yml) workflow, which reads data via the GitHub API and regenerates the chart with [`scripts/download_chart.py`](scripts/download_chart.py)).
 
-![Grafico download di Triad](docs/assets/img/downloads.svg)
+![Triad download chart](docs/assets/img/downloads.svg)
 
-<sub>Dato corrente: ![badge download totali](https://img.shields.io/github/downloads/GPuntobit/triad/total?label=download%20totali&style=for-the-badge)</sub>
+<sub>Current data: ![total downloads badge](https://img.shields.io/github/downloads/GPuntobit/triad/total?label=total%20downloads&style=for-the-badge)</sub>
+```
