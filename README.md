@@ -104,7 +104,6 @@ println("first: ", result[1].who) # :dave
 The executable specification is `conformance/`: golden cases (`expected.out` + `expected.code`) verifiable by any implementation (machine code seed, Triad-Core implementation, native compiler). See [conformance/README.md](conformance/README.md) and [BOOTSTRAP.md](BOOTSTRAP.md) for the plan to make Triad independent of other languages.
 
 ```sh
-```sh
 node triad-cli.mjs status          # project status
 node triad-cli.mjs seed generate windows  # generates seed
 node triad-cli.mjs ai verify        # verifies AI solutions
