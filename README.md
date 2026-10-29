@@ -21,20 +21,15 @@ Syntax and semantics are defined by Triad, not by other languages. Influences ar
 | Prolog | `fact`, `rule`, unificazione con occurs-check, backtracking, `solve` (variabili logiche `?x`) |
 | Lisp | codice come dato (`Node`), `:( … )`/`quote` con `$`, macro |
 
-Sono parte del linguaggio, non di una libreria: errori come dati (`Err`), contratti
-(`requires`/`ensures`), budget (`with budget`), tracce (`with trace`), effetti dichiarati
-(`!io`, `!state`).
+They are part of the language, not a library: errors as data (Err), contracts (requires/ensures), budgets (with budget), traces (with trace), and declared effects (!io, !state).
 
-## Curva di apprendimento
+## Learning curve
 
 <p align="center">
-  <img src="docs/assets/img/curva-apprendimento.svg" alt="Curva e soglia di apprendimento di Triad 2.0" width="900">
+  <img src="docs/assets/img/curva-apprendimento.svg" alt="Learning curve and learning threshold for Triad 2.0" width="900">
 </p>
 
-Ricavata dai capitoli di [TUTORIAL.md](TUTORIAL.md) e MANUALE.md: Triad-Core si impara
-facendo (37/37 casi eseguibili), Triad-Full oggi si può solo studiare (1/12). Alla soglia di
-Triad-Full la padronanza reale si ferma intorno al 39%. Analisi completa sul sito:
-[Curva e soglia di apprendimento](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
+Derived from the chapters in [TUTORIAL.md](TUTORIAL.md) and MANUALE.md: Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
 
 https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
 <p align="center">
