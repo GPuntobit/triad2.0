@@ -10,7 +10,7 @@ Triad is a standalone programming language featuring block syntax, declared type
 https://github.com/user-attachments/assets/2e01cb37-ea17-44af-a92b-7636bdaee3d5
 <p align="center">
   <video src="docs/assets/video/anteprima-codice.mp4" controls width="552"></video>
-  <br><sub>Un programma Triad-Core digitato ed eseguito (output reale dell'interprete JS, ~35 s in loop). Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
+  <br><sub>A typed and executed Triad-Core program (actual output from the JS interpreter, ~35s in a loop). Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
 </p>
 
 Sintassi e semantica sono definite da Triad, non da altri linguaggi. Le influenze sono
