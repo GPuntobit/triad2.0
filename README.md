@@ -37,82 +37,76 @@ https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
   <br><sub>Website demo (3× speed). Full video: <a href="docs/assets/video/test-curva-apprendimento.mp4">MP4</a>.</sub>
 </p>
 
-## Standard e riconoscimento
+## Standards and Recognition
 
-- **Specifica:** [SPEC.md](SPEC.md) — normativa, versione in [`VERSION`](VERSION); storia in
+- **Specification:** [SPEC.md](SPEC.md) — normative, version in [`VERSION`](VERSION); history in
   [CHANGELOG.md](CHANGELOG.md).
-- **Conformità:** [conformance/](conformance/README.md) — golden che ogni implementazione
-  deve passare.
-- **AI:** [ai/](ai/README.md) — benchmark per generazione di codice Triad da LLM, con
-  prompt di sistema e verificatore automatico.
-- **Implementazione:** il runtime di riferimento è il seed in codice macchina (S0); il piano per un Triad senza linguaggi ospiti è in [BOOTSTRAP.md](BOOTSTRAP.md).
-- **Editor:** [editors/](editors/README.md) — VS Code, Vim/Neovim e voce Linguist per GitHub.
-- **Estensione:** `.triad` (canonica), `.td` (alias storico).
+- **Conformance:** [conformance/](conformance/README.md) — golden tests that every implementation
+  must pass.
+- **AI:** [ai/](ai/README.md) — benchmark for Triad code generation by LLMs, with
+  system prompts and an automatic verifier.
+- **Implementation:** the reference runtime is the machine code seed (S0); the plan for a Triad without host languages is in [BOOTSTRAP.md](BOOTSTRAP.md).
+- **Editors:** [editors/](editors/README.md) — VS Code, Vim/Neovim, and a GitHub Linguist entry.
+- **Extension:** `.triad` (canonical), `.td` (historical alias).
 
-## Avvio
+## Startup
 
-L'interfaccia a riga di comando è definita da SPEC.md §14. Il launcher `bin/triad` /
-`bin/triad.cmd` trova da solo il runtime. L'implementazione Julia (`triad.jl`, `syntax.jl`,
-`test/`) è stata rimossa: il runtime è il seed in codice macchina.
+The command-line interface is defined in SPEC.md §14. The `bin/triad` /
+`bin/triad.cmd` launcher automatically locates the runtime. The Julia implementation (`triad.jl`, `syntax.jl`,
+`test/`) has been removed: the runtime is the machine code seed.
 
-### 1. Launcher (consigliato)
+### 1. Launcher (recommended)
 
-Aggiungi `bin/` al `PATH`, poi usa `triad` come qualsiasi comando:
+Add `bin/` to your `PATH`, then use `triad` like any other command:
 
 ```sh
 triad                           # REPL
-triad file.triad arg1 arg2      # esegue un file ed esce
-triad -l file.triad             # carica un file e apre il REPL
-triad -i file.triad             # esegue un file e poi apre il REPL
-triad --tree file.triad         # stampa l'albero uniforme (S-expression)
-triad -E '1 + 2'                # valuta e stampa il valore
-triad --help                    # tutte le opzioni
+triad file.triad arg1 arg2      # runs a file and exits
+triad -l file.triad             # loads a file and opens the REPL
+triad -i file.triad             # runs a file and then opens the REPL
+triad --tree file.triad         # prints the uniform tree (S-expression)
+triad -E '1 + 2'                # evaluates and prints the value
+triad --help                    # all options
 ```
 
-Stato attuale: il seed implementa solo l'esecuzione di un file (`triad file.triad arg1 arg2`).
-Le altre opzioni (REPL, `-l`, `-i`, `--tree`, `-E`, `--help`) sono definite da SPEC.md §14 ma
-non ancora implementate dal seed (oggi escono con codice 0 senza output).
+Current state: the seed only implements file execution (`triad file.triad arg1 arg2`). The other options (REPL, `-l`, `-i`, `--tree`, `-E`, `--help`) are defined in SPEC.md §14 but are not yet implemented by the seed (they currently exit with code 0 and no output).
 
-L'estensione `.triad` è canonica; `.td` è accettata come alias storico.
+The `.triad` extension is canonical; `.td` is accepted as a historical alias.
 
-Il launcher cerca in ordine: `TRIAD_SEED` (se impostato), `bin/triad-native`
-— eseguibile standalone (non ancora prodotto, vedi §3) — poi
-`seed/<piattaforma>/seed` — interprete Triad-Core in codice macchina.
+The launcher searches in the following order: `TRIAD_SEED` (if set), `bin/triad-native` — standalone executable (not yet built, see §3) — then `seed/<platform>/seed` — Triad-Core interpreter in machine code.
 
-Su Windows usare `triad.cmd` (`seed\windows-x86_64\seed.exe`). Su Linux il seed è ancora
-allo stadio E0 (stampa solo `Triad seed Linux OK`): `bin/triad` lo riconosce da solo e
-usa l'interprete di riferimento JavaScript, senza passi manuali. Il comando diretto resta
-comunque disponibile:
+On Windows, use `triad.cmd` (`seed\windows-x86_64\seed.exe`). On Linux, the seed is still at stage E0 (it only prints `Triad seed Linux OK`): `bin/triad` automatically detects it and uses the reference JavaScript interpreter, requiring no manual steps. The direct command remains available:
 
 ```sh
 node seed/dev/triad_core.cjs file.triad arg1 arg2
 ```
 
-### Installazione su Linux / macOS
+### Installation on Linux / macOS
 
-Un comando solo, senza privilegi di root e senza dipendenze obbligatorie:
+A single command, without root privileges and without mandatory dependencies:
 
 ```sh
-./install.sh            # decodifica il seed ELF + installa i launcher in ~/.local/bin
-./install.sh --desktop  # aggiunge anche la voce menu freedesktop per .triad/.td
+./install.sh            # decodes the ELF seed + installs the launchers in ~/.local/bin
+./install.sh --desktop  # also adds the freedesktop menu entry for .triad/.td
 ```
 
-Lo script decodifica `seed/linux-x86_64/seed.hex` (con `xxd` o `python3`), esegue lo
-smoke test del seed, crea i link a `triad` e `triad-cli` e verifica l'installazione.
-Nessun runtime richiede Julia.
+The script decodes `seed/linux-x86_64/seed.hex` (using `xxd` or `python3`), runs the seed's smoke test, creates links to `triad` and `triad-cli`, and verifies the installation. 
+No runtime requires Julia.
 
-### 2. File .triad eseguibili direttamente (shebang)
+### 2. Directly Executable .triad Files (shebang)
 
-I file `.triad` (o `.td`) possono essere resi eseguibili come script autonomi:
+`.triad` (or `.td`) files can be made executable as standalone scripts:
 
 ```sh
-# Prima riga del file programma.triad:
+# First line of the programma.triad file:
 #!/usr/bin/env triad
 
-println("ciao dal file .triad!")
+```sh
+println("hello from the .triad file!")
 fact parent(:alice, :bob)
 result = solve parent(:alice, ?x)
 println(result)
+```
 ```
 
 ```sh
