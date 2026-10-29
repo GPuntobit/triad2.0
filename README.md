@@ -15,7 +15,7 @@ https://github.com/user-attachments/assets/2e01cb37-ea17-44af-a92b-7636bdaee3d5
 
 Syntax and semantics are defined by Triad, not by other languages. Influences are documented as informative notes (Appendix A of SPEC.md):
 
-| influenza | idea ripresa |
+| Influence  |  Borrowed idea |
 |---|---|
 | Julia | `function … end`, `struct`, tipi con `::`, multiple dispatch, operatori-funzione, `if`/`for`/`while`/`let` |
 | Prolog | `fact`, `rule`, unificazione con occurs-check, backtracking, `solve` (variabili logiche `?x`) |
