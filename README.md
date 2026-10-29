@@ -59,7 +59,7 @@ The command-line interface is defined in SPEC.md §14. The `bin/triad` /
 
 Add `bin/` to your `PATH`, then use `triad` like any other command:
 
-````sh
+```sh
 node triad-cli.mjs status          # project status
 node triad-cli.mjs seed generate windows  # generates seed
 node triad-cli.mjs ai verify        # verifies AI solutions
