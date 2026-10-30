@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 DEFAULT_REPO = "GPuntobit/triad"
-OUT_PATH = Path(__file__).resolve().parent.parent / "docs" / "assets" / "img" / "downloads.svg"
+OUT_PATH = Path(__file__).resolve().parents[2] / "docs" / "assets" / "img" / "downloads.svg"
 
 # Dimensioni del grafico
 W, H = 720, 360
@@ -66,7 +66,7 @@ def load_releases_from_tags() -> list[dict]:
     try:
         out = subprocess.run(
             ["git", "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
-            capture_output=True, text=True, check=True, cwd=Path(__file__).resolve().parent.parent,
+            capture_output=True, text=True, check=True, cwd=Path(__file__).resolve().parents[2],
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []

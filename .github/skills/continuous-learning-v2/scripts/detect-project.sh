@@ -185,7 +185,7 @@ _clv2_detect_project() {
   # is locale-independent (shells vary between UTF-8 / CP932 / CP1252, which
   # would otherwise produce different hashes for the same non-ASCII path).
   if [ -n "$_CLV2_PYTHON_CMD" ]; then
-    project_id=$(_CLV2_HASH_INPUT="$hash_input" "$_CLV2_PYTHON_CMD" -c '
+    project_id=$(_CLV2_HASH_INPUT="$hash_input" "$_CLV2_PYTHON_CMD" -I -c '
 import os, hashlib
 s = os.environ["_CLV2_HASH_INPUT"]
 print(hashlib.sha256(s.encode("utf-8")).hexdigest()[:12])
@@ -211,7 +211,7 @@ print(hashlib.sha256(s.encode("utf-8")).hexdigest()[:12])
 
     local legacy_input legacy_id
     for legacy_input in "${legacy_inputs[@]}"; do
-      legacy_id=$(_CLV2_HASH_INPUT="$legacy_input" "$_CLV2_PYTHON_CMD" -c '
+      legacy_id=$(_CLV2_HASH_INPUT="$legacy_input" "$_CLV2_PYTHON_CMD" -I -c '
 import os, hashlib
 s = os.environ["_CLV2_HASH_INPUT"]
 print(hashlib.sha256(s.encode("utf-8")).hexdigest()[:12])
@@ -267,7 +267,7 @@ _clv2_update_project_registry() {
   _CLV2_REG_PREMOTE="$premote" \
   _CLV2_REG_PDIR="$pdir" \
   _CLV2_REG_FILE="$_CLV2_REGISTRY_FILE" \
-  "$_CLV2_PYTHON_CMD" -c '
+  "$_CLV2_PYTHON_CMD" -I -c '
 import json, os, tempfile
 from datetime import datetime, timezone
 

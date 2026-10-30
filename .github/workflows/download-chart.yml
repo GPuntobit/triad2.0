@@ -9,7 +9,7 @@ on:
   workflow_dispatch: {}     # esecuzione manuale da Actions
   push:
     paths:
-      - scripts/download_chart.py
+      - scripts/docs/download_chart.py
       - .github/workflows/download-chart.yml
 
 permissions:
@@ -30,7 +30,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TRIAD_REPO: ${{ github.repository }}
-        run: python3 scripts/download_chart.py
+        run: python3 scripts/docs/download_chart.py
 
       - name: Commit del grafico aggiornato
         run: |

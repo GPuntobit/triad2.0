@@ -3,12 +3,12 @@ const path = require('path');
 const marked = require('marked');
 const Epub = require('epub-gen');
 
-const root = path.join(__dirname, '..');
+const root = path.join(__dirname, '..', '..');
 const outDir = path.join(root, 'docs', 'libro');
 
 const preface = fs.readFileSync(path.join(root, 'docs', 'PREFazione.md'), 'utf8');
 const manuale = fs.readFileSync(path.join(root, 'docs', 'MANUALE.md'), 'utf8');
-const tutorial = fs.readFileSync(path.join(root, 'TUTORIAL.md'), 'utf8');
+const tutorial = fs.readFileSync(path.join(root, 'tutorial', 'TUTORIAL.md'), 'utf8');
 
 marked.setOptions({ gfm: true, breaks: false });
 

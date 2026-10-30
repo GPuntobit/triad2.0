@@ -487,8 +487,13 @@ function commandExists(cmd) {
 
   try {
     if (isWindows) {
-      // Use spawnSync to avoid shell interpolation
-      const result = spawnSync('where', [cmd], { stdio: 'pipe' });
+      // SECURITY: resolve where.exe through a trusted absolute path under the
+      // Windows system directory. Searching by bare name can pick up a
+      // project-controlled where.exe from the current directory and run it
+      // with the operator's permissions.
+      const sysRoot = process.env.SystemRoot || 'C:\\Windows';
+      const whereExe = path.join(sysRoot, 'System32', 'where.exe');
+      const result = spawnSync(whereExe, [cmd], { stdio: 'pipe' });
       return result.status === 0;
     } else {
       const result = spawnSync('which', [cmd], { stdio: 'pipe' });

@@ -13,6 +13,18 @@ behavior, the goldens of `conformance/`.
 - webcmd Graphify plugin moved from `.webcmd/` to `tools/webcmd-graphify/`.
 - Removed two empty files accidentally committed in the root: `Developer` and
   `install-triad-ext.bat` (no active reference in the repository).
+
+## Unreleased — 2026-10-30: deeper folder organization
+
+- `scripts/` split by purpose: build helpers in `scripts/docs/`
+  (`build-libro.mjs`, `build-epub.cjs`, `build-docx.cjs`, `frontespizio.mjs`,
+  `download_chart.py`), Windows seed wrappers in `scripts/seed-runner/`,
+  one-off dev experiments in `scripts/experiments/`. Internal paths of the
+  build scripts and the `download-chart.yml` workflow updated accordingly.
+- Tutorial translations consolidated in `tutorial/` (moved
+  `docs/TUTORIAL-RU.md` → `tutorial/TUTORIAL.ru.md`, alongside the existing
+  `TUTORIAL.md`, `TUTORIAL.it.md`, `TUTORIAL.zh.md`); links in README, manual,
+  site pages and build scripts updated.
 - `README.md`: "Project Structure" section updated to the new layout.
 
 

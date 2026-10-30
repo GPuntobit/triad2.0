@@ -28,6 +28,12 @@ Riorganizza il repository senza modificare i percorsi contrattuali (`bin/`, `see
 
 Nota: i file di registrazione storica (`STATUS.md`, `TASK.md`, vecchi `PULL_REQUEST`) conservano i nomi precedenti dei probe perché documentano eventi passati. `obsidian-triad/Grafo Graphify.md` è output generato: va rigenerato con `graphify update .`.
 
+## Secondo passaggio: cartelle piu' ordinate
+
+- `scripts/` divisa per scopo: `scripts/docs/` (build libro/EPUB/DOCX, frontespizio, grafico download), `scripts/seed-runner/` (12 wrapper .bat del seed Windows), `scripts/experiments/` (script one-off di traduzione/debug + liste md temporanee). Corretti i percorsi interni (`root` da `__dirname/../..`) e i riferimenti in `.github/workflows/download-chart.yml`, README, plan.md, CHANGELOG.
+- Traduzioni del tutorial accentrate in `tutorial/`: `docs/TUTORIAL-RU.md` → `tutorial/TUTORIAL.ru.md` accanto a `TUTORIAL.md`, `TUTORIAL.it.md`, `TUTORIAL.zh.md`; aggiornati i link in README, MANUALE e tabelle file.
+- Verifiche: `python3 scripts/docs/download_chart.py` esegue con exit 0 (fallback tag git); build script puntano ai percorsi corretti; suite conformita' invariata.
+
 ## Fix CI: workflow download-chart (Node.js 20 deprecato)
 
 Il job `chart` mostrava il warning di deprecazione perche' usava

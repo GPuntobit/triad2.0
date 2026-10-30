@@ -55,7 +55,7 @@ Runtime note: the machine-code seed is the default runtime for `.triad` (launche
 - Note - to keep (legitimate CLI output): `console.log`/`console.error` in `ai/jev_audit.mjs` (report, `--dry-run`, usage messages) and in `tools/webcmd-graphify/tools/generate.mjs`.
 - [ ] `_probe.jl`, `_probe2.jl`, `_probe3.jl`, `_qc.jl`, `_smoke.jl`: `PROMPT_JEV.md` describes them as "gitignored, throwaway scripts", but they are versioned. Remove them from the repository and add them to `.gitignore`.
 - [x] Root output files versioned (`out.txt`, `output.txt`, `outfile.txt`, `stdout.txt`, `runoutput.txt`, `test_output.txt`, `error.txt`, `scope_out.txt`, `let_output.txt`, `let_test_out.txt`, `let_annidato_out.txt`): remove them and ignore them.
-- [ ] `run_seed.bat` ... `run_seed12.bat` (12 variants): keep one parameterized.
+- [ ] `scripts/seed-runner/run_seed.bat` ... `run_seed12.bat` (12 variants): keep one parameterized.
 
 ## S1 implemented files
 

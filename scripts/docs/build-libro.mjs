@@ -3,7 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const outDir = join(root, 'docs', 'libro');
 
 marked.setOptions({ gfm: true, breaks: false });
@@ -34,7 +34,7 @@ function addHeadingIds(html, prefix, toc) {
 const preface = readFileSync(join(root, 'docs', 'PREFazione.md'), 'utf8');
 const prefaceHtml = rewriteRepositoryLinks(marked.parse(preface));
 const manualeRaw = readFileSync(join(root, 'docs', 'MANUALE.md'), 'utf8');
-const tutorialRaw = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
+const tutorialRaw = readFileSync(join(root, 'tutorial', 'TUTORIAL.md'), 'utf8');
 
 function stripIndice(md, heading, endMarker) {
   const start = md.indexOf(heading);
