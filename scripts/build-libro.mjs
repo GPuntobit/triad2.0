@@ -3,7 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const outDir = join(root, 'docs', 'book');
+const outDir = join(root, 'docs', 'libro');
 marked.setOptions({ gfm: true, breaks: false });
 function slugify(s) {
   return String(s).toLowerCase()
@@ -26,9 +26,9 @@ function addHeadingIds(html, prefix, toc) {
     return '<h' + level + ' id="' + slug + '">' + text + '</h' + level + '>';
   });
 }
-const preface = readFileSync(join(root, 'PREFazione.md'), 'utf8');
+const preface = readFileSync(join(root, 'docs', 'PREFazione.md'), 'utf8');
 const prefaceHtml = rewriteRepositoryLinks(marked.parse(preface));
-const manualRaw = readFileSync(join(root, 'MANUALE.md'), 'utf8');
+const manualRaw = readFileSync(join(root, 'docs', 'MANUALE.md'), 'utf8');
 const tutorialRaw = readFileSync(join(root, 'tutorial', 'TUTORIAL.md'), 'utf8');
 function stripIndex(md, heading, endMarker) {
   const start = md.indexOf(heading);

@@ -1,40 +1,36 @@
-# feat(cli): command `run` and tooling VS Code extension (`ext check`/`ext package`)
-## Summary
-Extends the VS Code Triad CLI with two new capabilities, integrating support for the editor extension into `editors/vscode` and allowing direct execution of Triad programs from the command line.
-**Branch:** `qwen-code-72490772-b8ec-4db4-9e8b-1a4ff6d961a8`
-**Commit:** `30578bd` — 5 files changed, +263 lines
-## Changes
-### New commands
-#### `triad-cli run <file> [-- args]` (`cli/lib/commands/run.mjs`, new)
-- Run a `.triad`/`.td` program with the seed in machine code.
-- Documented fallback: as long as the native seed is a stub (E0), on Linux/macOS use the reference JS interpreter `seed/dev/triad_core.cjs`, exactly as `conformance/run.mjs` does.
-- `-n/--native` flag to force native seed; arguments after `--` are passed to the program.
-- Exit code fixed: `1` on non-existent file or parse error, `0` on successful execution.
-#### `triad-cli ext check` and `triad-cli ext package [-o FILE]` (`cli/lib/commands/ext.mjs`, new)
-- **check**: valid `package.json`, `tmLanguage.xml` grammar and `language-configuration.json`; all JSON is parsed and verified; reports name, version, languages ​​and declared extensions.
-- **package**: Package the `.vsix` using global `vsce` if available, otherwise `npx --yes @vscode/vsce`.
-### Files touched
-| Files | Change |
-|---|---|
-| `cli/lib/commands/run.mjs` | New — Triad program execution |
-| `cli/lib/commands/ext.mjs` | New — VS Code extension validation and packaging |
-| `cli/triad-cli.mjs` | Register `run` and `ext check\|package`; updated help and output of `status` |
-| `cli/README.md` | Documented the "Run" and "VS Code Extension" + module architecture sections |
-| `.gitignore` | Added `*.vsix` (packaging generated artifact) |
-## Manual tests performed
-- `node --check` on all modules → OK
-- `triad-cli ext check` → `V Valid VS Code Extension — triad v0.2.0, triad: .triad,.td`
-- `triad-cli ext package` → generated `editors/vscode/triad-0.2.0.vsix` (6 files, 4 KB) via `npx vsce`; artifact removed after verification
-- `triad-cli run test_simple.td` → print `test`, exit 0
-- `triad-cli run test_let.td` → print `15`
-- Error handling: non-existent file and parse error return exit 1 with readable message
-- `triad-cli status` lists new commands
-- `Conformance` suite unchanged and still green
-## Notes for reviewers
-- The fallback to the JS interpreter is explicitly tied to the stub state of the seed (E0); when the native seed is complete, `-n/--native` becomes the root path without structural changes.
-- No changes to existing commands (`build`, `test`, `status`).
-## Checklist
-- [x] CLI help and `status` updated
-- [x] README updated
-- [x] Build artifacts ignored (`.gitignore`)
-- [x] Manual tests documented above
+# refactor(repo): riordino della struttura delle cartelle
+
+Branch: `qwen-code-25b29def-032d-42a2-9df2-e2fd8967086e`
+Commit: `0e209d4` + `7bb8dc6` — 57 file toccati (tutti gli spostamenti registrati con `git mv`)
+
+## Riepilogo
+
+Riorganizza il repository senza modificare i percorsi contrattuali (`bin/`, `seed/<piattaforma>/`, `conformance/`, `selfhost/`, `examples/`, `cli/`, `editors/`, `VERSION`, `LICENSE`, `install.sh`). La root viene ripulita dai file sciolti; tutti i riferimenti nei file di build, CI e documentazione sono stati verificati uno a uno prima dello spostamento.
+
+## Spostamenti
+
+| Da | A | Motivo |
+|---|---|---|
+| `test_get.td`, `test_let.td`, `test_simple.td` | `probes/` | Probe usati da CI e `install.sh`; `bin/test_td.txt` (residuo di debug) li accompagna |
+| `MANUALE.md`, `PREFazione.md`, `TUTORIAL-RU.md` | `docs/` | Insieme al sito GitHub Pages che già li referenzia |
+| `RELEASE_NOTES_v0.3.0.md`, `RELEASE_NOTES_v0.8.0-beta.3.md` | `docs/releases/` | Note di release storiche |
+| `PULL_REQUEST.md` | `docs/PULL_REQUEST.md` | Allineato al riordino (secondo commit) |
+| `.webcmd/graphify/` + zip plugin | `tools/webcmd-graphify/` | Nessun tool sparso fuori dalle directory dedicate |
+| `Developer`, `install-triad-ext.bat` | *(eliminati)* | File vuoti (0 byte) committati per errore; un `.bat` vuoto andava rimosso, non ricollocato |
+
+## Riferimenti aggiornati
+
+- `.github/workflows/ci.yml`: probe Linux → `probes/…`; probe Windows → `probes\test_get.td` (path relativo alla cwd del runner, richiesto da `Start-Process`)
+- `install.sh`: verifica finale su `$ROOT/probes/test_simple.td`; corretto l'estrazione dell'usage (`sed -n '2,17p'` → `'3,18p'`), scalata dalla sezione Termux nel README
+- `scripts/build-libro.mjs`, `scripts/build-epub.cjs`: letture da `docs/PREFazione.md` / `docs/MANUALE.md`
+- `README.md`: sezione "Project Structure" riscritta sul nuovo assetto + link a `docs/MANUALE.md`
+- `plan.md`, `TUTORIAL.md` (tabella file), `CHANGELOG.md` (voce "Non rilasciato — riordino della struttura")
+
+Nota: i file di registrazione storica (`STATUS.md`, `TASK.md`, vecchi `PULL_REQUEST`) conservano i nomi precedenti dei probe perché documentano eventi passati. `obsidian-triad/Grafo Graphify.md` è output generato: va rigenerato con `graphify update .`.
+
+## Verifica post-spostamento
+
+- `node conformance/run.mjs` → `conformance: OK` (37/37)
+- `triad probes/test_simple.td` → `test`; seed ELF E0 invariato
+- `probes/test_get.td` fallisce con l'interprete JS di riferimento: estensione presente solo nel seed PE, testata nel job Windows (comportamento preesistente)
+- `examples/assaggio.td` ha un errore di parse preesistente, non correlato
