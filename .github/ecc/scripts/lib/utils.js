@@ -487,8 +487,16 @@ function commandExists(cmd) {
 
   try {
     if (isWindows) {
-      // Use spawnSync to avoid shell interpolation
-      const result = spawnSync('where', [cmd], { stdio: 'pipe' });
+      // Resolve where.exe through a trusted absolute path; do not trust
+      // an arbitrary SystemRoot value from the environment.
+      const rawSystemRoot = process.env.SystemRoot || 'C:\\Windows';
+      const trustedSystemRoot = /^[A-Za-z]:\\Windows$/i.test(rawSystemRoot)
+        ? rawSystemRoot
+        : 'C:\\Windows';
+      const whereExe = path.join(trustedSystemRoot, 'System32', 'where.exe');
+      const result = fs.existsSync(whereExe)
+        ? spawnSync(whereExe, [cmd], { stdio: 'pipe' })
+        : spawnSync('where', [cmd], { stdio: 'pipe' });
       return result.status === 0;
     } else {
       const result = spawnSync('which', [cmd], { stdio: 'pipe' });
