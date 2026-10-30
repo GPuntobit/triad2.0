@@ -1,34 +1,26 @@
-# Riconoscimento su GitHub (Linguist)
-
-GitHub usa `github-linguist/linguist` per decidere il linguaggio di un file dall'estensione
-e dalla grammatica. Perché Triad compaia come linguaggio proprio servono:
-
-1. una voce in `lib/linguist/languages.yml` (modello in `languages.yml` di questa cartella);
-2. una grammatica TextMate con scope `source.triad` (quella in `../vscode/syntaxes/` è già
-   valida come base);
-3. campioni reali (`samples/Triad/*.triad`) nella PR;
-4. un `language_id` univoco, assegnato da Linguist.
-
-## Perché `.triad` e non `.td`
-
-`.td` è già l'estensione di **LLVM TableGen**. Linguist assegna l'estensione a un solo
-linguaggio (o usa heuristics); usare `.td` per Triad renderebbe il riconoscimento ambiguo.
-`.triad` è libera e univoca. Il kernel accetta comunque `.td` come alias storico per non
-rompere i file esistenti.
-
-## Nel frattempo (prima della PR)
-
-- In questo repository `.gitattributes` forza `linguist-language=Triad` per `*.triad` e
-  `*.td`; GitHub lo rispetta solo quando "Triad" è noto a Linguist, ma è pronto per dopo.
-- Per un riconoscimento immediato in un repository utente si può usare il campo
-  `linguist-language` con un linguaggio noto, ma è un workaround: la strada corretta è la PR.
-
-## Passi per la PR
-
-1. fork di `github-linguist/linguist`;
-2. aggiungere la voce (con `language_id` libero) e i campioni;
-3. aggiungere la grammatica secondo le istruzioni di Linguist (vendor/grammars o grammar
-   upstream puntata dalla voce);
-4. `bundle exec rake` / test di Linguist;
-5. aprire la PR spiegando che Triad è un linguaggio autonomo con specifica e suite di
-   conformità (link a `SPEC.md` e `conformance/`).
+# Credit on GitHub (Linguist)
+GitHub uses `github-linguist/linguist` to decide the language of a file from its extension
+and grammar. For Triad to appear as its own language you need:
+1. an entry in `lib/linguist/languages.yml` (template in `languages.yml` of this folder);
+2. a TextMate grammar with scope `source.triad` (the one in `../vscode/syntaxes/` is already
+   valid as a basis);
+3. real samples (`samples/Triad/*.triad`) in the PR;
+4. a unique `language_id`, assigned by Linguist.
+## Why `.triad` and not `.td`
+`.td` is already the extension of **LLVM TableGen**. Linguist assigns the extension to only one
+language (or use heuristics); using `.td` for Triad would make the recognition ambiguous.
+`.triad` is free and unique. The kernel still accepts `.td` as a historical alias for non
+break existing files.
+## Meanwhile (before PR)
+- In this repository `.gitattributes` forces `linguist-language=Triad` for `*.triad` and
+  `*.td`; GitHub only respects this when "Triad" is known to Linguist, but is ready for later.
+- For immediate recognition in a user repository you can use the field
+  `linguist-language` with a known language, but it's a workaround: the correct way is PR.
+## Steps for PR
+1. fork of `github-linguist/linguist`;
+2. add the voice (with free `language_id`) and samples;
+3. add the grammar according to the Linguist instructions (vendor/grammars or grammar
+   upstream pointed by the voice);
+4. `bundle exec rake` / Linguist test;
+5. open the PR by explaining that Triad is a self-contained language with specification and suite of
+   compliance (links to `SPEC.md` and `conformance/`).

@@ -2,31 +2,23 @@
 name: ai-regression-testing
 description: Regression testing strategies for AI-assisted development. Sandbox-mode API testing without database dependencies, automated bug-check workflows, and patterns to catch AI blind spots where the same model writes and reviews code. Use when adding regression coverage to AI-assisted code, or when the same model both wrote and reviewed a change.
 metadata:
-  origin: ECC
+  origin: ETC
 ---
-
 # AI Regression Testing
-
 Testing patterns specifically designed for AI-assisted development, where the same model writes code and reviews it — creating systematic blind spots that only automated tests can catch.
-
 ## When to Activate
-
 - AI agent (Claude Code, Cursor, Codex) has modified API routes or backend logic
 - A bug was found and fixed — need to prevent re-introduction
 - Project has a sandbox/mock mode that can be leveraged for DB-free testing
 - Running `/bug-check` or similar review commands after code changes
 - Multiple code paths exist (sandbox vs production, feature flags, etc.)
-
 ## The Core Problem
-
 When an AI writes code and then reviews its own work, it carries the same assumptions into both steps. This creates a predictable failure pattern:
-
 ```
 AI writes fix → AI reviews fix → AI says "looks correct" → Bug still exists
 ```
 
 **Real-world example** (observed in production):
-
 ```
 Fix 1: Added notification_settings to API response
   → Forgot to add it to the SELECT query
@@ -44,13 +36,9 @@ Fix 4: Test caught it instantly on first run PASS:
 ```
 
 The pattern: **sandbox/production path inconsistency** is the #1 AI-introduced regression.
-
 ## Sandbox-Mode API Testing
-
 Most projects with AI-friendly architecture have a sandbox/mock mode. This is the key to fast, DB-free API testing.
-
 ### Setup (Vitest + Next.js App Router)
-
 ```typescript
 // vitest.config.ts
 import { defineConfig } from "vitest/config";
@@ -80,7 +68,6 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "";
 ```
 
 ### Test Helper for Next.js API Routes
-
 ```typescript
 // __tests__/helpers.ts
 import { NextRequest } from "next/server";
@@ -122,9 +109,7 @@ export async function parseResponse(response: Response) {
 ```
 
 ### Writing Regression Tests
-
 The key principle: **write tests for bugs that were found, not for code that works**.
-
 ```typescript
 // __tests__/api/user/profile.test.ts
 import { describe, it, expect } from "vitest";
@@ -169,9 +154,7 @@ describe("GET /api/user/profile", () => {
 ```
 
 ### Testing Sandbox/Production Parity
-
 The most common AI regression: fixing production path but forgetting sandbox path (or vice versa).
-
 ```typescript
 // Test that sandbox responses match the expected contract
 describe("GET /api/user/messages (conversation list)", () => {
@@ -194,9 +177,7 @@ describe("GET /api/user/messages (conversation list)", () => {
 ```
 
 ## Integrating Tests into Bug-Check Workflow
-
 ### Custom Command Definition
-
 ```markdown
 <!-- .claude/commands/bug-check.md -->
 # Bug Check
@@ -223,8 +204,7 @@ Run these commands FIRST before any code review:
 ## Step 3: For each bug fixed, propose a regression test
 ```
 
-### The Workflow
-
+### TheWorkflow
 ```
 User: "バグチェックして" (or "/bug-check")
   │
@@ -244,11 +224,8 @@ User: "バグチェックして" (or "/bug-check")
 ```
 
 ## Common AI Regression Patterns
-
 ### Pattern 1: Sandbox/Production Path Mismatch
-
 **Frequency**: Most common (observed in 3 out of 4 regressions)
-
 ```typescript
 // FAIL: AI adds field to production path only
 if (isSandboxMode()) {
@@ -265,7 +242,6 @@ return { data: { id, email, name, notification_settings } };
 ```
 
 **Test to catch it**:
-
 ```typescript
 it("sandbox and production return same fields", async () => {
   // In test env, sandbox mode is forced ON
@@ -279,9 +255,7 @@ it("sandbox and production return same fields", async () => {
 ```
 
 ### Pattern 2: SELECT Clause Omission
-
 **Frequency**: Common with Supabase/Prisma when adding new columns
-
 ```typescript
 // FAIL: New column added to response but not to SELECT
 const { data } = await supabase
@@ -300,9 +274,7 @@ const { data } = await supabase
 ```
 
 ### Pattern 3: Error State Leakage
-
 **Frequency**: Moderate — when adding error handling to existing components
-
 ```typescript
 // FAIL: Error state set but old data not cleared
 catch (err) {
@@ -318,7 +290,6 @@ catch (err) {
 ```
 
 ### Pattern 4: Optimistic Update Without Proper Rollback
-
 ```typescript
 // FAIL: No rollback on failure
 const handleRemove = async (id: string) => {
@@ -342,9 +313,7 @@ const handleRemove = async (id: string) => {
 ```
 
 ## Strategy: Test Where Bugs Were Found
-
 Don't aim for 100% coverage. Instead:
-
 ```
 Bug found in /api/user/profile     → Write test for profile API
 Bug found in /api/user/messages    → Write test for messages API
@@ -353,14 +322,11 @@ No bug in /api/user/notifications  → Don't write test (yet)
 ```
 
 **Why this works with AI development:**
-
 1. AI tends to make the **same category of mistake** repeatedly
 2. Bugs cluster in complex areas (auth, multi-path logic, state management)
 3. Once tested, that exact regression **cannot happen again**
 4. Test count grows organically with bug fixes — no wasted effort
-
-## Quick Reference
-
+## QuickReference
 | AI Regression Pattern | Test Strategy | Priority |
 |---|---|---|
 | Sandbox/production mismatch | Assert same response shape in sandbox mode |  High |
@@ -368,19 +334,16 @@ No bug in /api/user/notifications  → Don't write test (yet)
 | Error state leakage | Assert state cleanup on error |  Medium |
 | Missing rollback | Assert state restored on API failure |  Medium |
 | Type cast masking null | Assert field is not undefined |  Medium |
-
 ## DO / DON'T
-
 **DO:**
 - Write tests immediately after finding a bug (before fixing it if possible)
 - Test the API response shape, not the implementation
 - Run tests as the first step of every bug-check
 - Keep tests fast (< 1 second total with sandbox mode)
 - Name tests after the bug they prevent (e.g., "BUG-R1 regression")
-
 **DON'T:**
 - Write tests for code that has never had a bug
 - Trust AI self-review as a substitute for automated tests
 - Skip sandbox path testing because "it's just mock data"
-- Write integration tests when unit tests suffice
+- Write integration tests when unit tests are sufficient
 - Aim for coverage percentage — aim for regression prevention

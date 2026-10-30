@@ -1,79 +1,79 @@
-# Conformance suite — il contratto eseguibile di Triad
+﻿# Conformance suite — the executable contract of Triad
 
-Questa directory è la **specifica eseguibile** usata per verificare qualunque
-implementazione di Triad: il seed in codice macchina, l'implementazione in
-Triad-Core e il futuro compilatore nativo.
+This directory is the **executable specification** used to verify any
+implementation of Triad: the machine-code seed, the Triad-Core implementation
+and the future native compiler.
 
-## Formato di un caso
+## Case format
 
 ```
-cases/<nome>/
-  program.td      # programma Triad, eseguito come script
-  args.txt        # opzionale: un argomento per riga (ARGS)
-  expected.out    # stdout atteso (byte esatti, fine riga LF)
-  expected.code   # exit code atteso
+cases/<name>/
+  program.td      # Triad program, run as a script
+  args.txt        # optional: one argument per line (ARGS)
+  expected.out    # expected stdout (exact bytes, LF line endings)
+  expected.code   # expected exit code
 ```
 
-Regole:
+Rules:
 
-- il caso passa se stdout è **byte per byte** uguale a `expected.out` e l'exit
-  code è quello atteso;
-- stderr non è confrontato (i messaggi d'errore sono diagnostici);
-- niente input interattivo, niente stdin: la suite deve essere deterministica;
-- i golden sono dati statici committati: **non richiedono Julia** per essere
-  verificati.
+- the case passes if stdout is **byte for byte** equal to `expected.out` and the exit
+code is the expected one;
+- stderr is not compared (error messages are diagnostics);
+- no interactive input, no stdin: the suite must be deterministic;
+- the goldens are committed static data: **they do not require Julia** to be
+verified.
 
-## Profili
+## Profiles
 
-- **Triad-Full** — `cases/` (12 casi; oggi passa solo `errore`, il resto di Triad-Full non è implementato): tutto il linguaggio di `SPEC.md`.
-- **Triad-Core** — `core/cases/` (37 casi, tutti verdi): solo il sottoinsieme normativo di
-  [`SPEC-CORE.md`](../SPEC-CORE.md), condiviso con Triad-Full; i primitivi di bootstrap non
-  sono coperti da questa suite.
+- **Triad-Full** — `cases/` (12 cases; today only `errore` passes, the rest of Triad-Full is not implemented): the whole language of `SPEC.md`.
+- **Triad-Core** — `core/cases/` (37 cases, all green): only the normative subset of
+[`SPEC-CORE.md`](../SPEC-CORE.md), shared with Triad-Full; bootstrap primitives are
+not covered by this suite.
 
 ## Runner
 
-- Definitivo (dalla milestone M4): `triad --conformance DIR`, implementato in
-  Triad, eseguito dall'implementazione sotto test.
-- Temporaneo (fase 0): `run.mjs`, runner Node (nessuna dipendenza da Julia):
+- Definitive (from milestone M4): `triad --conformance DIR`, implemented in
+Triad, run by the implementation under test.
+- Temporary (phase 0): `run.mjs`, Node runner (no Julia dependency):
 
 ```sh
-node conformance/run.mjs            # verifica (profilo Core, default)
-node conformance/run.mjs --update   # rigenera expected.out/expected.golden/expected.code
+node conformance/run.mjs            # verify (Core profile, default)
+node conformance/run.mjs --update   # regenerate expected.out/expected.golden/expected.code
 
-# profilo Full
+# Full profile
 node conformance/run.mjs --cases conformance/cases
 node conformance/run.mjs --cases conformance/cases --update
 ```
 
-Opzioni: `--cases DIR` (default `conformance/core/cases`), `--update`, `--skip a,b`
-(default `liste`; la CI passa `--skip liste`, ma oggi `liste` passa anche lui).
+Options: `--cases DIR` (default `conformance/core/cases`), `--update`, `--skip a,b`
+(default `liste`; CI passes `--skip liste`, but today `liste` passes too).
 
-Runtime usato, in ordine: `TRIAD_SEED` se impostato; su Linux/macOS l'interprete di
-riferimento `seed/dev/triad_core.cjs` (il seed ELF è ancora E0); su Windows
-`bin/triad-native.exe`, poi `seed/windows-x86_64/seed.exe`.
+Runtime used, in order: `TRIAD_SEED` if set; on Linux/macOS the reference
+interpreter `seed/dev/triad_core.cjs` (the ELF seed is still E0); on Windows
+`bin/triad-native.exe`, then `seed/windows-x86_64/seed.exe`.
 
-Golden: il runner legge `expected.out` e, se manca, `expected.golden` (copia identica).
-Se mancano entrambi il caso fallisce con `golden mancante`: di solito il checkout non ha i
-file (`git pull`), perché `.gitignore` esclude `*.out` con l'eccezione
+Golden: the runner reads `expected.out` and, if missing, `expected.golden` (identical copy).
+If both are missing the case fails with `golden mancante`: usually the checkout lacks the
+files (`git pull`), because `.gitignore` excludes `*.out` with the exception
 `!conformance/**/expected.out`.
 
-`run.jl` (Julia) è stato rimosso: la suite gira senza Julia né altri linguaggi.
+`run.jl` (Julia) has been removed: the suite runs without Julia or any other language.
 
-## Casi attuali (`cases/`, profilo Full)
+## Current cases (`cases/`, Full profile)
 
-| Caso | Copre |
+| Case | Covers |
 |---|---|
-| `assaggio` | struct, dispatch, logica, macro, contratti |
-| `famiglia` | fatti/regole, ricorsione, liste Prolog, negazione per fallimento |
-| `macro` | codice come dato, quote/eval, macro, gensym |
-| `tour` | tutti i paradigmi in un programma unico |
-| `hello_shebang` | shebang, ARGS, effetti dichiarati |
-| `valori` | valori, aritmetica, stringhe, liste, comprehension |
-| `dispatch` | struct, operatori-funzione, dispatch, errori come dati |
-| `prolog` | regole ricorsive, liste stile Prolog, `solve` |
-| `destruttura` | `(a, b) = ...`, `for (k, v) in ...`, errore di arità |
-| `garanzie_core` | contratti, budget, tracce, effetti |
-| `macro_eval` | quote, sexpr, parse/unparse, macro |
-| `errore` | errore non gestito: stdout vuoto, exit code 1 |
+| `assaggio` | struct, dispatch, logic, macros, contracts |
+| `famiglia` | facts/rules, recursion, Prolog lists, negation as failure |
+| `macro` | code as data, quote/eval, macros, gensym |
+| `tour` | all paradigms in a single program |
+| `hello_shebang` | shebang, ARGS, declared effects |
+| `valori` | values, arithmetic, strings, lists, comprehensions |
+| `dispatch` | struct, function-operators, dispatch, errors as data |
+| `prolog` | recursive rules, Prolog-style lists, `solve` |
+| `destruttura` | `(a, b) = ...`, `for (k, v) in ...`, arity error |
+| `garanzie_core` | contracts, budgets, traces, effects |
+| `macro_eval` | quote, sexpr, parse/unparse, macros |
+| `errore` | unhandled error: empty stdout, exit code 1 |
 
-I golden Full sono stati generati dallo stage0 (Julia) il 2026-10-20 e sono congelati: da qui in poi sono loro il contratto.
+The Full goldens were generated by stage0 (Julia) on 2026-10-20 and are frozen: from now on they are the contract.

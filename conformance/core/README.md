@@ -1,63 +1,61 @@
-# Profilo Triad-Core
+﻿# Triad-Core profile
 
-Casi di conformità per il sottoinsieme **Triad-Core** (normativo in
-[`../../SPEC-CORE.md`](../../SPEC-CORE.md), profilo §16.1 di [`../../SPEC.md`](../../SPEC.md)).
+Conformance cases for the **Triad-Core** subset (normative in
+[`../../SPEC-CORE.md`](../../SPEC-CORE.md), profile section 16.1 of [`../../SPEC.md`](../../SPEC.md)).
 
-I programmi qui usano solo costrutti e primitive presenti **sia** in Triad-Core **sia** in
-Triad-Full: gli stessi golden devono passare su entrambi i profili. I primitivi di bootstrap
-(`readfile`, `strlen`, `strbyte`, `strsub`, `exit`) non compaiono qui perché non fanno parte
-di Triad-Full: saranno coperti dai test del seed.
+The programs here use only constructs and primitives present in **both** Triad-Core and
+Triad-Full: the same goldens must pass on both profiles. Bootstrap primitives
+(`readfile`, `strlen`, `strbyte`, `strsub`, `exit`) do not appear here because they are not part of
+Triad-Full: they will be covered by the seed tests.
 
-## Esecuzione
+## Execution
 
 ```sh
-node conformance/run.mjs                                         # verifica (Core è il default)
-node conformance/run.mjs --cases conformance/core/cases          # equivalente
+node conformance/run.mjs                                         # verify (Core is the default)
+node conformance/run.mjs --cases conformance/core/cases          # equivalent
 node conformance/run.mjs --cases conformance/core/cases --update # golden
 ```
 
-## Casi
+## Cases
 
-| caso | copre |
+| case | covers |
 |---|---|
-| `interi` | interi, precedenza, parentesi, unario: coperto dal seed (M3b1) |
-| `variabili` | variabili globali, assegnamenti, lookup: coperto dal seed (M3b2a) |
-| `funzioni_semplici` | funzioni in forma breve con parametri e chiamate: coperto dal seed (M3b2b1) |
-| `ricorsione` | confronti, ternario e ricorsione con caso base (`fattoriale`, `fib`): coperto dal seed (M3b2b2) |
-| `confronti` | Bool stampabili (`true`/`false`) dal seed (M3b2b3a) |
-| `operatori` | `%`, `^` destra-associata, letterali `true`/`false` (M3b2b3b) |
-| `if_else` | blocchi `if`/`else`/`end` e annidamento (M3b2b3c) |
-| `if_elseif` | catene `if`/`elseif`/`else`, solo il primo ramo vero — coperto dal seed (A02) |
-| `if_nested` | `if`/`elseif` annidati — coperto dal seed (A02) |
-| `if_no_else` | `if` senza `else` — coperto dal seed (A02) |
-| `while_loop` | `while`/`end`, aggiornamento variabili (M3b2b3d) |
-| `lambda` | lambda a un parametro, anche come argomento (M3b2b3e) |
-| `closure` | cattura del parametro — coperto dal seed (M3b2b3k) |
+| `interi` | integers, precedence, parentheses, unary: covered by the seed (M3b1) |
+| `variabili` | global variables, assignments, lookup: covered by the seed (M3b2a) |
+| `funzioni_semplici` | short-form functions with parameters and calls: covered by the seed (M3b2b1) |
+| `ricorsione` | comparisons, ternary and recursion with base case (`fattoriale`, `fib`): covered by the seed (M3b2b2) |
+| `confronti` | printable Bool (`true`/`false`) from the seed (M3b2b3a) |
+| `operatori` | `%`, right-associative `^`, `true`/`false` literals (M3b2b3b) |
+| `if_else` | `if`/`else`/`end` blocks and nesting (M3b2b3c) |
+| `if_elseif` | `if`/`elseif`/`else` chains, only the first true branch — covered by the seed (A02) |
+| `if_nested` | nested `if`/`elseif` — covered by the seed (A02) |
+| `if_no_else` | `if` without `else` — covered by the seed (A02) |
+| `while_loop` | `while`/`end`, variable updates (M3b2b3d) |
+| `lambda` | single-parameter lambda, also as argument (M3b2b3e) |
+| `closure` | parameter capture — covered by the seed (M3b2b3k) |
 | `valori` | Int, Bool, String, Symbol, List, Nothing |
-| `aritmetica` | precedenza, `%`, `^`, unari, confronti, logica, `+=` — coperto dal seed (M3b2b3g) |
+| `aritmetica` | precedence, `%`, `^`, unary, comparisons, logic, `+=` — covered by the seed (M3b2b3g) |
 | `controllo` | `while`, `if`/`elseif`/`else`, `let`, `begin` |
-| `funzioni` | funzioni nominali, forma breve, ricorsione, ternario — coperto dal seed (M3b2b3h) |
-| `funzioni_blocco` | funzione con corpo multi-istruzione e valore dell'ultima espressione — coperto dal seed (M3b2b3i) |
-| `funzioni_io` | funzione a blocco con effetto dichiarato `!io` — coperto dal seed |
-| `formula` | funzione a blocco con due parametri (area del rettangolo) — coperto dal seed |
-| `begin_block` | blocco `begin … end` — coperto dal seed (M3b2b3l) |
-| `liste` | indici 1-based, `length`, `push!`, iterazione con `while` |
-| `liste_base` | costruzione e stampa di liste di interi — coperto dal seed |
-| `liste_push` | `push!` su liste di interi, aliasing — coperto dal seed |
-| `stringhe_base` | stringhe letterali, stampa, `length` — coperto dal seed (M3b2b3m) |
-| `nothing_base` | valore `nothing` e stampa — coperto dal seed (M3b2b3n) |
-| `stringhe_concat` | concatenazione `*` e `length` — coperto dal seed (M3b2b3o) |
-| `simboli_base` | simboli `:nome` e stampa — coperto dal seed (M3b2b3p) |
-| `stringhe_multi` | concatenazione concatenata e `length` — coperto dal seed |
-| `stringhe` | concatenazione `*`, `length`, `string` |
-| `chiusure` | lambda che catturano variabili, più chiusure indipendenti |
-| `chiusure_local` | chiusura che cattura un locale del corpo funzione — coperto dal seed |
-| `let_annidato` | `let` annidati con shadowing — coperto dal seed |
-| `let_chiusura` | lambda dentro `let` con lookup dinamico — coperto dal seed |
-| `chiusura_in_if` | lambda dentro `if` — coperto dal seed |
-| `scope` | locale vs globale, shadowing con `let` — coperto dal seed (M3b2b3j) |
-| `gcd` | algoritmo di Euclide per MCD (ricorsione, modulo) — coperto dal seed |
+| `funzioni` | named functions, short form, recursion, ternary — covered by the seed (M3b2b3h) |
+| `funzioni_blocco` | function with multi-statement body and value of the last expression — covered by the seed (M3b2b3i) |
+| `funzioni_io` | block function with declared effect `!io` — covered by the seed |
+| `formula` | block function with two parameters (rectangle area) — covered by the seed |
+| `begin_block` | `begin ... end` block — covered by the seed (M3b2b3l) |
+| `liste` | 1-based indices, `length`, `push!`, iteration with `while` |
+| `liste_base` | construction and printing of integer lists — covered by the seed |
+| `liste_push` | `push!` on integer lists, aliasing — covered by the seed |
+| `stringhe_base` | string literals, printing, `length` — covered by the seed (M3b2b3m) |
+| `nothing_base` | `nothing` value and printing — covered by the seed (M3b2b3n) |
+| `stringhe_concat` | `*` concatenation and `length` — covered by the seed (M3b2b3o) |
+| `simboli_base` | symbols `:name` and printing — covered by the seed (M3b2b3p) |
+| `stringhe_multi` | chained concatenation and `length` — covered by the seed |
+| `stringhe` | `*` concatenation, `length`, `string` |
+| `chiusure` | lambdas capturing variables, multiple independent closures |
+| `chiusure_local` | closure capturing a local of the function body — covered by the seed |
+| `let_annidato` | nested `let` with shadowing — covered by the seed |
+| `let_chiusura` | lambda inside `let` with dynamic lookup — covered by the seed |
+| `chiusura_in_if` | lambda inside `if` — covered by the seed |
+| `scope` | local vs global, shadowing with `let` — covered by the seed (M3b2b3j) |
+| `gcd` | Euclidean algorithm for GCD (recursion, modulo) — covered by the seed |
 
-37 casi in totale, tutti verdi con `node conformance/run.mjs`; il job CI `seed-windows` ne
-esegue 33 direttamente sul seed PE. I golden sono generati dallo stage0 e congelati; ogni implementazione Core (seed compreso)
-deve riprodurli byte per byte con gli stessi exit code.
+37 cases in total, all green with `node conformance/run.mjs`; the CI job `seed-windows` runs 33 of them directly on the seed PE. The goldens are generated by stage0 and frozen; every Core implementation (seed included) must reproduce them byte for byte with the same exit codes.

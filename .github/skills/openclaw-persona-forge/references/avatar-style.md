@@ -1,18 +1,11 @@
 # Step 5：头像风格 & 生图
-
 所有龙虾头像**必须使用统一的视觉风格**，确保龙虾家族的风格一致性。
 头像需传达 3 个信息：**物种形态 + 性格暗示 + 标志道具**
-
 ## 风格参考
-
 亚当（Adam）—— 龙虾族创世神，本 Skill 的首个作品。
-
-所有新生成的龙虾头像应与这一风格保持一致：复古未来主义、街机 UI 包边、强轮廓、可在 64x64 下辨识。
-
+所有新生成的龙虾头像应与这一风格保持一致：复古未来主义、街机 UI包边、强轮廓、可在 64x64 下辨识。
 ## 统一风格基底（STYLE_BASE）
-
 **每次生成都必须包含这段基底**，不得修改或省略：
-
 ```
 STYLE_BASE = """
 Retro-futuristic 3D rendered illustration, in the style of 1950s-60s Space Age
@@ -46,9 +39,7 @@ pixels.
 ```
 
 ## 个性化变量
-
 在统一基底之上，根据灵魂填充以下变量：
-
 | 变量 | 说明 | 示例 |
 |------|------|------|
 | `CHARACTER_NAME` | 街机横幅上显示的名字 | "ADAM"、"DEWEY"、"RIFF" |
@@ -58,15 +49,12 @@ pixels.
 | `UNIQUE_DETAIL` | 独特细节（纹路/装饰/伤痕等） | "constellation patterns etched on claws"、"bandaged left claw" |
 | `BACKGROUND_ACCENT` | 背景的个性化元素（在统一宇宙背景上叠加） | "musical notes floating as nebula dust"、"ancient book pages drifting" |
 | `ENERGY_BAR_LABEL` | 街机 UI 能量条的标签（个性化小彩蛋） | "CREATION POWER"、"CALM LEVEL"、"ROCK METER" |
-
 ## 提示词组装
-
 ```
 最终提示词 = STYLE_BASE + 个性化描述段落
 ```
 
 个性化描述段落模板：
-
 ```
 The character is a cartoon lobster with a [SHELL_COLOR] shell,
 [EXPRESSION], wearing/holding [SIGNATURE_PROP].
@@ -78,21 +66,15 @@ The key silhouette recognition points at small size are:
 ```
 
 ## 生图流程
-
 提示词组装完成后：
-
 ### 路径 A：已安装且已审核的生图 skill
-
 1. 先将龙虾名字规整为安全片段：仅保留字母、数字和连字符，其余字符替换为 `-`
 2. 用 Write 工具写入：`/tmp/openclaw-<safe-name>-prompt.md`
 3. 调用当前环境允许的生图 skill 生成图片
 4. 用 Read 工具展示生成的图片给用户
 5. 问用户是否满意，不满意可调整变量重新生成
-
 ### 路径 B：未安装可用的生图 skill
-
 输出完整提示词文本，附手动使用说明：
-
 ```markdown
 **头像提示词**（可复制到以下平台手动生成）：
 - Google Gemini：直接粘贴
@@ -105,7 +87,6 @@ The key silhouette recognition points at small size are:
 ```
 
 ## 展示给用户的格式
-
 ```markdown
 ## 头像
 

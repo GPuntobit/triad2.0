@@ -1,167 +1,141 @@
 # Changelog — standard Triad
-
-Le modifiche normative aggiornano anche `VERSION`, la specifica (`SPEC.md`) e, se cambia
-il comportamento, i golden di `conformance/`.
-
+Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
+behavior, the goldens of `conformance/`.
 ## 0.8.0-beta.3 — 2026-10-29
-
-**Triad 2.0 – Beta 3.** Pre-release della serie Triad 2.0: include *tutti* gli
-aggiornamenti dalla v0.2.0 a oggi (contenuti anche nella v0.3.0, superseded).
-
+**Triad 2.0 – Beta 3.** Pre-release of the Triad 2.0 series: includes *all*
+updates from v0.2.0 to today (also contained in v0.3.0, superseded).
 ### CLI (`cli/`)
-
-- **Comando `run`**: `triad-cli run <file> [-- args]` esegue un programma `.triad`/`.td`
-  con il seed in codice macchina; su Linux/macOS usa l'interprete di riferimento
-  `seed/dev/triad_core.cjs` finché il seed ELF resta E0 (forzabile con `-n/--native`).
-  Exit code propagato, errori di file/parse gestiti con exit 1.
-- **Comandi `ext`** per l'estensione VS Code:
-  - `ext check`: valida `package.json`, grammatica tmLanguage e language-configuration
-    (tutti i JSON controllati); riporta nome, versione, linguaggi ed estensioni.
-  - `ext package`: pacchettizza il `.vsix` con `vsce` globale o `npx --yes @vscode/vsce`;
-    supporta `-o/--out`.
-- **Modularità**: nuovi moduli `cli/lib/commands/run.mjs` e `cli/lib/commands/ext.mjs`;
-  `status` e gli help aggiornati, README CLI esteso con le sezioni "Run" ed
-  "Estensione VS Code".
-
+- **`run` command**: `triad-cli run <file> [-- args]` runs a `.triad`/`.td` program
+  with the seed in machine code; on Linux/macOS use the reference interpreter
+  `seed/dev/triad_core.cjs` as long as the ELF seed remains E0 (forceable with `-n/--native`).
+  Exit code propagated, file/parse errors handled with exit 1.
+- **`ext`** commands for the VS Code extension:
+  - `ext check`: valid `package.json`, tmLanguage grammar and language-configuration
+    (all JSON checked); reports name, version, languages ​​and extensions.
+  - `ext package`: package the `.vsix` with global `vsce` or `npx --yes @vscode/vsce`;
+    supports `-o/--out`.
+- **Modularity**: new modules `cli/lib/commands/run.mjs` and `cli/lib/commands/ext.mjs`;
+  `status` and updated help, README CLI extended with "Run" sections ed
+  "VS Code Extension".
 ### Tooling editor
-
-- Estensione VS Code `editors/vscode` (Triad v0.2.0, linguaggi `triad`, estensioni
-  `.triad`/`.td`) verificata e pacchetizzabile da CLI (`ext check` / `ext package`).
-
-### Conformità e standard
-
-- Nuovo caso Core `gcd` (Euclide, ricorsione e `%`); la suite Core ha 37 casi.
-- Golden versionati: `conformance/**/expected.out` e `expected.code` tracciati;
-  il runner accetta `expected.golden` come copia di riserva.
-- `conformance/run.mjs` usa l'interprete `seed/dev/triad_core.cjs` su Linux/macOS
-  (seed ELF ancora E0) e fallisce con `golden mancante` invece di confrontare con
-  stdout vuoto.
-- Julia rimossa dal repository (`triad.jl`, `syntax.jl`, `test/`,
-  `bin/build_standalone.jl`); la CI usa solo Node e il seed.
-
-### Manutenzione e dipendenze
-
-- Dipendenza `esbuild` aggiornata a 0.28.1 (PR #21, dependabot).
-- `*.vsix` aggiunto a `.gitignore` come artefatto generato.
-- Aggiunta `LICENSE` MIT; inclusi nel repository i binari del seed
+- VS Code `editors/vscode` extension (Triad v0.2.0, `triad` languages, extensions
+  `.triad`/`.td`) checked and packaged by CLI (`ext check` / `ext package`).
+### Compliance and standards
+- New Core `gcd` case (Euclid, recursion and `%`); the Core suite has 37 cases.
+- Golden versioned: `conformance/**/expected.out` and `expected.code` tracked;
+  the runner accepts `expected.golden` as a backup.
+- `conformance/run.mjs` uses the `seed/dev/triad_core.cjs` interpreter on Linux/macOS
+  (seed ELF still E0) and fails with `golden missing` instead of comparing with
+  stdout empty.
+- Julia removed from repository (`triad.jl`, `syntax.jl`, `test/`,
+  `bin/build_standalone.jl`); the CI uses only Node and the seed.
+### Maintenance and dependencies
+- Updated `esbuild` dependency to 0.28.1 (PR #21, dependabot).
+- `*.vsix` added to `.gitignore` as a generated artifact.
+- Added `LICENSE` MIT; seed binaries included in the repository
   (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`).
-
-### Documentazione
-
-- Note di rilascio `RELEASE_NOTES_v0.8.0-beta.3.md`; descrizione PR in `PULL_REQUEST.md`.
-
+### Documentation
+- Release Notes `RELEASE_NOTES_v0.8.0-beta.3.md`; PR description in `PULL_REQUEST.md`.
 ## 0.3.0 — 2026-10-29
-
 ### CLI (`cli/`)
-
-- **Comando `run`**: `triad-cli run <file> [-- args]` esegue un programma `.triad`/`.td`
-  con il seed in codice macchina; su Linux/macOS usa l'interprete di riferimento
-  `seed/dev/triad_core.cjs` finché il seed ELF resta E0 (forzabile con `-n/--native`).
-  Exit code propagato, errori di file/parse gestiti con exit 1.
-- **Comandi `ext`** per l'estensione VS Code:
-  - `ext check`: valida `package.json`, grammatica tmLanguage e language-configuration
-    (tutti i JSON controllati); riporta nome, versione, linguaggi ed estensioni.
-  - `ext package`: pacchettizza il `.vsix` con `vsce` globale o `npx --yes @vscode/vsce`;
-    supporta `-o/--out`.
-- **Modularità**: nuovi moduli `cli/lib/commands/run.mjs` e `cli/lib/commands/ext.mjs`;
-  `status` e gli help aggiornati, README CLI esteso con le sezioni "Run" ed
-  "Estensione VS Code".
-- **Manutenzione**: dipendenza `esbuild` aggiornata a 0.28.1 (PR #21); `*.vsix` aggiunto
-  a `.gitignore` come artefatto generato.
-
-### Documentazione
-
-- Aggiunta la descrizione della Pull Request in `PULL_REQUEST.md`.
-
-## Non rilasciato — 2026-10-26
-
-- **Conformità**: nuovo caso Core `gcd` (Euclide, ricorsione e `%`); la suite Core ha 37 casi.
-- **Golden versionati**: `.gitignore` non esclude più `conformance/**/expected.out` e
-  `expected.code`; il runner accetta `expected.golden` come copia di riserva.
-- **Runner**: `conformance/run.mjs` usa l'interprete `seed/dev/triad_core.cjs` su Linux/macOS
-  (il seed ELF è ancora E0) e fallisce con `golden mancante` invece di confrontare con uno
-  stdout vuoto; rimosso il golden `gcd` scritto nel codice del runner.
-- **Julia rimossa**: `triad.jl`, `syntax.jl`, `test/` e `bin/build_standalone.jl` non fanno più
-  parte del repository; la CI usa solo Node e il seed.
-
-## Non rilasciato — 2026-10-22
-
-- **Open source**: aggiunta `LICENSE` MIT; inclusi nel repository i binari del seed
-  (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) e i lockfile
-  (`Manifest.toml`, `Cargo.lock`); `.gitignore` e `.gitattributes` aggiornati.
-
+- **`run` command**: `triad-cli run <file> [-- args]` runs a `.triad`/`.td` program
+  with the seed in machine code; on Linux/macOS use the reference interpreter
+  `seed/dev/triad_core.cjs` as long as the ELF seed remains E0 (forceable with `-n/--native`).
+  Exit code propagated, file/parse errors handled with exit 1.
+- **`ext`** commands for the VS Code extension:
+  - `ext check`: valid `package.json`, tmLanguage grammar and language-configuration
+    (all JSON checked); reports name, version, languages ​​and extensions.
+  - `ext package`: package the `.vsix` with global `vsce` or `npx --yes @vscode/vsce`;
+    supports `-o/--out`.
+- **Modularity**: new modules `cli/lib/commands/run.mjs` and `cli/lib/commands/ext.mjs`;
+  `status` and updated help, README CLI extended with "Run" sections ed
+  "VS Code Extension".
+- **Maintenance**: `esbuild` dependency updated to 0.28.1 (PR #21); `*.vsix` added
+  to `.gitignore` as the generated artifact.
+### Documentation
+- Added Pull Request description in `PULL_REQUEST.md`.
+## Not released — 2026-10-26
+- **Conformance**: new Core `gcd` case (Euclid, recursion and `%`); the Core suite has 37 cases.
+- **Golden versioned**: `.gitignore` no longer excludes `conformance/**/expected.out` and
+  `expected.code`; the runner accepts `expected.golden` as a backup.
+- **Runner**: `conformance/run.mjs` uses the `seed/dev/triad_core.cjs` interpreter on Linux/macOS
+  (the ELF seed is still E0) and fails with `golden missing` instead of comparing to one
+  empty stdout; removed the golden `gcd` written in the runner code.
+- **Julia removed**: `triad.jl`, `syntax.jl`, `test/` and `bin/build_standalone.jl` no longer do
+  part of the repository; the CI uses only Node and the seed.
+## Not released — 2026-10-22
+- **Open source**: added `LICENSE` MIT; seed binaries included in the repository
+  (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) and lockfiles
+  (`Manifest.toml`, `Cargo.lock`); Updated `.gitignore` and `.gitattributes`.
 ## 0.2.0 — 2026-10-20
-
-- **Standard Triad v0.2.0**: `SPEC.md` diventa un documento normativo indipendente
-  dall'implementazione (stato, normatività, profili di conformità e versionamento in §16).
-- **Conformità eseguibile**: aggiunta `conformance/` con 12 casi golden (stdout + exit code)
-  e un runner di sviluppo basato sullo stage0; la suite è parte dello standard.
-- **AI benchmark** (strumento di sviluppo): `ai/` con prompt di sistema, 5 task Triad-Core e
-  `ai/verify.jl` per generare codice con un LLM e verificarlo contro i golden.
-- **Seed Linux E0**: primo ELF x86-64 statico, solo syscall (`write`/`exit`), che stampa
-  `Triad seed Linux OK`; dump `seed/linux-x86_64/seed.hex`, generatore `seed/dev/gen_seed_linux.js`
-  e job CI Linux.
-- **Estensione canonica**: `.triad`; `.td` resta supportata come alias storico.
-- **Indipendenza**: piano di bootstrap senza linguaggi ospiti in `BOOTSTRAP.md`.
-- **Tooling editor**: grammatiche di sintassi per VS Code e Vim/Neovim (`editors/`) e
-  preparazione della voce Linguist per il riconoscimento su GitHub
+- **Standard Triad v0.2.0**: `SPEC.md` becomes an independent regulatory document
+  from implementation (status, regulations, compliance profiles and versioning in §16).
+- **Conformance executable**: Added `conformance/` with 12 golden cases (stdout + exit code)
+  and a development runner based on stage0; the suite is part of the standard.
+- **AI benchmark** (development tool): `ai/` with system prompt, 5 Triad-Core tasks and
+  `ai/verify.jl` to generate code with an LLM and verify it against goldens.
+- **Seed Linux E0**: first static x86-64 ELF, syscall only (`write`/`exit`), which prints
+  `Triad seed Linux OK`; dump `seed/linux-x86_64/seed.hex`, generator `seed/dev/gen_seed_linux.js`
+  and CI Linux jobs.
+- **Canonical extension**: `.triad`; `.td` remains supported as a historical alias.
+- **Independence**: Bootstrap plan without guest languages ​​in `BOOTSTRAP.md`.
+- **Tooling editor**: syntax grammars for VS Code and Vim/Neovim (`editors/`) and
+  preparing the Linguist entry for recognition on GitHub
   (`editors/linguist/`).
-- **Seed M1**: primo eseguibile Triad in codice macchina (PE Windows x86-64 da 1024 byte,
-  `seed/windows-x86_64/`): stampa `Triad seed OK`, exit 0, nessun compilatore.
-- **Seed M2**: I/O reale senza runtime — legge il file dal primo argomento della command line
-  e ne scrive i byte su stdout a blocchi da 4 KiB; exit 0/1/2, path tra virgolette, PE da
-  2560 byte.
-- **Triad-Core**: nuovo standard di profilo [`SPEC-CORE.md`](SPEC-CORE.md) (sottoinsieme
-  normativo per il bootstrap self-hosted) e suite `conformance/core/` con 29 casi condivisi
-  con Triad-Full.
-- **Seed M3b1/M3b2a**: il seed in codice macchina **interpreta** Triad-Core: `println` di
-  espressioni intere con `+ - *`, parentesi, unario `-`, commenti (M3b1) e poi variabili
-  globali con assegnamenti e lookup per nome (M3b2a). PE da 8704 byte, nessun runtime; casi
-  `interi` e `variabili` della suite Core verificati byte per byte.
-- **Seed M3b2b1**: il seed interpreta **funzioni in forma breve con parametri**: definizione
-  `f(x, y) = expr`, chiamata, ambienti dinamici con shadowing/truncation, composizione di
-  funzioni; caso Core `funzioni_semplici` verificato byte per byte. PE da 8704 byte, codice
-  1998 byte, nessun runtime.
-- **Seed M3b2b2**: aggiunti **confronti** (`== != < <= > >=` → `0/1`), **ternario corto**
-  `c ? a : b` (il ramo non scelto viene scansito senza valutarlo) e quindi **ricorsione con
-  caso base** (`fattoriale`, `fib`); caso Core `ricorsione` verificato byte per byte.
-  Codice 2611 byte.
-- **Seed M3b2b3a**: valori **taggati** (`Int = n<<1`, `Bool false = 1`, `Bool true = 3`):
-  i confronti producono Bool e `println` stampa `true`/`false`; aritmetica e confronti
-  untaggano/ri-taggano. Caso Core `confronti` verificato byte per byte; codice 2892 byte.
-- **Seed M3b2b3b**: aggiunti `%` (resto con segno), `^` (destra-associata, precedenza sopra
-  l'unario) e letterali `true`/`false`; caso Core `operatori` verificato byte per byte e
-  semantica confrontata con lo stage0 (`-2^2=-4`, `2*3^2=18`, `2^3^2=512`). Codice 3112 byte.
-- **Seed M3b2b3c**: aggiunti **blocchi `if`/`else`/`end`** con selezione del ramo, esecuzione
-  ricorsiva dei blocchi e scansione a profondità per `else`/`end` (annidamento); caso Core
-  `if_else` verificato byte per byte. Codice 3706 byte.
-- **Seed M3b2b3d**: aggiunto **`while`/`end`** con condizione rivalutata a ogni giro e
-  scansione a profondità che conta anche i `while` annidati; l'assegnamento ora **aggiorna**
-  la variabile più recente (`env_assign`) invece di accodare una entry per iterazione. Caso
-  Core `while_loop` verificato byte per byte. Codice 4002 byte.
-- **Seed M3b2b3e**: tag a 2 bit (`Int=n<<2`, `false=1`, `true=5`, chiusura=`ptr|2`) e
-  **lambda a un parametro** `x -> expr`, con record da 128 byte in un heap dedicato
-  (256 KiB di `VirtualAlloc`), chiamabili anche da variabile/passate come argomento; caso
-  Core `lambda` verificato byte per byte. Scoping dinamico (niente cattura dei locali).
-  Codice 4415 byte.
-- **Seed M3b2b3q**: verificata e coperta la concatenazione concatenata `a * b * c` con `length`; nuovo caso Core `stringhe_multi` (nessuna modifica al codice, hash invariato).
-- **Seed M3b2b3p**: simboli `:nome` (oggetto stringa con il nome, stampa senza `:`) e nuovo caso Core `simboli_base` verde (codice 6866 byte).
-- **Seed M3b2b3o**: concatenazione di stringhe con `*` (allocazione heap e copia dei due buffer, preservando il cursore del parser), nuovo caso Core `stringhe_concat` verde. Area IAT spostata a RVA `0x2C00` per il codice cresciuto (6680 byte); `string()` resta da fare.
-- **Seed M3b2b3n**: aggiunto il valore `nothing` (oggetto statico tipo 4, stampa `nothing`); nuovo caso Core `nothing_base` verde (codice 6451 byte). Concatenazione `*` e `string()` tentate ma rimandate (non stabili); il seed resta su stringhe base + `nothing`.
-- **Seed M3b2b3m**: stringhe come oggetti heap (`[tipo=1][len][byte…]`, valore `ptr|3`), parsing di letterali, stampa tramite `WriteFile`, builtin `length`; area IAT spostata a RVA `0x2A00` per far spazio al codice; nuovo caso Core `stringhe_base` verde (codice 6269 byte).`n- **Seed M3b2b3l**: aggiunto `begin … end` (eseguito con maschera di stop) e **CI GitHub Actions** (`.github/workflows/ci.yml`: conformance Full/Core su Ubuntu e Windows, casi del seed su Windows, hash check); nuovo caso Core `begin_block` verde (codice 5891 byte).`n- **Seed M3b2b3k**: **chiusure con cattura per valore** dell'ultimo binding del frame (parametro o locale), ri-aggiunta al call sopra il marker; casi Core closure e chiusure verdi; scan_end conta anche unction/let annidati (codice 5743 byte).
-- **Seed M3b2b3j**: **frame lessicali** nelle chiamate (marker nell'ambiente; assegnazioni locali senza toccare i globali) e **let name = expr … end** con binding locale; caso Core scope verde (codice 5584 byte).
-- **Seed M3b2b3i**: corpo delle funzioni a blocchi su **più istruzioni** (assegnamenti ed espressioni) con valore dell'ultima espressione; espressioni come statement e lock value in coda al sorgente; nuovo caso Core unzioni_blocco verde (codice 5303 byte).
-- **Seed M3b2b3h**: aggiunta la forma blocco unction f(x, …) <espressione> end (corpo a una espressione, end individuato da scan_end); il caso Core unzioni passa byte per byte (codice 5097 byte).
-- **Seed M3b2b3g**: aggiunti !, &&/|| (bitwise sui tag Bool) e +=; il caso Core ritmetica passa byte per byte (codice 4763 byte).
-- **Seed M3b2b3f (tentativo, instabile)**: aggiunti campi cattura al record chiusura; il
-  binding al call non è risultato affidabile ed è stato rimosso. Il seed resta allo stato
-  lambda stabile (codice 4570 byte); il caso `closure` passa solo sullo stage0. Cattura
-  rimandata ad AST/bytecode o frame catturati.
-- **Seed dev tooling**: generatore di sviluppo del PE in `seed/dev/gen_seed.js` con README;
-  il dump resta la fonte, la riproducibilità è verificata dall'hash
-  `C7915C02…0BF75FAC` e il generatore non è usato dalla catena S0→S4.
-- Prima bozza del sottoinsieme **Triad-Core** richiesto dal seed in codice macchina.
-
-## 0.1.0 — iniziale
-
-- Kernel S-expression `legacy/triad_sexpr_v1.jl` (storico).
+- **Seed M1**: first Triad executable in machine code (1024 byte x86-64 Windows PE,
+  `seed/windows-x86_64/`): print `Triad seed OK`, exit 0, no compiler.
+- **Seed M2**: Real I/O without runtime — reads the file from the first command line argument
+  and writes the bytes to stdout in 4 KiB blocks; exit 0/1/2, path in quotes, PE from
+  2560 bytes.
+- **Triad-Core**: new profile standard [`SPEC-CORE.md`](SPEC-CORE.md) (subset
+  regulatory for self-hosted bootstrap) and `conformance/core/` suite with 29 shared cases
+  with Triad-Full.
+- **Seed M3b1/M3b2a**: the seed in machine code **interprets** Triad-Core: `println` of
+  integer expressions with `+ - *`, parentheses, unary `-`, comments (M3b1) and then variables
+  globals with assignments and lookups by name (M3b2a). 8704 byte PE, no runtime; cases
+  Core suite `integers` and `variables` checked byte by byte.
+- **Seed M3b2b1**: the seed interprets **short form functions with parameters**: definition
+  `f(x, y) = expr`, call, dynamic environments with shadowing/truncation, composition of
+  functions; Core case `simple_functions` checked byte by byte. 8704 byte PE,code
+  1998 bytes, no runtime.
+- **Seed M3b2b2**: added **comparisons** (`== != < <= > >=` → `0/1`), **short ternary**
+  `c ? a : b` (the unchosen branch is scanned without evaluating it) and then **recursion with
+  base case** (`factorial`, `fib`); Core `recursion` case checked byte by byte.
+  Code 2611 bytes.
+- **Seed M3b2b3a**: **tagged** values (`Int = n<<1`, `Bool false = 1`, `Bool true = 3`):
+  comparisons produce Bool and `println` prints `true`/`false`; arithmetic and comparisons
+  they untag/re-tag. Core case `compares` checked byte by byte; code 2892 bytes.
+- **Seed M3b2b3b**: added `%` (signed remainder), `^` (right-bound, precedence above
+the unary) and `true`/`false` literals; Core case `operators` checked byte by byte e
+  semantics compared to stage0 (`-2^2=-4`, `2*3^2=18`, `2^3^2=512`). Code 3112 bytes.
+- **Seed M3b2b3c**: Added **`if`/`else`/`end`** blocks with branch selection, execution
+  block recursion and depth scanning for `else`/`end` (nesting); Core case
+  `if_else` checked byte by byte. Code 3706 bytes.
+- **Seed M3b2b3d**: added **`while`/`end`** with condition reevaluated every round and
+  depth scan that also counts nested `while`s; the assignment now **updates**
+  the most recent variable (`env_assign`) instead of appending an entry per iteration. Case
+  Core `while_loop` checked byte by byte. Code 4002 bytes.
+- **Seed M3b2b3e**: 2-bit tag (`Int=n<<2`, `false=1`, `true=5`, closure=`ptr|2`) and
+  **one-parameter lambda** `x -> expr`, with 128-byte records in a dedicated heap
+  (256 KiB of `VirtualAlloc`), also callable from variable/passed as argument; case
+  Core `lambda` checked byte by byte. Dynamic scoping (no room capture).
+  Code 4415 bytes.
+- **Seed M3b2b3q**: Checked and covered concatenated concatenation `a * b * c` with `length`; new Core case `multi_strings` (no code changes, hash unchanged).
+- **Seed M3b2b3p**: symbols `:name` (string object with name, print without `:`) and new green Core case `symboli_base` (code 6866 bytes).
+- **Seed M3b2b3o**: string concatenation with `*` (heap allocation and copying of the two buffers, preserving the parser cursor), new green Core `concat_strings` case. IAT area moved to RVA `0x2C00` for grown code (6680 bytes); `string()` remains to be done.
+- **Seed M3b2b3n**: added `nothing` value (static object type 4, prints `nothing`); new green Core `nothing_base` case (code 6451 bytes). Concatenation `*` and `string()` attempted but postponed (unstable); the seed remains on strings base + `nothing`.
+- **Seed M3b2b3m**: strings as heap objects (`[type=1][len][byte…]`, value `ptr|3`), parsing literals, printing via `WriteFile`, builtin `length`; IAT area moved to RVA `0x2A00` to make room for code; new green `base_strings` Core case (code 6269 bytes).`n- **Seed M3b2b3l**: added `begin … end` (executed with stop mask) and **CI GitHub Actions** (`.github/workflows/ci.yml`: Full/Core conformance on Ubuntu and Windows, seed cases on Windows, hash check); new green `begin_block` Core case (code 5891 bytes).`n- **Seed M3b2b3k**: **capture-by-value closures** of the last frame binding (parameter or local), re-added to the call above the marker; Core closure cases and green closures; scan_end also counts nested unction/let (code 5743 bytes).
+- **Seed M3b2b3j**: **lexical frames** in calls (markers in the environment; local assignments without touching globals) and **let name = expr … end** with local binding; green Core scope case (code 5584 bytes).
+- **Seed M3b2b3i**: body of block functions on **multiple instructions** (assignments and expressions) with value of the last expression; expressions like statement and lock value at the end of the source; new case Core unctions_green block (code 5303 byte).
+- **Seed M3b2b3h**: added the unction block form f(x, …) <expression> end (body to an expression, end identified by scan_end); the case Core unctions passes byte by byte (code 5097 bytes).
+- **Seed M3b2b3g**: added !, &&/|| (bitwise on Bool tags) and +=; the Core Rithmetic case passes byte by byte (code 4763 bytes).
+- **Seed M3b2b3f (attempt, unstable)**: added capture fields to closing record; the
+  binding to the call was found to be unreliable and has been removed. The seed remains at the state
+  stable lambda (code 4570 bytes); the `closure` case only passes on stage0. Capture
+  sent back to AST/bytecode or captured frames.
+- **Seed dev tooling**: PE development generator in `seed/dev/gen_seed.js` with README;
+  the dump remains the source, reproducibility is verified by the hash
+  `C7915C02…0BF75FAC` and the generator is not used by the S0→S4 chain.
+- First draft of the **Triad-Core** subset required by the seed in machine code.
+## 0.1.0 — initial
+- Kernel S-expression `legacy/triad_sexpr_v1.jl` (historical).

@@ -1,56 +1,56 @@
-# Prefazione
+# Preface
 
-Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple
-dispatch, programmazione logica integrata, codice come dato. La sua definizione è una specifica
-normativa indipendente dall'implementazione, accompagnata da una specifica eseguibile e da una
-suite di conformità con golden verificabili. Questo libro ne è il percorso di studio.
+Triad is a standalone programming language: block syntax and declared types, multiple
+dispatch, integrated logic programming, code as data. Its definition is a normative specification
+independent of the implementation, accompanied by an executable specification and a
+conformance suite with verifiable golden tests. This book is the study path.
 
-Il libro nasce da un'esigenza semplice: imparare Triad non significa solo leggere la specifica,
-ma costruire un modello mentale del linguaggio, dei suoi costrutti e del suo runtime. La specifica
-è normativa e precisa, ma è scritta per essere implementata, non per essere letta come un romanzo.
-Questo volume la traduce in un percorso: spiegazioni, esempi, esercizi, marcatori di profilo.
-Le spiegazioni, gli esempi e gli esercizi costruiscono passo dopo passo il modello mentale del
-linguaggio. La specifica resta la fonte normativa di riferimento, non un prerequisito di lettura.
+The book arises from a simple need: learning Triad does not mean just reading the specification,
+but building a mental model of the language, its constructs, and its runtime. The specification
+is normative and precise, but it is written to be implemented, not to be read like a novel.
+This volume translates it into a path: explanations, examples, exercises, profile markers.
+The explanations, examples, and exercises gradually build the mental model of
+the language. The specification remains the normative reference source, not a reading prerequisite.
 
-Il lettore ideale sa già programmare in un altro linguaggio: sa cosa sono una variabile, una
-funzione, un ciclo, una ricorsione. Questo libro non insegna la programmazione in generale, insegna
-Triad. Le influenze del linguaggio (Julia, Prolog, Lisp) sono documentate nell'Appendice A della
-specifica: sono note informative, non definizioni. Triad non è un dialetto di nessuno dei tre.
+The ideal reader already knows how to program in another language: knows what a variable is, a
+function, a loop, a recursion. This book does not teach programming in general, it teaches
+Triad. The language's influences (Julia, Prolog, Lisp) are documented in Appendix A of
+the specification: they are informative notes, not definitions. Triad is not a dialect of any of the three.
 
-Il volume riunisce due testi complementari e indipendenti. Il *Manuale di Triad 2.0* spiega il
-linguaggio, propone esercizi e chiude con grammatica, schede rapide, tabella degli errori,
-glossario e appendici. Il *Tutorial di Triad 2.0* è diviso in cinque parti: primi passi,
-Triad-Core, Triad-Full, codice del progetto e riferimento. Si può leggere il Manuale per intero
-senza il Tutorial, e il Tutorial per intero senza il Manuale: ciascuno spiega ciò che gli serve.
-L'indice che segue raccoglie i capitoli di entrambi i testi, così da ritrovarli in un unico posto.
+The volume brings together two complementary and independent texts. The *Triad 2.0 Manual* explains the
+language, proposes exercises, and closes with grammar, quick reference cards, error table,
+glossary, and appendices. The *Triad 2.0 Tutorial* is divided into five parts: first steps,
+Triad-Core, Triad-Full, project code, and reference. You can read the Manual in full
+without the Tutorial, and the Tutorial in full without the Manual: each explains what it needs.
+The index that follows collects the chapters of both texts, so they can be found in one place.
 
-Se vuoi scrivere programmi eseguibili oggi, comincia dal Tutorial, parti I e II; usa il Manuale
-per approfondire i concetti e fare gli esercizi. Per studiare lo standard completo, prosegui con
-la parte III del Tutorial e i capitoli corrispondenti del Manuale. La parte IV è pensata per chi
-vuole esplorare o modificare il repository.
+If you want to write executable programs today, start with the Tutorial, parts I and II; use the Manual
+to deepen concepts and do exercises. To study the complete standard, continue with
+part III of the Tutorial and the corresponding chapters of the Manual. Part IV is for those who
+want to explore or modify the repository.
 
-Le appendici del Manuale orientano tra le influenze del linguaggio e le fonti del progetto. I
-testi normativi integrali non sono riprodotti nel volume: chi vuole il dettaglio formale li trova
-nei file `SPEC.md` e `SPEC-CORE.md` del repository, che restano le fonti definitive in caso di
-divergenza. Il volume contiene comunque le regole necessarie a capire e usare il linguaggio: il
-rinvio alla specifica è un approfondimento, non una dipendenza.
+The Manual's appendices guide through the language's influences and the project's sources. The
+full normative texts are not reproduced in the volume: those who want formal detail find them
+in the `SPEC.md` and `SPEC-CORE.md` files of the repository, which remain the definitive sources in case of
+divergence. The volume nevertheless contains the rules necessary to understand and use the language: the
+reference to the specification is a deepening, not a dependency.
 
-Due profili di conformità attraversano tutto il libro. Triad-Core è il sottoinsieme di bootstrap:
-valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è lo standard
-completo. Ogni programma Core è anche un programma Full valido e deve comportarsi allo stesso modo.
-I marcatori **[Core]** e **[Full]** indicano in quale profilo esiste ciascun costrutto; i blocchi
-di codice sono marcati `triad` per il codice Core e `triad-full` per il codice definito dallo
-standard Full, non ancora eseguibile dal runtime corrente. Gli esempi Core si possono provare
-con l'interprete JavaScript di riferimento (`node seed/dev/triad_core.cjs`); i frammenti indicati
-come specifici del seed fanno eccezione.
+Two conformance profiles run through the whole book. Triad-Core is the bootstrap subset:
+values, functions, closures, control flow, lists, strings, I/O. Triad-Full is the complete
+standard. Every Core program is also a valid Full program and must behave the same way.
+The **[Core]** and **[Full]** markers indicate in which profile each construct exists; the code
+blocks are marked `triad` for Core code and `triad-full` for code defined by the
+Full standard, not yet executable by the current runtime. Core examples can be tried
+with the reference JavaScript interpreter (`node seed/dev/triad_core.cjs`); fragments indicated
+as seed-specific are exceptions.
 
-Il seed S0 è un interprete Triad-Core scritto direttamente in codice macchina x86-64, senza un
-linguaggio ospite; oggi il seed eseguibile è quello per Windows. Non va confuso con l'interprete
-JavaScript usato per eseguire gli esempi Core e verificare la conformance. Il piano di bootstrap
-prevede S1 (un interprete Triad scritto in Triad-Core), S2 (compilatore nativo), S3 (self-hosting)
-e S4 (parità cross-platform). Dove il runtime non copre un costrutto, il testo lo dice
-esplicitamente.
+The S0 seed is a Triad-Core interpreter written directly in x86-64 machine code, without a
+host language; today the executable seed is the one for Windows. It should not be confused with the
+JavaScript interpreter used to run Core examples and verify conformance. The bootstrap plan
+provides S1 (a Triad interpreter written in Triad-Core), S2 (native compiler), S3 (self-hosting)
+and S4 (cross-platform parity). Where the runtime does not cover a construct, the text says so
+explicitly.
 
-Buona lettura, e buon codice.
+Happy reading, and happy coding.
 
 — GPuntobit

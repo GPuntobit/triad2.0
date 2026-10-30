@@ -1,74 +1,59 @@
-# Estrazione E0 — `seed/linux-x86_64/README.md`
-
-- **Documento di riferimento:** [`seed/linux-x86_64/README.md`](../seed/linux-x86_64/README.md)
-- **Data dell'estrazione:** 2026-10-22
-- **Nota:** il README E0 è stato aggiornato dopo questa estrazione (i binari del seed sono ora pubblicabili, vedi `.gitignore`); la tabella riflette il testo originale.
-- **Metodo:** kit ANCÒRA / PENALITÀ / RADAR / SPECCHIO
-- **Esito:** base confermata dall'utente (documento e campi); valori estratti dal documento, nessun dato aggiunto.
-
-Regola applicata: estrarre solo valori esplicitamente dichiarati nel documento; se un valore è ambiguo o assente, lasciare il campo vuoto e indicarne il motivo.
-
-## 1. Base dell'estrazione
-
-- **Documento:** scelto dall'agente su autorizzazione esplicita («Documento: scegli tu») e confermato dall'utente («Confermo!»). La scelta in sé non è nel documento: Fonte **Inferito**.
-- **Campi:** 21 righe, di cui 19 valorizzate e 2 lasciate vuote (Licenza, Data di rilascio) perché assenti nel documento. L'elenco dei campi non era fornito dall'utente: proposto dall'agente leggendo le sezioni del documento (Fonte **Inferito**) e confermato.
-
-## 2. Tabella (ANCÒRA + RADAR)
-
-| Campo | Valore | Sezione | Motivo (se vuoto) | Fonte | Evidenza |
+# Extract E0 — `seed/linux-x86_64/README.md`
+- **Reference document:** [`seed/linux-x86_64/README.md`](../seed/linux-x86_64/README.md)
+- **Drawing date:** 2026-10-22
+- **Note:** the E0 README has been updated after this extraction (the seed binaries are now publishable, see `.gitignore`); the table reflects the original text.
+- **Method:** ANCHOR / PENALTY / RADAR / MIRROR kit
+- **Result:** basis confirmed by the user (document and fields); values ​​extracted from the document, no data added.
+Rule applied: extract only values ​​explicitly declared in the document; If a value is ambiguous or absent, leave the field blank and indicate why.
+## 1. Basis of extraction
+- **Document:** chosen by the agent with explicit authorization ("Document: you choose") and confirmed by the user ("I confirm!"). The choice itself is not in the document: Source **Inferred**.
+- **Fields:** 21 lines, of which 19 are filled in and 2 are left blank (License, Release Date) because they are absent in the document. The list of fields was not provided by the user: proposed by the agent by reading the sections of the document (Source **Inferred**) and confirmed.
+## 2. Table (ANCÒRA + RADAR)
+| Field | Value | Section | Reason (if blank) | Source | Evidence |
 |---|---|---|---|---|---|
-| Titolo / artefatto | `S0 / Linux x86-64 — seed ELF (E0)` | Titolo | — | Estratto | — |
-| Piattaforma | `Linux x86-64`; prova su `CachyOS/Linux x86-64` | Titolo; Introduzione | — | Estratto | — |
-| Formato | `ELF64 statico` | Introduzione | — | Estratto | — |
-| Dipendenze runtime | «senza libc né linker dinamico»; «solo syscall Linux» | Introduzione; §Build e prova (Linux) | — | Estratto | — |
-| Dimensione ELF | `173 byte (0xAD)` | §Numeri | — | Estratto | — |
-| Codice macchina | `33 byte` | §Numeri | — | Estratto | — |
-| Messaggio | `20 byte` | §Numeri | — | Estratto | — |
-| Base di caricamento | `0x400000` | §Numeri | — | Estratto | — |
-| Entry point | `0x400078` | §Numeri | — | Estratto | — |
-| Segmenti | un solo `PT_LOAD` R\|X, offset 0, filesz/memsz `0xAD`, align `0x1000` | §Numeri | — | Estratto | — |
-| sha256 di `seed.hex` | `AD4C9F08176D9964D5BE17D44C72230184434025980447395E7A3250F63CA5EA` | §Numeri | — | Estratto | — |
-| sha256 dell'ELF | `6d504451e1d8a39c6e139a8a120bfaf03373131894292be12f0039eb8a7797f9` | §Numeri | — | Estratto | — |
-| Output stdout | `Triad seed Linux OK` | Introduzione; §Build e prova (Linux) | — | Estratto | — |
-| Exit code | `0` | Introduzione; §Build e prova (Linux) | — | Estratto | — |
-| Comandi di build | `xxd -r -p seed.hex seed`; `chmod +x seed`; `./seed` | §Build e prova (Linux) | — | Estratto | — |
-| Rigenerazione | `node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex` | §Riproducibilità | — | Estratto | — |
-| Cosa è committato | solo `seed.hex` (dump); l'ELF non viene committato | Introduzione; §Riproducibilità | — | Estratto | — |
-| Stato / cosa non è ancora | «Non è ancora l'interprete Triad-Core»; E0 = primo passo del port | Titolo; Introduzione | — | Estratto | — |
-| Prossimi passi | E1 (`argc/argv`, `openat`/`read`/`write`); E2 (port interprete, 25 casi Core); E3 (CI Linux nativo senza Wine) | §Prossimi passi | — | Estratto | — |
-| Licenza | *(vuoto)* | — | Il documento non nomina alcuna licenza. | — | — |
-| Data di rilascio | *(vuoto)* | — | Nessuna data è dichiarata nel documento. | — | — |
-
-## 3. Voci inferite (RADAR)
-
-Tutti i campi della tabella hanno Fonte **Estratto**. Le sole voci **Inferite** sono fuori documento:
-
-| Voce | Fonte | Evidenza |
+| Title/Artifact | `S0 / Linux x86-64 — seed ELF (E0)` | Title | — | Extract | — |
+| Platform | `Linux x86-64`; try on `CachyOS/Linux x86-64` | Title; Introduction | — | Extract | — |
+| Format | `ELF64 static` | Introduction | — | Extract | — |
+| Runtime dependencies | «without libc or dynamic linker»; «Linux syscall only» | Introduction; §Build and Test (Linux) | — | Extract | — |
+| ELF Size | `173 bytes (0xAD)` | §Numbers | — | Extract | — |
+| Machine Code | `33 bytes` | §Numbers | — | Extract | — |
+| Message | `20 bytes` | §Numbers | — | Extract | — |
+| Loading Base | `0x400000` | §Numbers | — | Extract | — |
+| Entry point | `0x400078` | §Numbers | — | Extract | — |
+| Segments | a single `PT_LOAD` R\|X, offset 0, filesz/memsz `0xAD`, align `0x1000` | §Numbers | — | Extract | — |
+| sha256 of `seed.hex` | `AD4C9F08176D9964D5BE17D44C72230184434025980447395E7A3250F63CA5EA` | §Numbers | — | Extract | — |
+| sha256 by ELF | `6d504451e1d8a39c6e139a8a120bfaf03373131894292be12f0039eb8a7797f9` | §Numbers | — | Extract | — |
+| Output stdout | `Triad seed Linux OK` | Introduction; §Build and Test (Linux) | — | Extract | — |
+| Exit code | `0` | Introduction; §Build and Test (Linux) | — | Extract | — |
+| Build commands | `xxd -r -p seed.hex seed`; `chmod +x seed`; `./seed` | §Build and Test (Linux) | — | Extract | — |
+| Regeneration | `node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex` | §Reproducibility | — | Extract | — |
+| What is committed | just `seed.hex` (dump); the ELF is not committed | Introduction; §Reproducibility | — | Extract | — |
+| Status / what is not yet | «It is not yet the Triad-Core interpreter»; E0 = first port step | Title; Introduction | — | Extract | — |
+| Next steps | E1 (`argc/argv`, `openat`/`read`/`write`); E2 (interpreter port, 25 Core cases); E3 (Native Linux CI without Wine) | §Next steps | — | Extract | — |
+| License | *(empty)* | — | The document does not name any licenses. | — | — |
+| Release Date | *(empty)* | — | No date is stated in the document. | — | — |
+## 3. Inferred Voices (RADAR)
+All fields in the table have Source **Extract**. The only **Inferred** items are outside the document:
+| Voice | Source | Evidence |
 |---|---|---|
-| Documento scelto | Inferito | «scegli tu» autorizza la scelta, ma nessun criterio è dichiarato; è stato scelto il README dell'artefatto E0 per recenza e verificabilità. |
-| Elenco dei campi | Inferito | L'elenco non è mai stato fornito; è stato derivato dalle sezioni del documento, quindi la selezione è dell'agente. |
-| Data dell'estrazione | Inferito | Presa dall'orologio di sistema, non dal documento. |
-
-## 4. SPECCHIO — controllo di qualità
-
-1. **Assunzioni non esplicite:** il documento è stato scelto dall'agente (Inferito, poi confermato) e l'elenco dei campi è stato proposto dall'agente (Inferito, poi confermato).
-2. **Valori interpretabili diversamente:** `173 byte` di file contro `33 + 20` byte di codice e messaggio può sembrare incoerente (il resto è header/padding, ma il documento non lo spiega: non è stato aggiunto); «E0» può essere letto come stato completo o come inizio del port; `exit 0` è dichiarato, non verificato eseguendo l'ELF.
-3. **Calcoli tra sezioni diverse:** nessuno; nessuna somma, nessun hash ricalcolato, nessun valore combinato.
-4. **Affidabilità per riga:** vedi §4.2.
-
-### 4.2 Campi problematici
-
-| Campo | Affidabilità | Perché |
+| Selected document | Inferred | "you choose" authorizes the choice, but no criteria are declared; the README of the E0 artifact was chosen for recency and verifiability. |
+| List of fields | Inferred | The list was never provided; it was derived from the sections of the document, so the selection is up to the agent. |
+| Draw date | Inferred | Taken from the system clock, not from the document. |
+## 4. MIRROR — quality control
+1. **Non-explicit assumptions:** the document was chosen by the agent (Inferred, then confirmed) and the list of fields was proposed by the agent (Inferred, then confirmed).
+2. **Values ​​that can be interpreted differently:** `173 bytes` of file versus `33 + 20` bytes of code and message may seem inconsistent (the rest is header/padding, but the document doesn't explain it: it wasn't added); «E0» can be read as a complete state or as the start of the port; `exit 0` is declared, not checked by running the ELF.
+3. **Calculations between different sections:** none; no sum, no recalculated hash, no combined value.
+4. **Reliability per line:** see §4.2.
+### 4.2 Problem fields
+| Field | Reliability | Why |
 |---|---|---|
-| Documento scelto | Media | Scelta arbitraria (pur autorizzata); nessun criterio esplicito nel documento. |
-| Elenco dei campi | Bassa | Mai fornito dall'utente; derivato dall'agente, possibile selezione orientata. |
-| Output stdout / Exit code | Media | Valori letterali nel documento, ma non eseguiti in questa sessione (ambiente Windows). |
-| sha256 `seed.hex` / ELF | Media | Copiati letteralmente, non ricalcolati. |
-| Licenza / Data di rilascio | Alta | Campi confermati e correttamente vuoti: assenza verificata nel documento. |
-| Altri campi (titolo, numeri, comandi, prossimi passi) | Alta | Valori letterali, sezione citata. |
-
-## 5. Limiti dichiarati
-
-- L'ELF Linux non è stato eseguito in questa sessione: output ed exit code sono valori dichiarati dal documento, non verificati qui.
-- Gli hash sono copiati carattere per carattere, non ricalcolati.
-- Licenza e data di rilascio restano vuote per assenza nel documento, non per dimenticanza.
+| Selected document | Average | Arbitrary choice (although authorised); no explicit criteria in the document. |
+| List of fields | Low | Never provided by the user; derived from the agent, possible oriented selection. |
+| Output stdout / Exit code | Average | Literals in the document, but not executed in this session (Windows environment). |
+| sha256 `seed.hex` / ELF | Average | Literally copied, not recalculated. |
+| License / Release Date | High | Fields confirmed and correctly empty: absence verified in the document. |
+| Other fields (title, numbers, commands, next steps) | High | Literals, cited section. |
+## 5. Limits stated
+- The Linux ELF was not run in this session: output and exit code are values ​​declared by the document, not checked here.
+- Hashes are copied character by character, not recalculated.
+- License and issue date remain blank due to absence in the document, not due to forgetfulness.
