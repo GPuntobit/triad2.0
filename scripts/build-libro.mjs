@@ -31,9 +31,9 @@ function addHeadingIds(html, prefix, toc) {
   });
 }
 
-const preface = readFileSync(join(root, 'PREFazione.md'), 'utf8');
+const preface = readFileSync(join(root, 'docs', 'PREFazione.md'), 'utf8');
 const prefaceHtml = rewriteRepositoryLinks(marked.parse(preface));
-const manualeRaw = readFileSync(join(root, 'MANUALE.md'), 'utf8');
+const manualeRaw = readFileSync(join(root, 'docs', 'MANUALE.md'), 'utf8');
 const tutorialRaw = readFileSync(join(root, 'TUTORIAL.md'), 'utf8');
 
 function stripIndice(md, heading, endMarker) {

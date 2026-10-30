@@ -52,7 +52,7 @@ Runtime note: the machine-code seed is the default runtime for `.triad` (launche
 - [ ] `seed/dev/gen_seed.js:1589`: remove `console.log('labels', JSON.stringify(labels))`, which dumps all emitter labels on every seed regeneration (debug only).
 - [ ] `seed/dev/gen_seed.js:1590`: remove `console.log('code bytes:', code.length)` (intermediate data; final size is already printed at line 1640).
 - [ ] `seed/dev/gen_seed_linux.js:113-114`: reduce output to `sha256(ELF)` and the written file; `ELF bytes` and `entry RVA` are debug details.
-- Note - to keep (legitimate CLI output): `console.log`/`console.error` in `ai/jev_audit.mjs` (report, `--dry-run`, usage messages) and in `.webcmd/graphify/tools/generate.mjs`.
+- Note - to keep (legitimate CLI output): `console.log`/`console.error` in `ai/jev_audit.mjs` (report, `--dry-run`, usage messages) and in `tools/webcmd-graphify/tools/generate.mjs`.
 - [ ] `_probe.jl`, `_probe2.jl`, `_probe3.jl`, `_qc.jl`, `_smoke.jl`: `PROMPT_JEV.md` describes them as "gitignored, throwaway scripts", but they are versioned. Remove them from the repository and add them to `.gitignore`.
 - [x] Root output files versioned (`out.txt`, `output.txt`, `outfile.txt`, `stdout.txt`, `runoutput.txt`, `test_output.txt`, `error.txt`, `scope_out.txt`, `let_output.txt`, `let_test_out.txt`, `let_annidato_out.txt`): remove them and ignore them.
 - [ ] `run_seed.bat` ... `run_seed12.bat` (12 variants): keep one parameterized.

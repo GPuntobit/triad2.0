@@ -1,6 +1,21 @@
 # Changelog — standard Triad
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
+
+## Unreleased — 2026-10-30: repository structure reorganization
+
+- Probe `.td` moved from the root to `probes/` (`test_simple.td`, `test_let.td`,
+  `test_get.td`, `test_td.txt`); paths updated in `.github/workflows/ci.yml`
+  and `install.sh`.
+- Long-form documentation gathered in `docs/`: `MANUALE.md`, `PREFazione.md`,
+  `TUTORIAL-RU.md`; versioned release notes in `docs/releases/`. Paths updated
+  in `scripts/build-libro.mjs` and `scripts/build-epub.cjs`.
+- webcmd Graphify plugin moved from `.webcmd/` to `tools/webcmd-graphify/`.
+- Removed two empty files accidentally committed in the root: `Developer` and
+  `install-triad-ext.bat` (no active reference in the repository).
+- `README.md`: "Project Structure" section updated to the new layout.
+
+
 ## 0.8.0-beta.3 — 2026-10-29
 **Triad 2.0 – Beta 3.** Pre-release of the Triad 2.0 series: includes *all*
 updates from v0.2.0 to today (also contained in v0.3.0, superseded).
