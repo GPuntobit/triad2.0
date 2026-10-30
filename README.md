@@ -29,7 +29,7 @@ They are part of the language, not a library: errors as data (Err), contracts (r
   <img src="docs/assets/img/curva-apprendimento.svg" alt="Learning curve and learning threshold for Triad 2.0" width="900">
 </p>
 
-Derived from the chapters in [TUTORIAL.md](tutorial/TUTORIAL.md) and [docs/MANUALE.md](docs/MANUALE.md): Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
+Derived from the chapters in [tutorial/TUTORIAL.md](tutorial/TUTORIAL.md) and [docs/MANUALE.md](docs/MANUALE.md): Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
 
 https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
 <p align="center">
@@ -172,18 +172,14 @@ seed/windows-x86_64/        seed.hex (source) and seed.exe: Triad-Core interpret
 seed/linux-x86_64/          first Linux ELF (E0): write/exit syscalls, "Triad seed Linux OK"
 seed/dev/                   seed generators and triad_core.cjs reference interpreter
 selfhost/                   S1: Triad interpreter written in Triad-Core (in progress)
-scripts/                    project scripts, organized by purpose
-scripts/docs/               build helpers (book/EPUB/DOCX, cover, download chart)
-scripts/seed-runner/        Windows .bat wrappers to run the seed on selfhost/
-scripts/experiments/        one-off dev experiments (translation, debug probes)
+scripts/                    build helpers (book/EPUB/DOCX, charts, Windows seed runners)
 tools/webcmd-graphify/      Graphify webcmd plugin (code-graph tools for agents)
 editors/                    VS Code, Vim/Neovim, and Linguist entry
 examples/*.triad, *.td      Triad examples (.triad canonical, .td historical alias)
 ai/                         LLM generation benchmark + verifier (development tool)
 docs/                       GitHub Pages site and long-form documentation
 docs/MANUALE.md             full manual (Core + Full presented together)
-tutorial/                   tutorial in three languages (it/en/zh)
-tutorial/TUTORIAL.ru.md     Russian translation of TUTORIAL.md
+docs/TUTORIAL-RU.md         Russian translation of TUTORIAL.md
 docs/releases/              per-version release notes
 obsidian-triad/             Obsidian vault with index and Graphify graph of the repository
 .github/workflows/          CI (ci.yml) and Pages publishing (pages.yml, static.yml)
@@ -195,7 +191,7 @@ TASK.md / PULL_REQUEST.md   task log and PR description template
 SECURITY.md                 vulnerability reporting policy
 plan.md                     work plan (checklist)
 VERSION / CHANGELOG.md      standard version and history
-README.md / tutorial/TUTORIAL.md  introduction and complete usage tutorial
+tutorial/TUTORIAL.md        complete usage tutorial
 LICENSE                     MIT license (open source)
 ```
 
@@ -239,7 +235,7 @@ Written and maintained by **Kilo** — software engineer agent for the Triad 2.0
 
 ## Downloads
 
-Trend of total downloads of Triad releases on GitHub (automatically updated daily by the [`.github/workflows/download-chart.yml`](.github/workflows/download-chart.yml) workflow, which reads data via the GitHub API and regenerates the chart with [`scripts/docs/download_chart.py`](scripts/docs/download_chart.py)).
+Trend of total downloads of Triad releases on GitHub (automatically updated daily by the [`.github/workflows/download-chart.yml`](.github/workflows/download-chart.yml) workflow, which reads data via the GitHub API and regenerates the chart with [`scripts/download_chart.py`](scripts/download_chart.py)).
 
 ![Triad download chart](docs/assets/img/downloads.svg)
 

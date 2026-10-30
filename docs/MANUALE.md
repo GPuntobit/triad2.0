@@ -1,205 +1,205 @@
-# Manuale di Triad 2.0
+# Triad 2.0 Handbook
 
-> Il manuale completo del linguaggio: lessico, valori, controllo di flusso, funzioni, dispatch,
-> logica, codice come dato, errori, contratti, budget, tracce, effetti, esercizi e riferimento.
+> The complete manual of the language: vocabulary, values, flow control, functions, dispatch,
+> logic, code as data, errors, contracts, budgets, tracks, effects, exercises and reference.
 
-Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple
-dispatch, programmazione logica integrata e codice come dato, in una sola sintassi. La sua
-definizione è una specifica normativa indipendente da qualsiasi implementazione
-([`SPEC.md`](SPEC.md), standard `0.2.0`), accompagnata da una specifica eseguibile
-([`SPEC-CORE.md`](SPEC-CORE.md)) e da una suite di conformità con golden verificabili
+Triad is a self-contained programming language: block syntax and declared, multiple types
+dispatch, integrated logic programming and code as data, in a single syntax. His
+definition is a specific regulation independent of any implementation
+([`SPEC.md`](SPEC.md), standard `0.2.0`), accompanied by an executable specification
+([`SPEC-CORE.md`](SPEC-CORE.md)) and a conformance suite with verifiable goldens
 ([`conformance/`](conformance/README.md)).
 
-Questo manuale insegna il linguaggio per come è definito dallo standard. Non è un riassunto della
-specifica: è un percorso di studio, con spiegazioni, esempi ed esercizi. Puoi leggerlo dall'inizio
-alla fine senza altro materiale: ogni concetto che serve per capire un capitolo è spiegato prima o
-in quel capitolo, e i rimandi esterni sono approfondimenti facoltativi. Non è una raccolta di pagine
-da consultare a caso: è un libro, e l'ordine dei capitoli costruisce il modello mentale del
-linguaggio un pezzo alla volta.
+This manual teaches the language as it is defined by the standard. It is not a summary of
+specification: it is a study path, with explanations, examples and exercises. You can read it from the beginning
+at the end without any other material: every concept needed to understand a chapter is explained first or
+in that chapter, and the external references are optional further information. It is not a collection of pages
+to be consulted at random: it is a book, and the order of the chapters builds the mental model of
+language one piece at a time.
 
 ---
 
-## Come leggere questo manuale
+## How to read this manual
 
-### A chi è indirizzato
+### Who is it addressed to?
 
-Sai programmare, in qualunque linguaggio: sai cosa sono una variabile, una funzione, un ciclo, una
-ricorsione. Questo manuale non spiega la programmazione in generale, spiega **Triad**.
+You know how to program, in any language: you know what a variable, a function, a loop, a
+recursion. This manual does not explain programming in general, **Triad** explains.
 
-Il manuale non presume che tu abbia letto nient'altro: ogni concetto è spiegato dove serve. I
-documenti normativi del progetto — `SPEC.md`, `SPEC-CORE.md` — e la suite di conformità in
-`conformance/` sono i testi e le prove a cui puoi risalire per approfondire o per controllare un
-caso limite, ma non sono prerequisiti: sono il riferimento di chi vuole verificare, non il manuale
-di chi vuole imparare. Per questo il testo distingue sempre ciò che è regola del linguaggio da ciò
-che è comportamento di una particolare implementazione.
+The manual doesn't assume you've read anything else: every concept is explained where it matters. I
+project regulatory documents — `SPEC.md`, `SPEC-CORE.md` — and the compliance suite in
+`conformance/` are the texts and tests that you can go back to for further information or to check a
+extreme case, but they are not prerequisites: they are the reference for those who want to verify, not the manual
+of those who want to learn. For this reason the text always distinguishes what is a rule of language from what is
+which is behavior of a particular implementation.
 
-### Due profili, una sola lingua
+### Two profiles, one language
 
-Lo standard definisce due profili di conformità, ed è utile saperli distinguere prima di cominciare:
+The standard defines two compliance profiles, and it is useful to know how to distinguish them before starting:
 
-| profilo | che cosa contiene | dove è definito |
+| profile | what does it contain | where | is defined
 |---|---|---|
-| **Triad-Core** | valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O | [`SPEC-CORE.md`](SPEC-CORE.md) |
-| **Triad-Full** | tutto: tipi dichiarati, dispatch, logica, macro, contratti, budget, tracce, effetti | [`SPEC.md`](SPEC.md) |
+| **Triad-Core** | values, functions, closures, flow control, lists, strings, I/O | [`SPEC-CORE.md`](SPEC-CORE.md) |
+| **Triad-Full** | everything: declared types, dispatch, logic, macros, contracts, budgets, tracks, effects | [`SPEC.md`](SPEC.md) |
 
-Triad-Core è un **sottoinsieme** di Triad-Full: ogni programma Core è anche un programma Full
-valido e deve comportarsi allo stesso modo. Il manuale presenta i due profili **sullo stesso piano**,
-per costruzione logica: ogni capitolo introduce un costrutto e dice in quale profilo esiste. Non
-perché Full sia "più avanti", ma perché sono due facce della stessa specifica.
+Triad-Core is a **subset** of Triad-Full: every Core program is also a Full program
+valid and must behave in the same way. The manual presents the two profiles **on the same level**,
+by logical construction: each chapter introduces a construct and says in which profile it exists. Not
+because Full is "further ahead", but because they are two sides of the same specification.
 
-Il profilo Core non è una versione semplificata per comodità didattica: è il sottoinsieme scelto
-perché un interprete di bootstrap, scritto in poche migliaia di righe, possa eseguirlo, e perché lo
-stesso linguaggio possa descrivere se stesso. Full aggiunge i costrutti che richiedono un motore più
-ricco — dispatch multiplo, unificazione, espansione di macro — ma non cambia il significato di
-quelli che Core ha già. Imparare Core, quindi, non è tempo speso per un linguaggio diverso.
+The Core profile is not a simplified version for educational convenience: it is the chosen subset
+why a bootstrap interpreter, written in a few thousand lines, can run it, and why it
+same language can describe itself. Full adds constructs that require a more engine
+rich — multiple dispatch, unification, macro expansion — but it doesn't change the meaning of
+the ones Core already has. Learning Core, therefore, is not time spent on a different language.
 
-Dove la differenza conta, trovi due marcatori:
+Where the difference matters, you find two markers:
 
-- **[Core]** — il costrutto esiste nel sottoinsieme di bootstrap;
-- **[Full]** — il costrutto esiste solo nello standard completo.
+- **[Core]** — the construct exists in the bootstrap subset;
+- **[Full]** — the construct exists only in the full standard.
 
-Un marcatore di profilo descrive ciò che lo standard definisce, non ciò che ogni programma
-installato sa già eseguire. Per questo il manuale distingue tre livelli: la regola normativa
-(che cosa deve significare il costrutto), la disponibilità nel profilo Core o Full e lo stato
-delle implementazioni presenti nel repository. Un esempio Full può essere corretto secondo lo
-standard e, allo stesso tempo, non essere ancora eseguibile dal runtime corrente. Quando un
-esempio riporta **Output (golden Full)**, il risultato è un valore atteso conservato dalla suite,
-non una verifica appena eseguita da un interprete Full completo.
+A profile marker describes what the standard defines, not what each program does
+installed already knows how to run. For this reason the manual distinguishes three levels: the normative rule
+(what the construct should mean), availability in the Core or Full profile and the status
+of the implementations present in the repository. A Full example can be corrected according to the
+standard and, at the same time, not yet be executable by the current runtime. When a
+example reports **Output (golden Full)**, the result is an expected value preserved by the suite,
+not a check just performed by a complete Full interpreter.
 
-Per studiare un costrutto senza confondere questi livelli, chiediti nell'ordine: che forma
-accetta la grammatica? quali valori legge e produce? quali effetti o errori può generare? in quale
-profilo è definito? quale implementazione e quale caso di conformance lo verificano? Questa
-sequenza permette di passare dal codice alla semantica e poi alle prove, invece di trattare
-l'output di un singolo runtime come definizione del linguaggio.
+To study a construct without confusing these levels, ask yourself in order: what form
+do you accept grammar? What values ​​does it read and produce? What effects or errors can it generate? in which one
+Is profile defined? which implementation and which conformance case verify this? This one
+sequence allows you to move from code to semantics and then to proofs, instead of dealing
+the output of a single runtime as the language definition.
 
-### Convenzioni di notazione
+### Notation conventions
 
-| notazione | significa |
+| notation | means |
 |---|---|
-| `monospace` | codice Triad o un valore letterale |
-| **Output:** | l'output esatto prodotto dal programma |
-| **[Core]** / **[Full]** | il profilo in cui il costrutto esiste |
-| `SPEC §n` | la sezione normativa corrispondente |
+| `monospace` | Triad code or a literal value |
+| **Output:** | the exact output produced by the program |
+| **[Core]** / **[Full]** | the profile in which the construct exists |
+| `SPEC §n` | the corresponding regulatory section |
 
-I blocchi di codice sono marcati con il loro livello di eseguibilità:
+Code blocks are marked with their executable level:
 
-| fence | significa |
+| fence | means |
 |---|---|
-| ```` ```triad ```` | programma **eseguibile oggi** con l'interprete di riferimento |
-| ```` ```triad-full ```` | programma **specifica dello standard**: definito e normativo, ma non ancora eseguibile dal runtime corrente |
+| ```` ```triad ```` | program **executable today** with the reference interpreter |
+| ```` ```triad-full ```` | program **standard specification**: defined and normative, but not yet executable by the current runtime |
 
-### Come eseguire gli esempi
+### How to run the examples
 
-Gli esempi marcati `triad` si eseguono con l'interprete di riferimento JavaScript:
+Examples marked `triad` are run with the JavaScript reference interpreter:
 
 ```sh
-node seed/dev/triad_core.cjs programma.triad
+node seed/dev/triad_core.cjs program.triad
 ```
 
-Il programma riceve gli argomenti in `ARGS` (lista di stringhe, senza il nome del programma) e lo
-shebang `#!` in prima riga viene ignorato dal parser.
+The program receives arguments in `ARGS` (list of strings, without the program name) and lo
+shebang `#!` in first line is ignored by the parser.
 
 ```triad
 #!/usr/bin/env triad
-# saluto.triad
-println("ciao, " * "Triad")
+# greeting.triad
+println("hello, " * "Triad")
 println(6 * 7)
 ```
 
 ```sh
-node seed/dev/triad_core.cjs saluto.triad uno due
+node seed/dev/triad_core.cjs greeting.triad one two
 ```
 
 **Output:**
 
 ```text
-ciao, Triad
+Hi, Triad
 42
 ```
 
-L'esempio mostra tre cose che valgono in tutto il libro. Lo shebang è solo una comodità dei sistemi
-operativi: il parser lo salta, quindi il programma comincia davvero dalla seconda riga. `println`
-non inserisce separatori tra gli argomenti, quindi la virgola e lo spazio che vedi nell'output sono
-caratteri scritti nel programma, non una formattazione automatica. Infine `6 * 7` viene calcolato
-prima della stampa: gli argomenti di una chiamata sono espressioni, non testo. Gli argomenti passati
-da riga di comando (`uno`, `due`) non diventano variabili con quei nomi: finiscono tutti nella lista
-`ARGS`, come spiegato nel capitolo 20.
+The example shows three things that are true throughout the book. The shebang is just a convenience of the systems
+operations: the parser skips it, so the program actually starts from the second line. `println`
+It doesn't put separators between arguments, so the comma and space you see in the output are
+characters written in the program, not automatic formatting. Finally `6 * 7` is calculated
+before printing: The arguments of a call are expressions, not text. Past topics
+from the command line (`one`, `two`) do not become variables with those names: they all end up in the list
+`ARGS`, as explained in chapter 20.
 
-### Indice
+### Index
 
-**Parte I — Il linguaggio**
+**Part I — Language**
 
-1. [Lessico](#cap-1) · 2. [Valori e tipi](#cap-2) · 3. [Variabili e assegnamento](#cap-3) ·
-4. [Operatori e precedenza](#cap-4) · 5. [Controllo di flusso](#cap-5) ·
-6. [Funzioni](#cap-6) · 7. [Tipi e multiple dispatch](#cap-7) ·
-8. [Lambda, chiusure e scope](#cap-8) · 9. [Liste](#cap-9) ·
-10. [Stringhe, simboli e conversioni](#cap-10) · 11. [Errori come dati](#cap-11) ·
-12. [Contratti](#cap-12) · 13. [Budget](#cap-13) · 14. [Tracce](#cap-14) ·
-15. [Effetti dichiarati](#cap-15) · 16. [Logica](#cap-16) ·
-17. [Codice come dato](#cap-17) · 18. [Macro](#cap-18) ·
-19. [Builtin](#cap-19) · 20. [Riga di comando e REPL](#cap-20) ·
-21. [Primitivi di bootstrap](#cap-21) · 22. [Stile e pattern idiomatici](#cap-22)
+1. [Lexicon](#chap-1) · 2. [Values and types](#chap-2) · 3. [Variables and assignment](#chap-3) ·
+4. [Operators and precedence](#ch-4) · 5. [Flow control](#ch-5) ·
+6. [Functions](#cap-6) · 7. [Types and multiple dispatch](#cap-7) ·
+8. [Lambdas, closures and scopes](#cap-8) · 9. [Lists](#cap-9) ·
+10. [Strings, symbols and conversions](#cap-10) · 11. [Errors as data](#cap-11) ·
+12. [Contracts](#cap-12) · 13. [Budget](#cap-13) · 14. [Tracks](#cap-14) ·
+15. [Declared Effects](#chap-15) · 16. [Logic](#chap-16) ·
+17. [Code as given](#cap-17) · 18. [Macro](#cap-18) ·
+19. [Builtin](#cap-19) · 20. [Command line and REPL](#cap-20) ·
+21. [Bootstrap primitives](#ch-21) · 22. [Idiomatic style and patterns](#ch-22)
 
-**Parte II — Esercizi** · [23. Esercizi guidati](#cap-23) · [24. Esercizi su Triad-Full](#cap-24)
+**Part II — Exercises** · [23. Guided exercises](#cap-23) · [24. Exercises on Triad-Full](#cap-24)
 
-**Parte III — Riferimento** · [25. Grammatica](#cap-25) · [26. Schede rapide](#cap-26) ·
-[27. Tabella degli errori](#cap-27) · [28. Glossario](#cap-28) ·
-[29. Cosa gira oggi](#cap-29)
+**Part III — Reference** · [25. Grammar](#cap-25) · [26. Quick tabs](#cap-26) ·
+[27. Error table](#cap-27) · [28. Glossary](#cap-28) ·
+[29. What's going on today](#cap-29)
 
-**Appendici** · [A. Influenze dichiarate](#app-a) · [B. Dove guardare](#app-b)
+**Appendices** · [A. Declared influences](#app-a) · [B. Where to watch](#app-b)
 
 ---
 
-<a id="parte-1"></a>
+<a id="part-1"></a>
 
-# Parte I — Il linguaggio
+# Part I — Language
 
-La prima parte costruisce il linguaggio strato per strato: prima i mattoni (lessico e valori),
-poi le espressioni e il controllo di flusso, quindi le funzioni e i modelli di calcolo che Triad
-aggiunge — dispatch, chiusure, logica, codice come dato — e infine gli strumenti con cui un
-programma comunica con l'esterno (errori, contratti, budget, tracce, effetti). Ogni capitolo si
-appoggia ai precedenti; gli esempi sono brevi apposta, perché il punto non è ammirare un programma
-ma capire una regola.
+The first part builds the language layer by layer: first the building blocks (lexicon and values),
+then the expressions and flow control, then the functions and calculation models that Triad
+adds — dispatch, closures, logic, code as data — and finally the tools with which a
+program communicates with the outside (errors, contracts, budget, tracks, effects). Every chapter yes
+relies on precedents; the examples are short on purpose, because the point is not to admire a program
+but understand one rule.
 
 <a id="cap-1"></a>
 
-## 1. Lessico
+## 1. Vocabulary
 
-### 1.1 Identificatori
+### 1.1 Identifiers
 
-Un identificatore comincia con una lettera o `_`, seguito da lettere, cifre o `_`. Un `!` finale è
-ammesso se non è seguito da `=`. **[Core]**
+An identifier begins with a letter or `_`, followed by letters, digits, or `_`. A final `!` is
+allowed if not followed by `=`. **[Core]**
 
 ```triad
 x = 1
-somma_2 = 2
+sum_2 = 2
 _ = 3
-nome_valido = 4
+valid_name = 4
 ```
 
-`push!`, `sort!` e simili sono nomi legittimi: la convenzione del `!` finale è per le funzioni che
-mutano il loro argomento (cap. 9).
+`push!`, `sort!` and similar are legitimate names: the final `!` convention is for functions that
+they change their topic (chap. 9).
 
-Il `!` non cambia il significato del nome e non è un operatore: è un segnale per chi legge. Il parser
-lo accetta solo come ultimo carattere, e solo se il carattere seguente non è `=`; altrimenti
-comincerebbe un confronto. Questa è la prima delle convenzioni che Triad eredita da Julia: il nome
-dichiara un contratto, ma è il programmatore a doverlo rispettare.
+The `!` does not change the meaning of the name and is not an operator: it is a signal to the reader. The parser
+accepts it only as the last character, and only if the following character is not `=`; otherwise
+a confrontation would begin. This is the first of the conventions that Triad inherits from Julia: the name
+declares a contract, but the programmer must respect it.
 
-In Triad-Full gli identificatori ammettono anche lettere non ASCII. **[Full]**
+In Triad-Full identifiers also allow non-ASCII letters. **[Full]**
 
 ```triad-full
-età = 42
+age = 42
 ```
 
-### 1.2 Numeri
+### 1.2 Numbers
 
-Gli interi si scrivono con cifre decimali; `_` funziona come separatore. Il segno è un operatore
-unario, non parte del letterale. **[Core]**
+Integers are written with decimal places; `_` works as a separator. The sign is an operator
+unary, not part of the literal. **[Core]**
 
-La distinzione è più importante di quanto sembri: `-5` è l'applicazione dell'operatore `-` al
-letterale `5`, non un numero negativo scritto in un modo speciale. Per questo non esiste una
-"sintassi negativa" da ricordare: le parentesi e i livelli di precedenza del capitolo 4 spiegano già
-che cosa succede in un'espressione come `-x * y`.
+The distinction is more important than it seems: `-5` is the application of the `-` operator to
+literal `5`, not a negative number written in a special way. That's why there isn't one
+"negative syntax" to remember: the parentheses and precedence levels from chapter 4 already explain
+what happens in an expression like `-x * y`.
 
 ```triad
 println(42)
@@ -215,37 +215,37 @@ println(-5)
 -5
 ```
 
-`Float` esiste solo in Triad-Full. **[Full]**
+`Float` exists only in Triad-Full. **[Full]**
 
 ```triad-full
 println(3.14)
 println(1e-9)
 ```
 
-### 1.3 Stringhe
+### 1.3 Strings
 
-Una stringa è una sequenza di byte UTF-8 **immutabile**, tra apici doppi. Gli escape sono `\n`,
+A string is an **immutable** sequence of UTF-8 bytes, enclosed in double quotes. Escapes are `\n`,
 `\t`, `\"`, `\\`. **[Core]**
 
 ```triad
-println("ciao\n")
+println("hello\n")
 println("tab:\t|")
-println("virgolette: \"")
+println("quotes: \"")
 println("backslash: \\")
 ```
 
 **Output:**
 
 ```text
-ciao
+hello
 
-tab:	|
-virgolette: "
-backslash: \
+tab: |
+quotes: "
+backslash:\
 ```
 
-In Core **non esiste l'interpolazione**: `"x = $x"` stampa letteralmente `x = $x`. In Full esiste, e
-si scrive `$x` per un'espressione semplice e `$(espr)` per una complessa. **[Full]**
+In Core **there is no interpolation**: `"x = $x"` literally prints `x = $x`. In Full exists, and
+you write `$x` for a simple expression and `$(expr)` for a complex one. **[Full]**
 
 ```triad-full
 x = 42
@@ -253,17 +253,17 @@ println("x = $x")
 println("x + 1 = $(x + 1)")
 ```
 
-### 1.4 Simboli
+### 1.4 Symbols
 
-Un simbolo è `:` seguito da un nome o da un operatore: `:alice`, `:+`. Due simboli sono uguali se
-hanno lo stesso nome. In Triad-Full il simbolo è anche l'atomo della logica (cap. 16). **[Core]**
+A symbol is `:` followed by a name or operator: `:alice`, `:+`. Two symbols are equal if
+they have the same name. In Triad-Full the symbol is also the atom of logic (chap. 16). **[Core]**
 
-Un simbolo serve a dare un nome stabile a una cosa — una categoria, una chiave, un atomo — senza la
-flessibilità e il costo di una stringa. La differenza rispetto a una stringa non è solo di comodità:
-`:alice` è un'identità, `"alice"` è una sequenza di byte; due simboli con lo stesso nome sono lo
-stesso valore ovunque compaiano, mentre due stringhe vanno confrontate carattere per carattere. È
-questa proprietà che rende i simboli adatti alle chiavi dei record (cap. 2), ai tag delle liste e
-agli atomi dei fatti (cap. 16).
+A symbol serves to give a stable name to a thing — a category, a key, an atom — without the
+flexibility and the cost of a string. The difference compared to a string is not just one of convenience:
+`:alice` is an identity, `"alice"` is a sequence of bytes; two symbols with the same name are lo
+same value wherever they appear, while two strings must be compared character by character. It is
+this property that makes the symbols suitable for record keys (chap. 2), list tags and
+to the atoms of facts (chap. 16).
 
 ```triad
 println(:alice)
@@ -279,16 +279,16 @@ alice
 true
 ```
 
-### 1.5 Commenti
+### 1.5 Comments
 
-`#` commenta fino a fine riga. `#= … =#` commenta su più righe; lo standard descrive questa forma
-ma **non** stabilisce che i commenti a blocco si annidino, e l'interprete di riferimento chiude al
-primo `=#`: non contare sull'annidamento. **[Core]**
+`#` comments to end of line. `#= … =#` comments on multiple lines; the standard describes this shape
+but **doesn't** dictate that block comments are nested, and the reference interpreter closes at
+first `=#`: Don't rely on nesting. **[Core]**
 
 ```triad
-#= commento
-   su più righe =#
-x = 1_000   # commento di riga
+#= comment
+   on multiple lines =#
+x = 1_000 # line comment
 println(x)
 ```
 
@@ -298,230 +298,230 @@ println(x)
 1000
 ```
 
-### 1.6 Separatori e fine-riga
+### 1.6 Separators and line endings
 
-Un'istruzione termina con un a capo o con `;`. Gli a capo **chiudono** un'istruzione, tranne dentro
-`( )`, `[ ]` e `:( )`, e tranne subito dopo un operatore binario o una virgola di `rule`.
+A statement ends with a newline or `;`. Newlines **close** a statement, except inside
+`( )`, `[ ]`, and `:( )`, and except immediately following a binary operator or a `rule` comma.
 
 ```triad
 println(1); println(2)
 ```
 
-Una conseguenza pratica: **in Triad-Core ogni a capo chiude l'istruzione**. La grammatica di Core
-non ha una regola di continuazione di riga: un'espressione spezzata su più righe non è un
-programma valido. Scrivi **una istruzione per riga** e usa `;` per separare due istruzioni.
+A practical consequence: **in Triad-Core each newline closes the statement**. Core's grammar
+does not have a line continuation rule: an expression split across multiple lines is not a
+valid program. Write **one statement per line** and use `;` to separate two statements.
 
 ```triad
-totale = 1 + 2 + 3
-println(totale);
-println("seconda istruzione")
+total = 1 + 2 + 3
+println(total);
+println("second statement")
 ```
 
 **Output:**
 
 ```text
 6
-seconda istruzione
+second education
 ```
 
-La regola ha una conseguenza sulla formattazione: quando vuoi spezzare un'espressione lunga, le
-parentesi non bastano in Core. L'interprete di riferimento chiude l'istruzione al primo a capo anche
-dentro una chiamata, quindi `println(1 +` e `2)` su righe diverse non sono un programma valido oggi.
-Per il codice destinato al runtime attuale vale una regola sola: una istruzione per riga, e `;` solo
-quando due istruzioni devono stare sulla stessa riga.
+The rule has a consequence on formatting: when you want to break a long expression, the
+parentheses are not enough in Core. The reference interpreter ends the statement at the first line break too
+inside a call, so `println(1 +` and `2)` on different lines is not a valid program today.
+For the code intended for the current runtime only one rule applies: one statement per line, and `;` only
+when two instructions must be on the same line.
 
-> **In Triad-Full** la regola è più permissiva: `SPEC §1` stabilisce che un a capo **non** chiude
-> l'istruzione dentro `( )`, `[ ]` e `:( )`, né subito dopo un operatore binario. L'interprete di
-> riferimento attuale non implementa ancora questa eccezione, quindi anche in Full la forma
-> sicura resta una istruzione per riga.
+> **In Triad-Full** the rule is more permissive: `SPEC §1` states that a newline **doesn't** close
+> the statement inside `( )`, `[ ]` and `:( )`, nor immediately after a binary operator. The interpreter of
+> current reference does not yet implement this exception, so even in Full the form
+> safe remains one instruction per line.
 
-### 1.7 La regola dei due punti e del punto interrogativo
+### 1.7 The rule of the colon and the question mark
 
-`:` ha tre significati e `?` ne ha due. La specifica li chiama esplicitamente «il problema classico
-di `:`» — è il primo punto in cui Triad si discosta dalla sintassi che conosci.
+`:` has three meanings and `?` has two. The specification explicitly calls them “the classical problem
+of `:`» — is the first point where Triad deviates from the syntax you know.
 
-| scrittura | significato |
+| writing | meaning |
 |---|---|
-| `1:n`, `xs[2:end]` | `:` attaccato a un valore e senza spazi → **range** |
-| `f(:a)`, `x = :a` | `:` non preceduto da un valore e seguito da un nome → **simbolo** |
-| `:( … )` | → **codice quotato** |
-| `c ? a : b` | `:` circondato da spazi → **separatore del ternario** |
+| `1:n`, `xs[2:end]` | `:` attached to a value and without spaces → **range** |
+| `f(:a)`, `x = :a` | `:` not preceded by a value and followed by a name → **symbol** |
+| `:( … )` | → **listed code** |
+| `c ? a : b` | `:` surrounded by spaces → **ternary separator** |
 
-| scrittura | significato |
+| writing | meaning |
 |---|---|
-| `?x` | `?` attaccato → **variabile logica** |
-| `? ` | `?` con spazio dopo → **ternario** |
+| `?x` | `?` attached → **logical variable** |
+| `? ` | `?` with space after → **ternary** |
 
-Da qui la regola pratica: quando `:` è ambiguo, **metti o togli gli spazi**. `xs[2:end]` è un range;
-`c ? a : b` è un ternario perché i due spazi lo circondano.
+Hence the rule of thumb: when `:` is ambiguous, **add or remove spaces**. `xs[2:end]` is a range;
+`c ? a : b` is a ternary because the two spaces surround it.
 
-Le due tabelle sembrano un elenco di casi speciali, ma discendono da un'unica idea: un carattere
-aderente al token precedente appartiene a quel token, uno separato appartiene alla sintassi.
-Per questo in Triad la spaziatura non è questione di stile: è informazione che il parser legge. Se
-scrivi `xs[2: end]` oppure `a ? b:c`, cambiando gli spazi non cambi l'aspetto del programma: cambi
-che cosa il parser riconosce, e il più delle volte ottieni un errore di sintassi. Il consiglio è di
-scrivere sempre gli spazi che rendono esplicito il significato.
+The two tables look like a list of special cases, but they stem from a single idea: a character
+adhering to the previous token belongs to that token, a separate one belongs to the syntax.
+This is why in Triad spacing is not a question of style: it is information that the parser reads. If
+write `xs[2: end]` or `a ? b:c`, changing the spaces does not change the appearance of the program: you change
+what the parser recognizes, and most of the time you get a syntax error. The advice is
+always write the spaces that make the meaning explicit.
 
-### 1.8 Parole chiave
+### 1.8 Keywords
 
-Lo standard definisce **29 parole chiave**:
+The standard defines **29 keywords**:
 
 ```
 function struct macro end if elseif else for in while let begin return
 break continue fact rule solve quote try catch with requires ensures
-true false nothing isa is
+true false nothing is
 ```
 
-E **4 parole contestuali**, valide solo dopo `solve`:
+And **4 contextual words**, valid only after `solve`:
 
 ```
 limit depth steps trace
 ```
 
-`true`, `false` e `nothing` sono valori, non parole strutturali.
+`true`, `false` and `nothing` are values, not structural words.
 
-Le parole chiave sono riservate perché il parser deve riconoscerle prima di sapere che cosa stanno
-facendo: se `if` potesse essere anche un nome di variabile, la lettura di una riga dipenderebbe dal
-contesto in modo imprevedibile. `true`, `false` e `nothing` fanno eccezione solo in apparenza: sono
-valori che il linguaggio predefinisce, non forme sintattiche. Le quattro parole contestuali mostrano
-lo stesso principio al contrario: `limit`, `depth`, `steps` e `trace` sono nomi normalissimi finché
-non seguono `solve`, e solo lì hanno un significato speciale. Questa distinzione riduce il numero di
-parole riservate e ti permette di usare nomi naturali nel resto del programma.
+Keywords are reserved because the parser must recognize them before knowing what they are
+doing: if `if` could also be a variable name, reading a line would depend on the
+context in an unpredictable way. `true`, `false` and `nothing` are exceptions only in appearance: they are
+values that the language predefines, not syntactic forms. The four contextual words show
+the same principle in reverse: `limit`, `depth`, `steps` and `trace` are very normal names as long as
+they do not follow `solve`, and only there do they have a special meaning. This distinction reduces the number of
+reserved words and allows you to use natural names in the rest of the program.
 
-### 1.9 Identificatori avanzati e convenzioni
+### 1.9 Advanced identifiers and conventions
 
-In Triad-Core gli identificatori sono limitati all'ASCII: lettere, cifre e `_`. In Triad-Full si
-ammettono anche lettere non ASCII (accentate, greche, cirilliche): `età`, `π`, `Δx` sono nomi
-validi. **[Full]**
+In Triad-Core identifiers are limited to ASCII: letters, digits, and `_`. In Triad-Full yes
+they also allow non-ASCII letters (accented, Greek, Cyrillic): `age`, `π`, `Δx` are names
+valid. **[Full]**
 
 ```triad-full
-età = 42
+age = 42
 π = 3.14159
 Δx = 0.001
-println(età + π)
+println(age + π)
 ```
 
-La convenzione del `!` finale (`push!`, `sort!`) indica funzioni che **mutano** il loro argomento.
-È l'unico carattere speciale ammesso dentro un identificatore: la grammatica accetta lettere, cifre,
-`_` e il `!` finale, e nulla di più. In particolare il `?` **non** fa parte del nome, perché in Triad
-introduce una variabile logica o un ternario: `valido?` non è un identificatore valido. Per un
-predicato usa un nome normale e lascia che sia il tipo `Bool` del risultato a dire che cos'è —
-`vuoto`, `is_valido`. **[Core]**
+The trailing `!` convention (`push!`, `sort!`) indicates functions that **mutate** their argument.
+It is the only special character allowed inside an identifier: the grammar accepts letters, digits,
+`_` and the final `!`, and nothing more. In particular the `?` is **not** part of the name, because in Triad
+introduces a logical variable or ternary: `valid?` is not a valid identifier. For a
+predicate uses a normal name and lets the `Bool` type of the result tell what it is —
+`empty`, `is_valid`. **[Core]**
 
 ```triad
 function push!(xs, v)
-    # muta xs e lo restituisce
+    # mutates xs and returns it
     xs
 end
 
-function vuoto(xs)
+function empty(xs)
     length(xs) == 0
 end
 ```
 
-Il corpo di `push!` qui è volutamente vuoto: l'esempio parla dei nomi, non dell'implementazione. La
-mutazione vera delle liste, con `push!` e con l'assegnamento a un elemento, è nel capitolo 9.
+The body of `push!` is intentionally empty here: the example is about names, not implementation. The
+True mutation of lists, with `push!` and with assignment to an element, is in chapter 9.
 
-Gli identificatori che coincidono con una parola chiave non sono ammessi: `function`, `end`,
-`if` non possono essere usati come nomi di variabile o funzione. **[Core]**
+Identifiers that match a keyword are not allowed: `function`, `end`,
+`if` cannot be used as variable or function names. **[Core]**
 
-### 1.10 Escape e stringhe avanzate
+### 1.10 Escape and advanced strings
 
-Lo standard fissa quattro escape nelle stringhe: `\n`, `\t`, `\"`, `\\`; in Triad-Full si aggiunge
-`\$`, perché il `$` introduce l'interpolazione e va neutralizzato quando deve restare un carattere
-normale. Le forme estese `\r`, `\0`, `\u{…}` e `\x{…}` che compaiono nel frammento seguente non sono
-elencate in `SPEC §1`: trattale come estensioni di una singola implementazione, non come garanzia del
-linguaggio. Un programma portabile usa le escape documentate. **[Full]**
+The standard sets four escapes in strings: `\n`, `\t`, `\"`, `\\`; in Triad-Full it is added
+`\$`, because the `$` introduces interpolation and must be neutralized when it must remain a character
+normal. The extended forms `\r`, `\0`, `\u{…}` and `\x{…}` that appear in the following fragment are not
+listed in `SPEC §1`: treat them as extensions of a single implementation, not as guarantees of
+language. A portable program uses documented escapes. **[Full]**
 
 ```triad-full
-println("a\r\nb")          # ritorno a capo CRLF
-println("unicode: \u{1F600}")  # emoji
-println("hex: \x{41}")     # 'A'
+println("a\r\nb") # carriage return CRLF
+println("unicode: \u{1F600}") # emoji
+println("hex: \x{41}") # 'A'
 ```
 
-Una stringa è una sequenza di byte UTF-8 e le stringhe sono **immutabili**: ogni operazione di
-concatenazione crea una nuova stringa, come mostra l'esempio qui sotto. La lunghezza si misura in
-byte e non in caratteri, un dettaglio che conta appena esci dall'alfabeto latino (cap. 10). **[Core]**
+A string is a sequence of UTF-8 bytes and strings are **immutable**: any operation of
+concatenation creates a new string, as shown in the example below. Length is measured in
+bytes and not in characters, a detail that matters as soon as you leave the Latin alphabet (chap. 10). **[Core]**
 
 ```triad
-a = "ciao"
-b = a * " mondo"
-println(a)        # "ciao" — inalterato
-println(b)        # "ciao mondo"
+a = "hello"
+b = a * "world"
+println(a) # "hello" — unchanged
+println(b) # "hello world"
 ```
 
 **Output:**
 
 ```text
-ciao
-ciao mondo
+hello
+hello world
 ```
 
-### 1.11 Esercizi sul lessico
+### 1.11 Vocabulary exercises
 
-1. Scrivi un programma che stampi il tuo nome e la tua età su due righe, usando `\n` e
-   concatenazione di stringhe.
-2. Definisci un identificatore con `_` iniziale e uno con `!` finale; stampali.
-3. Prova a scrivere `x = 1_000_000` e verifica che l'output sia `1000000`.
-4. (Full) Scrivi una stringa con interpolazione `$x` e `$(x + 1)`.
-5. (Full) Definisci il simbolo `:ok` e confrontalo con `Symbol("ok")`.
+1. Write a program that prints your name and age on two lines, using `\n` and
+   string concatenation.
+2. Define an identifier with a leading `_` and one with a trailing `!`; print them.
+3. Try writing `x = 1_000_000` and verify that the output is `1000000`.
+4. (Full) Write a string with interpolation `$x` and `$(x + 1)`.
+5. (Full) Define the symbol `:ok` and compare it to `Symbol("ok")`.
 
 ---
 
 <a id="cap-2"></a>
 
-## 2. Valori e tipi
+## 2. Values and types
 
-### 2.1 I tipi
+### 2.1 The types
 
-Un valore Triad appartiene sempre a un tipo, e il tipo si può sempre osservare: la tabella elenca i
-tipi dello standard, con il nome che `typeof` restituisce e il profilo in cui esistono.
+A Triad value always belongs to a type, and the type can always be observed: the table lists the
+types of the standard, with the name that `typeof` returns and the profile in which they exist.
 
-| tipo | valori | `typeof(v)` |
+| type | values ​​| `typeof(v)` |
 |---|---|---|
-| `Int` | interi con segno a 64 bit, aritmetica con wrap | `Int` |
-| `Float` | numeri in virgola mobile **[Full]** | `Float` |
+| `Int` | 64-bit signed integers, wrapped arithmetic | `Int` |
+| `Float` | floating point numbers **[Full]** | `Float` |
 | `Bool` | `true`, `false` | `Bool` |
-| `String` | sequenza di byte UTF-8 immutabile | `String` |
-| `Symbol` | `:nome` | `Symbol` |
-| `List` | lista eterogenea mutabile, indici da 1 | `List` |
-| `Function` | funzione nominata, lambda, builtin | `Function` |
+| `String` | immutable UTF-8 byte sequence | `String` |
+| `Symbol` | `:name` | `Symbol` |
+| `List` | mutable heterogeneous list, indices of 1 | `List` |
+| `Function` | named function, lambda, builtin | `Function` |
 | `Nothing` | `nothing` | `Nothing` |
-| `Expr` | codice quotato **[Full]** | `Expr` |
-| `Term`, `LVar` | termini e variabili logiche **[Full]** | — |
+| `Expr` | quoted code **[Full]** | `Expr` |
+| `Term`, `LVar` | logical terms and variables **[Full]** | — |
 | `Solution` | `{who = :dave}` **[Full]** | — |
-| `Err` | errore come dato **[Full]** | — |
-| `Type` | i tipi stessi sono valori **[Full]** | — |
-| struct utente | `Point(3.0, 4.0)` **[Full]** | `Point` |
+| `Err` | error as given **[Full]** | — |
+| `Type` | the types themselves are **[Full]** | values — |
+| struct user | `Point(3.0, 4.0)` **[Full]** | `Point` |
 
-Il set dei tipi Core è **chiuso e piccolo**: `Int`, `Bool`, `String`, `Symbol`, `List`, `Function`,
-`Nothing`. In Core non esistono `Float`, `Term`, `Solution`, `Err` come valori del linguaggio: un
-errore è una lista taggata `[:Err, kind, msg]` (cap. 11) e una struct è `[:Point, x, y]`. Il set
-chiuso non è una limitazione arbitraria: un interprete di bootstrap deve poter rappresentare ogni
-valore con poche strutture, e i concetti Full che mancano — errore, struct, soluzione — si
-ricostruiscono per convenzione sopra liste e simboli.
+The Core type set is **closed and small**: `Int`, `Bool`, `String`, `Symbol`, `List`, `Function`,
+`Nothing`. In Core there are no `Float`, `Term`, `Solution`, `Err` as language values: a
+error is a list tagged `[:Err, kind, msg]` (ch. 11) and a struct is `[:Point, x, y]`. The set
+closed is not an arbitrary limitation: a bootstrap interpreter must be able to represent every
+value with few structures, and the Full concepts that are missing — error, struct, solution — yes
+they reconstruct by convention on lists and symbols.
 
-`typeof` restituisce il **nome del tipo come simbolo**. Il dettaglio del profilo conta: in Core il
-risultato è un `Symbol`, quindi `typeof(1) == :Int` è il confronto naturale; in Triad-Full i tipi sono
-valori di tipo `Type`, per cui `typeof(3) == Int` confronta direttamente con il tipo. La stampa è la
-stessa (`Int`), ma l'operazione che scrivi è diversa — ed è per questo che la tabella qui sopra ha una
-colonna `typeof(v)` con il nome e non con il tipo.
+`typeof` returns the **type name as symbol**. Profile detail matters: in Core the
+result is a `Symbol`, so `typeof(1) == :Int` is the natural comparison; in Triad-Full the types are
+values of type `Type`, so `typeof(3) == Int` compares directly to the type. The press is there
+same (`Int`), but the operation you write is different — which is why the table above has a
+column `typeof(v)` with the name and not the type.
 
-È utile separare tre idee che nella sintassi possono sembrare la stessa cosa. Il **valore** è il
-dato concreto, per esempio `5` o `"ciao"`; il **tipo dinamico** descrive la categoria del valore
-che il programma sta manipolando; un **vincolo dichiarato** restringe invece quali valori può
-assumere un nome o un parametro. In Core il tipo si osserva con `typeof`, ma non si dichiara una
-variabile come `x::Int`. In Full i tipi entrano anche nelle firme, nelle struct e nel dispatch.
-Una conversione come `Float(3)` costruisce un valore compatibile; un'asserzione come `x::Int`
-controlla un valore già ottenuto. Sono operazioni diverse: convertire può cambiare il valore,
-asserire non è una richiesta di conversione.
+It's helpful to separate three ideas that may seem like the same thing in syntax. The **value** is the
+concrete data, for example `5` or `"hello"`; the **dynamic type** describes the category of the value
+that the program is manipulating; a **declared constraint** instead restricts which values it can
+take on a name or parameter. In Core the type is observed with `typeof`, but it is not declared
+variable like `x::Int`. In Full the types also enter signatures, structs and dispatch.
+A conversion like `Float(3)` constructs a compatible value; an assertion like `x::Int`
+checks a value already obtained. They are different operations: converting can change the value,
+assert is not a request for conversion.
 
-Un'altra distinzione importante è tra tipo **nominale** e forma strutturale. In Full una
-`struct Point` dichiara un'identità di tipo, quindi un valore `Point` non diventa un altro tipo
-solo perché possiede campi simili. In Core, dove non ci sono struct, la stessa informazione è
-convenzionale: una lista come `[:Point, 3, 4]` porta il tag `:Point` e i campi in posizioni
-concordate dal programma. Il tag rende possibile riconoscere il record, ma non aggiunge da solo
-controlli di campo, immutabilità o dispatch.
+Another important distinction is between **nominal** type and structural form. In Full one
+`struct Point` declares a type identity, so a `Point` value does not become another type
+just because it has similar fields. In Core, where there are no structs, the same information is
+conventional: a list like `[:Point, 3, 4]` carries the `:Point` tag and fields in positions
+agreed by the program. The tag makes it possible to recognize the record, but does not add itself
+field controls, immutability or dispatch.
 
 ```triad
 xs = [1, :a, "s"]
@@ -536,28 +536,28 @@ Int String Symbol List
 Nothing Bool Function
 ```
 
-### 2.2 Gerarchia dei tipi
+### 2.2 Type hierarchy
 
-`Int <: Number`, `Float <: Number`, e ogni tipo è sottotipo di `Any`. `Any` è il supertipo usato
-nelle firme quando un parametro accetta qualunque cosa. **[Full]**
+`Int <: Number`, `Float <: Number`, and each type is a subtype of `Any`. `Any` is the supertype used
+in signatures when a parameter accepts anything. **[Full]**
 
-La gerarchia esiste per il dispatch (cap. 7): un metodo dichiarato su `Number` accetta anche gli
-`Int`, perché `Int` è un sottotipo di `Number`. In Core la gerarchia non si può osservare, perché non
-c'è dispatch multiplo, ma resta il motivo per cui i tipi hanno un nome e non sono solo etichette di
-comodo: la relazione fra i nomi è ciò che permette di scrivere un metodo una volta e di applicarlo a
-una famiglia di valori.
+The hierarchy exists for dispatch (ch. 7): a method declared on `Number` also accepts the
+`Int`, because `Int` is a subtype of `Number`. In Core the hierarchy cannot be observed, because not
+there is multiple dispatch, but the reason remains that the types have names and are not just labels of
+convenient: the relationship between the names is what allows you to write a method once and apply it to
+a family of values.
 
 ```triad-full
-function accetta_qualsiasi(x::Any)
-    "qualunque cosa: " * string(x)
+function accept_any(x::Any)
+    "whatever: " * string(x)
 end
 ```
 
 ### 2.3 Struct
 
-Una `struct` è un record immutabile con campi tipizzati e costruttore posizionale. Il
-costruttore controlla i campi; un `Int` passato a un campo `Float` viene convertito, un valore non
-convertibile produce `Err(:type)`. **[Full]**
+A `struct` is an immutable record with typed fields and positional constructor. The
+constructor checks fields; an `Int` passed to a `Float` field is converted, a value is not
+convertible produces `Err(:type)`. **[Full]**
 
 ```triad-full
 struct Point
@@ -579,18 +579,18 @@ true
 true
 ```
 
-In Core lo stesso concetto si rappresenta con una **lista taggata**: `[:Point, x, y]`, con il
-simbolo del tipo in prima posizione. È così che gli interpreti di `selfhost/` rappresentano le
-struct Full. La differenza tra il record Full e quello Core non è solo di scrittura: la struct ha
-un'identità di tipo e campi immutabili, il record Core è una lista, quindi può essere mutata e
-nessuno impedisce di costruirne una con un tag sbagliato. Il tag rende il dato riconoscibile, non
-lo rende sicuro: i controlli che una struct fa da sola, in Core li deve fare il programma.
+In Core the same concept is represented with a **tagged list**: `[:Point, x, y]`, with the
+type symbol in first position. This is how the `selfhost/` interpreters represent the
+struct Full. The difference between the Full and Core records is not just one of writing: the struct has
+a type identity and immutable fields, the Core record is a list, so it can be mutated and
+no one stops you from building one with the wrong tag. The tag makes the data recognizable, not
+makes it safe: the checks that a struct does on its own, in Core must be done by the program.
 
 ```triad
-punto(x, y) = [:Point, x, y]
+point(x, y) = [:Point, x, y]
 px(p) = p[2]
 py(p) = p[3]
-println(punto(1, 2), " ", px(punto(1, 2)))
+println(dot(1, 2), " ", px(dot(1, 2)))
 ```
 
 **Output:**
@@ -598,27 +598,26 @@ println(punto(1, 2), " ", px(punto(1, 2)))
 ```text
 [:Point, 1, 2] 1
 ```
+### 2.4 Conversions
 
-### 2.4 Conversioni
+`Int(x)`, `Float(x)`, `String(x)`, `Symbol(x)`. The name of the type used as the convert function; the
+name of a struct used as a **construct** function. **[Full]**
 
-`Int(x)`, `Float(x)`, `String(x)`, `Symbol(x)`. Il nome del tipo usato come funzione converte; il
-nome di una struct usato come funzione **costruisce**. **[Full]**
-
-La conversione è un'operazione esplicita: Triad non trasforma i tipi da solo, tranne nei punti in
-cui la specifica lo prescrive — un `Int` passato a un campo `Float` di una struct, o il valore di
-ritorno controllato con `::R`. Altrove la conversione la chiedi tu, e questo rende leggibile il
-punto in cui il tipo cambia. `string(x)`, che vedi nella tabella del capitolo 10, è un caso a parte:
-è definita per ogni valore e serve a costruire testo, per questo nei programmi Core è il modo
-normale di convertire un numero in stringa.
+The conversion is an explicit operation: Triad does not transform types itself, except at points
+specified in the specification — an `Int` passed to a struct's `Float` field, or the value of
+return checked with `::R`. Elsewhere you ask for the conversion, and this makes it readable
+point at which the type changes. `string(x)`, which you see in the table in chapter 10, is a special case:
+it is defined for each value and is used to construct text, which is why it is the way in Core programs
+normal to convert a number to string.
 
 ```triad-full
 println(Int("42") + 1)
 println(Float(3))
-println(Symbol("ciao"))
+println(Symbol("hello"))
 println(String(42))
 ```
 
-`Int(s)` e `Symbol(s)` esistono anche in Core, ma solo per stringhe e simboli. **[Core]**
+`Int(s)` and `Symbol(s)` also exist in Core, but only for strings and symbols. **[Core]**
 
 ```triad
 println(Int("41") + 1)
@@ -632,9 +631,9 @@ println(Symbol("bob"))
 bob
 ```
 
-### 2.5 Asserzione di tipo
+### 2.5 Type assertion
 
-`e::T` restituisce `e` se è di tipo `T`, altrimenti produce `Err(:type)`. **[Full]**
+`e::T` returns `e` if it is of type `T`, otherwise it produces `Err(:type)`. **[Full]**
 
 ```triad-full
 x = 3
@@ -642,77 +641,77 @@ println(x::Int)
 println(iserr(x::String))
 ```
 
-### 2.6 Il vincolo del dichiarato
+### 2.6 The constraint of the declared
 
-`x::T = e` — e un parametro `x::T` — **fissa** il tipo di quel nome nell'ambiente in cui nasce. Gli
-assegnamenti successivi sono controllati e convertiti contro `T`. Una nuova dichiarazione
-`x::U = …` sostituisce il vincolo; un nome non dichiarato con tipo resta libero; una rilegatura in
-un ambiente interno (`let x = 2.5`) non eredita il vincolo esterno. **[Full]**
+`x::T = e` — and a parameter `x::T` — **fixes** the type of that name in the environment in which it originates. The
+Subsequent assignments are checked and converted against `T`. A new statement
+`x::U = …` replaces the constraint; an undeclared name with type remains free; a binding in
+an internal environment (`let x = 2.5`) does not inherit the external constraint. **[Full]**
 
 ```triad-full
 x::Int = 5
-x = 6            # bene
-x = 5.5          # Err(:type)
+x = 6 # good
+x = 5.5 # Err(:type)
 
 y::Float = 1.0
-y = 2            # 2.0: conversione Int -> Float
+y = 2 # 2.0: Int -> Float conversion
 
 s = "a"
-s = 3            # bene: s non è dichiarato con un tipo
+s = 3 # fine: s is not declared with a type
 ```
 
-Il vincolo vale per l'ambiente in cui il nome nasce, non per sempre: è un'annotazione locale, non
-una dichiarazione globale. Questo permette di introdurre i tipi in un programma Core già scritto
-senza riscriverne la struttura, e spiega perché `let x = 2.5` dentro una funzione non è un errore
-anche quando fuori `x` era vincolato a `Int`. Il controllo avviene a ogni assegnamento, quindi il
-costo è un controllo in più per ogni scrittura; in cambio, un valore del tipo sbagliato non entra
-mai nel nome, e l'errore arriva dove il tipo è stato promesso, non molto più tardi.
+The constraint applies to the environment in which the name was born, not forever: it is a local annotation, not
+a global statement. This allows you to introduce types into an already written Core program
+without rewriting the structure, and explains why `let x = 2.5` inside a function is not an error
+even when out `x` was bound to `Int`. The check happens at every assignment, so the
+cost is an extra check for each write; in return, a value of the wrong type does not enter
+never in the name, and the error arrives where the type was promised, not much later.
 
-### 2.7 Le condizioni accettano solo `Bool`
+### 2.7 Conditions accept only `Bool`
 
-Non esiste il concetto di «verità implicita»: un valore non diventa vero o falso per convenzione.
-`if 1` è un errore, non `true`. Questo vale per `if`,
-`while`, `&&`, `||`, `!`, il ternario e i filtri delle comprehension. **[Core]**
+There is no concept of "implicit truth": a value does not become true or false by convention.
+`if 1` is an error, not `true`. This applies to `if`,
+`while`, `&&`, `||`, `!`, the ternary and the comprehension filters. **[Core]**
 
 ```triad
 println(1 < 2 && 2 < 3)
 x = 3
-println(x > 2 ? "grande" : "piccolo")
+println(x > 2 ? "large" : "small")
 ```
 
 **Output:**
 
 ```text
 true
-grande
+big
 ```
 
-La scelta è deliberata. In un linguaggio con tipi dinamici e con gli errori come valori, l'unica
-cosa che una condizione deve fare è produrre `true` o `false`; ammettere valori "veri" per
-convenzione (`0`, `""`, `[]`) renderebbe ambiguo il significato di un programma e sposterebbe
-l'errore lontano dalla sua causa. Con la regola stretta, `if xs` è un errore immediato e dice che lì
-serve un confronto — per esempio `if length(xs) > 0`. Lo stesso vale per `&&` e `||`: entrambi gli
-operandi che vengono valutati devono essere `Bool`, anche se il cortocircuito ne risparmia uno.
+The choice is deliberate. In a language with dynamic types and errors as values, the only one
+what a condition must do is produce `true` or `false`; admit "true" values for
+convention (`0`, `""`, `[]`) would make the meaning of a program ambiguous and shift
+the error away from its cause. With the strict rule, `if xs` is an immediate error and says that there
+a comparison is needed — for example `if length(xs) > 0`. The same goes for `&&` and `||`: both
+operands that are evaluated must be `Bool`, even if the short circuit spares one.
 
-### 2.8 Come stampa un valore
+### 2.8 How to print a value
 
-`print` e `println` concatenano gli argomenti **senza separatori**; `println` aggiunge un a capo.
+`print` and `println` concatenate arguments **without separators**; `println` adds a newline.
 
-| valore | come viene stampato |
+| value | how it is printed |
 |---|---|
-| `Int` | decimale |
+| `Int` | decimal |
 | `Bool` | `true` / `false` |
-| `String` | così com'è |
+| `String` | as it is |
 | `Nothing` | `nothing` |
-| `Symbol` | **senza** `:` se passato direttamente, **con** `:` dentro una lista |
-| `List` | `[a, b]`; le stringhe dentro non hanno virgolette |
+| `Symbol` | **without** `:` if passed directly, **with** `:` inside a list |
+| `List` | `[a, b]`; strings inside do not have quotes |
 | `Function` | `#lambda(x)` |
 
 ```triad
 xs = [1, :a, "s", true, nothing, [2, 3]]
 println(xs)
 println(:alice)
-print("senza ", "a capo")
+print("without ", "return")
 println()
 ```
 
@@ -721,18 +720,18 @@ println()
 ```text
 [1, :a, s, true, nothing, [2, 3]]
 alice
-senza a capo
+without a leader
 ```
 
-La differenza tra un simbolo stampato da solo e dentro una lista non è un capriccio: fuori da una
-lista il simbolo è l'unico contenuto dell'output, dentro una lista serve un modo per distinguerlo da
-una stringa con lo stesso testo. Per questo `println(:a)` stampa `a` mentre le liste usano `:a`, e
-per questo la tabella va letta come «come appare un valore quando è stampato», non come «come è
-fatto il valore». Le stringhe dentro una lista non hanno virgolette per la stessa ragione: la
-stampa è pensata per essere leggibile, non per essere riletta dal parser.
+The difference between a symbol printed alone and inside a list is not a whim: outside one
+list the symbol is the only content of the output, inside a list you need a way to distinguish it from
+a string with the same text. This is why `println(:a)` prints `a` while lists use `:a`, and
+for this reason the table should be read as «how a value appears when it is printed», not as «how it is
+made the value". Strings inside a list do not have quotes for the same reason: the
+print is meant to be readable, not to be read back by the parser.
 
-L'uguaglianza confronta numeri, stringhe e simboli **per valore**, le liste **elemento per
-elemento** (anche annidate), le funzioni **per identità**. **[Core]**
+Equality compares numbers, strings and symbols **by value**, lists **element by
+element** (also nested), functions **per identity**. **[Core]**
 
 ```triad
 println([1, [2, [3]]] == [1, [2, [3]]])
@@ -750,17 +749,17 @@ true true false
 
 <a id="cap-3"></a>
 
-## 3. Variabili e assegnamento
+## 3. Variables and assignment
 
-`nome = espr` lega o aggiorna un nome. L'assegnamento **è un'espressione** e vale il valore
-assegnato. `+=`, `-=`, `*=` aggiornano una variabile esistente e valutano il lato sinistro una
-volta sola. Usare un nome mai assegnato è un errore di esecuzione. **[Core]**
+`name = expr` binds or updates a name. The assignment **is an expression** and is the value
+assigned. `+=`, `-=`, `*=` update an existing variable and evaluate the left side a
+only once. Using a name that was never assigned is an execution error. **[Core]**
 
-Il segno `=` non si legge «scrivi in memoria»: lega un nome a un valore. Quando il nome non esiste
-lo crea, quando esiste ne sostituisce il legame. Triad non distingue i due casi con parole chiave
-diverse e non ha una parola per dichiarare una variabile: `let` introduce uno scope, non dichiara un
-tipo. Questa semplicità ha un prezzo che conviene conoscere subito: un nome scritto male non viene
-segnalato mentre scrivi, ma solo quando quella riga viene eseguita.
+The `=` sign does not read "write to memory": it binds a name to a value. When the name doesn't exist
+it creates it, when it exists it replaces the bond. Triad does not distinguish the two cases with keywords
+different and does not have a word to declare a variable: `let` introduces a scope, it does not declare a
+type. This simplicity has a price that should be known immediately: a poorly written name doesn't work
+reported as you write, but only when that line is executed.
 
 ```triad
 x = 42
@@ -781,93 +780,92 @@ println(n)
 43 50 186
 24
 ```
+There are no declarations: variables are dynamic. The **visibility** rules can be seen in the
+chapter 8.
 
-Non esistono dichiarazioni: le variabili sono dinamiche. Le regole di **visibilità** si vedono nel
-capitolo 8.
+Why would an assignment have a value? Because in Triad everything that can appear in
+a program is an expression, and assignment is no exception: so `x = 42` can fit inside a
+`if`, a `let`, or a function argument without special syntax. The value is the one assigned,
+not a successful `Bool` like in other languages; that's why you won't write `if x = 5` expecting it
+a check, because `5` is not a `Bool` and the condition fails with a type error.
 
-Perché mai un assegnamento dovrebbe avere un valore? Perché in Triad tutto ciò che può comparire in
-un programma è un'espressione, e l'assegnamento non fa eccezione: così `x = 42` può stare dentro un
-`if`, un `let` o un argomento di funzione senza una sintassi speciale. Il valore è quello assegnato,
-non un `Bool` di successo come in altri linguaggi; per questo non scriverai `if x = 5` aspettandoti
-un controllo, perché `5` non è un `Bool` e la condizione fallisce con un errore di tipo.
+`+=`, `-=` and `*=` are also expressions and take the updated value. They are not shapes
+declarative and do not introduce a new name: they update a link that must already exist. In return
+they evaluate the left side only once, a detail that with a simple name is not noticed but which
+counts when the target is a list element (`xs[i] += 1`, chap. 9): so the index is not
+calculated twice.
 
-Anche `+=`, `-=` e `*=` sono espressioni e valgono il valore aggiornato. Non sono forme
-dichiarative e non introducono un nome nuovo: aggiornano un legame che deve già esistere. In cambio
-valutano il lato sinistro una volta sola, un dettaglio che con un semplice nome non si nota ma che
-conta quando il bersaglio è un elemento di lista (`xs[i] += 1`, cap. 9): così l'indice non viene
-calcolato due volte.
+Read the example distinguishing the **name** from the value: after `x = 42`, `x` is a bond
+of the current environment; `y = x + 8` reads that binding and stores the result `50` in a binding
+different; `x = x + 1` first calculates `43` and then replaces the value associated with `x`. As a result
+`y` remains `50`: it is not an automatic alias of the expression that produced it. The assignment
+returns the new value, so it can appear inside an expression, but that doesn't mean that
+each assignment is global: function, lambda and `let` define distinct scope rules.
 
-Leggi l'esempio distinguendo il **nome** dal valore: dopo `x = 42`, `x` è un legame
-dell'ambiente corrente; `y = x + 8` legge quel legame e memorizza il risultato `50` in un legame
-diverso; `x = x + 1` calcola prima `43` e poi rimpiazza il valore associato a `x`. Di conseguenza
-`y` resta `50`: non è un alias automatico dell'espressione che lo ha prodotto. L'assegnamento
-ritorna il nuovo valore, perciò può comparire dentro un'espressione, ma questo non significa che
-ogni assegnamento sia globale: funzione, lambda e `let` definiscono regole di scope distinte.
-
-Infine, riassegnare un nome non equivale a mutare un oggetto. Con `x = 43` cambia il legame di
-`x`; con `xs[1] = 43` cambia un elemento della lista a cui `xs` fa riferimento. Se un secondo nome
-indica la stessa lista, vedrà la mutazione; una riassegnazione locale di `xs`, invece, non cambia
-automaticamente il legame dell'altro nome. Questa differenza diventa essenziale quando una
-funzione condivide una lista con il chiamante.
+Finally, renaming is not the same as mutating an object. With `x = 43` the bond of changes
+`x`; with `xs[1] = 43` changes an element of the list to which `xs` refers. If a middle name
+points to the same list, it will see the mutation; a local reassignment of `xs`, however, does not change
+automatically the link of the other name. This difference becomes essential when one
+function shares a list with the caller.
 
 ---
 
 <a id="cap-4"></a>
 
-## 4. Operatori e precedenza
+## 4. Operators and precedence
 
-Il parser è un **Pratt** con dodici livelli. «Pratt» significa che ogni operatore ha un numero di
-precedenza e il parser, leggendo da sinistra, sa quando fermarsi e restituire il controllo al
-livello più basso: è un modo compatto di descrivere l'albero senza scrivere una regola per ogni
-combinazione di operatori. Dalla precedenza più bassa alla più alta:
+The parser is a **Pratt** with twelve levels. «Pratt» means that each operator has a number of
+precedence and the parser, reading from the left, knows when to stop and return control to the
+lowest level: it is a compact way of describing the tree without writing a rule for each
+combination of operators. From lowest to highest precedence:
 
-| livello | operatori | associatività |
+| level | operators | associativity |
 |---|---|---|
-| 1 | `=` `+=` `-=` `*=` | destra |
-| 2 | `x -> e`, `(a, b) -> e`, `c ? a : b` | destra |
-| 3 | `\|\|` | sinistra, cortocircuito |
-| 4 | `&&` | sinistra, cortocircuito |
-| 5 | `==` `!=` `<` `<=` `>` `>=` `in` `isa` `is` | sinistra |
-| 6 | `a:b` | range, senza spazi |
-| 7 | `+` `-` | sinistra |
-| 8 | `*` `/` `%` | sinistra |
-| 9 | `-x` `!x` `+x` `$x` | prefissi |
-| 10 | `^` | **destra** |
-| 11 | `e::T` | asserzione di tipo |
-| 12 | `f(args)` `xs[i]` `a.campo` | postfissi, senza spazio prima di `(` e `[` |
+| 1 | `=` `+=` `-=` `*=` | right |
+| 2 | `x -> e`, `(a, b) -> e`, `c ? a : b` | right |
+| 3 | `\|\|` | left, short circuit |
+| 4 | `&&` | left, short circuit |
+| 5 | `==` `!=` `<` `<=` `>` `>=` `in` `isa` `is` | left |
+| 6 | `a:b` | range, no spaces |
+| 7 | `+` `-` | left |
+| 8 | `*` `/` `%` | left |
+| 9 | `-x` `!x` `+x` `$x` | prefixes |
+| 10 | `^` | **right** |
+| 11 | `e::T` | assertion of type |
+| 12 | `f(args)` `xs[i]` `a.field` | postfixes, with no space before `(` and `[` |
 
-I livelli 6, 8 (la divisione), 9 (`$x`), 11 (`::`) e alcuni operatori di confronto esistono solo in
-Triad-Full. In Triad-Core i livelli effettivamente usati sono **dieci**, perché mancano il range, la
-divisione, `$x`, `::` e gli operatori `in`, `isa`, `is`; tolti quelli, la tabella si compatta ma il
-rapporto fra gli operatori che restano è lo stesso. Il numero dodici, che il glossario riporta, è
-quindi il conteggio del profilo Full: non è in contraddizione con i dieci livelli di Core, è il
-conto di un profilo più grande. **[Core]**
+Levels 6, 8 (division), 9 (`$x`), 11 (`::`), and some comparison operators exist only in
+Triad-Full. In Triad-Core the levels actually used are **ten**, because the range is missing
+division, `$x`, `::` and the operators `in`, `isa`, `is`; once those are removed, the table becomes compact but the
+relationship between the operators who remain is the same. The number twelve, which the glossary reports, is
+therefore the Full profile count: is not in contradiction with the ten levels of Core, it is the
+account for a larger profile. **[Core]**
 
-La precedenza decide **come il parser raggruppa** gli operatori, non quale calcolo avviene per
-primo in ogni possibile programma. Per esempio, `2 + 3 * 4` viene letto come `2 + (3 * 4)`: la
-moltiplicazione appartiene a un livello più forte della somma. Le parentesi non cambiano la regola
-del linguaggio; rendono esplicita una scelta del programmatore e aiutano chi legge.
-L'associatività risolve invece la parità di precedenza: `2 ^ 3 ^ 2` è `2 ^ (3 ^ 2)`, mentre le
-sottrazioni a catena si raggruppano a sinistra. Quando la precedenza è poco familiare, scrivere le
-parentesi è una forma di documentazione eseguibile.
+Precedence decides **how the parser groups** the operators, not what computation occurs for
+first in every possible program. For example, `2 + 3 * 4` is read as `2 + (3 * 4)`: the
+multiplication belongs to a stronger level than addition. The parentheses do not change the rule
+of language; they make a programmer's choice explicit and help the reader.
+Associativity instead solves the parity of precedence: `2 ^ 3 ^ 2` is `2 ^ (3 ^ 2)`, while the
+chain subtractions cluster on the left. When the precedence is unfamiliar, write the
+brackets is a form of executable documentation.
 
-Il raggruppamento non va confuso con la valutazione. `&&` e `||` sono operatori a cortocircuito:
-il secondo operando viene valutato solo se il primo non determina già il risultato. Ciò consente
-di mettere a destra un controllo che dipende da un valore valido a sinistra, per esempio prima
-verificare che un indice sia entro i limiti e poi leggere la lista. In Core ogni condizione deve
-comunque produrre un `Bool`; un intero o una lista non vengono convertiti implicitamente in
-vero/falso.
+Grouping should not be confused with evaluation. `&&` and `||` are short-circuit operators:
+the second operand is evaluated only if the first does not already determine the result. This allows
+to put a control on the right that depends on a valid value on the left, for example before
+verify that an index is within bounds and then read the list. In Core every condition must
+still produce a `Bool`; an integer or a list are not implicitly converted to
+true/false.
 
-### 4.1 Aritmetica intera
+### 4.1 Integer arithmetic
 
-L'aritmetica di Core è interamente intera e queste quattro regole vanno lette come un modello unico,
-non come curiosità isolate: il tipo `Int` è un blocco di 64 bit, le operazioni lo trattano come tale,
-e la divisione è lasciata a Full perché richiede un altro tipo di numero.
+Core's arithmetic is entirely integer and these four rules should be read as a single model,
+not as isolated curiosities: the `Int` type is a 64-bit block, operations treat it as such,
+and the division is left at Full because it requires another type of number.
 
-- `+ - * ^` su `Int` con **wrap a 64 bit** (complemento a due);
-- `%` è il **resto con il segno del dividendo**, come `rem` di Julia: `-7 % 3 == -1`;
-- `^` con esponente negativo è un errore; `%` per zero è un errore;
-- **`/` non esiste in Core**: la divisione è di Triad-Full.
+- `+ - * ^` to `Int` with **64-bit wrap** (two's complement);
+- `%` is the **signed remainder of the dividend**, like Julia's `rem`: `-7 % 3 == -1`;
+- `^` with negative exponent is an error; `%` for zero is an error;
+- **`/` does not exist in Core**: the division is Triad-Full.
 
 ```triad
 println(2 + 3 * 4, " ", (2 + 3) * 4, " ", 2 ^ 3 ^ 2)
@@ -883,26 +881,26 @@ println(9223372036854775807 + 1)
 -9223372036854775808
 ```
 
-Nota `2 ^ 3 ^ 2 == 512`: l'esponente è associativo a destra, come in matematica.
+Note `2^3^2 == 512`: the exponent is right associative, as in mathematics.
 
-Il wrap non è un difetto da aggirare: `Int` è un intero a 64 bit e l'aritmetica è quella del
-complemento a due, quindi superare il massimo riporta al minimo. Se il tuo calcolo può crescere
-oltre i 64 bit, in Full puoi passare a `Float` (con i suoi limiti di precisione); in Core devi
-progettare il calcolo per restare nei limiti, per esempio controllando i valori prima di
-moltiplicare.
+The wrap is not a flaw to work around: `Int` is a 64-bit integer and the arithmetic is that of
+two's complement, so exceeding the maximum brings you back to the minimum. If your calculation can grow
+beyond 64 bits, in Full you can switch to `Float` (with its precision limits); in Core you must
+design the calculation to stay within bounds, for example by checking values before
+multiply.
 
-`%` segue il segno del dividendo perché è il resto della divisione intera troncata verso zero, non
-il modulo matematico, che sarebbe sempre non negativo: `-7 % 3` è `-1` e non `2`. La distinzione
-conta negli algoritmi che usano il resto per alternare indici o per normalizzare valori negativi.
+`%` follows the dividend sign because it is the remainder of integer division truncated towards zero, not
+the mathematical form, which would always be non-negative: `-7 % 3` is `-1` and not `2`. The distinction
+counts in algorithms that use the remainder to alternate indices or to normalize negative values.
 
-Infine `/`: in Core non esiste perché la divisione esatta di due interi non ha un tipo in cui vivere
-senza i numeri in virgola mobile. In Full `/` produce un `Float` e `div` fa la divisione intera; se
-lavori in Core, la divisione intera la scrivi a mano, come nell'esempio del capitolo 11.4.
+Finally `/`: in Core it does not exist because the exact division of two integers does not have a type to live in
+without the floating point numbers. In Full `/` produces a `Float` and `div` does integer division; if
+you work in Core, the entire division is written by hand, as in the example in chapter 11.4.
 
-### 4.2 Logica e confronti
+### 4.2 Logic and comparisons
 
-`&&` e `||` cortocircuitano. I confronti **non** si concatenano: `1 < 2 < 3` è un errore (si
-confronta `Bool < Int`); scrivi `1 < 2 && 2 < 3`. **[Core]**
+`&&` and `||` short circuit. Comparisons **do not** chain: `1 < 2 < 3` is an error (yes
+compare `Bool < Int`); write `1 < 2 && 2 < 3`. **[Core]**
 
 ```triad
 println(!false, " ", true && false, " ", false || true)
@@ -920,105 +918,104 @@ true
 
 <a id="cap-5"></a>
 
-## 5. Controllo di flusso
+## 5. Flow control
 
-In Triad **tutto è un'espressione**: `if`, `while`, `let`, `begin` hanno un valore, quello
-dell'ultima istruzione eseguita (`nothing` se non ce n'è).
+In Triad **everything is an expression**: `if`, `while`, `let`, `begin` have a value, that
+of the last executed statement (`nothing` if there is none).
 
-Le eccezioni sono `return`, `break` e `continue`: non producono un valore, interrompono il flusso.
-L'assegnamento invece è un'espressione (cap. 3), e questa uniformità è ciò che rende possibile
-scrivere `v = if condizione … end` senza una sintassi speciale: un blocco è un'espressione come lo
-è una somma.
+The exceptions are `return`, `break` and `continue`: they don't produce a value, they stop the flow.
+Assignment, on the other hand, is an expression (chap. 3), and this uniformity is what makes it possible
+write `v = if condition … end` without special syntax: a block is an expression like lo
+it is a sum.
 
-Questa regola unifica due usi che in altri linguaggi spesso hanno sintassi separate: scegliere un
-ramo e calcolare un risultato. In `v = if condizione ... end`, l'espressione completa produce il
-valore dell'ultima espressione del ramo scelto; il codice dei rami non scelti non viene eseguito.
-Le istruzioni che producono output o mutano una lista possono stare nello stesso blocco di
-un'espressione che restituisce un valore: il risultato del blocco è l'ultima espressione, non una
-combinazione automatica di tutti i risultati intermedi.
+This rule unifies two uses that often have separate syntaxes in other languages: choose a
+branch and calculate a result. In `v = if condition ... end`, the complete expression produces the
+value of the last expression of the chosen branch; the code of the unchosen branches is not executed.
+Instructions that produce output or mutate a list can fit in the same block as
+an expression that evaluates to a value: the result of the block is the last expression, not one
+automatic combination of all intermediate results.
 
-Le condizioni sono intenzionalmente restrittive: `if`, `while`, ternario, `&&` e `||` chiedono
-un valore `Bool`. Non si usa una regola di «verità implicita» che interpreti `0`, stringhe vuote o liste
-vuote come falsi. Questo rende visibili gli errori di tipo vicino alla decisione che li ha
-provocati, invece di trasformarli in rami inattesi.
+The conditions are intentionally restrictive: `if`, `while`, ternary, `&&` and `||` ask
+a `Bool` value. You do not use an "implicit truth" rule that interprets `0`, empty strings, or lists
+empty like fakes. This makes type errors visible close to the decision that has them
+provoked, instead of transforming them into unexpected branches.
 
 ### 5.1 `if` / `elseif` / `else` **[Core]**
 
 ```triad
-function classifica(x)
+function rank(x)
     if x < 0
-        "negativo"
+        "negative"
     elseif x == 0
         "zero"
     else
-        "positivo"
+        "positive"
     end
 end
-println(classifica(-3), " ", classifica(0), " ", classifica(7))
-v = if 2 > 1 :si else :no end
+println(rank(-3), " ", rank(0), " ", rank(7))
+v = if 2 > 1 :yes else :no end
 println(v)
 ```
 
 **Output:**
 
 ```text
-negativo zero positivo
-si
+negative zero positive
+yes
 ```
 
-Nell'esempio `classifica` restituisce l'ultima espressione del ramo scelto, quindi non serve
-nessun `return`. `v = if 2 > 1 :si else :no end` mostra la stessa cosa senza funzione: il blocco è
-un valore e `v` riceve `:si`. Il ramo che non vince non viene eseguito affatto, non viene valutato
-e poi scartato: se contenesse una stampa o una mutazione, non la vedresti.
-
-Il ternario `c ? a : b` è la forma breve di `if` e ha la stessa precedenza del `->`. **[Core]**
+In the example `classify` returns the last expression of the chosen branch, so it is not needed
+no `return`. `v = if 2 > 1 :yes else :no end` shows the same thing without function: the block is
+a value and `v` receives `:si`. The branch that doesn't win isn't executed at all, it isn't evaluated
+and then discarded: if it contained a print or mutation, you wouldn't see it.
+The ternary `c ? a : b` is the short form of `if` and has the same precedence as `->`. **[Core]**
 
 ### 5.2 `while`, `break`, `continue` **[Core]**
 
-`break` e `continue` agiscono sul ciclo **più interno**.
+`break` and `continue` act on the **innermost** loop.
 
 ```triad
 i = 0
-somma_dispari = 0
+sum_odd = 0
 while i < 10
     i += 1
     if i % 2 == 0
         continue
     end
-    somma_dispari += i
+    sum_odd += i
 end
-println(somma_dispari)
+println(odd_sum)
 while true
     break
 end
-println(:fine)
+println(:end)
 ```
 
 **Output:**
 
 ```text
 25
-fine
+end
 ```
 
-Il primo ciclo somma solo i dispari: `continue` salta il resto del corpo, quindi l'aggiunta non
-avviene per i pari, e il contatore `i` è già stato incrementato prima del salto. Se l'incremento
-fosse stato in fondo al corpo, `continue` lo avrebbe saltato e il ciclo sarebbe stato infinito:
-è la trappola classica di `continue` nei cicli con contatore manuale, e il motivo per cui conviene
-incrementare subito, prima di ogni possibile uscita anticipata.
+The first loop adds only the odd ones: `continue` skips the rest of the body, so the addition doesn't
+happens for evens, and the `i` counter has already been incremented before the jump. If the increase
+had it been at the bottom of the body, `continue` would have skipped it and the loop would have been infinite:
+It's the classic `continue` trap in manual counter loops, and why it's convenient
+increase immediately, before any possible early exit.
 
-`break` e `continue` agiscono sul ciclo **più interno**; non esiste un'etichetta per uscire da due
-cicli in un colpo, quindi in quel caso si usa una variabile di stato.
+`break` and `continue` act on the **innermost** loop; there is no etiquette for dating two
+loops in one go, so in that case you use a state variable.
 
-In Core **non esiste `for`**: si itera con un contatore e `while`. In Full `for` esiste (cap. 5.6).
+In Core **there is no `for`**: you iterate with a counter and `while`. In Full `for` exists (ch. 5.6).
 
-### 5.3 `let` e `begin` **[Core]**
+### 5.3 `let` and `begin` **[Core]**
 
-`let` introduce un nuovo scope con legami locali. `begin … end` raggruppa istruzioni in una sola
-espressione, ma non è «senza conseguenze» sullo scope: l'interprete di riferimento aggiorna un nome
-già legato fuori dal blocco, mentre un nome **nuovo** assegnato dentro `begin` non risulta visibile
-fuori. La specifica non elenca `begin` fra i costrutti che introducono ambienti e nessun caso di
-conformità fissa il punto: per i nomi nuovi è prudente trattare il blocco come un confine.
+`let` introduces a new scope with local bindings. `begin … end` groups statements into one
+expression, but it is not "without consequences" on the scope: the reference interpreter updates a name
+already bound outside the block, while a **new** name assigned inside `begin` is not visible
+out. The specification does not list `begin` among the constructs that introduce environments and no cases of
+conformity sets the point: for new names it is prudent to treat the block as a boundary.
 
 ```triad
 x = 1
@@ -1031,7 +1028,7 @@ end
 println(x)
 r = begin
     a = 2
-    a * 21
+    at * 21
 end
 println(r)
 ```
@@ -1045,20 +1042,20 @@ println(r)
 42
 ```
 
-L'esempio mostra tre legami distinti per `x`: quello esterno, quello introdotto dal primo `let` e
-quello introdotto dal secondo. Ogni `let` crea un ambiente nuovo, e un nome viene cercato prima
-nell'ambiente più interno; per questo le tre stampe danno `20`, `10`, `1` e nessuna delle tre
-rilegature tocca le altre. `begin`, invece, è solo un raggruppamento: l'esempio assegna `a = 2` e
-usa `a * 21` nello stesso blocco, quindi non dipende da che cosa resta visibile dopo. La regola da
-tenere presente è che il blocco non serve a far uscire nomi nuovi: se un valore deve essere usato
-fuori, assegnalo a un nome che esiste già prima del `begin` o restituiscilo come valore
-dell'espressione. In pratica `let` serve quando vuoi isolare un nome o riusare un nome già preso
-senza alterarne il legame esterno; `begin` serve a raggruppare istruzioni in un'espressione unica.
+The example shows three distinct bindings for `x`: the external one, the one introduced by the first `let` and
+the one introduced by the second. Each `let` creates a new environment, and a name is looked up first
+in the innermost environment; for this reason the three prints give `20`, `10`, `1` and none of the three
+bindings touches the others. `begin`, however, is just a grouping: the example assigns `a = 2` e
+uses `a * 21` in the same block, so it doesn't depend on what remains visible after. The rule from
+keep in mind is that the block is not used to release new names: if a value must be used
+out, assign it to a name that already exists before `begin` or return it as a value
+of the expression. In practice `let` is used when you want to isolate a name or reuse an already taken name
+without altering the external bond; `begin` is used to group statements into a single expression.
 
-### 5.4 `for` e i range **[Full]**
+### 5.4 `for` and ranges **[Full]**
 
-`for` itera su una lista, un range o un risultato di `solve`. `a:b` produce il range da `a` a `b`
-inclusi.
+`for` iterates over a list, range, or result of `solve`. `a:b` produces the range from `a` to `b`
+included.
 
 ```triad-full
 s = 0
@@ -1080,15 +1077,15 @@ println(xs[2:end])
 [2, 3]
 ```
 
-`end` è un nome speciale che vale la posizione dell'ultimo elemento e si può usare dentro le
-parentesi quadre di un indice: `xs[end]` è l'ultimo elemento, `xs[2:end]` è la coda dal secondo
-elemento in poi. Il range `a:b` è inclusivo su entrambi gli estremi, quindi `1:10` contiene dieci
-valori; è una forma di Triad-Full, e in Core si ottiene con un ciclo. La destrutturazione nel `for`
-è trattata nel capitolo 24.
+`end` is a special name that takes the position of the last element and can be used inside le
+square brackets of an index: `xs[end]` is the last element, `xs[2:end]` is the tail from the second
+element onwards. The range `a:b` is inclusive at both ends, so `1:10` contains ten
+values; it is a form of Triad-Full, and in Core it is achieved with a loop. Destructuring in the `for`
+is covered in chapter 24.
 
-### 5.5 Le comprehension **[Full]**
+### 5.5 Comprehensions **[Full]**
 
-La comprehension `[e for x in xs]` costruisce una lista; con `if` aggiunge un filtro.
+The comprehension `[e for x in xs]` constructs a list; with `if` it adds a filter.
 
 ```triad-full
 println([x^2 for x in 1:4])
@@ -1102,16 +1099,16 @@ println([x^2 for x in 1:4 if x > 2])
 [9, 16]
 ```
 
-La comprehension è zucchero per un ciclo che accumula in una lista: per ogni `x` di `1:4` valuta
-`x^2` e aggiunge il risultato, senza un contatore esplicito. Il filtro `if x > 2` agisce
-sull'elemento, non sull'indice: `9` e `16` restano perché `3` e `4` superano la soglia. In Core
-`[e for x in xs]` non esiste e lo stesso lavoro lo fanno le funzioni scritte a mano del capitolo
-22.1; in Full spesso la comprehension è la forma più leggibile, purché l'espressione resti breve.
+The comprehension is sugar for a loop that accumulates into a list: for each `x` of `1:4` evaluates
+`x^2` and adds the result, without an explicit counter. The `if x > 2` filter works
+on the element, not on the index: `9` and `16` remain because `3` and `4` exceed the threshold. In Core
+`[e for x in xs]` does not exist and the handwritten functions in the chapter do the same job
+22.1; in Full, comprehension is often the most readable form, as long as the expression remains short.
 
 ### 5.6 `try` / `catch` **[Full]**
 
-In Full l'errore è un **valore**, quindi `try` ha due forme: con `catch` il ramo gestito produce il
-valore dell'espressione; senza `catch`, l'errore **diventa** il valore dell'espressione.
+In Full the error is a **value**, so `try` has two forms: with `catch` the managed branch produces the
+expression value; without `catch`, the error **becomes** the value of the expression.
 
 ```triad-full
 e = try div(1, 0) end
@@ -1128,44 +1125,44 @@ true domain
 0
 ```
 
-Le due forme non sono intercambiabili. `try e end` non gestisce l'errore: lo rende il valore
-dell'espressione, così puoi controllarlo con `iserr` e decidere dopo. `try e catch err; h end` invece
-recupera: lega `err` all'errore e valuta `h`, il cui valore diventa il risultato. Nel primo caso
-`e` è un `Err`, nel secondo `r` è `0`. Scegliere fra i due è una decisione di progetto: la prima
-forma tiene l'errore nel flusso normale, la seconda lo confina in un punto preciso. È il motivo per
-cui il capitolo 11 insiste sul fatto che «errore come dato» non significa «il programma continua da
-solo»: senza un `try` che lo osservi, l'errore arriva al livello superiore e il programma termina.
+The two forms are not interchangeable. `try and end` doesn't handle the error: it makes it the value
+of the expression, so you can check it with `iserr` and decide later. `try and catch err; h end` instead
+retrieve: bind `err` to the error and evaluate `h`, whose value becomes the result. In the first case
+`e` is an `Err`, in the second `r` is `0`. Choosing between the two is a design decision: the first
+form keeps the error in the normal flow, the second confines it to a precise point. It's the reason why
+to which Chapter 11 insists that “error as given” does not mean “the program continues from
+only": without a `try` to observe it, the error reaches the upper level and the program terminates.
 
 ---
 
 <a id="cap-6"></a>
 
-## 6. Funzioni
+## 6. Functions
 
-### 6.1 Tre forme di definizione **[Core]**
+### 6.1 Three forms of definition **[Core]**
 
-Una funzione nominata si definisce in due modi — forma breve e forma a blocco — e la terza forma è
-una funzione anonima legata a un nome. La differenza è solo sintattica: la funzione che ottieni è la
-stessa. La forma breve si usa quando il corpo è una sola espressione; la forma `function … end`
-quando il corpo ha più istruzioni o un `return` che esce prima della fine; la lambda assegnata a un
-nome è utile quando il valore funzione nasce dentro un'espressione.
+A named function is defined in two ways — short form and block form — and the third form is
+an anonymous function tied to a name. The difference is only syntactic: the function you get is the
+itself. The short form is used when the body is a single expression; the form `function … end`
+when the body has multiple statements or a `return` that exits before the end; the lambda assigned to a
+name is useful when the function value arises inside an expression.
 
 ```triad
-# forma breve: il corpo è un'espressione
-quadrato(x) = x * x
+# short form: the body is an expression
+square(x) = x * x
 
-# forma blocco: il valore è quello dell'ultima espressione
-function calcola(n)
+# block form: the value is that of the last expression
+function compute(n)
     m = n + 1
     m * 2
 end
 
-# funzione anonima assegnata a un nome
-moltiplica = function (a, b)
+# anonymous function assigned a name
+multiply = function (a, b)
     a * b
 end
 
-println(quadrato(4), " ", calcola(3), " ", moltiplica(6, 7))
+println(square(4), " ", calculate(3), " ", multiply(6, 7))
 ```
 
 **Output:**
@@ -1174,61 +1171,60 @@ println(quadrato(4), " ", calcola(3), " ", moltiplica(6, 7))
 16 8 42
 ```
 
-`quadrato` e `calcola` sono funzioni nominate, `moltiplica` è un valore di tipo funzione legato a un
-nome: dal punto di vista della chiamata non c'è differenza. Scegli la forma che rende più leggibile
-il corpo, non quella che sembra più moderna; la forma breve con una sola espressione rende evidente
-che non ci sono effetti nascosti tra le righe.
+`square` and `calculate` are named functions, `multiply` is a function-type value bound to a
+name: from the point of view of the call there is no difference. Choose the shape that makes it most readable
+the body, not the one that seems most modern; the short form with only one expression makes it obvious
+that there are no hidden effects between the lines.
 
-### 6.2 `return`, ricorsione, arità
+### 6.2 `return`, recursion, arity
 
-`return e` esce subito dalla funzione; `return` da solo restituisce `nothing`. Una funzione nominata
-è visibile nel proprio corpo, quindi la ricorsione diretta funziona. Il numero di argomenti deve
-coincidere con i parametri. **[Core]**
+`return e` exits the function immediately; `return` alone returns `nothing`. A named function
+it's visible in your body, so direct recursion works. The number of arguments must
+coincide with the parameters. **[Core]**
 
 ```triad
-function taglia(n)
+function size(n)
     if n > 100
-        return :grande
+        return :large
     end
-    :piccola
+    :small
 end
-fattoriale(n) = n < 2 ? 1 : n * fattoriale(n - 1)
+factorial(n) = n < 2 ? 1 : n * factorial(n - 1)
 fib(n) = n < 2 ? n : fib(n - 1) + fib(n - 2)
-mcd(a, b) = b == 0 ? a : mcd(b, a % b)
-println(taglia(500), " ", taglia(5))
-println(fattoriale(10), " ", fib(15), " ", mcd(48, 18))
+gcd(a, b) = b == 0 ? a : gcd(b, a % b)
+println(size(500), " ", size(5))
+println(factorial(10), " ", fib(15), " ", gcd(48, 18))
 ```
-
 **Output:**
 
 ```text
-grande piccola
+big small
 3628800 610 6
 ```
 
-Una chiamata può essere letta come una sequenza precisa: si valutano gli argomenti, si crea il
-contesto della funzione, si associano i valori ai parametri e si esegue il corpo. Il corpo termina
-in uno di due modi: raggiunge la fine e restituisce l'ultima espressione, oppure esegue `return`,
-che interrompe immediatamente il corpo e restituisce il valore indicato. `return` senza
-espressione restituisce `nothing`. Una ricorsione è una nuova chiamata con un proprio insieme di
-parametri locali; il caso base impedisce di continuare a creare chiamate senza fine.
+A call can be read as a precise sequence: the arguments are evaluated, the
+context of the function, you associate the values with the parameters and execute the body. The body ends
+in one of two ways: reaches the end and returns the last expression, or executes `return`,
+which immediately interrupts the body and returns the indicated value. `return` without
+expression returns `nothing`. A recursion is a new call with its own set of
+local parameters; the base case prevents you from continuing to create endless calls.
 
-L'arità è parte della firma anche in Core: `somma(1, 2)` non è intercambiabile con `somma(1)`.
-Triad-Full aggiunge i tipi alle firme e consente più metodi con lo stesso nome; questo non cambia
-la nozione di chiamata, ma aggiunge una fase di selezione del metodo prima di eseguirne il corpo.
+Arity is also part of the signature in Core: `sum(1, 2)` is not interchangeable with `sum(1)`.
+Triad-Full adds types to signatures and allows multiple methods with the same name; this doesn't change
+the notion of calling, but adds a method selection step before executing the body.
 
-Un'ultima nota pratica: la ricorsione profonda consuma spazio di chiamata, quindi per profondità
-grandi conviene un `while` con uno stato esplicito (cap. 22.6). Il caso base non è una formalità:
-senza di esso la chiamata ricorsiva non si ferma e il programma non arriva a un risultato.
+One last practical note: deep recursion consumes call space, so per depth
+large, a `while` with an explicit state is better (chap. 22.6). The base case is not a formality:
+without it the recursive call doesn't stop and the program doesn't arrive at a result.
 
-### 6.3 Funzioni di ordine superiore
+### 6.3 Higher-order functions
 
-Le funzioni sono valori di prima classe: si passano, si restituiscono, si compongono. In Core
-`map`, `filter` e `reduce` **non esistono**: si scrivono a mano (cap. 22.1). In Full sono builtin.
+Functions are first-class values: they pass, they return, they compose. In Core
+`map`, `filter` and `reduce` **do not exist**: they are written by hand (chap. 22.1). In Full they are builtins.
 **[Core]**
 
 ```triad
-function applica_tutti(f, xs)
+function apply_all(f, xs)
     out = []
     i = 1
     while i <= length(xs)
@@ -1237,7 +1233,7 @@ function applica_tutti(f, xs)
     end
     out
 end
-println(applica_tutti(x -> x * x, [1, 2, 3]))
+println(apply_all(x -> x * x, [1, 2, 3]))
 ```
 
 **Output:**
@@ -1246,25 +1242,25 @@ println(applica_tutti(x -> x * x, [1, 2, 3]))
 [1, 4, 9]
 ```
 
-In Full, `reduce(+, xs)` e `map(sq, xs)` funzionano perché anche gli **operatori sono funzioni**.
+In Full, `reduce(+, xs)` and `map(sq, xs)` work because the **operators are also functions**.
 
-Il punto di `applica_tutti` non è la funzione specifica: è che `f` è un parametro come gli altri, e
-`x -> x * x` è un valore costruito al momento della chiamata. Questa è la differenza fra scrivere
-dieci cicli quasi uguali e scrivere un ciclo una volta sola; in Core `map` e `filter` non esistono
-perché il linguaggio di bootstrap deve restare piccolo, non perché l'idea sia estranea a Triad. Le
-funzioni del capitolo 22.1 sono la risposta pratica: scrivile una volta e riusale.
+The point of `apply_all` isn't function specific: it's that `f` is a parameter like the others, and
+`x -> x * x` is a value constructed at call time. This is the difference between writing
+ten almost equal cycles and write a cycle only once; in Core `map` and `filter` do not exist
+because the bootstrap language needs to stay small, not because the idea is foreign to Triad. Le
+functions of chapter 22.1 are the practical answer: write them once and use them again.
 
-### 6.4 L'annotazione di effetto `!io`
+### 6.4 The `!io` effect annotation
 
-Una funzione che stampa deve dichiarare `!io` nella firma. Core **accetta l'annotazione e la
-ignora**: scriverla rende il codice già pronto per Full. **[Core]**
+A function that prints must declare `!io` in the signature. Core **accepts the annotation and the
+ignore**: writing it makes the code ready for Full. **[Core]**
 
 ```triad
-function mostra() !io
+function show() !io
     println("hello from block")
     20 + 22
 end
-println(mostra())
+println(show())
 ```
 
 **Output:**
@@ -1274,21 +1270,21 @@ hello from block
 42
 ```
 
-L'annotazione non è decorativa. In Triad-Full una funzione dichiara le capacità che usa, e il
-runtime verifica che il chiamante le permetta (cap. 15); in Core il controllo non esiste, ma
-scrivere `!io` adesso significa non dover riscrivere la firma quando il programma passerà a Full.
-La parola `io` è un permesso, non un'etichetta descrittiva: dice che la funzione può produrre
-output, e chi la chiama deve essere autorizzato a farlo.
+The annotation is not decorative. In Triad-Full a function declares the capabilities it uses, and the
+runtime checks that the caller allows them (chap. 15); in Core the control does not exist, but
+writing `!io` now means not having to rewrite the signature when the program switches to Full.
+The word `I` is a permission, not a descriptive label: it says what the function can produce
+output, and the caller must be authorized to do so.
 
 ---
 
 <a id="cap-7"></a>
 
-## 7. Tipi e multiple dispatch
+## 7. Types and multiple dispatches
 
-Una funzione generica è un insieme di metodi. Ridefinire la stessa firma sostituisce il metodo
-precedente. Tra i metodi applicabili (stessa arità, ogni argomento sottotipo del parametro) vince
-il **più specifico**. **[Full]**
+A generic function is a collection of methods. Redefine the same signature overrides the method
+previous. Among the applicable methods (same arity, each argument subtype of the parameter) wins
+the **most specific**. **[Full]**
 
 ```triad-full
 area(n::Number) = :number
@@ -1305,29 +1301,28 @@ int
 number
 ```
 
-L'esempio va letto come una ricerca: `area(1)` ha un `Int`, che è sottotipo sia di `Int` sia di
-`Number`; entrambi i metodi sono applicabili, ma `Int` è più specifico e vince. `area(1.5)` ha un
-`Float`, che è sottotipo di `Number` ma non di `Int`, quindi resta un solo metodo applicabile. Se
-avessi definito solo `area(n::Number)`, entrambe le chiamate avrebbero usato quello: il dispatch non
-sceglie il metodo «migliore», sceglie il più specifico fra quelli che accettano gli argomenti.
+The example should be read as a search: `area(1)` has an `Int`, which is a subtype of both `Int` and
+`Number`; both methods are applicable, but `Int` is more specific and wins. `area(1.5)` has a
+`Float`, which is a subtype of `Number` but not of `Int`, so there is only one applicable method left. If
+had I only defined `area(n::Number)`, both calls would have used that: dispatch does not
+chooses the "best" method, chooses the most specific among those that accept the arguments.
+A method A is more specific than B if each of its parameters is a subtype of the corresponding parameter of B
+and the signatures differ.
 
-Un metodo A è più specifico di B se ogni suo parametro è sottotipo del corrispondente parametro di B
-e le firme differiscono.
+- If no method is applicable: `Err(:method)`.
+- If multiple methods are maximal: `Err(:ambiguous)`.
+- If the name is also a builtin (for example `+` on numbers), the builtin is used.
 
-- Se nessun metodo è applicabile: `Err(:method)`.
-- Se più metodi sono massimali: `Err(:ambiguous)`.
-- Se il nome è anche un builtin (per esempio `+` sui numeri), si usa il builtin.
+Dispatch can be modeled as a two-step search. First we eliminate the methods with
+incorrect arity or with at least one argument that does not satisfy the declared type; then they compare
+those remaining according to the subtype relationship, parameter by parameter. One method is more
+specific only if it is no longer general in any position and is general in at least one. So it's not enough
+choose the most recently added method. If two incomparable signatures remain, the call is
+ambiguous and produces `Err(:ambiguous)` instead of depending on the order of the files or the order of
+registration. This behavior allows you to add specialized methods without rewriting
+the generic function, while keeping explicit the cases that do not have a univocal answer.
 
-Il dispatch si può modellare come una ricerca in due passaggi. Prima si eliminano i metodi con
-arità errata o con almeno un argomento che non soddisfa il tipo dichiarato; poi si confrontano
-quelli rimasti secondo la relazione di sottotipo, parametro per parametro. Un metodo è più
-specifico solo se non è più generale in nessuna posizione e lo è in almeno una. Non basta quindi
-scegliere il metodo aggiunto più di recente. Se restano due firme incomparabili, la chiamata è
-ambigua e produce `Err(:ambiguous)` invece di dipendere dall'ordine dei file o dall'ordine di
-registrazione. Questo comportamento consente di aggiungere metodi specializzati senza riscrivere
-la funzione generica, mantenendo però espliciti i casi che non hanno una risposta univoca.
-
-Gli operatori si estendono come funzioni, ridefinendoli:
+Operators are extended as functions, redefining them:
 
 ```triad-full
 struct Point
@@ -1349,16 +1344,16 @@ println(p.x, " ", p.y)
 4.0 6.0
 ```
 
-### 7.1 Il tipo di ritorno
+### 7.1 The return type
 
-`::R` è controllato all'uscita, con la conversione `Int -> Float`. Se il valore non è conforme:
+`::R` is checked on exit, with the `Int -> Float` conversion. If the value does not comply:
 `Err(:type)`. **[Full]**
 
 ```triad-full
-function metà(n::Number)::Float
+function half(n::Number)::Float
     n / 2
 end
-println(metà(3))
+println(half(3))
 ```
 
 **Output (golden Full):**
@@ -1367,43 +1362,41 @@ println(metà(3))
 1.5
 ```
 
-Il controllo avviene all'uscita perché solo allora il valore esiste; la conversione `Int -> Float`
-permette di scrivere `n / 2` senza preoccuparti del tipo letterale del risultato. Se il valore non è
-convertibile, ottieni un `Err(:type)` e non un'eccezione: anche una promessa di firma violata entra
-nel flusso degli errori come dato.
+The control occurs at the exit because only then does the value exist; the `Int -> Float` conversion
+allows you to write `n / 2` without worrying about the literal type of the result. If the value is not
+convertible, you get an `Err(:type)` and not an exception: a violated signature promise also enters
+in the error stream as given.
 
-### 7.2 Funzioni locali
-
-Una `function` definita dentro un'altra funzione è una **chiusura locale**, senza dispatch. **[Full]**
+### 7.2 Local functions
+A `function` defined inside another function is a **local closure**, without dispatch. **[Full]**
 
 ```triad-full
-function esterno(x)
-    function interno(y)
+function external(x)
+    function internal(y)
         y * 2
     end
-    interno(x) + 1
+    internal(x) + 1
 end
-println(esterno(5))
+println(external(5))
 ```
 
 ---
 
 <a id="cap-8"></a>
 
-## 8. Lambda, chiusure e scope
+## 8. Lambdas, closures and scopes
 
 ### 8.1 Lambda **[Core]**
 
-Una lambda è una funzione senza nome: `x -> x * 2` è un valore, non una definizione. La forma
-`(a, b) -> …` dichiara più parametri, e il corpo è un'espressione oppure un blocco. Le lambda si
-passano come argomenti e si restituiscono come risultati, ed è così che una funzione di ordine
-superiore (cap. 6.3) descrive un'operazione senza eseguirla subito.
-
+A lambda is an unnamed function: `x -> x * 2` is a value, not a definition. The shape
+`(a, b) -> …` declares multiple parameters, and the body is an expression or a block. Lambdas yes
+pass as arguments and return as results, and that's how an order function
+above (chap. 6.3) describes an operation without carrying it out immediately.
 ```triad
-doppio = x -> x * 2
-somma = (a, b) -> a + b
-applica = f -> f(3)
-println(doppio(5), " ", somma(1, 2), " ", applica(x -> x * x))
+double = x -> x * 2
+sum = (a, b) -> a + b
+apply = f -> f(3)
+println(double(5), " ", sum(1, 2), " ", apply(x -> x * x))
 ```
 
 **Output:**
@@ -1412,13 +1405,13 @@ println(doppio(5), " ", somma(1, 2), " ", applica(x -> x * x))
 10 3 9
 ```
 
-Una lambda con corpo a più istruzioni si scrive con `begin … end` o con `function (…) … end`. Le
-lambda senza parametri (`() -> …`) **non** sono supportate: usa `function () … end`.
+A lambda with a multi-statement body is written with `begin … end` or with `function (…) … end`. Le
+parameterless lambdas (`() -> …`) are **not** supported: use `function () … end`.
 
-### 8.2 Chiusure
+### 8.2 Closures
 
-Una lambda cattura l'ambiente in cui è creata. Secondo `SPEC-CORE §5` le variabili catturate sono
-**condivise**: le mutazioni sono visibili. **[Core]**
+A lambda captures the environment in which it is created. According to `SPEC-CORE §5` the captured variables are
+**shared**: mutations are visible. **[Core]**
 
 ```triad
 function add(n)
@@ -1428,14 +1421,14 @@ f = add(10)
 g = add(100)
 println(f(5), " ", g(5))
 
-function contatore()
+function counter()
     v = 0
     x -> begin
         v += x
         v
     end
 end
-acc = contatore()
+acc = counter()
 acc(5)
 println(acc(10))
 ```
@@ -1447,37 +1440,37 @@ println(acc(10))
 15
 ```
 
-> **Attenzione.** Il seed Windows cattura **per valore** e copre solo l'ultimo legame del frame: un
-> accumulatore come `contatore` può non funzionare sul seed. L'interprete JS e la specifica usano il
-> modello condiviso.
+> **Caution.** The Windows seed captures **by value** and covers only the last binding of the frame: a
+> accumulator as `counter` may not work on seed. The JS interpreter and specification use the
+> shared model.
 
-Una chiusura non conserva una fotografia del solo testo della lambda: mantiene accesso ai legami
-che il suo corpo può leggere. Nel primo esempio la funzione restituita da `add(10)` mantiene il
-valore `n = 10` anche dopo che la chiamata a `add` è terminata; `add(100)` crea una chiusura
-distinta. Nel contatore, invece, la variabile `v` è un legame condiviso: ogni chiamata aggiorna
-lo stesso stato e la successiva lo osserva. È il motivo per cui una chiusura può rappresentare
-un piccolo oggetto con stato privato. È anche il motivo per cui il comportamento specifico del
-seed Windows va verificato separatamente dall'interprete di riferimento.
+A closure doesn't keep a snapshot of just the text of the lambda: it keeps access to the bindings
+that his body can read. In the first example the function returned by `add(10)` maintains the
+value `n = 10` even after the call to `add` has finished; `add(100)` creates a closure
+distinct. In the counter, however, the variable `v` is a shared link: each call updates
+the same state and the next one observes it. It's why a closure can represent
+a small object with private status. It is also the reason why the specific behavior of the
+seed Windows should be verified separately from the reference interpreter.
 
-La differenza fra cattura condivisa e cattura per valore non è teorica: con il modello condiviso
-due chiusure create dallo stesso frame vedono lo stesso stato, con il modello per valore ognuna ha
-la sua copia. Quando progetti un oggetto con stato, sappi quale modello stai usando, perché è quello
-che decide se due contatori sono indipendenti o no.
+The difference between shared capture and value capture is not theoretical: with the shared model
+two closures created from the same frame see the same state, with the pattern for value each has
+his copy. When you design a stateful object, know which model you're using, because that's it
+which decides whether two counters are independent or not.
 
-### 8.3 Le regole di scope
+### 8.3 The rules of scope
 
-Le regole seguono un principio unico: lo scope è **lessicale**, cioè conta dove il codice è scritto,
-non da dove viene chiamato. Da quel principio discendono le cinque regole che seguono; leggerle in
-ordine aiuta a prevedere che cosa modifica davvero un assegnamento.
+The rules follow a single principle: the scope is **lexical**, i.e. it matters where the code is written,
+not where it is called from. From that principle derive the five rules that follow; read them in
+order helps predict what actually changes an assignment.
 
-1. `function`, lambda, `let`, `while`, `for` e le comprehension introducono **ambienti**; un nome è
-   visibile nell'ambiente in cui è legato e in quelli interni (scope lessicale), mai in quelli
-   esterni.
-2. **Dentro una funzione nominata** l'assegnamento lega nel frame locale: una funzione **non
-   modifica i globali**.
-3. **Dentro una lambda** l'assegnamento a un nome già legato fuori aggiorna quel legame.
-4. **Al top level** i cicli possono aggiornare i globali.
-5. `let x = …` crea un nuovo `x`: assegnare `x` dentro il `let` non tocca l'`x` esterno.
+1. `function`, lambda, `let`, `while`, `for` and comprehensions introduce **environments**; a name is
+   visible in the environment in which it is linked and in the internal ones (lexical scope), never in those
+   external.
+2. **Within a named function** the assignment binds in the local frame: a function **not
+   edit globals**.
+3. **Inside a lambda** assigning to a name already bound outside updates that binding.
+4. **At top level** loops can update globals.
+5. `let x = …` creates a new `x`: assigning `x` inside the `let` does not affect the outer `x`.
 
 ```triad
 x = 1
@@ -1487,10 +1480,10 @@ function f()
 end
 println(f(), " ", x)
 c = 0
-function incrementa()
+function increment()
     c += 1
 end
-incrementa()
+increment()
 println(c)
 ```
 
@@ -1501,28 +1494,27 @@ println(c)
 0
 ```
 
-Per far uscire un risultato da una funzione, restituiscilo — oppure usa una lista, che è mutabile.
+To get a result out of a function, return it — or use a list, which is mutable.
 
-L'esempio mostra il caso più importante: `f` restituisce `2` e il globale `x` resta `1`, perché
-l'assegnamento dentro una funzione nominata crea un legame locale. `incrementa` incrementa un
-legame locale `c` che nasce e muore nella chiamata, e il globale `c` resta `0`. Non è una svista del
-linguaggio: è ciò che rende il comportamento di una funzione indipendente dallo stato globale.
-Quando hai bisogno di stato condiviso, le strade sono due — una lista mutabile passata come
-argomento (cap. 9) o una chiusura (cap. 8.2) — e in entrambi i casi la condivisione è visibile
-nella firma o nella definizione.
+The example shows the most important case: `f` returns `2` and the global `x` remains `1`, because
+assignment within a named function creates a local binding. `increment` increments a
+local binding `c` that is born and dies in the call, and the global `c` remains `0`. It's not an oversight
+language: it is what makes the behavior of a function independent of the global state.
+When you need shared state, there are two ways — a mutable list passed as
+topic (chap. 9) or a closure (chap. 8.2) — and in both cases the sharing is visible
+in the signature or definition.
 
 ---
 
 <a id="cap-9"></a>
 
-## 9. Liste
+## 9. Lists
 
-Una lista è eterogenea, annidabile e **mutabile**. Gli indici partono da **1**. **[Core]**
-
-Una lista si scrive fra parentesi quadre, `[1, 2, 3]`; l'ordine degli elementi è significativo e i
-valori possono essere di tipi diversi. La mutabilità è la proprietà che distingue la lista da un
-record: la lista cresce e cambia, e più nomi possono osservare la stessa lista. È la struttura
-d'appoggio di quasi tutto il codice Core, dai record alle code, dagli ambienti ai parser.
+A list is heterogeneous, nestable and **mutable**. The indices start from **1**. **[Core]**
+A list is written in square brackets, `[1, 2, 3]`; the order of the elements is significant and i
+values can be of different types. Mutability is the property that distinguishes the list from a
+record: the list grows and changes, and multiple names can observe the same list. It's the structure
+supports almost all Core code, from records to queues, from environments to parsers.
 
 ```triad
 xs = [1, 2, 3]
@@ -1531,7 +1523,7 @@ push!(xs, 4)
 xs[1] += 100
 println(xs)
 alias = xs
-push!(alias, 5)
+push!(aka, 5)
 println(xs)
 ```
 
@@ -1543,41 +1535,41 @@ println(xs)
 [101, 2, 3, 4, 5]
 ```
 
-`push!` **muta** la lista e la restituisce. Le liste sono riferimenti: due nomi possono indicare la
-stessa lista, come si vede sopra.
+`push!` **mutates** the list and returns it. The lists are references: two names can indicate the
+same list, as seen above.
 
-Il fatto che `push!` restituisca la lista, e non `nothing`, è una scelta comoda: permette di
-concatenare l'aggiunta con un'altra operazione, ma rende anche possibile scrivere `xs = push!(xs, 4)`,
-che è ridondante ma innocuo. L'assegnamento a un elemento (`xs[1] += 100`) funziona anche con gli
-operatori composti: il lato sinistro viene valutato una volta sola, quindi l'indice non viene
-calcolato due volte.
+The fact that `push!` returns the list, and not `nothing`, is a convenient choice: it allows you to
+chain the addition with another operation, but it also makes it possible to write `xs = push!(xs, 4)`,
+which is redundant but harmless. Assignment to an element (`xs[1] += 100`) also works with
+compound operators: the left side is evaluated only once, so the index is not
+calculated twice.
 
-Una lista è un oggetto mutabile; una variabile contiene un riferimento a quell'oggetto. Se `ys =
-xs`, i due nomi permettono di raggiungere la stessa lista: `push!(ys, valore)` e `xs[i] = valore`
-sono osservabili anche leggendo `xs`. Se invece scrivi `ys = [1, 2]`, hai sostituito soltanto il
-legame `ys`; `xs` continua a riferirsi alla lista precedente. Questa distinzione spiega perché
-assegnare una lista non ne crea automaticamente una copia e perché gli argomenti lista possono
-essere usati per condividere stato tra funzioni.
+A list is a mutable object; a variable contains a reference to that object. If `ys =
+xs`, the two names allow you to reach the same list: `push!(ys, value)` and `xs[i] = value`
+are also observable by reading `xs`. If you instead write `ys = [1, 2]`, you have replaced only the
+bond `ys`; `xs` continues to refer to the previous list. This distinction explains why
+assigning a list does not automatically create a copy of it and because list arguments can
+be used to share state between functions.
 
-La convenzione 1-based è coerente con esempi e specifica: per visitare `n` elementi, il contatore
-inizia da 1 e la condizione tipica è `i <= length(xs)`. In un ciclo, aggiornare il contatore
-dopo aver letto l'elemento evita di saltare il primo elemento; aumentarlo in ogni iterazione
-assicura che la condizione prima o poi diventi falsa. Sul seed Windows la funzione ausiliaria
-sperimentale `get(xs, i)` è diversa e 0-based: non va usata come se fosse la semantica standard
-delle liste.
+The 1-based convention is consistent with examples and specifies: to visit `n` elements, the counter
+starts from 1 and the typical condition is `i <= length(xs)`. In one loop, update the counter
+after reading the item avoid skipping the first item; increase it in each iteration
+ensures that the condition will sooner or later become false. On the Windows seed the auxiliary function
+experimental `get(xs, i)` is different and 0-based: it should not be used as if it were the standard semantics
+of the lists.
 
-La scelta di partire da 1 non è un dettaglio estetico: rende coerente l'accesso con le posizioni
-umane e con i range, e permette di usare `length(xs)` come ultimo indice valido. Il prezzo è che un
-indice calcolato pensando allo 0 va corretto; l'errore tipico è `xs[0]`, che non restituisce un
-valore ma produce un errore. Un indice fuori intervallo non è `nothing`: in Core il programma
-termina, in Full arriva un `Err(:bounds)` da gestire. Per questo, quando l'indice è calcolato, è
-buona norma controllarlo prima con `1 <= i && i <= length(xs)`.
+The choice to start from 1 is not an aesthetic detail: it makes access consistent with the positions
+human and range-based, and allows `length(xs)` to be used as the last valid index. The price is that a
+index calculated with 0 in mind must be corrected; the typical error is `xs[0]`, which does not return a
+value but produces an error. An out-of-range index is `nothing`: in Core the program
+ends, in Full comes an `Err(:bounds)` to handle. For this reason, when the index is calculated, it is
+good practice to check it first with `1 <= i && i <= length(xs)`.
 
-La somma degli elementi con un ciclo esplicito:
+The sum of the elements with an explicit loop:
 
 ```triad
 xs = [101, 2, 3, 4, 5]
-tot = 0
+total = 0
 i = 1
 while i <= length(xs)
     tot += xs[i]
@@ -1592,124 +1584,123 @@ println(tot)
 115
 ```
 
-Il ciclo mostra la forma canonica di attraversamento in Core: contatore da 1, condizione
-`i <= length(xs)`, lettura di `xs[i]`. `length` viene ricalcolata a ogni iterazione, quindi se il
-corpo del ciclo cambia la lista il confine si sposta; mutare la lista mentre la si attraversa è
-possibile, ma va fatto con consapevolezza. Aggiungere elementi allunga la lista e il ciclo li
-visiterà; in Full, dove esistono `pop!` e `append!`, togliere elementi mentre l'indice cresce fa
-saltare quelli successivi.
-
-In Full esistono anche `reverse`, `sort`, `sum`, `first`, `last`, `rest`, `pop!`, `append!`, `vcat`,
-`collect` e l'operatore `x in xs`. Nessuno di questi nomi esiste in Core: se ti servono, li scrivi a
-mano con `while` e `push!`, come nel capitolo 22.1. Non è una perdita: gli algoritmi scritti a mano
-mostrano che cosa fanno e quanto costano, e in un bootstrap questa trasparenza vale più della
-brevità.
+The loop shows the canonical form of traversal in Core: counter from 1, condition
+`i <= length(xs)`, reading `xs[i]`. `length` is recalculated every iteration, so if the
+loop body changes list border moves; mutating the list as you traverse it is
+possible, but it must be done with awareness. Adding elements lengthens the list and loops through them
+will visit; in Full, where `pop!` and `append!` exist, removing items as the index grows does
+skip the next ones.
+In Full there are also `reverse`, `sort`, `sum`, `first`, `last`, `rest`, `pop!`, `append!`, `vcat`,
+`collect` and the `x in xs` operator. None of these names exist in Core: if you need them, write them to
+hand with `while` and `push!`, as in chapter 22.1. It's not a loss: handwritten algorithms
+they show what they do and how much they cost, and in a bootstrap this transparency is worth more than
+brevity.
 
 ---
 
 <a id="cap-10"></a>
 
-## 10. Stringhe, simboli e conversioni
+## 10. Strings, symbols and conversions
 
-Le stringhe in Triad sono valori immutabili e le operazioni sono poche, volutamente esplicite: si
-concatena con `*`, si misura la lunghezza in byte, si converte con funzioni dal nome chiaro. La
-tabella raccoglie le operazioni disponibili in Core; dove Full si comporta diversamente lo trovi
-indicato sotto, con il perché.
+The strings in Triad are immutable values and the operations are few, deliberately explicit: yes
+concatenate with `*`, measure the length in bytes, convert with clearly named functions. The
+table collects the operations available in Core; where Full behaves differently you can find it
+indicated below, with why.
 
-| operazione | significato |
+| operation | meaning |
 |---|---|
-| `a * b` | concatenazione di stringhe |
-| `length(s)` | numero di **byte** UTF-8 (`length("é") == 2`) |
-| `string(x)` | rappresentazione testuale di qualsiasi valore (`string(:a) == "a"`, `string([1, 2]) == "[1, 2]"`) |
-| `Int(s)` | da stringa a intero (`Int("42") == 42`) |
-| `Symbol(s)` | da stringa a simbolo (`Symbol("ciao") == :ciao`) |
-| `typeof(x)` | in Core, il nome del tipo come simbolo (cap. 2.1) |
+| `a * b` | string concatenation |
+| `length(s)` | number of **bytes** UTF-8 (`length("é") == 2`) |
+| `string(x)` | textual representation of any value (`string(:a) == "a"`, `string([1, 2]) == "[1, 2]"`) |
+| `Int(s)` | string to integer (`Int("42") == 42`) |
+| `Symbol(s)` | from string to symbol (`Symbol("hello") == :hello`) |
+| `typeof(x)` | in Core, the type name as symbol (chap. 2.1) |
 
 ```triad
-nome = "Triad"
-saluto = "ciao " * nome
-println(saluto, " (", length(saluto), " byte)")
-println("risposta: " * string(40 + 2))
+name = "Triad"
+greeting = "hello " * name
+println(greeting, " (", length(greeting), " byte)")
+println("response: " * string(40 + 2))
 println(Int("41") + 1, " ", Symbol("bob"), " ", string(true))
 ```
 
 **Output:**
 
 ```text
-ciao Triad (10 byte)
-risposta: 42
+hello Triad (10 bytes)
+answer: 42
 42 bob true
 ```
 
-La prima cosa da notare è che `length(saluto)` vale `10`: "ciao Triad" ha dieci caratteri e dieci
-byte, perché l'alfabeto latino occupa un byte per carattere. Con `"é"` il conto cambia
-(`length("é") == 2`), e con un'emoji cambia ancora: la lunghezza è una proprietà della codifica
-UTF-8, non del testo come lo vedi. È il motivo per cui in Triad non si indicizza una stringa come
-una lista: `s[1]` restituirebbe un byte, non un carattere, e sarebbe una trappola silenziosa. Per
-lavorare sui singoli byte servono i primitivi di bootstrap (cap. 21).
+The first thing to note is that `length(greeting)` is equal to `10`: "hello Triad" has ten characters and ten
+byte, because the Latin alphabet takes up one byte per character. With `"é"` the account changes
+(`length("é") == 2`), and with an emoji it changes again: the length is a property of the encoding
+UTF-8, not text as you see it. It's the reason why in Triad you don't index a string like
+a list: `s[1]` would return a byte, not a character, and would be a silent trap. For
+working on individual bytes requires bootstrap primitives (chap. 21).
 
-La concatenazione con `*` non modifica `saluto`: crea una nuova stringa, e la vecchia resta
-disponibile a chiunque la stia usando. Questa immutabilità rende le stringhe sicure da passare alle
-funzioni, ma significa anche che ogni `*` alloca una stringa nuova: in un ciclo lungo il costo
-cresce con la stringa, non con il numero di giri.
+Concatenation with `*` does not change `salute`: it creates a new string, and the old one remains
+available to anyone who is using it. This immutability makes strings safe to pass to
+functions, but it also means that each `*` allocates a new string: in a loop along the cost
+grows with the string, not with the number of turns.
 
-`string(x)` e `Symbol(s)` vanno tenute distinte: `string` trasforma un valore in testo, `Symbol`
-trasforma testo in un'identità. `string(42)` produce la stringa `"42"`; `Symbol("42")` produce un
-simbolo, che è un valore completamente diverso. `Int("42")` fa il cammino inverso: è una
-conversione, non una valutazione, quindi il testo deve essere un intero scritto in decimale. Che
-cosa succeda con un testo non numerico non è fissato dallo standard: l'interprete di riferimento
-restituisce `0`, ma è un comportamento da verificare prima di contarci.
+`string(x)` and `Symbol(s)` must be kept distinct: `string` transforms a value into text, `Symbol`
+transforms text into an identity. `string(42)` produces the string `"42"`; `Symbol("42")` produces a
+symbol, which is a completely different value. `Int("42")` does the reverse: it is one
+conversion, not an evaluation, so the text must be an integer written in decimal. What
+what happens with a non-numeric text is not fixed by the standard: the reference interpreter
+returns `0`, but this is something you should check before counting on it.
 
-In Full le stringhe hanno in più l'interpolazione (cap. 1.3) e `repr`, che produce una
-rappresentazione pensata per essere riletta; in Core `string` è l'unica porta dal valore al testo,
-e non esiste l'interpolazione.
+In Full the strings additionally have interpolation (chap. 1.3) and `repr`, which produces a
+representation designed to be reread; in Core `string` is the only port from value to text,
+and there is no interpolation.
 
 ---
 
 <a id="cap-11"></a>
 
-## 11. Errori come dati
+## 11. Errors as data
 
-Questa è una delle idee portanti di Triad: **l'errore è un valore**, non un'eccezione che
- interrompe il programma.
+This is one of the main ideas of Triad: **error is a value**, not an exception
+ interrupts the program.
 
-### 11.1 La forma `Err`
+### 11.1 The `Err` form
 
-Un errore è un valore `Err` con tre campi:
+An error is an `Err` value with three fields:
 
-- `kind::Symbol` — la categoria, su cui si può fare dispatch;
-- `msg::String` — il messaggio;
-- `data` — un valore qualsiasi, spesso un record `Info(...)` con i dettagli.
+- `kind::Symbol` — the category, on which dispatch can be done;
+- `msg::String` — the message;
+- `data` — any value, often an `Info(...)` record with details.
 
 **[Full]**
 
-I tre campi separano tre domande diverse: *che cosa* è successo (`kind`), *come raccontarlo* (`msg`) e
-*quali informazioni servono per reagire* (`data`). Tenerle separate è ciò che permette di scrivere
-codice che decide in base alla categoria senza analizzare il testo del messaggio, che è pensato per
-una persona e non per un programma.
+The three fields separate three different questions: *what* happened (`kind`), *how to tell it* (`msg`) and
+*what information is needed to react* (`data`). Keeping them separate is what allows you to write
+code that decides based on the category without analyzing the message text, which it is meant for
+a person and not for a program.
 
 ```triad-full
-e = err(:mio, "ops", 42)
+e = err(:my, "oops", 42)
 println(e.kind, " ", e.msg)
 println(iserr(e))
 ```
 
-### 11.2 Produrre e propagare
+### 11.2 Produce and propagate
 
-La tabella riassume i costrutti che creano, propagano o osservano un errore: leggerla dall'alto in
-basso è anche l'ordine in cui un errore attraversa un programma, dal punto in cui nasce al punto in
-cui qualcuno decide che cosa farne.
+The table summarizes the constructs that create, propagate, or observe an error: read it from above in
+low is also the order in which an error passes through a program, from the point at which it arises to the point at
+where someone decides what to do with it.
 
-| costrutto | effetto |
+| construct | effect |
 |---|---|
-| `err(:kind, "msg"[, data])` | costruisce un `Err` **senza** sollevarlo |
-| `throw(e)`, `error("msg")` | solleva (`error` produce `Err(:error, …)`) |
-| `try b catch e h end` | se `b` solleva, `e` è legato all'`Err` e si valuta `h` |
-| `try b end` | **l'errore diventa il valore** dell'espressione |
-| `iserr(x)` | controlla se `x` è un `Err` |
+| `err(:kind, "msg"[, data])` | constructs an `Err` **without** raising it |
+| `throw(e)`, `error("msg")` | raise (`error` produces `Err(:error, …)`) |
+| `try b catch and h end` | if `b` raises, `e` is related to `Err` and `h` | is evaluated
+| `try b end` | **the error becomes the value** of the expression |
+| `iserr(x)` | checks if `x` is an `Err` |
 
-Tutti i fallimenti del linguaggio — divisione intera per zero, `sqrt(-1.0)`, indici fuori range,
-nessun metodo applicabile — arrivano come `Err` e **mai** come fallimenti fatali. **[Full]**
+All the failures of the language — integer division by zero, `sqrt(-1.0)`, out-of-range indices,
+no applicable methods — come as `Err` and **never** as fatal failures. **[Full]**
 
 ```triad-full
 e = try div(1, 0) end
@@ -1728,55 +1719,55 @@ true
 5
 ```
 
-È utile distinguere tre momenti: **produrre**, **propagare** e **gestire** un errore. `err(...)`
-costruisce un dato e non interrompe nulla; un'operazione che fallisce produce un `Err` secondo la
-specifica; `try` stabilisce il punto in cui quel valore viene osservato o recuperato. In Full,
-`try espressione end` restituisce l'errore come valore, mentre `try ... catch nome ... end`
-permette al ramo di recupero di esaminare la categoria, il messaggio o i dettagli. Se l'errore
-non viene gestito, arriva al livello superiore e diventa un codice di uscita non riuscito: "errore
-come dato" non significa che il programma continui automaticamente dopo qualunque operazione.
+It is useful to distinguish three moments: **produce**, **propagate** and **manage** an error. `err(...)`
+builds a piece of data and doesn't interrupt anything; a failing operation produces an `Err` according to the
+specific; `try` establishes the point at which that value is observed or retrieved. In Full,
+`try expression end` returns the error as a value, while `try ... catch name ... end`
+allows the recovery branch to examine the category, message or details. If the error
+is not handled, goes to the top level and becomes a failed exit code: "error
+as given" does not mean that the program continues automatically after any operation.
 
-Il tipo del dato permette di scrivere politiche diverse per categorie diverse. Per esempio, un
-errore `:bounds` può essere presentato come input non valido, mentre `:method` può indicare che
-manca un'implementazione. Separare la categoria stabile (`kind`) dal testo leggibile (`msg`) evita
-di dover analizzare stringhe di diagnostica per decidere come reagire.
+The data type allows you to write different policies for different categories. For example, a
+`:bounds` error can be presented as invalid input, while `:method` can indicate that
+an implementation is missing. Separating the stable category (`kind`) from the readable text (`msg`) avoids
+having to analyze diagnostic strings to decide how to react.
 
-### 11.3 Le categorie di errore
+### 11.3 Error categories
 
-La categoria è la parte stabile dell'errore: è un simbolo, il programma può confrontarlo e fare
-dispatch su di esso. La tabella elenca le categorie che lo standard definisce; i messaggi che vedi
-stampati sono invece dell'implementazione e possono cambiare.
+The category is the stable part of the error: it is a symbol, the program can compare it and make
+dispatch on it. The table lists the categories that the standard defines; the messages you see
+printed instead of the implementation and may change.
 
-| kind | quando |
+| kind | when |
 |---|---|
-| `:syntax` | errore di parse; `data` contiene `line`, `col` e `incomplete` |
-| `:undef` | nome, funzione, macro o predicato non definito |
-| `:type` | tipo sbagliato (campi, ritorno, `::`, condizioni non `Bool`) |
-| `:method` | nessun metodo applicabile; `data.types` contiene i tipi degli argomenti |
-| `:ambiguous` | più metodi ugualmente specifici |
-| `:field`, `:bounds`, `:domain` | campo inesistente, indice fuori range, errore matematico |
-| `:instantiation` | variabile logica non legata dove serve un valore |
-| `:contract` | `requires`/`ensures` violata (cap. 12) |
-| `:budget` | passi esauriti (cap. 13) |
-| `:effect` | effetto non dichiarato (cap. 15) |
-| `:host` | qualsiasi altro errore dell'interprete |
+| `:syntax` | parse error; `data` contains `line`, `col` and `incomplete` |
+| `:undef` | undefined name, function, macro or predicate |
+| `:type` | wrong type (fields, return, `::`, conditions not `Bool`) |
+| `:method` | no applicable method; `data.types` contains the types of the arguments |
+| `:ambiguous` | multiple equally specific methods |
+| `:field`, `:bounds`, `:domain` | non-existent field, index out of range, mathematical error |
+| `:instantiation` | unbound logical variable where a | value is needed
+| `:contract` | `requires`/`ensures` violated (chap. 12) |
+| `:budget` | steps exhausted (ch. 13) |
+| `:effect` | undeclared effect (chap. 15) |
+| `:host` | any other interpreter errors |
 
-Un errore non gestito al top level interrompe il programma: il messaggio riporta la riga
-dell'istruzione (`riga 12: …`) e il codice di uscita è `1`.
+An error not handled at the top level interrupts the program: the message reports the line
+of the statement (`line 12: …`) and the exit code is `1`.
 
-### 11.4 In Core: errori come liste taggate
+### 11.4 In Core: Errors like tagged lists
 
-Core non ha `try`/`catch` né il tipo `Err`: un errore **termina il processo** con exit code `1` e un
-messaggio diagnostico su stderr. Ma il pattern "errore come dato" si può già scrivere, ed è
-esattamente così che S1 implementerà Full. La convenzione è `[:Err, kind, msg]`. **[Core]**
+Core has no `try`/`catch` nor the `Err` type: an error **terminates the process** with exit code `1` and a
+diagnostic message on stderr. But the "error as given" pattern can already be written, and is
+exactly so that S1 will implement Full. The convention is `[:Err, kind, msg]`. **[Core]**
 
 ```triad
 err(kind, msg) = [:Err, kind, msg]
 is_err(v) = typeof(v) == :List && length(v) == 3 && v[1] == :Err
 
-function div_intera(a, b)
+function div_integer(a, b)
     if b == 0
-        return err(:domain, "divisione per zero")
+        return err(:domain, "division by zero")
     end
     q = 0
     while a >= b
@@ -1786,63 +1777,63 @@ function div_intera(a, b)
     q
 end
 
-r = div_intera(7, 0)
+r = integer_div(7, 0)
 if is_err(r)
-    println("errore ", r[2], ": ", r[3])
+    println("error ", r[2], ": ", r[3])
 end
-println(div_intera(17, 5))
+println(integer_div(17, 5))
 ```
 
 **Output:**
 
 ```text
-errore domain: divisione per zero
+domain error: division by zero
 3
 ```
 
-Nota che `&&` cortocircuita: `v[1]` viene valutato solo se `v` è una lista di 3 elementi.
+Note that `&&` shorts: `v[1]` is only evaluated if `v` is a list of 3 elements.
 
-Il perché di una lista taggata è semplice: in Core non esiste un tipo `Err`, ma esistono le liste e i
-simboli, e una lista con il tag in prima posizione può rappresentare qualunque record. `is_err` è
-quindi una convenzione, non una garanzia di tipo: chiunque può costruire una lista `[:Err, ...]` con
-campi sbagliati, e chi la riceve deve controllare ciò che gli serve. È lo stesso patto che gli
-interpreti in `selfhost/` usano per le struct (cap. 2.3). La parte importante non è il contenitore,
-è l'idea: un fallimento è un valore che viaggia come gli altri, e chi lo riceve può scegliere se
-gestirlo, trasformarlo o restituirlo.
+The reason for a tagged list is simple: in Core there is no `Err` type, but there are lists and
+symbols, and a list with the tag in the first position can represent any record. `is_err` is
+so a convention, not a type guarantee: anyone can construct a list `[:Err, ...]` with
+wrong fields, and whoever receives it must check what he needs. It's the same deal that he
+interpreters in `selfhost/` use for structs (ch. 2.3). The important part is not the container,
+is the idea: a failure is a value that travels like the others, and whoever receives it can choose whether
+manage it, transform it or return it.
 
 ---
 
 <a id="cap-12"></a>
 
-## 12. Contratti
+## 12. Contracts
 
-Un contratto è una precondizione (`requires`) o una postcondizione (`ensures`) dichiarata nel corpo
-di una funzione. **[Full]**
+A contract is a precondition (`requires`) or a postcondition (`ensures`) declared in the body
+of a function. **[Full]**
 
-Un contratto non è un commento: è una condizione eseguita, e una sua violazione è un errore come
-dato. Serve a rendere esplicito che cosa una funzione pretende da chi la chiama e che cosa promette
-a chi la riceve, senza affidare il patto alla buona volontà di chi legge. Non dimostra che la
-proprietà valga per ogni input possibile — la controlla per le esecuzioni che avvengono — ma
-trasforma una violazione silenziosa in un `Err` che riporta quale clausola è fallita.
+A contract is not a comment: it is an executed condition, and a violation of it is a mistake as
+given. It serves to make explicit what a function expects from those who call it and what it promises
+to those who receive it, without entrusting the pact to the good will of those who read it. It does not demonstrate that the
+property holds for every possible input — it controls it for the executions that occur — but
+turns a silent violation into an `Err` reporting which clause failed.
 
 ```triad-full
 function safe_div(a::Number, b::Number)::Float
     requires b != 0
     ensures abs(result * b - a) < 1e-9
-    a / b
+    a/b
 end
 ```
 
-- `requires c` viene controllata **nel punto in cui compare**: per convenzione all'inizio del corpo.
-- `ensures c` viene registrata e controllata all'uscita della funzione, con `result` legato al
-  valore restituito, **dopo** il controllo del tipo di ritorno.
-- Una violazione produce
-  `Err(:contract, "requires violata in safe_div: b != 0", Info(fn, clause, cond[, result]))`.
-  `cond` contiene il **codice** della condizione: è un dato, si può ispezionare.
-- Le condizioni sono **pure**: un effetto dentro un contratto dà `Err(:effect)`.
-- Al top level `requires c` funziona come un'asserzione.
-- `ensures` ha senso solo dentro una `function`: usa `result`, che esiste soltanto quando la funzione
-  sta per restituire un valore. Fuori da una funzione non c'è un risultato a cui riferirsi.
+- `requires c` is checked **where it appears**: by convention at the beginning of the body.
+- `ensures c` is recorded and checked at function exit, with `result` bound to
+  return value, **after** checking the return type.
+- A violation produces
+  `Err(:contract, "requires violated in safe_div: b != 0", Info(fn, clause, cond[, result]))`.
+  `cond` contains the **code** of the condition: it is data, it can be inspected.
+- The conditions are **pure**: an effect inside a contract gives `Err(:effect)`.
+- At the top level `requires c` works like an assertion.
+- `ensures` only makes sense inside a `function`: use `result`, which exists only when the function
+  is going to return a value. Outside a function there is no result to refer to.
 
 ```triad-full
 println(safe_div(6, 3))
@@ -1862,20 +1853,20 @@ requires
 safe_div
 ```
 
-Nell'esempio `safe_div(6, 3)` produce `2.0`: il tipo di ritorno `Float` converte il risultato e lo
-espone come promessa mantenuta. `safe_div(1, 0)` non arriva mai a dividere: la precondizione viene
-controllata all'inizio, l'errore è già un valore e il programma continua. Il messaggio dell'errore
-porta con sé `clause = requires` e `fn = safe_div`, quindi chi chiama può distinguere una violazione
-d'ingresso da una promessa d'uscita non mantenuta senza leggere il testo.
+In the example `safe_div(6, 3)` produces `2.0`: the `Float` return type converts the result and
+exposes it as a promise kept. `safe_div(1, 0)` never gets to divide: the precondition comes
+checked at the beginning, the error is already a value and the program continues. The error message
+carries with it `clause = requires` and `fn = safe_div`, so the caller can distinguish a violation
+of entry from a promise of exit not kept without reading the text.
 
-La sequenza di controllo è significativa: il corpo valuta le clausole nell'ordine in cui
-compaiono; le precondizioni vengono verificate nel punto in cui sono dichiarate, mentre le
-postcondizioni vengono conservate fino al completamento della funzione. Il valore finale viene
-prima sottoposto al vincolo di ritorno e poi esposto come `result` alle clausole `ensures`.
-Un errore di contratto include quale clausola è fallita e il codice che la rappresenta, così chi
-chiama può distinguere una violazione d'ingresso da una promessa d'uscita non mantenuta. I
-contratti controllano un'invariante osservabile, ma non provano matematicamente che valga per ogni
-input possibile: vengono valutati per le esecuzioni che avvengono.
+The checking sequence is significant: the body evaluates the clauses in the order in which
+appear; preconditions are checked at the point where they are declared, while the
+postconditions are preserved until the function completes. The final value comes
+first subjected to the return constraint and then exposed as a `result` to the `ensures` clauses.
+A contract error includes which clause failed and the code that represents it, so who
+calls can distinguish an entry violation from a broken exit promise. I
+contracts control an observable invariant, but do not mathematically prove that it holds for every
+possible input: they are evaluated for the executions that occur.
 
 ---
 
@@ -1883,9 +1874,9 @@ input possibile: vengono valutati per le esecuzioni che avvengono.
 
 ## 13. Budget
 
-Un **budget** limita quanti passi il programma può consumare. Un passo è una chiamata, un'iterazione
-di ciclo o un passo di risoluzione. Quando il budget si esaurisce, **il valore del `with` è
-`Err(:budget)`**: il programma non si blocca e non viene interrotto. **[Full]**
+A **budget** limits how many steps the program can consume. A step is a call, an iteration
+of loop or a resolution step. When the budget runs out, **the value of the `with` is
+`Err(:budget)`**: The program does not crash or terminate. **[Full]**
 
 ```triad-full
 r = with budget(steps = 10_000)
@@ -1900,33 +1891,33 @@ println(r.kind)
 budget
 ```
 
-I budget si annidano e vale il più stretto. Un `with` converte in valore **solo** l'esaurimento del
-proprio budget, mentre quello di un budget esterno continua a propagarsi. `solve … steps N` è il
-budget specifico di una query.
+Budgets nest and the tightest applies. A `with` converts **only** the exhaustion of to a value
+own budget, while that of an external budget continues to propagate. `solve … steps N` is the
+query-specific budget.
 
-Il budget misura il **lavoro**, non il tempo: due esecuzioni dello stesso programma con lo stesso
-budget consumano gli stessi passi, quindi il risultato è riproducibile. Un timeout basato
-sull'orologio non lo sarebbe e renderebbe i test instabili. Per questo il limite è parte del
-linguaggio e non dell'ambiente: un programma può decidere che cosa fare quando lo esaurisce, e
-quella decisione è anch'essa codice.
+Budget measures **work**, not time: two runs of the same program with the same
+budgets consume the same steps, so the result is reproducible. A timeout based
+on the watch it would not be and would make the tests unstable. This is why the limit is part of the
+language and not the environment: a program can decide what to do when it runs out, e.g
+that decision is also code.
 
-Il motore logico usa uno stack esplicito: la ricorsione infinita, anche sinistra, finisce in
-`Err(:budget)` e **non** in uno stack overflow.
+The logic engine uses an explicit stack: infinite recursion, even left, ends in
+`Err(:budget)` is **not** in a stack overflow.
 
-Il limite è parte del risultato del calcolo perché il programma può scegliere come trattarlo:
-mostrare una diagnosi, ridurre il problema o restituire un risultato parziale solo se la propria
-logica lo consente. Non confondere `limit n`, che limita il numero di soluzioni restituite,
-`depth d`, che taglia i rami oltre una profondità, e `steps s`, che limita il lavoro complessivo.
-Una query che ha esplorato lo spazio previsto senza trovare soluzioni restituisce una lista vuota;
-una query fermata dall'esaurimento dei passi segnala invece `Err(:budget)`.
+The limit is part of the calculation result because the program can choose how to treat it:
+show a diagnosis, reduce the problem or return a partial result only if your
+logic allows it. Don't confuse `limit n`, which limits the number of solutions returned,
+`depth d`, which cuts branches beyond a depth, and `steps s`, which limits the overall work.
+A query that has explored the intended space without finding solutions returns an empty list;
+a query stopped by exhaustion of steps instead reports `Err(:budget)`.
 
 ---
 
 <a id="cap-14"></a>
 
-## 14. Tracce
+## 14. Tracks
 
-La traccia di un calcolo è un **valore**, non output stampato. **[Full]**
+The trace of a calculation is a **value**, not printed output. **[Full]**
 
 ```triad-full
 fib(n::Int) = n < 2 ? n : fib(n - 1) + fib(n - 2)
@@ -1945,60 +1936,59 @@ println(length(t.trace))
 10
 ```
 
-`fib(3)` effettua 5 chiamate (`fib(3)`, `fib(2)`, `fib(1)`, `fib(0)`, `fib(1)`): la traccia registra
-**due eventi per ogni chiamata**, `:call` e `:exit`, quindi 10 eventi. Per `fib(5)` sono 15 chiamate
-e 30 eventi — è il valore atteso dal caso di conformance `garanzie_core`.
+`fib(3)` makes 5 calls (`fib(3)`, `fib(2)`, `fib(1)`, `fib(0)`, `fib(1)`): trace records
+**two events for each call**, `:call` and `:exit`, so 10 events. For `fib(5)` that's 15 calls
+and 30 events — is the value expected from the `garanzie_core` conformance case.
 
-`with trace … end` restituisce `Traced(result, trace)` con gli eventi `:call` e `:exit` di ogni
-funzione generica chiamata nel corpo. `solve … trace` restituisce `Traced(result, trace)` dove
-`result` è la lista delle soluzioni e gli eventi sono le porte del modello a scatole di Byrd
-(`call`, `exit`, `redo`, `fail`) più `depth`, quando un ramo viene tagliato da `depth`.
+`with trace … end` returns `Traced(result, trace)` with the `:call` and `:exit` events of each
+generic function called in the body. `solve … trace` returns `Traced(result, trace)` where
+`result` is the list of solutions and events are the gates of the Byrd box model
+(`call`, `exit`, `redo`, `fail`) plus `depth`, when a branch is cut by `depth`.
 
-Gli eventi sono record: si filtrano e si contano come ogni altro valore.
+Events are records: they are filtered and counted like any other value.
 
-Raccogliere una traccia non è gratis: ogni evento è un valore allocato, e su calcoli grandi la
-traccia può pesare più del risultato. Chiedila quando ti serve, non come impostazione predefinita.
+Collecting a trace is not free: each event is an allocated value, and on large calculations the
+trace can weigh more than the result. Ask it when you need it, not by default.
 
-Una traccia aggiunge una dimensione temporale ai dati di debug: due esecuzioni possono avere lo
-stesso risultato ma seguire percorsi diversi, per esempio se una query ha dovuto provare e
-scartare alternative. Invece di scrivere log dentro ogni funzione, il chiamante racchiude il
-calcolo in `with trace` oppure chiede `trace` a `solve`; il risultato e gli eventi vengono
-restituiti insieme. Questo mantiene separati il risultato applicativo e la diagnostica, e consente
-di analizzare la traccia con gli stessi strumenti usati per liste e record.
+A trace adds a time dimension to debug data: two runs can have it
+same result but follow different paths, for example if a query had to try and
+discard alternatives. Instead of writing logs inside each function, the caller encloses the
+calculation in `with trace` or ask `trace` to `solve`; the result and events come
+returned together. This keeps the application result and diagnostics separate, and allows
+to analyze the trace with the same tools used for lists and records.
 
-### Glossario degli eventi di traccia (porte di Byrd)
+### Glossary of trace events (Byrd gates)
 
-Quando si usa `solve … trace`, ogni passo della ricerca produce un evento che registra **a che
-riferimento** (quale goal, quale clausola, quali variabili logiche) si sta lavorando. Le quattro
-porte del modello a scatole di Byrd sono:
+When using `solve … trace`, each search step produces an event that logs **at what
+reference** (which goal, which clause, which logical variables) is being worked on. Four o'clock
+Byrd box model doors are:
 
-| porta | quando si verifica | significato |
+| door | when it occurs | meaning |
 |---|---|---|
-| `:call` | si entra in un goal | inizio della valutazione della clausola candidata |
-| `:exit` | unificazione **riuscita** | il goal è dimostrato: è il "success" della ricerca |
-| `:redo` | backtracking | si torna indietro per cercare un'altra soluzione |
-| `:fail` | nessuna clausola applicabile | il goal **fallisce**: nessuna soluzione per quel ramo |
+| `:call` | you enter a goal | start of candidate clause evaluation |
+| `:exit` | unification **successful** | the goal is demonstrated: it is the "success" of the research |
+| `:redo` | backtracking | we go back to look for another solution |
+| `:fail` | no applicable clause | the goal **fails**: no solution for that branch |
 
-Note importanti:
+Important Notes:
 
-- **"success" e "fail" non sono esiti generici**: sono le porte `:exit` e `:fail` della traccia,
-  riferite al goal/clausola in corso. Il fallimento di un goal non è un'eccezione: si manifesta
-  come **lista di soluzioni vuota** nel `result` di `Traced(result, trace)`.
-- **`depth`** appare come evento aggiuntivo quando un ramo viene tagliato dal limite di profondità
-  (`solve … depth N`), segnalando che la ricerca è stata interrotta prima di un `:exit`/`:fail`.
-- Gli eventi sono **record ordinari**: si filtrano (`[e for e in t.trace if e.port == :fail]`),
-  si contano (`length`), si ispezionano (`e.args`, `e.depth`) come ogni altro valore Triad.
-- Il riferimento di ogni evento è il **goal corrente e le variabili logiche** (`?x`, `?y`, …)
-  coinvolte in quel passo: leggendo la traccia si ricostruisce *quale* alternativa è stata
-  provata e *perché* è fallita.
+- **"success" and "fail" are not generic outcomes**: they are the `:exit` and `:fail` ports of the trace,
+  refer to the current goal/clause. The failure of a goal is not an exception: it occurs
+  as **empty solution list** in the `result` of `Traced(result, trace)`.
+- **`depth`** appears as an additional event when a branch is cut from the depth limit
+  (`solve … depth N`), signaling that the search was aborted before an `:exit`/`:fail`.
+- Events are **ordinary records**: they are filtered (`[e for e in t.trace if e.port == :fail]`),
+  they are counted (`length`), they are inspected (`e.args`, `e.depth`) like any other Triad value.
+- The reference of each event is the **current goal and the logical variables** (`?x`, `?y`, …)
+  involved in that passage: by reading the trace one reconstructs *which* alternative it was
+  tried and *why* it failed.
 
 ```triad-full
-# Conta i fallimenti di una ricerca
+# Count search failures
 t = solve path(:a, :c) trace
 fails = [e for e in t.trace if e.port == :fail]
 println(length(fails))
 ```
-
 ```triad-full
 fib(n::Int) = n < 2 ? n : fib(n - 1) + fib(n - 2)
 t = with trace
@@ -2017,59 +2007,59 @@ println([e.args for e in t.trace if e.port == :call])
 
 <a id="cap-15"></a>
 
-## 15. Effetti dichiarati
+## 15. Declared effects
 
-Le funzioni sono **pure per impostazione predefinita**. Gli effetti si dichiarano nella firma, dopo i
-parametri. **[Full]**
+The functions are **pure by default**. The effects are declared in the signature, after i
+parameters. **[Full]**
 
-«Puro per impostazione predefinita» è una scelta di sicurezza: se dimentichi una dichiarazione, la
-funzione non può fare più del previsto, e l'errore arriva quando l'effetto viene tentato. In questo
-senso un effetto è una **capacità**, non un'annotazione descrittiva: `!io` dice che la funzione ha il
-permesso di stampare, e il controllo dinamico verifica il permesso al momento dell'esecuzione.
+“Pure by default” is a security choice: if you forget a statement, the
+function cannot do more than expected, and the error comes when the effect is attempted. In this
+sense an effect is a **capability**, not a descriptive annotation: `!io` says that the function has the
+permission to print, and the dynamic check checks permission at run time.
 
 ```triad-full
-function saluta(nome::String) !io
-    println("ciao, ", nome)
+function hello(name::String) !io
+    println("hello, ", name)
 end
 
-function impara(x) !state
-    fact visto($x)
+function learn(x) !state
+    fact seen($x)
 end
 ```
 
-| effetto | operazioni |
+| effect | operations |
 |---|---|
-| `io` | `println`, `print` |
-| `state` | `fact`/`rule` eseguiti dentro una funzione (modificano la knowledge base) |
+| `I` | `println`, `print` |
+| `state` | `fact`/`rule` executed inside a function (modifies the knowledge base) |
 
-Il controllo è **dinamico**. Una funzione viene eseguita solo con gli effetti che dichiara, e solo
-se il chiamante li permette. Se una funzione pura chiama `println`, o chiama una funzione `!io`, si
-ottiene `Err(:effect)`; `data` contiene `fn`, `caller` e `missing`.
+The control is **dynamic**. A function executes only with the effects it declares, and only
+if the caller allows them. If a pure function calls `println`, or calls an `!io` function, yes
+get `Err(:effect)`; `data` contains `fn`, `caller` and `missing`.
 
-La purezza per impostazione predefinita significa che una funzione può calcolare e restituire valori
-senza modificare lo stato esterno né produrre I/O; non significa che il runtime analizzi
-staticamente ogni possibile percorso prima dell'esecuzione. Il controllo dinamico osserva gli effetti mentre
-avvengono e li confronta con il contesto attivo. Le mutazioni locali e quelle di liste non sono
-classificate come effetti dichiarati in questa specifica: `!state` si riferisce alla modifica
-della knowledge base tramite `fact` e `rule`, non a qualunque assegnamento.
+Purity by default means that a function can calculate and return values
+without changing the external state or producing I/O; it doesn't mean the runtime parses
+statically every possible path before execution. Dynamic control observes the effects while
+occur and compares them with the active context. Local mutations and list mutations are not
+classified as effects declared in this specification: `!state` refers to the modification
+of the knowledge base via `fact` and `rule`, not to any assignment.
 
-- Il top level permette tutti gli effetti.
-- Le lambda ereditano gli effetti del contesto in cui vengono eseguite.
-- Macro e contratti sono puri.
-- Leggere la knowledge base (`solve`, chiamare un predicato) è puro.
-- La mutazione locale di dati (`push!` su una lista, assegnamento a variabili locali) **non** è un
-  effetto: modifica solo valori raggiungibili dall'ambiente locale.
+- The top level allows all effects.
+- Lambdas inherit the effects of the context in which they are executed.
+- Macros and contracts are pure.
+- Reading the knowledge base (`solve`, calling a predicate) is pure.
+- Local data mutation (`push!` on a list, assignment to local variables) is **not** a
+  effect: only changes values reachable from the local environment.
 
 ```triad-full
-function rumorosa()
-    println("faccio rumore")
+noisy function()
+    println("I make noise")
 end
 
-function tranquilla()
-    rumorosa()
+function quiet()
+    noisy()
 end
 
-e = try tranquilla() end
+e = try quiet() end
 println(e.kind)
 ```
 
@@ -2079,29 +2069,29 @@ println(e.kind)
 effect
 ```
 
-`rumorosa` non dichiara `!io`, quindi il suo `println` è un effetto non permesso; `tranquilla` la
-chiama da un contesto puro e riceve lo stesso errore. `data` contiene `fn` (chi ha tentato
-l'effetto), `caller` (da dove) e `missing` (quale effetto mancava): sono le tre informazioni che
-servono per correggere la firma. Il controllo è dinamico, quindi un ramo che non viene eseguito non
-produce errori di effetto, e non c'è un'analisi statica che ti avvisa prima: la dichiarazione è un
-patto che il runtime verifica mentre il codice gira.
+`noisy` does not declare `!io`, so its `println` is a disallowed effect; `quiet` there
+calls from a pure context and gets the same error. `data` contains `fn` (who tried
+the effect), `caller` (from where) and `missing` (which effect was missing): these are the three pieces of information
+They are used to correct the signature. The control is dynamic, so a branch that doesn't execute doesn't
+produces effect errors, and there is no static analysis that warns you first: the statement is a
+as long as the runtime checks as the code runs.
 
 ---
 
 <a id="cap-16"></a>
 
-## 16. Logica
+## 16. Logic
 
-Triad integra la programmazione logica **nella sintassi a blocchi**: i fatti e le regole sono
-costrutti di primo livello, non un linguaggio incorporato. **[Full]**
+Triad integrates logic programming **into block syntax**: the facts and the rules are
+top-level constructs, not an embedded language. **[Full]**
 
-Fatti e regole formano la **knowledge base**, che il programma costruisce mentre gira. Un fatto
-asserisce che una relazione vale; una regola dice che vale a condizione che valgano altre cose.
-`solve` pone una domanda alla base e restituisce le risposte come valori: non c'è un interprete
-separato da invocare, perché la logica sta dentro la stessa sintassi e lo stesso motore del resto
-del linguaggio.
+Facts and rules form the **knowledge base**, which the program builds as it runs. A fact
+asserts that a relationship is valid; a rule says that it is valid provided that other things are valid.
+`solve` asks a question at the base and returns the answers as values: there is no interpreter
+separate to invoke, because the logic is within the same syntax and the same engine as the rest
+of language.
 
-### 16.1 Fatti, regole, termini
+### 16.1 Facts, Rules, Terms
 
 ```triad-full
 fact parent(:tom, :bob)
@@ -2111,62 +2101,61 @@ rule ancestor(?a, ?d) :- parent(?a, ?d)
 rule ancestor(?a, ?d) :- parent(?a, ?x), ancestor(?x, ?d)
 ```
 
-Dentro un termine:
+Within a term:
+- `:atom` is a symbol; `?x` is a logical variable; numbers, strings and lists are themselves;
+- `f(t1, t2)` is a composite term. `?x + 1` is also a term (`+(?x, 1)`) and **is not
+  rated**;
+- a **bare name** is a value from the current environment, read at the time `fact` is executed,
+  `rule` or `solve`: `chi = :bob; solve parent(chi, ?c)`;
+- `$(expr)` explicitly inserts a calculated value: `fact age(:bob, $(2026 - 1975))`;
+- `[a, b]` and `[?h | ?t]` are lists and forms that unify with lists;
+- the name of a struct with arguments, such as `Point(?x, ?y)`, unifies with instances of that struct.
 
-- `:atomo` è un simbolo; `?x` è una variabile logica; numeri, stringhe e liste sono se stessi;
-- `f(t1, t2)` è un termine composto. Anche `?x + 1` è un termine (`+(?x, 1)`) e **non viene
-  valutato**;
-- un **nome nudo** è un valore dell'ambiente corrente, letto al momento in cui viene eseguito `fact`,
-  `rule` o `solve`: `chi = :bob; solve parent(chi, ?c)`;
-- `$(espr)` inserisce esplicitamente un valore calcolato: `fact eta(:bob, $(2026 - 1975))`;
-- `[a, b]` e `[?h | ?t]` sono liste e forme che unificano con le liste;
-- il nome di una struct con argomenti, come `Point(?x, ?y)`, unifica con le istanze di quella struct.
+Variables in a clause are **renamed with each use** (standardization aside).
+Unification does the **occurs-check**: `solve ?x = f(?x)` has no solutions.
 
-Le variabili di una clausola vengono **rinominate a ogni uso** (standardizzazione a parte).
-L'unificazione fa l'**occurs-check**: `solve ?x = f(?x)` non ha soluzioni.
+To read a query you need to distinguish **terms** from normal calculated values. A symbol
+as `:alice` is a constant term; `?who` is a logical variable that searches for a value; a shape
+like `parent(:alice, ?who)` describes a goal to be proved. Logical variables are not variables
+local Triads assigned with `=`: the engine searches for associations that make the goal compatible with
+facts and rules. In particular, `?x + 1` within a term does not compute itself; the `is` operator
+explicitly expresses the request to evaluate an expression using already bound variables.
 
-Per leggere una query occorre distinguere i **termini** dai normali valori calcolati. Un simbolo
-come `:alice` è un termine costante; `?who` è una variabile logica che cerca un valore; una forma
-come `parent(:alice, ?who)` descrive un goal da dimostrare. Le variabili logiche non sono variabili
-locali Triad assegnate con `=`: il motore cerca associazioni che rendano compatibile il goal con
-fatti e regole. In particolare, `?x + 1` dentro un termine non si calcola da sé; l'operatore `is`
-esprime esplicitamente la richiesta di valutare un'espressione usando variabili già legate.
+Unification progressively builds a set of associations. If they compare
+`parent(:alice, ?who)` and `parent(:alice, :bob)`, the corresponding arguments are the same and the
+engine can bind `?who` to `:bob`; if an argument is different, that attempt fails. When more
+clauses can satisfy a goal, backtracking back to the choice point and testing the clause
+next. Each solution is a snapshot of the variables required by the query; a list
+empty means "no proof found", not an execution error. The `limit` limits,
+`depth` and `steps` control how many solutions or search steps are allowed.
 
-L'unificazione costruisce progressivamente un insieme di associazioni. Se si confrontano
-`parent(:alice, ?who)` e `parent(:alice, :bob)`, gli argomenti corrispondenti coincidono e il
-motore può legare `?who` a `:bob`; se un argomento è diverso, quel tentativo fallisce. Quando più
-clausole possono soddisfare un goal, il backtracking torna al punto di scelta e prova la clausola
-successiva. Ogni soluzione è una fotografia delle variabili richieste dalla query; una lista
-vuota significa "nessuna dimostrazione trovata", non un errore di esecuzione. I limiti `limit`,
-`depth` e `steps` controllano quante soluzioni o quanti passi di ricerca sono ammessi.
+### 16.2 The goals
 
-### 16.2 I goal
+A goal is the description of what you want to be true: the engine looks for bonds for the variables that
+they make it demonstrable. The table collects the forms that a goal can take; the first two are
+the most important ones, because `p(t…)` is the only way to query the knowledge base and the conjunction
+it's the only way to ask for more things at once.
 
-Un goal è la descrizione di ciò che vuoi che sia vero: il motore cerca legami per le variabili che
-lo rendono dimostrabile. La tabella raccoglie le forme che un goal può assumere; le prime due sono
-le più importanti, perché `p(t…)` è l'unico modo per interrogare la knowledge base e la congiunzione
-è l'unico modo per chiedere più cose insieme.
-
-| goal | significato |
+| goals | meaning |
 |---|---|
-| `p(t…)` | predicato della knowledge base, risolto con SLD e backtracking, clausole in ordine |
-| `g1 && g2`, `(g1, g2)` | congiunzione; nelle `rule` anche con `,` |
-| `g1 \|\| g2` | disgiunzione |
-| `!g`, `not(g)` | negazione per fallimento |
-| `not(b)` *fuori* da un goal | è una funzione: nega un `Bool` (`not(true) == false`) |
-| `a = b` | unificazione |
-| `?y is espr` | valuta `espr` (le variabili devono essere legate) e unifica con `?y` |
-| `a < b`, `==`, `!=`, `<=`, `>`, `>=` | confronto tra valori, valutati |
-| `f(t…)` con `f` funzione Triad | chiama la funzione con gli argomenti valutati; deve restituire `Bool` |
-| `true`, `false` | successo, fallimento |
+| `p(t…)` | knowledge base predicate, solved with SLD and backtracking, clauses in order |
+| `g1 && g2`, `(g1, g2)` | conjunction; in `rules` also with `,` |
+| `g1 \|\| g2` | disjunction |
+| `!g`, `not(g)` | denial for failure |
+| `not(b)` *out* of a goal | is a function: negate a `Bool` (`not(true) == false`) |
+| `a = b` | unification |
+| `?y is expr` | evaluates `expr` (variables must be bound) and unifies with `?y` |
+| `a < b`, `==`, `!=`, `<=`, `>`, `>=` | comparison between values, evaluated |
+| `f(t…)` with `f` function Triad | calls the function with the evaluated arguments; must return `Bool` |
+| `true`, `false` | success, failure |
 
-Un predicato senza clausole con quell'arità, che non sia nemmeno una funzione, dà
-`Err(:undef, "predicato sconosciuto: p/2")`. Una variabile non legata dentro un'espressione dà
+A predicate without clauses with that arity, which is not even a function, gives
+`Err(:undef, "unknown predicate: p/2")`. An unbound variable within an expression gives
 `Err(:instantiation)`.
 
-### 16.3 `solve` è un valore
+### 16.3 `solve` is a value
 
-`solve` **restituisce una lista** di `Solution`. Non stampa nulla: è un valore come un altro.
+`solve` **returns a list** of `Solution`. It doesn't print anything: it's a value like any other.
 
 ```triad-full
 fact parent(:alice, :bob)
@@ -2189,48 +2178,46 @@ dave
 1
 ```
 
-Ogni soluzione lega le variabili della query **non anonime**, nell'ordine in cui compaiono. Le
-variabili rimaste libere restano `?x#n`. `vars(sol)` restituisce i nomi legati.
+Each solution binds the **non-anonymous** query variables, in the order they appear. Le
+variables left free remain `?x#n`. `vars(sol)` returns bound names.
+`Solution` is a record with the query names: `sols[1].who` reads the binding, and `vars(sol)` lists the
+names. The result of `solve` is a normal list, so you can filter, sort or count the
+solutions with the tools of the rest of the language: the logic does not produce a special format,
+produces values.
 
-`Solution` è un record con i nomi della query: `sols[1].who` legge il legame, e `vars(sol)` elenca i
-nomi. Il risultato di `solve` è una lista normale, quindi puoi filtrare, ordinare o contare le
-soluzioni con gli strumenti del resto del linguaggio: la logica non produce un formato speciale,
-produce valori.
+`solve` options:
+- `limit n` — at most `n` solutions;
+- `depth d` — branches deeper than `d` are cut (fail);
+- `steps s` — at most `s` resolution steps, otherwise `Err(:budget)`; the default value
+  is `1 000 000`;
+- `trace` — see chap. 14.
 
-Opzioni di `solve`:
+The options are not equivalent: `limit` stop the search when you have enough solutions, `depth`
+cuts branches that are too deep and considers them failed, `steps` limits the overall work and reports
+exhaustion with `Err(:budget)`. Distinguishing them matters because only the last one is a mistake: the other two
+produce a partial but legitimate result.
 
-- `limit n` — al massimo `n` soluzioni;
-- `depth d` — i rami più profondi di `d` vengono tagliati (falliscono);
-- `steps s` — al massimo `s` passi di risoluzione, altrimenti `Err(:budget)`; il valore predefinito
-  è `1 000 000`;
-- `trace` — vedi cap. 14.
+### 16.4 A predicate used as a function
 
-Le opzioni non sono equivalenti: `limit` ferma la ricerca quando hai abbastanza soluzioni, `depth`
-taglia i rami troppo profondi e li considera falliti, `steps` limita il lavoro complessivo e segnala
-l'esaurimento con `Err(:budget)`. Distinguerle conta perché solo l'ultima è un errore: le altre due
-producono un risultato parziale ma legittimo.
-
-### 16.4 Un predicato usato come funzione
-
-Chiamare un predicato dove ci si aspetta un valore restituisce un `Bool`: dice se il goal è
-dimostrabile.
+Calling a predicate where a value is expected returns a `Bool`: tells if the goal is
+demonstrable.
 
 ```triad-full
 if grandparent(:alice, :dave)
-    println("alice è nonna di dave")
+    println("alice is dave's grandmother")
 end
 ```
 
-### 16.5 Esempi
+### 16.5 Examples
 
-Percorso con costo:
+Route with cost:
 
 ```triad-full
 fact edge(:a, :b, 2)
 fact edge(:b, :c, 3)
 rule path(?x, ?y, ?c) :- edge(?x, ?y, ?c)
 rule path(?x, ?y, ?c) :- edge(?x, ?z, ?c1), path(?z, ?y, ?c2), ?c is ?c1 + ?c2
-println((solve path(:a, :c, ?costo))[1].costo)
+println((solve path(:a, :c, ?cost))[1].cost)
 ```
 
 **Output (golden Full):**
@@ -2239,12 +2226,12 @@ println((solve path(:a, :c, ?costo))[1].costo)
 5
 ```
 
-Il costo si accumula per composizione: `path(:a, :c, ?costo)` dimostra il goal unendo il fatto
-`edge(:a, :b, 2)` alla regola ricorsiva; il secondo passo trova `edge(:b, :c, 3)` e `?c is ?c1 + ?c2`
-calcola `2 + 3`. `is` è necessario perché `?c1 + ?c2` dentro un termine resterebbe un termine non
-valutato; `is` è il punto in cui la logica chiede al valutatore di fare l'aritmetica.
+The cost accumulates by composition: `path(:a, :c, ?cost)` proves the goal by combining the fact
+`edge(:a, :b, 2)` to the recursive rule; the second step finds `edge(:b, :c, 3)` and `?c is ?c1 + ?c2`
+calculate `2 + 3`. `is` is necessary because `?c1 + ?c2` inside a term would remain a non-term
+evaluated; `is` is the point where the logic asks the evaluator to do arithmetic.
 
-Append in stile Prolog:
+Prolog style append:
 
 ```triad-full
 rule app([], ?l, ?l)
@@ -2260,19 +2247,19 @@ println(length(solve app(?a, ?b, [1, 2, 3])))
 4
 ```
 
-`app([1, 2], [3], ?r)` unifica la lista concatenata e restituisce `[1, 2, 3]`. La seconda query non
-fissa il risultato ma chiede tutte le coppie di liste che, concatenate, danno `[1, 2, 3]`: sono
-quattro, perché il primo pezzo può essere la lista vuota, `[1]`, `[1, 2]` o `[1, 2, 3]`. Il numero
-non è un errore: è il motore che enumera le alternative, e `limit` serve proprio a fermarlo quando
-non ti interessano tutte.
+`app([1, 2], [3], ?r)` unifies the linked list and returns `[1, 2, 3]`. The second query does not
+fixes the result but asks for all pairs of lists which, concatenated, give `[1, 2, 3]`: they are
+four, because the first piece can be the empty list, `[1]`, `[1, 2]` or `[1, 2, 3]`. The number
+it's not an error: it's the engine that enumerates the alternatives, and `limit` is there to stop it when
+you are not interested in all of them.
 
-Negazione per fallimento:
+Denial for failure:
 
 ```triad-full
 fact parent(:tom, :bob)
-persone = [:tom, :bob]
-foglie = filter(p -> !parent(p, ?_), persone)
-println(foglie)
+people = [:tom, :bob]
+leaves = filter(p -> !parent(p, ?_), people)
+println(leaves)
 ```
 
 **Output (golden Full):**
@@ -2281,31 +2268,31 @@ println(foglie)
 [:bob]
 ```
 
-`!parent(p, ?_)` è la negazione per fallimento: `p` passa il filtro solo se il goal `parent(p, ?_)`
-non è dimostrabile. `:tom` ha un figlio, quindi non passa; `:bob` non ne ha, quindi passa. La
-variabile anonima `?_` è quella che non compare nel risultato: ogni sua occorrenza è una variabile
-nuova, così non devi inventare un nome per una variabile che non ti interessa.
+`!parent(p, ?_)` is negation by failure: `p` passes the filter only if the goal `parent(p, ?_)`
+it is not demonstrable. `:tom` has a child, so it doesn't pass; `:bob` has none, so it passes. The
+anonymous variable `?_` is the one that does not appear in the result: each occurrence is a variable
+new, so you don't have to invent a name for a variable you don't care about.
 
 ---
 
 <a id="cap-17"></a>
 
-## 17. Codice come dato
+## 17. Code as given
 
-Il parser produce **un solo tipo di nodo**, `Node(head, args)`. È lo stesso albero che il kernel
-esegue, che `:( … )` restituisce come valore e che `triad --tree` stampa come S-expression.
+The parser produces **only one node type**, `Node(head, args)`. It is the same tree as the kernel
+executes, which `:( … )` returns as a value and which `triad --tree` prints as an S-expression.
 **[Full]**
 
-L'idea che sta dietro è radicale: il programma non è una sequenza di comandi che il valutatore
-interpreta a mano, è un **dato**. Il parser produce l'albero, il valutatore esegue l'albero, le
-macro ricevono pezzi di albero e ne restituiscono altri. Poiché esiste un solo tipo di nodo, chi
-scrive codice che manipola il programma non deve conoscere dieci rappresentazioni diverse: conosce
-`Node(head, args)` e basta.
+The idea behind it is radical: the program is not a sequence of commands but the evaluator
+interpret by hand, it is a **given**. The parser produces the tree, the evaluator executes the tree, the
+macros receive tree pieces and return others. Since there is only one type of node, chi
+writes code that manipulates the program does not have to know ten different representations: it knows
+`Node(head, args)` and that's it.
 
-La tabella mostra come le forme che hai già incontrato diventano nodi: leggila come un dizionario
-tra la sintassi che scrivi e il dato che il programma può ispezionare.
+The table shows how shapes you've already encountered become knots: read it like a dictionary
+between the syntax you write and the data the program can inspect.
 
-| sintassi | nodo |
+| syntax | node |
 |---|---|
 | `f(a, b)`, `a + b` | `(call f a b)`, `(call + a b)` |
 | `a && b`, `a \|\| b` | `(and a b)`, `(or a b)` |
@@ -2314,21 +2301,21 @@ tra la sintassi che scrivi e il dato che il programma può ispezionare.
 | `a.x`, `xs[i]` | `(dot a x)`, `(index xs i)` |
 | `[a, b]`, `[h \| t]` | `(list a b)`, `(cons (list h) t)` |
 | `[e for x in xs if c]` | `(comprehension e x xs c)` |
-| `x -> e` | `(lambda (tuple x) e)` |
+| `x -> is | `(lambda (tuple x) e)` |
 | `x::T` | `(typed x T)` |
-| `"a $x"` | `(string "a " x)` |
+| `"to $x"` | `(string "a " x)` |
 | `if c a else b end`, `c ? a : b` | `(if c (block a) (block b))` |
 | `while`, `for`, `let`, `begin` | `(while c body)`, `(for x iter body)`, `(let (tuple …) body)`, `(block …)` |
 | `function f(a::T)::R !io … end` | `(function f (tuple (typed a T)) R (tuple io) body)` |
 | `struct P; x::Float; end` | `(struct P (tuple (typed x Float)))` |
 | `macro m(a) … end`, `@m(e)` | `(macro m (tuple a) body)`, `(macrocall m e)` |
-| `:(e)`, `quote … end`, `$e` | `(quasi e)`, `(quasi (block …))`, `(unquote e)` |
+| `:(e)`, `quote … end`, `$e` | `(almost e)`, `(almost (block …))`, `(unquote e)` |
 | `fact t`, `rule h :- g1, g2` | `(fact t)`, `(rule h g1 g2)` |
 | `solve g limit 5 trace` | `(solve g (tuple (assign limit 5) (assign trace true)))` |
-| `try b catch e h end` | `(try b e h)` |
+| `try b catch and h end` | `(try b and h)` |
 | `with budget(steps = N), trace … end` | `(with (tuple (call budget (assign steps N)) trace) body)` |
 
-### 17.1 Quote, unquote, eval
+### 17.1 Odds, unquotes, eval
 
 ```triad-full
 c = :(a.x + f(b, 2))
@@ -2336,8 +2323,8 @@ println(c.head)
 println(sexpr(c))
 
 n = 7
-quadrato = :($n * $n)
-println(eval(quadrato))
+square = :($n * $n)
+println(eval(square))
 ```
 
 **Output (golden Full):**
@@ -2348,38 +2335,38 @@ call
 49
 ```
 
-Dentro un quote, `$x` e `$(e)` inseriscono il **valore** di un'espressione: se è codice viene
-innestato, se è un numero o una lista diventa una costante, se è un Symbol diventa un identificatore.
-`eval(c)` esegue codice **nello scope globale**. Gli altri builtin del gruppo "codice" sono `parse`,
-`unparse`, `sexpr`, `Expr` e `gensym`.
+Inside a quote, `$x` and `$(e)` insert the **value** of an expression: if it is code it is
+nested, if it is a number or a list it becomes a constant, if it is a Symbol it becomes an identifier.
+`eval(c)` executes code **in global scope**. The other builtins in the "code" group are `parse`,
+`unparse`, `sexpr`, `Expr` and `gensym`.
 
-Quotare e valutare sono operazioni opposte ma non intercambiabili. Il parser normalmente trasforma
-il sorgente in un albero e il valutatore esegue quell'albero; `:(...)` ferma il processo al
-confine tra le due fasi e restituisce l'albero come valore `Expr`. `eval(expr)` lo consegna di
-nuovo al valutatore, nello scope globale. L'unquote `$x` dentro una quote inserisce il valore
-calcolato di `x` nel nuovo albero: se è un `Expr`, innesta codice; se è un numero, crea un nodo
-costante. `sexpr` serve a ispezionare la struttura e non esegue il programma.
+Quoting and evaluating are opposite but not interchangeable operations. The parser normally transforms
+the source in a tree and the evaluator executes that tree; `:(...)` stops the process al
+boundary between the two phases and returns the tree as an `Expr` value. `eval(expr)` delivers it by
+new to the evaluator, in global scope. The unquote `$x` inside a quote inserts the value
+calculated of `x` in the new tree: if it is an `Expr`, insert code; if it is a number, create a node
+constant. `sexpr` is for inspecting the structure and does not run the program.
 
-L'esempio mostra il viaggio completo: `:(a.x + f(b, 2))` restituisce un `Expr` senza eseguirlo,
-`c.head` vale `call` e `sexpr` lo scrive in forma lineare. `:($n * $n)` con `n = 7` non crea una
-funzione: crea un albero che contiene già la costante `7`, e `eval` lo esegue. La differenza fra
-`eval` e una chiamata normale è lo scope: `eval` parte dallo scope globale, quindi non vede le
-variabili locali di chi lo invoca. È il motivo per cui `eval` si usa per costruire codice completo,
-non per leggere valori del contesto.
+The example shows the complete journey: `:(a.x + f(b, 2))` returns an `Expr` without executing it,
+`c.head` is `call` and `sexpr` writes it in linear form. `:($n * $n)` with `n = 7` does not create a
+function: create a tree that already contains the constant `7`, and `eval` executes it. The difference between
+`eval` and a normal call is the scope: `eval` starts from the global scope, so it doesn't see the
+local variables of the person invoking it. This is why `eval` is used to build complete code,
+not to read context values.
 
 ---
 
 <a id="cap-18"></a>
 
-## 18. Macro
+## 18. Macros
 
-Una macro riceve gli argomenti **come codice**, non valutati, e restituisce codice, che viene poi
-eseguito al posto della chiamata `@nome(...)` nello scope del chiamante. **[Full]**
+A macro takes arguments **as code**, not evaluated, and returns code, which is then
+executed in place of the `@name(...)` call in the caller's scope. **[Full]**
 
-La differenza rispetto a una funzione non è solo tecnica: una funzione riceve valori già calcolati,
-quindi non può decidere se valutare un argomento una volta, due volte o mai. Una macro riceve la
-forma sorgente, e questa è la sua unica vera ragione d'essere: si usa quando il comportamento
-dipende dal codice, non dal valore degli argomenti.
+The difference compared to a function is not only technical: a function receives already calculated values,
+therefore he cannot decide whether to evaluate a topic once, twice or never. A macro receives the
+source form, and this is its only real reason for being: it is used when behavior
+depends on the code, not on the value of the arguments.
 
 ```triad-full
 macro unless(c, body)
@@ -2388,7 +2375,7 @@ end
 
 macro swap(a, b)
     t = gensym(:tmp)
-    quote
+    odds
         $t = $a
         $a = $b
         $b = $t
@@ -2407,17 +2394,17 @@ println(x, " ", y)
 2 1
 ```
 
-L'espansione è **pura** (§15) e **non è igienica**: per i nomi temporanei si usa `gensym()`.
+The expansion is **pure** (§15) and **unhygienic**: `gensym()` is used for temporary names.
 
-Questa distinzione è importante per gli effetti. Una funzione riceve normalmente valori già
-calcolati; una macro riceve la forma sorgente e può quindi decidere se inserirla una volta, più
-volte o non inserirla. Le macro di Triad non sono igieniche: un nome temporaneo introdotto dalla
-macro può collidere con un nome del chiamante. `gensym` crea un simbolo fresco per i temporanei,
-ma non rende automaticamente sicuro ogni riferimento libero. Per questo conviene limitare le
-macro a trasformazioni piccole e ispezionare l'albero espanso prima di attribuire al risultato
-un comportamento inatteso.
+This distinction is important for the effects. A function normally receives values already
+calculated; a macro receives the source shape and can then decide whether to insert it once, multiple times
+times or not insert it. Triad macros are unhygienic: a temporary name introduced by
+macro can collide with a caller name. `gensym` creates a cool symbol for temps,
+but it does not automatically make every free reference safe. For this reason it is advisable to limit the
+macro to small transformations and inspect the expanded tree before attributing to the result
+unexpected behavior.
 
-### 18.1 Codice che genera codice
+### 18.1 Code generating code
 
 ```triad-full
 function poly(coeffs)
@@ -2441,11 +2428,11 @@ println(eval(p))
 17
 ```
 
-`poly` costruisce un albero a ogni giro: `:(0)` è il punto di partenza, e ogni coefficiente innesta
-l'albero precedente con `$acc`, la costante `$c` e l'esponente `$i`. Il `for` qui lavora su valori
-normali; solo i quote e gli unquote costruiscono codice. Con `[1, 2, 3]` l'albero finale rappresenta
-`1 + 2 * x + 3 * x^2`, e con `x = 2` vale `1 + 4 + 12 = 17`. `eval(p)` cerca `x` nello scope
-globale: se `x` fosse stato locale a una funzione, l'albero non l'avrebbe visto.
+`poly` builds a tree on each spin: `:(0)` is the starting point, and each coefficient grafts
+the previous tree with `$acc`, the constant `$c` and the exponent `$i`. The `for` here works on values
+normal; only quote and unquote build code. With `[1, 2, 3]` the final tree represents
+`1 + 2 * x + 3 * x^2`, and with `x = 2` the value is `1 + 4 + 12 = 17`. `eval(p)` searches for `x` in scope
+global: if `x` had been local to a function, the tree would not have seen it.
 
 ---
 
@@ -2453,84 +2440,84 @@ globale: se `x` fosse stato locale a una funzione, l'albero non l'avrebbe visto.
 
 ## 19. Builtin
 
-Un **builtin** è una funzione che il linguaggio fornisce senza che tu la definisca. Alcuni sono
-primitive vere e proprie (l'aritmetica), altri sono comodità costruite sopra il nucleo (le funzioni
-di ordine superiore in Full). La tabella elenca i builtin di Triad-Full, raggruppati per ambito;
-sotto trovi la parte che esiste anche in Core.
+A **builtin** is a function that the language provides without you defining it. Some are
+real primitives (arithmetic), others are conveniences built on top of the nucleus (functions
+of higher order in Full). The table lists Triad-Full's builtins, grouped by scope;
+below you will find the part that also exists in Core.
 
-| ambito | funzioni |
+| scope | functions |
 |---|---|
-| aritmetica e confronto | `+ - * / ^ % == != < <= > >= !`, `abs sqrt floor ceil round exp log sin cos div mod min max`; `*` concatena le stringhe |
-| liste | `length isempty first last rest reverse sort sum push! pop! append! vcat collect`, `a:b`, `x in xs` |
-| ordine superiore | `map filter reduce any all count` |
-| stringhe e output | `string repr println print` |
-| tipi | `typeof`, `isa`, `Int Float String Symbol` |
-| errori | `err iserr throw error` |
-| codice | `eval parse unparse sexpr Expr gensym` |
-| logica | `vars(sol)` |
+| arithmetic and comparison | `+ - * / ^ % == != < <= > >= !`, `abs sqrt floor ceil round exp log sin cos div mod min max`; `*` concatenate strings |
+| lists | `length is empty first last rest reverse sort sum push! pop! append! vcat collect`, `a:b`, `x in xs` |
+| higher order | `map filter reduce any all count` |
+| strings and output | `string repr println print` |
+| types | `typeof`, `isa`, `Int Float String Symbol` |
+| errors | `err iserr throw error` |
+| code | `eval parse unparse sexpr Expr gensym` |
+| logic | `vars(sol)` |
 
-Due dettagli che la tabella nasconde. Primo, gli **operatori sono funzioni**: in Full `+` è un nome
-come gli altri, quindi `reduce(+, xs)` funziona e puoi aggiungere metodi a un operatore (cap. 7).
-Secondo, builtin e funzioni utente non sono mondi separati: in Full puoi aggiungere metodi a un
-nome che è anche un builtin, come `+` su `Point`, e il builtin resta la scelta per i valori che non
-hanno un metodo più specifico.
+Two details that the table hides. First, **operators are functions**: in Full `+` is a name
+like the others, so `reduce(+, xs)` works and you can add methods to an operator (ch. 7).
+Second, builtins and user functions are not separate worlds: in Full you can add methods to a
+name that is also a builtin, like `+` on `Point`, and the builtin remains the choice for values that do not
+they have a more specific method.
 
-**Il sottoinsieme di Core** è più piccolo: `+ - * % ^`, i confronti, `&& || !`, `length`, `push!`,
-la costruzione `[a, b]` e l'indicizzazione `xs[i]`, `*` sulle stringhe, `Int`, `string`, `Symbol`,
-`print`, `println`, `typeof` (`SPEC-CORE §7`). La riduzione è per progetto: un interprete di bootstrap
-deve poter eseguire se stesso, e ogni builtin in più è codice che quel bootstrap deve fornire. Per
-questo in Core `map`, `filter`, `reduce`, `sum`, `sort`, `div` e `mod` **non esistono**: si scrivono
-a mano (cap. 22.1).
+**Core's subset** is smaller: `+ - * % ^`, comparisons, `&& || !`, `length`, `push!`,
+`[a, b]` construction and `xs[i]` indexing, `*` on strings, `Int`, `string`, `Symbol`,
+`print`, `println`, `typeof` (`SPEC-CORE §7`). The reduction is by design: a bootstrap interpreter
+it must be able to run itself, and any extra builtin is code that bootstrap must provide. For
+this in Core `map`, `filter`, `reduce`, `sum`, `sort`, `div` and `mod` **do not exist**: they are written
+by hand (chap. 22.1).
 
 ---
 
 <a id="cap-20"></a>
 
-## 20. Riga di comando e REPL
+## 20. Command line and REPL
 
-Un programma Triad non vive solo dentro un file: lo standard definisce anche come si invoca
-l'interprete. L'interfaccia di `triad` è normativa (`SPEC §14`), cioè fa parte del linguaggio tanto
-quanto la sintassi; se due implementazioni leggono gli argomenti in modo diverso, i programmi non
-sono portabili.
+A Triad program doesn't just live inside a file: the standard also defines how it is invoked
+the interpreter. The `triad` interface is normative (`SPEC §14`), that is, it is part of the language
+how much the syntax; if two implementations read the arguments differently, the programs do not
+they are portable.
 
 ```
-triad                            # REPL
-triad FILE [ARG...]              # esegue FILE; ARGS == [ARG...]
-triad -l FILE                    # carica FILE e apre il REPL
-triad -i FILE                    # esegue FILE e poi apre il REPL
-triad -e CODE                    # esegue CODE
-triad -E CODE                    # esegue CODE e stampa il valore
-triad --tree FILE                # stampa l'albero uniforme come S-expression
-triad -q                         # REPL senza banner
+triad # REPL
+triad FILE [ARG...] # execute FILE; ARGS == [ARG...]
+triad -l FILE # loads FILE and opens the REPL
+triad -i FILE # execute FILE and then open the REPL
+triad -e CODE # execute CODE
+triad -E CODE # execute CODE and print the value
+triad --tree FILE # print uniform tree as S-expression
+triad -q # REPL without banner
 triad -h, --help
 triad -v, --version
-triad -                          # legge lo script da stdin
+triad - # read script from stdin
 ```
 
-Le opzioni coprono tre esigenze diverse. `-e` e `-E` servono per provare un frammento da terminale,
-con la differenza che la seconda stampa anche il valore; `-l` e `-i` combinano un file e la sessione
-interattiva, secondo che il file vada caricato o anche eseguito; `--tree` mostra l'albero uniforme
-del capitolo 17, utile quando vuoi vedere come il parser ha raggruppato il codice. Il trattino finale
-legge lo script da stdin, così Triad può stare in una pipeline.
+The options cover three different needs. `-e` and `-E` are used to test a fragment from the terminal,
+with the difference that the second also prints the value; `-l` and `-i` combine a file and session
+interactive, depending on whether the file is loaded or executed; `--tree` shows the uniform tree
+from Chapter 17, useful when you want to see how the parser has grouped the code. The final dash
+reads script from stdin, so Triad can fit in a pipeline.
 
-- L'estensione `.triad`/`.td` si può omettere; lo shebang `#!` è ignorato.
-- Il programma vede gli argomenti in `ARGS`, lista di stringhe, senza il nome del programma.
-- Codici di uscita: `0` successo, `1` errore non gestito (su stderr), `2` uso non valido.
+- The `.triad`/`.td` extension can be omitted; the shebang `#!` is ignored.
+- The program sees the arguments in `ARGS`, list of strings, without the program name.
+- Exit codes: `0` success, `1` unhandled error (to stderr), `2` invalid use.
 
-Questa interfaccia è normativa, ma non tutte le implementazioni la coprono: il seed Windows oggi
-esegue un file e basta, senza REPL né opzioni (cap. 29). Per eseguire gli esempi di questo manuale
-basta la forma `triad FILE`, oppure l'`node seed/dev/triad_core.cjs` mostrato in apertura.
+This interface is normative, but not all implementations cover it: Windows seed today
+executes a file and that's it, without REPL or options (chap. 29). To run the examples in this manual
+just the form `triad FILE`, or the `node seed/dev/triad_core.cjs` shown at the beginning.
 
-### 20.1 Il REPL
+### 20.1 The REPL
 
-Il REPL è una sessione interattiva: scrivi un'espressione, vedi il valore, e le definizioni restano
-attive tra un comando e l'altro. È utile per esplorare, per provare un goal logico o per capire
-perché un'espressione dà un certo risultato, senza creare un file ogni volta.
+The REPL is an interactive session: you write an expression, see the value, and the definitions remain
+active between one command and another. It is useful for exploration, for proving a logical goal or for understanding
+because an expression gives a certain result, without creating a file every time.
 
-Il REPL è in stile Prolog:
+The REPL is Prolog style:
 
 ```
-triad> 1 + 2
+triad > 1 + 2
 3
 triad> ?- ancestor(:tom, ?d)
 ?d = :bob ;
@@ -2538,66 +2525,64 @@ triad> ?- ancestor(:tom, ?d)
 triad> parent(:jim, ?x)
 false.
 ```
+The answers show the two modes of the REPL: `1 + 2` is a normal Triad expression and prints the value;
+`?- ancestor(...)` is a query and prints the solutions one by one, with `;` to ask for the next one
+and `.` to stop. `false.` is not an error: it means there is no other solution.
 
-Le risposte mostrano i due modi del REPL: `1 + 2` è un'espressione Triad normale e stampa il valore;
-`?- ancestor(...)` è una query e stampa le soluzioni una per una, con `;` per chiedere la successiva
-e `.` per fermarsi. `false.` non è un errore: significa che non ci sono altre soluzioni.
-
-- I blocchi restano aperti finché non sono chiusi da `end`.
-- `?- goal` (il `.` finale è facoltativo) esegue una query con le opzioni di `solve`: `limit`,
+- Blocks remain open until closed by `end`.
+- `?- goal` (the trailing `.` is optional) executes a query with the `solve` options: `limit`,
   `depth`, `steps`, `trace`.
-- Un'istruzione che è un goal su un predicato della knowledge base è trattata come query.
-- Dopo ogni soluzione: `;`, `n` o spazio per la successiva, `a` per tutte le rimanenti, invio o `.`
-  per fermarsi. `false.` significa nessun'altra soluzione.
-- Comandi: `:load FILE…` (`:l`), `:reload` (`:r`), `:listing [nome]` (`:ls`), `:tree CODICE`,
+- A statement that is a goal on a knowledge base predicate is treated as a query.
+- After each solution: `;`, `n` or space for the next one, `a` for all the remaining ones, enter or `.`
+  to stop. `false.` means no other solution.
+- Commands: `:load FILE…` (`:l`), `:reload` (`:r`), `:listing [name]` (`:ls`), `:tree CODE`,
   `:reset`, `:help` (`:h`), `:quit` (`:q`, `halt`, Ctrl-D).
-- Ctrl-C interrompe il calcolo in corso; un errore non gestito è stampato e il REPL continua.
+- Ctrl-C stops the calculation in progress; an unhandled error is printed and the REPL continues.
 
 ---
 
 <a id="cap-21"></a>
 
-## 21. Primitivi di bootstrap
+## 21. Bootstrap primitives
 
-Cinque primitive servono a S1 per leggere e analizzare il sorgente Triad. **Non fanno parte di
-Triad-Full** (`SPEC-CORE §8`): usale solo nel codice di bootstrap.
+Five primitives are used by S1 to read and analyze the Triad source. **They are not part of
+Triad-Full** (`SPEC-CORE §8`): Use them only in bootstrap code.
 
-Sono primitive e non funzioni perché stanno **sotto** il linguaggio: servono a un interprete scritto
-in Triad per leggere il proprio sorgente come sequenza di byte. Per questo non fanno parte di
-Triad-Full: un programma applicativo non dovrebbe dipendere da loro, e il codice che le usa non è
-portabile fuori dal bootstrap. La loro presenza nel profilo Core spiega perché una stringa è una
-sequenza di byte e non una sequenza di caratteri (cap. 10).
+They are primitives and not functions because they are **under** the language: they are used by a written interpreter
+in Triad to read your source as a sequence of bytes. This is why they are not part of
+Triad-Full: An application program should not depend on them, and the code that uses them is not
+portable outside the bootstrap. Their presence in the Core profile explains why a string is one
+sequence of bytes and not a sequence of characters (chap. 10).
 
-| primitiva | semantica |
+| primitive | semantics |
 |---|---|
-| `readfile(path)` | contenuto del file come `String`; errore se non leggibile |
-| `strlen(s)` | numero di byte |
-| `strbyte(s, i)` | byte (`Int` 0–255) alla posizione `i`, da 1 |
-| `strsub(s, a, b)` | sottostringa dai byte `a` a `b` inclusi, da 1 |
-| `exit(n)` | termina il processo con codice `n` |
-
-Le cinque primitive sono volutamente minime: nessuna conosce i caratteri, nessuna conosce la
-sintassi. `strbyte` restituisce un `Int` fra 0 e 255 e `strsub` lavora su intervalli di byte
-inclusivi, quindi un programma che analizza sorgente deve fare da sé il confronto con i codici dei
-caratteri che gli interessano.
+| `readfile(path)` | file contents as `String`; error if not readable |
+| `strlen(s)` | number of bytes |
+| `strbyte(s, i)` | bytes (`Int` 0–255) at position `i`, from 1 |
+| `strsub(s, a, b)` | substring from bytes `a` to `b` inclusive, 1 |
+| `exit(n)` | terminate the process with code `n` |
+The five primitives are deliberately minimal: none knows the characters, none knows the
+syntax. `strbyte` returns an `Int` between 0 and 255 and `strsub` works on byte ranges
+inclusive, therefore a program that analyzes the source must make the comparison with the codes itself
+characters that interest him.
 
 ```triad
 s = "abc 123 xyz"
-cifre = 0
+digits = 0
 i = 1
 while i <= strlen(s)
     b = strbyte(s, i)
     if b >= 48 && b <= 57
-        cifre += 1
+        digits += 1
     end
     i += 1
 end
-println(cifre)
-fine = 1
-while fine <= strlen(s) && strbyte(s, fine) != 32
-    fine += 1
+println(digits)
+end = 1
+while end <= strlen(s) && strbyte(s, end) != 32
+    end += 1
 end
-println(strsub(s, 1, fine - 1))
+println(strsub(s, 1, end - 1))
 ```
 
 **Output:**
@@ -2607,38 +2592,38 @@ println(strsub(s, 1, fine - 1))
 abc
 ```
 
-Il primo ciclo conta le cifre confrontando il byte con `48` e `57`, che sono i codici ASCII di `0` e
-`9`: è il modo in cui un analizzatore lessicale distingue un numero da un nome senza avere funzioni
-sulle stringhe (cap. 23, esercizio 6). Il secondo ciclo cerca il primo spazio e si ferma, poi
-`strsub(s, 1, fine - 1)` estrae i byte dalla posizione 1 all'ultimo prima dello spazio: `abc`. Nota
-l'ordine della condizione nel `while`: prima si controlla di essere dentro la stringa, poi si legge
-il byte; invertirle produrrebbe un accesso fuori intervallo.
+The first loop counts the digits by comparing the byte to `48` and `57`, which are the ASCII codes of `0` and
+`9`: This is how a lexical analyzer distinguishes a number from a name without having functions
+on strings (chap. 23, exercise 6). The second loop searches for the first space and then stops
+`strsub(s, 1, end - 1)` extracts the bytes from position 1 to the last before the space: `abc`. Note
+the order of the condition in the `while`: first it checks to be inside the string, then it reads
+the byte; reversing them would produce an out-of-range access.
 
-Un programma può leggere se stesso con `readfile(ARGS[1])`: è il primo passo di un interprete
+A program can read itself with `readfile(ARGS[1])`: it is the first step of an interpreter
 self-hosted.
 
 ---
 
 <a id="cap-22"></a>
 
-## 22. Stile e pattern idiomatici
+## 22. Style and idiomatic patterns
 
-Questo capitolo non introduce costrutti nuovi: mostra come combinare quelli dei capitoli precedenti
-nei casi che ricorrono sempre — trasformare una lista, rappresentare un record, tenere uno stato
-condiviso, costruire una stringa. Sono pattern, non regole del linguaggio, e li riconoscerai nel
-codice del progetto.
+This chapter does not introduce new constructs: it shows how to combine those from previous chapters
+in cases that always occur — transform a list, represent a record, hold a state
+shared, construct a string. They are patterns, not rules of language, and you will recognize them in the
+project code.
 
-### 22.1 Funzioni di ordine superiore scritte in Core
+### 22.1 Higher-order functions written in Core
 
-In Core non esistono `map`/`filter`/`reduce`: si scrivono una volta, con `while` e lambda, e poi si
-usano ovunque.
+In Core there are no `map`/`filter`/`reduce`: they are written once, with `while` and lambda, and then
+they use everywhere.
 
-La differenza rispetto alle versioni Full non è solo nel nome: qui il ciclo è esplicito, quindi vedi
-l'indice, la condizione di fine e il punto in cui l'elemento viene aggiunto. Se un giorno una di
-queste funzioni dà un risultato inatteso, il difetto è visibile in tre righe.
+The difference compared to the Full versions is not only in the name: here the loop is explicit, so you see
+the index, the end condition, and the point at which the item is added. If one day one of
+these functions gives an unexpected result, the defect is visible in three lines.
 
 ```triad
-function mappa(f, xs)
+function map(f, xs)
     out = []
     i = 1
     while i <= length(xs)
@@ -2648,7 +2633,7 @@ function mappa(f, xs)
     out
 end
 
-function filtra(p, xs)
+function filter(p, xs)
     out = []
     i = 1
     while i <= length(xs)
@@ -2660,7 +2645,7 @@ function filtra(p, xs)
     out
 end
 
-function riduci(f, acc, xs)
+function reduce(f, acc, xs)
     i = 1
     while i <= length(xs)
         acc = f(acc, xs[i])
@@ -2670,9 +2655,9 @@ function riduci(f, acc, xs)
 end
 
 xs = [1, 2, 3, 4, 5, 6]
-println(mappa(x -> x * x, xs))
-println(filtra(x -> x % 2 == 0, xs))
-println(riduci((a, b) -> a + b, 0, xs))
+println(map(x -> x * x, xs))
+println(filter(x -> x % 2 == 0, xs))
+println(reduce((a, b) -> a + b, 0, xs))
 ```
 
 **Output:**
@@ -2683,46 +2668,46 @@ println(riduci((a, b) -> a + b, 0, xs))
 21
 ```
 
-`mappa` e `filtra` restituiscono liste nuove, `riduci` restituisce un valore; in tutti e tre i casi
-la funzione ricevuta è un parametro normale, quindi il comportamento si può cambiare senza toccare
-il ciclo. Nota che `riduci` accumula in `acc` e non muta `xs`: la lista in ingresso resta la stessa.
+`map` and `filter` return new lists, `reduce` returns a value; in all three cases
+the received function is a normal parameter, so the behavior can be changed without touching
+the cycle. Note that `reduce` accumulates in `acc` and does not mutate `xs`: the input list remains the same.
 
-### 22.2 Record come liste taggate
+### 22.2 Records as tagged lists
 
-In Core non c'è `struct`: un record è una lista con un simbolo come tag in prima posizione. La
-convenzione è importante perché senza struct non esiste un tipo nominale: il significato del record
-sta interamente nel tag e nell'ordine dei campi, che il programma deve rispettare da solo.
+In Core there is no `struct`: a record is a list with a symbol as a tag in the first position. The
+convention is important because without struct there is no nominal type: the meaning of the record
+it lies entirely in the tag and field order, which the program must respect itself.
 
 ```triad
-punto(x, y) = [:Punto, x, y]
+point(x, y) = [:Point, x, y]
 px(p) = p[2]
 py(p) = p[3]
-somma_punti(a, b) = punto(px(a) + px(b), py(a) + py(b))
-p = somma_punti(punto(1, 2), punto(10, 20))
-println(p, " ", p[1] == :Punto)
+sum_points(a, b) = point(px(a) + px(b), py(a) + py(b))
+p = sum_points(point(1, 2), point(10, 20))
+println(p, " ", p[1] == :Point)
 ```
 
 **Output:**
 
 ```text
-[:Punto, 11, 22] true
+[:Point, 11, 22] true
 ```
 
-L'esempio è costruito per mostrare il patto: `punto` è il costruttore, `px`/`py` sono gli accessori
-e nessuna funzione tocca gli elementi a mano tranne loro. Se un giorno cambi l'ordine dei campi,
-cambi solo il costruttore e gli accessori; chi usa `px` e `py` non se ne accorge. È lo stesso
-principio di incapsulamento di una struct, ottenuto con convenzioni invece che con il tipo.
+The example is built to show the deal: `dot` is the constructor, `px`/`py` are the accessories
+and no function touches the elements by hand except them. If one day you change the order of the fields,
+you only change the manufacturer and accessories; those who use `px` and `py` don't notice this. It's the same
+principle of encapsulation of a struct, obtained with conventions instead of the type.
 
-### 22.3 Ambiente come lista di associazioni
+### 22.3 Environment as a list of associations
 
-È la struttura usata dagli interpreti in `selfhost/`: una lista piatta `[nome1, valore1, nome2,
-valore2, …]`.
+This is the structure used by user agents in `selfhost/`: a flat list `[name1, value1, name2,
+value2, …]`.
 
 ```triad
-function env_get(env, nome)
+function env_get(env, name)
     i = 1
     while i < length(env)
-        if env[i] == nome
+        if env[i] == name
             return env[i + 1]
         end
         i += 2
@@ -2730,17 +2715,17 @@ function env_get(env, nome)
     nothing
 end
 
-function env_set(env, nome, valore)
+function env_set(env, name, value)
     i = 1
     while i < length(env)
-        if env[i] == nome
-            env[i + 1] = valore
+        if env[i] == name
+            env[i + 1] = value
             return env
         end
         i += 2
     end
-    push!(env, nome)
-    push!(env, valore)
+    push!(env, name)
+    push!(env, value)
 end
 
 env = []
@@ -2756,25 +2741,25 @@ println(env, " ", env_get(env, :x), " ", env_get(env, :z))
 [:x, 11, :y, 20] 11 nothing
 ```
 
-È una lista piatta per non pagare un livello di annidamento: le coppie sono affiancate e `env[i+1]`
-legge il valore del nome in posizione `i`. Il costo è che ogni ricerca è lineare e che le due
-funzioni devono avanzare di due in due; il vantaggio è che la struttura è una lista normale, quindi
-si stampa e si ispeziona senza conversioni. È lo stesso schema che un interprete usa per l'ambiente
-dei nomi.
+It's a flat list to avoid paying a level of nesting: the pairs are side by side and `env[i+1]`
+reads the value of the name in position `i`. The cost is that each search is linear and that the two
+functions must advance two by two; the advantage is that the structure is a normal list, therefore
+it is printed and inspected without conversions. It's the same pattern an interpreter uses for the environment
+of names.
 
-### 22.4 Stato mutabile condiviso
+### 22.4 Shared mutable state
 
-Poiché una funzione nominata non può riassegnare un globale, lo stato condiviso si tiene in una
-lista mutabile o in una chiusura.
+Since a named function cannot reassign a global, the shared state is held in one
+mutable list or in a closure.
 
 ```triad
-stato = [0]
+status = [0]
 function tick()
-    stato[1] += 1
+    status[1] += 1
 end
 tick()
 tick()
-println(stato[1])
+println(state[1])
 ```
 
 **Output:**
@@ -2783,22 +2768,22 @@ println(stato[1])
 2
 ```
 
-`tick` non riassegna `stato`: muta l'elemento della lista che `stato` indica. È la differenza del
-capitolo 3 fra cambiare un legame e mutare un oggetto, e qui è ciò che permette a una funzione
-nominata di aggiornare uno stato esterno senza violare la regola 8.3 sull'assegnamento locale. La
-lista fa da contenitore: il legame `stato` resta lo stesso, il contenuto cambia. Se lo stato deve
-avere più campi, si allunga la lista (o si usa un record taggato come in 22.2).
+`tick` does not reassign `status`: it mutates the list element that `status` indicates. It's the difference of
+chapter 3 between changing a link and changing an object, and here is what allows a function
+appointed to update an external state without violating rule 8.3 on local assignment. The
+list acts as a container: the `state` link remains the same, the content changes. If the state must
+have more fields, you make the list longer (or use a tagged record as in 22.2).
 
-### 22.5 Costruire stringhe
+### 22.5 Constructing strings
 
-Due funzioni che tornano sempre: ripetere una stringa e unire una lista con un separatore. In Core
-non c'è una funzione che unisca una lista con un separatore, quindi il separatore va inserito a mano,
-e la posizione è tutto: va messo davanti a ogni elemento tranne il primo. Ricorda che ogni `*` crea
-una stringa nuova (cap. 10).
+Two functions that always return: repeating a string and joining a list with a separator. In Core
+there is no function that joins a list with a separator, so the separator must be inserted manually,
+and position is everything: it must be placed in front of every element except the first. Remember that every `*` creates
+a new string (chap. 10).
 
 ```triad
-function ripeti(s, n)
-    out = ""
+function repeat(s, n)
+out = ""
     while n > 0
         out = out * s
         n -= 1
@@ -2806,7 +2791,7 @@ function ripeti(s, n)
     out
 end
 
-function unisci(xs, sep)
+function join(xs, sep)
     out = ""
     i = 1
     while i <= length(xs)
@@ -2819,8 +2804,8 @@ function unisci(xs, sep)
     out
 end
 
-println(ripeti("ab", 3))
-println(unisci([1, 2, 3], ", "))
+println(repeat("ab", 3))
+println(join([1, 2, 3], ", "))
 ```
 
 **Output:**
@@ -2830,53 +2815,52 @@ ababab
 1, 2, 3
 ```
 
-`unisci` mette il separatore prima di ogni elemento tranne il primo: per questo il controllo `i > 1`
-viene prima delle due concatenazioni. Se lo mettessi dopo l'elemento, l'ultima concatenazione
-lascerebbe il separatore in fondo alla stringa.
+`join` puts the separator before every element except the first one: this is why the `i > 1` check
+comes first of the two concatenations. If I put it after the element, the last concatenation
+would leave the separator at the end of the string.
 
-### 22.6 Regole di stile
+### 22.6 Style rules
 
-- Funzioni piccole con nomi chiari; caso base esplicito in ogni ricorsione; per profondità grandi
-  preferisci `while`.
-- Cicli con contatori espliciti (`i = 1 … while i <= length(xs)`).
-- Non usare `fact`, `rule`, `solve`, `struct` e le altre parole chiave di Full come nomi: il codice
-  deve restare valido anche in Triad-Full.
-- Scrivi `!io` sulle funzioni che stampano: Core lo ignora, Full lo richiede.
-- Non spezzare un'espressione su più righe: l'interprete di riferimento chiude l'istruzione a ogni
-  a capo anche dentro le parentesi (cap. 1.6). Una istruzione per riga.
+- Small functions with clear names; explicit base case in every recursion; for great depths
+  prefer `while`.
+- Loops with explicit counters (`i = 1 … while i <= length(xs)`).
+- Don't use `fact`, `rule`, `solve`, `struct` and other Full keywords as names: code
+  must also remain valid in Triad-Full.
+- Write `!io` on functions that print: Core ignores it, Full requires it.
+- Don't break an expression across multiple lines: the reference interpreter closes the statement at each
+  newlines also inside the brackets (chap. 1.6). One instruction per line.
 
-Queste regole non sono gusti personali: ognuna evita un problema concreto — un nome che collide in
-Full, un effetto non dichiarato, un'ambiguità di lettura, una riga spezzata che il runtime rifiuta.
+These rules are not personal tastes: each avoids a concrete problem — a name that collides with
+Full, an undeclared effect, a reading ambiguity, a broken line that the runtime rejects.
 
 ---
 
-<a id="parte-2"></a>
+<a id="part-2"></a>
 
-# Parte II — Esercizi
+# Part II — Exercises
 
-Ogni esercizio ha una soluzione verificata. Prova prima, poi apri il riquadro «Soluzione».
+Each exercise has a verified solution. Try it first, then open the "Solution" box.
 
-Gli esercizi della prima serie sono programmi Triad-Core e si eseguono con l'interprete di
-riferimento; quelli della seconda usano costrutti Full, quindi hanno risultati attesi ma non sono
-eseguibili oggi. In entrambi i casi la soluzione non è l'unico programma giusto: è un programma che
-funziona, ed è utile confrontarla con la tua per capire quale delle due è più chiara.
+The exercises in the first series are Triad-Core programs and are performed with the interpreter of
+reference; those of the second use Full constructs, therefore they have expected results but they are not
+executable today. In both cases the solution is not the only right program: it is a program that
+it works, and it is useful to compare it with yours to understand which of the two is clearer.
 
 <a id="cap-23"></a>
+## 23. Guided exercises (Triad-Core)
 
-## 23. Esercizi guidati (Triad-Core)
+### Exercise 1 — Power and sums
 
-### Esercizio 1 — Potenza e somme
-
-Senza usare `^`, scrivi `potenza(b, e)` ricorsiva e `somma_fino(n)` (somma `1 + … + n`) con `while`.
-Stampa `potenza(3, 13)`, `potenza(2, 10)` e `somma_fino(100)`.
+Without using `^`, write `power(b, e)` recursive and `sum_up(n)` (sum `1 + … + n`) with `while`.
+Prints `power(3, 13)`, `power(2, 10)` and `sum_up(100)`.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad
-potenza(b, e) = e == 0 ? 1 : b * potenza(b, e - 1)
+power(b, e) = e == 0 ? 1 : b * power(b, e - 1)
 
-function somma_fino(n)
+function sum_up(n)
     s = 0
     i = 1
     while i <= n
@@ -2886,7 +2870,7 @@ function somma_fino(n)
     s
 end
 
-println(potenza(3, 13), " ", potenza(2, 10), " ", somma_fino(100))
+println(power(3, 13), " ", power(2, 10), " ", sum_up(100))
 ```
 
 **Output:**
@@ -2897,15 +2881,15 @@ println(potenza(3, 13), " ", potenza(2, 10), " ", somma_fino(100))
 
 </details>
 
-### Esercizio 2 — Numeri primi
+### Exercise 2 — Prime numbers
 
-Stampa la lista dei numeri primi minori di 30.
+Prints the list of prime numbers less than 30.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad
-function primo(n)
+function first(n)
     if n < 2
         return false
     end
@@ -2919,15 +2903,15 @@ function primo(n)
     true
 end
 
-primi = []
+prime = []
 n = 2
 while n < 30
-    if primo(n)
-        push!(primi, n)
+    if first(n)
+        push!(first, n)
     end
     n += 1
 end
-println(primi)
+println(firsts)
 ```
 
 **Output:**
@@ -2938,15 +2922,15 @@ println(primi)
 
 </details>
 
-### Esercizio 3 — Inverti una lista
+### Exercise 3 — Reverse a list
 
-Scrivi `inverti(xs)` che restituisca una nuova lista con gli elementi in ordine inverso.
+Write `reverse(xs)` which returns a new list with the elements in reverse order.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad
-function inverti(xs)
+function invert(xs)
     out = []
     i = length(xs)
     while i >= 1
@@ -2956,26 +2940,26 @@ function inverti(xs)
     out
 end
 
-println(inverti([1, :due, "tre"]))
+println(reverse([1, :two, "three"]))
 ```
 
 **Output:**
 
 ```text
-[tre, :due, 1]
+[three, :two, 1]
 ```
 
 </details>
 
-### Esercizio 4 — Ordinamento per inserzione
+### Exercise 4 — Insertion sorting
 
-Ordina in loco `[5, 2, 9, 1, 7]`.
+Order `[5, 2, 9, 1, 7]` on site.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad
-function ordina!(xs)
+function sort!(xs)
     i = 2
     while i <= length(xs)
         k = xs[i]
@@ -2990,7 +2974,7 @@ function ordina!(xs)
     xs
 end
 
-println(ordina!([5, 2, 9, 1, 7]))
+println(sort!([5, 2, 9, 1, 7]))
 ```
 
 **Output:**
@@ -2998,35 +2982,34 @@ println(ordina!([5, 2, 9, 1, 7]))
 ```text
 [1, 2, 5, 7, 9]
 ```
-
-Il `!` finale nel nome segnala, per convenzione, una funzione che muta il suo argomento.
+The final `!` in the name signals, by convention, a function that changes its argument.
 
 </details>
 
-### Esercizio 5 — Contatore di parole
+### Exercise 5 — Word counter
 
-Conta le parole (separate da spazi) di `"il  linguaggio Triad "` usando `strbyte`.
+Count the words (separated by spaces) of `"the Triad language"` using `strbyte`.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad
-function conta_parole(s)
+function word_count(s)
     n = 0
-    dentro = false
+    inside = false
     i = 1
     while i <= strlen(s)
-        spazio = strbyte(s, i) == 32
-        if !spazio && !dentro
+        space = strbyte(s, i) == 32
+        if !space && !inside
             n += 1
         end
-        dentro = !spazio
+        inside = !space
         i += 1
     end
     n
 end
 
-println(conta_parole("il  linguaggio Triad "))
+println(count_words("the Triad language "))
 ```
 
 **Output:**
@@ -3037,33 +3020,33 @@ println(conta_parole("il  linguaggio Triad "))
 
 </details>
 
-### Esercizio 6 — Un mini-analizzatore lessicale
+### Exercise 6 — A mini-lexical analyzer
 
-Trasforma `"12+x*3"` in una lista di token `[tipo, testo]`, con tipi `:num`, `:id`, `:op`. È il primo
-passo di un interprete.
+Transforms `"12+x*3"` into a list of `[type, text]` tokens, with types `:num`, `:id`, `:op`. It's the first
+step of an interpreter.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad
-cifra(b) = b >= 48 && b <= 57
-lettera(b) = (b >= 97 && b <= 122) || (b >= 65 && b <= 90) || b == 95
+digit(b) = b >= 48 && b <= 57
+letter(b) = (b >= 97 && b <= 122) || (b >= 65 && b <= 90) || b == 95
 
-function tokenizza(s)
+function tokenize(s)
     toks = []
     i = 1
     while i <= strlen(s)
         b = strbyte(s, i)
-        if cifra(b)
+        if digit(b)
             j = i
-            while j <= strlen(s) && cifra(strbyte(s, j))
+            while j <= strlen(s) && digit(strbyte(s, j))
                 j += 1
             end
             push!(toks, [:num, strsub(s, i, j - 1)])
             i = j
-        elseif lettera(b)
+        elseif letter(b)
             j = i
-            while j <= strlen(s) && (lettera(strbyte(s, j)) || cifra(strbyte(s, j)))
+            while j <= strlen(s) && (letter(strbyte(s, j)) || digit(strbyte(s, j)))
                 j += 1
             end
             push!(toks, [:id, strsub(s, i, j - 1)])
@@ -3076,7 +3059,7 @@ function tokenizza(s)
     toks
 end
 
-println(tokenizza("12+x*3"))
+println(tokenize("12+x*3"))
 ```
 
 **Output:**
@@ -3087,34 +3070,34 @@ println(tokenizza("12+x*3"))
 
 </details>
 
-### Esercizio 7 — Valutare un'espressione
+### Exercise 7 — Evaluating an expression
 
-Usando i token dell'esercizio 6, scrivi un valutatore a discesa ricorsiva per `+` e `*` con
-precedenza, dove le variabili vengono da una lista di associazioni. Suggerimento: tieni la posizione
-corrente in una lista `pos = [1]`, così le funzioni possono aggiornarla.
+Using the tokens from Exercise 6, write a recursive drop-down evaluator for `+` and `*` with
+precedence, where the variables come from a list of associations. Tip: Hold your ground
+current in a list `pos = [1]`, so functions can update it.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad
-cifra(b) = b >= 48 && b <= 57
-lettera(b) = (b >= 97 && b <= 122) || b == 95
+digit(b) = b >= 48 && b <= 57
+letter(b) = (b >= 97 && b <= 122) || b == 95
 
-function tokenizza(s)
+function tokenize(s)
     toks = []
     i = 1
     while i <= strlen(s)
         b = strbyte(s, i)
-        if cifra(b)
+        if digit(b)
             j = i
-            while j <= strlen(s) && cifra(strbyte(s, j))
+            while j <= strlen(s) && digit(strbyte(s, j))
                 j += 1
             end
             push!(toks, [:num, strsub(s, i, j - 1)])
             i = j
-        elseif lettera(b)
+        elseif letter(b)
             j = i
-            while j <= strlen(s) && lettera(strbyte(s, j))
+            while j <= strlen(s) && letter(strbyte(s, j))
                 j += 1
             end
             push!(toks, [:id, strsub(s, i, j - 1)])
@@ -3127,10 +3110,10 @@ function tokenizza(s)
     toks
 end
 
-function cerca(env, nome)
+function search(env, name)
     i = 1
     while i < length(env)
-        if env[i] == nome
+        if env[i] == name
             return env[i + 1]
         end
         i += 2
@@ -3138,37 +3121,37 @@ function cerca(env, nome)
     0
 end
 
-function primario(toks, pos, env)
+function primary(toks, pos, env)
     t = toks[pos[1]]
     pos[1] += 1
     if t[1] == :num
         Int(t[2])
     else
-        cerca(env, t[2])
+        search(env, t[2])
     end
 end
 
-function prodotto(toks, pos, env)
-    v = primario(toks, pos, env)
-    while pos[1] <= length(toks) && toks[pos[1]][2] == "*"
+function product(toks, pos, env)
+    v = primary(toks, pos, env)
+    while pos[1] <= length(toks) && toks[pos[1][2] == "*"
         pos[1] += 1
-        v = v * primario(toks, pos, env)
+        v = v * primary(toks, pos, env)
     end
     v
 end
 
-function somma(toks, pos, env)
-    v = prodotto(toks, pos, env)
+function sum(toks, pos, env)
+    v = product(toks, pos, env)
     while pos[1] <= length(toks) && toks[pos[1]][2] == "+"
         pos[1] += 1
-        v = v + prodotto(toks, pos, env)
+        v = v + product(toks, pos, env)
     end
     v
 end
 
-valuta(s, env) = somma(tokenizza(s), [1], env)
-println(valuta("12+x*3", ["x", 10]))
-println(valuta("2*3+4*5", []))
+evaluate(s, env) = sum(tokenize(s), [1], env)
+println(evaluate("12+x*3", ["x", 10]))
+println(evaluate("2*3+4*5", []))
 ```
 
 **Output:**
@@ -3180,45 +3163,45 @@ println(valuta("2*3+4*5", []))
 
 </details>
 
-### Esercizio 8 — Un ambiente a dizionario
+### Exercise 8 — A dictionary environment
 
-Estendi l'esercizio 7 (il valutatore con ambiente) con la rimozione di un nome, e scrivi
-`ambiente_da_elenco` che costruisce un ambiente da coppie `[nome, valore]`. Verifica con `env_get` ed
-`env_set` del capitolo 22.3.
+Extend exercise 7 (the evaluator with environment) by removing a name, and write
+`environment_from_list` which constructs an environment from `[name, value]` pairs. Check with `env_get` ed
+`env_set` from chapter 22.3.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad
-function env_get(env, nome)
+function env_get(env, name)
     i = 1
     while i < length(env)
-        if env[i] == nome
+        if env[i] == name
             return env[i + 1]
         end
         i += 2
     end
-    nothing
+nothing
 end
 
-function env_set(env, nome, valore)
+function env_set(env, name, value)
     i = 1
     while i < length(env)
-        if env[i] == nome
-            env[i + 1] = valore
+        if env[i] == name
+            env[i + 1] = value
             return env
         end
         i += 2
     end
-    push!(env, nome)
-    push!(env, valore)
+    push!(env, name)
+    push!(env, value)
 end
 
-function env_rimuovi(env, nome)
+function env_remove(env, name)
     out = []
     i = 1
     while i < length(env)
-        if env[i] == nome
+        if env[i] == name
             i += 2
         else
             push!(out, env[i])
@@ -3229,19 +3212,19 @@ function env_rimuovi(env, nome)
     out
 end
 
-function ambiente_da_elenco(coppie)
+function environment_from_list(pairs)
     env = []
     i = 1
-    while i < length(coppie)
-        env_set(env, coppie[i], coppie[i + 1])
+    while i < length(pairs)
+        env_set(env, pairs[i], pairs[i + 1])
         i += 2
     end
     env
 end
 
-env = ambiente_da_elenco([:x, 10, :y, 20])
+env = environment_from_list([:x, 10, :y, 20])
 println(env, " ", env_get(env, :x))
-env = env_rimuovi(env, :x)
+env = env_remove(env, :x)
 println(env, " ", env_get(env, :x))
 ```
 
@@ -3256,22 +3239,22 @@ println(env, " ", env_get(env, :x))
 
 <a id="cap-24"></a>
 
-## 24. Esercizi su Triad-Full
+## 24. Exercises on Triad-Full
 
-Questi esercizi usano i costrutti dello standard completo. Sono definiti dalla specifica e hanno
-risultati attesi in `conformance/cases/`, ma **non sono ancora eseguibili** dal runtime corrente.
+These exercises use the constructs of the full standard. They are defined by the specification and have
+expected results in `conformance/cases/`, but are **not yet executable** by the current runtime.
 
-Studiarli serve comunque: le soluzioni sono codice normativo, e vederle accanto agli esercizi Core
-mostra che i costrutti Full si innestano nella stessa sintassi, non in un linguaggio separato.
-L'output riportato è un valore atteso conservato dalla suite, non una verifica eseguita oggi.
+Studying them is still useful: the solutions are normative code, and seeing them next to the Core exercises
+shows that Full constructs are nested in the same syntax, not in a separate language.
+The reported output is an expected value held by the suite, not a test performed today.
 
-### Esercizio 9 — Dispatch su struct
+### Exercise 9 — Dispatch on struct
 
-Definisci `struct Vec2` con due campi `Float` e tre metodi di `area`: uno per `Vec2`, uno per `Number`
-e uno per `Any`. Verifica che il metodo più specifico vinca.
+Define `struct Vec2` with two `Float` fields and three `area` methods: one for `Vec2`, one for `Number`
+and one for `Any`. Verify that the most specific method wins.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad-full
 struct Vec2
@@ -3283,9 +3266,9 @@ area(v::Vec2) = v.x * v.y
 area(n::Number) = n * n
 area(x::Any) = 0
 
-println(area(Vec2(3, 4)))
+println(area(Old2(3, 4)))
 println(area(5))
-println(area("ciao"))
+println(area("hello"))
 ```
 
 **Output (golden Full):**
@@ -3298,13 +3281,12 @@ println(area("ciao"))
 
 </details>
 
-### Esercizio 10 — Una base di conoscenza
-
-Scrivi fatti e regole per `parent` e `sorella`, e usa `solve` per trovare le sorelle di `:bob` e
-i nipoti di `:alice`.
+### Exercise 10 — A knowledge base
+Write facts and rules for `parent` and `sister`, and use `solve` to find the sisters of `:bob` and
+`:alice`'s grandchildren.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad-full
 fact parent(:alice, :bob)
@@ -3314,9 +3296,9 @@ fact parent(:carol, :erin)
 
 rule grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)
 
-rule sorella(?a, ?b) :- parent(?p, ?a), parent(?p, ?b), ?a != ?b
+rule sister(?a, ?b) :- parent(?p, ?a), parent(?p, ?b), ?a != ?b
 
-println([s.b for s in solve sorella(:bob, ?b)])
+println([s.b for s in solve sister(:bob, ?b)])
 println([s.z for s in solve grandparent(:alice, ?z)])
 ```
 
@@ -3329,47 +3311,47 @@ println([s.z for s in solve grandparent(:alice, ?z)])
 
 </details>
 
-### Esercizio 11 — Contratti in pratica
+### Exercise 11 — Contracts in practice
 
-Scrivi `dividi(a, b)` con `requires b != 0` e `ensures abs(result * b - a) < 1e-9`, e usa `try` per
-distinguere il caso di contratto violata dal caso di successo.
+Write `divide(a, b)` with `requires b != 0` and `ensures abs(result * b - a) < 1e-9`, and use `try` to
+distinguish the case of breached contract from the case of success.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad-full
-function dividi(a::Number, b::Number)::Float
+function divide(a::Number, b::Number)::Float
     requires b != 0
     ensures abs(result * b - a) < 1e-9
-    a / b
+    a/b
 end
 
-r = try dividi(1, 0) end
+r = try divide(1, 0) end
 if iserr(r)
-    println("contratto: ", r.data.clause)
+    println("contract: ", r.data.clause)
 else
-    println("valore: ", r)
+    println("value: ", r)
 end
 ```
 
 **Output (golden Full):**
 
 ```text
-contratto: requires
+contract: requires
 ```
 
 </details>
 
-### Esercizio 12 — Una macro che misura
+### Exercise 12 — A macro that measures
 
-Scrivi la macro `@misura(label, espr)` che valuta l'espressione e stampa etichetta e valore,
-restituendo il valore.
+Write the macro `@measure(label, expr)` that evaluates the expression and prints the label and value,
+returning the value.
 
 <details>
-<summary>Soluzione</summary>
+<summary>Solution</summary>
 
 ```triad-full
-macro misura(label, e)
+macro measure(label, e)
     :(begin
         r = $e
         println($label, " -> ", r)
@@ -3377,14 +3359,14 @@ macro misura(label, e)
     end)
 end
 
-totale = @misura("somma", 1 + 2 + 3)
-println(totale)
+total = @measure("sum", 1 + 2 + 3)
+println(total)
 ```
 
 **Output (golden Full):**
 
 ```text
-somma -> 6
+sum -> 6
 6
 ```
 
@@ -3392,45 +3374,45 @@ somma -> 6
 
 ---
 
-<a id="parte-3"></a>
+<a id="part-3"></a>
 
-# Parte III — Riferimento
+# Part III — Reference
 
-Questa parte è pensata per la consultazione, dopo la lettura della prima: raccoglie la grammatica,
-le schede rapide, la tabella degli errori, il glossario e lo stato reale delle implementazioni. Non
-è materiale nuovo: se un punto non torna, il rimando al capitolo della Parte I ti riporta alla
-spiegazione. Tieni presente che le sezioni di riferimento descrivono lo **standard**; lo stato di
-ciò che è eseguibile oggi è raccolto nell'ultimo capitolo.
+This part is designed for consultation, after reading the first: it contains the grammar,
+the quick tabs, the error table, the glossary and the real status of the implementations. Not
+it is new material: if a point doesn't add up, the reference to the chapter in Part I takes you back to
+explanation. Please note that the reference sections describe the **standard**; the state of
+what is executable today is collected in the last chapter.
 
 <a id="cap-25"></a>
 
-## 25. Grammatica
+## 25. Grammar
 
-La grammatica è la forma più compatta in cui una specifica dice che cosa è un programma valido. Si
-legge come una ricetta: `=` significa «è fatto di», `{ … }` significa «zero o più», `[ … ]`
-«opzionale». Le due grammatiche che seguono non descrivono due linguaggi: la prima è il sottoinsieme
-Core, la seconda è Full, e le produzioni che Core condivide compaiono in Full con la stessa forma.
+Grammar is the most compact form in which a specification says what a valid program is. Yes
+reads like a recipe: `=` means «is made of», `{ … }` means «zero or more», `[ … ]`
+«optional». The following two grammars do not describe two languages: the first is the subset
+Core, the second is Full, and the productions that Core shares appear in Full with the same form.
 
-### 25.1 Triad-Core (EBNF normativa)
+### 25.1 Triad-Core (EBNF regulation)
 
 ```
-program  = { sep } { stmt sep { sep } } ;
-sep      = NEWLINE | ";" ;
-stmt     = funcdef | "return" [ expr ] | "break" | "continue" | expr ;
-funcdef  = "function" NAME "(" [ NAME { "," NAME } ] ")" block "end"
+program = { sep } { stmt sep { sep } };
+sep = NEWLINE | ";" ;
+stmt = funcdef | "return" [ expr ] | "break" | "continue" | expr ;
+funcdef = "function" NAME "(" [ NAME { "," NAME } ] ")" block "end"
          | NAME "(" [ NAME { "," NAME } ] ")" "=" expr ;
-expr     = assegnamento ;
-assegnamento = NAME ( "=" | "+=" | "-=" | "*=" ) expr | ternario ;
-ternario = or_expr [ "?" expr ":" expr ] ;
-or_expr  = and_expr { "||" and_expr } ;
+expr = assignment ;
+assignment = NAME ( "=" | "+=" | "-=" | "*=" ) expr | ternary ;
+ternary = or_expr [ "?" expr ":" expr ] ;
+or_expr = and_expr { "||" and_expr } ;
 and_expr = cmp_expr { "&&" cmp_expr } ;
 cmp_expr = sum_expr { ( "==" | "!=" | "<" | "<=" | ">" | ">=" ) sum_expr } ;
 sum_expr = mul_expr { ( "+" | "-" ) mul_expr } ;
 mul_expr = pow_expr { ( "*" | "%" ) pow_expr } ;
-pow_expr = unary { "^" unary } ;                    (* destra *)
-unary    = ( "-" | "!" ) unary | postfix ;
-postfix  = primary { "(" args ")" | "[" expr "]" } ;
-primary  = INT | STRING | SYMBOL | "true" | "false" | "nothing" | NAME
+pow_expr = unary { "^" unary } ;                    (*right*)
+unary = ( "-" | "!" ) unary | postfix ;
+postfix = primary { "(" args ")" | "[" expr "]" } ;
+primary = INT | STRING | SYMBOL | "true" | "false" | "nothing" | NAME
          | "(" expr ")"
          | "[" [ expr { "," expr } ] "]"
          | "(" NAME { "," NAME } ")" "->" expr
@@ -3438,61 +3420,61 @@ primary  = INT | STRING | SYMBOL | "true" | "false" | "nothing" | NAME
          | "while" expr block "end"
          | "let" [ NAME "=" expr { "," NAME "=" expr } ] block "end"
          | "begin" block "end"
-         | "function" "(" [ NAME { "," NAME } ] ")" block "end" ;
-block    = { stmt sep { sep } } ;                   (* fino a end/else/elseif *)
+| "function" "(" [ NAME { "," NAME } ] ")" block "end" ;
+block = { stmt sep { sep } } ;                   (* to end/else/elseif *)
 ```
 
-La grammatica Core è volutamente piccola: niente `for`, niente range, niente tipi nelle firme. Non
-descrive però ogni dettaglio che l'esecuzione accetta: l'assegnamento a un elemento (`xs[i] = e`,
-`xs[i] += e`), che gli esempi del capitolo 9 usano per mutare le liste, non compare nella produzione
-`assegnamento`. È una lacuna del testo della specifica, non del linguaggio: l'interprete di
-riferimento lo supporta, e il codice che lo usa è portabile fra le implementazioni Core.
+The Core grammar is deliberately small: no `for`, no ranges, no types in signatures. Not
+however, it describes every detail that the execution accepts: the assignment to an element (`xs[i] = e`,
+`xs[i] += e`), which the examples in chapter 9 use to mutate lists, does not appear in production
+`assignment`. It is a shortcoming of the text of the specification, not of the language: the interpreter of
+reference supports it, and code using it is portable between Core implementations.
 
-### 25.2 Triad-Full (EBNF normativa)
+### 25.2 Triad-Full (EBNF regulation)
 
 ```
-program    = { sep } { stmt sep { sep } } ;
-sep        = NEWLINE | ";" ;
-block      = { sep } { stmt sep { sep } } ;
+program = { sep } { stmt sep { sep } };
+sep = NEWLINE | ";" ;
+block = { sep } { stmt sep { sep } };
 
-stmt       = funcdef | structdef | macrodef | fact | rule
+stmt = funcdef | structdef | macrodef | facts | rule
            | "requires" expr | "ensures" expr
            | "return" [ expr ] | "break" | "continue"
            | "(" NAME { "," NAME } ")" "=" expr
            | expr ;
 
-funcdef    = "function" fname "(" [ params ] ")" [ "::" TYPE ] [ "!" EFFECT { "," EFFECT } ]
+funcdef = "function" fname "(" [ params ] ")" [ "::" TYPE ] [ "!" EFFECT { "," EFFECT } ]
              block "end"
            | NAME "(" [ params ] ")" "=" expr ;
-fname      = NAME | "+" | "-" | "*" | "/" | "%" | "^" | "==" | "<" | "<=" | ">" | ">=" ;
-params     = param { "," param } ;
-param      = NAME [ "::" TYPE ] | "(" NAME { "," NAME } ")" ;
-structdef  = "struct" NAME sep { NAME [ "::" TYPE ] sep } "end" ;
-macrodef   = "macro" NAME "(" [ NAME { "," NAME } ] ")" block "end" ;
+fname = NAME | "+" | "-" | "*" | "/" | "%" | "^" | "==" | "<" | "<=" | ">" | ">=" ;
+params = param { "," param } ;
+param = NAME [ "::" TYPE ] | "(" NAME { "," NAME } ")" ;
+structdef = "struct" NAME sep { NAME [ "::" TYPE ] sep } "end" ;
+macrodef = "macro" NAME "(" [ NAME { "," NAME } ] ")" block "end" ;
 
-fact       = "fact" term ;
-rule       = "rule" term [ ":-" goal { "," goal } ] ;
+fact = "fact" term ;
+rule = "rule" term [ ":-" goal { "," goal } ] ;
 
-expr       = (* Pratt: precedenze dalla più bassa alla più alta *)
-  1  a = b   a += b   a -= b   a *= b                 (destra)
-  2  x -> e   (a, b) -> e   c ? a : b                 (destra)
-  3  ||
-  4  &&
-  5  ==  !=  <  <=  >  >=  in  isa  is
-  6  a:b                                               (range, senza spazi)
-  7  +  -
-  8  *  /  %
-  9  -x  !x  +x  $x                                    (unari)
- 10  ^                                                 (destra)
- 11  e::T                                              (asserzione di tipo)
- 12  f(args)  xs[i]  a.campo                           (postfissi, senza spazio prima di ( e [)
+expr = (*Pratt: precedence from lowest to highest *)
+  1 a = b a += b a -= b a *= b (right)
+  2 x -> e (a, b) -> e c ? a : b (right)
+  3 ||
+  4 &&
+  5 == != < <= > >= in isa is
+  6 a:b (range, no spaces)
+  7 + -
+  8 * / %
+  9 -x !x +x $x (unary)
+10^ (right)
+ 11 e::T (type assertion)
+ 12 f(args) xs[i] a.field (postfixes, no space before ( and [)
 
-primary    = NUMBER | STRING | SYMBOL | LVAR | NAME | "true" | "false" | "nothing"
-           | "(" expr ")" | "(" expr "," ... ")"       (* tupla: parametri di lambda *)
+primary = NUMBER | STRING | SYMBOL | LVAR | NAME | "true" | "false" | "nothing"
+           | "(" expr ")" | "(" expr "," ... ")" (* tuple: lambda parameters *)
            | "[" [ expr { "," expr } [ "|" expr ] ] "]"
            | "[" expr "for" NAME "in" expr [ "if" expr ] "]"
-           | ":(" expr ")" | "quote" block "end"
-           | "@" NAME "(" args ")"
+           | ":(" expr ")" | "quotes" block "end"
+           | "@"NAME"("args")"
            | "if" expr block { "elseif" expr block } [ "else" block ] "end"
            | "while" expr block "end"
            | "for" NAME "in" expr block "end"
@@ -3503,255 +3485,254 @@ primary    = NUMBER | STRING | SYMBOL | LVAR | NAME | "true" | "false" | "nothin
            | "with" modifier { "," modifier } block "end"
            | "solve" goal { "limit" expr | "depth" expr | "steps" expr | "trace" }
            | "function" "(" params ")" block "end" ;
-modifier   = "budget" "(" "steps" "=" expr ")" | "trace" ;
+modifier = "budget" "(" "steps" "=" expr ")" | "trace" ;
 ```
 
-La grammatica Full elenca i livelli di precedenza nella forma numerata che il parser usa: è la
-stessa tabella del capitolo 4, e la produzione `primary` dice quali forme possono stare alla base di
-un'espressione. Le produzioni `stmt` e `block` dicono invece che cosa può contenere un blocco, e
-quindi in quali punti `fact`, `rule`, `requires` e `ensures` sono ammessi.
+The Full grammar lists the precedence levels in the numbered form that the parser uses: it is the
+same table as chapter 4, and the `primary` production tells which shapes can underlie
+an expression. The `stmt` and `block` productions instead tell what a block can contain, e
+so where `fact`, `rule`, `requires` and `ensures` are allowed.
 
 ---
 
 <a id="cap-26"></a>
 
-## 26. Schede rapide
+## 26. Quick Tabs
 
-Le schede rapide non sostituiscono i capitoli: servono a ricordare la forma esatta di un costrutto
-quando sai già che cosa vuoi scrivere. Sono divise per tipo di problema — un valore, un controllo di
-flusso, una funzione — e ogni riga rimanda, quando serve, al capitolo che spiega la scelta.
+Quick cards do not replace chapters: they serve to remember the exact form of a construct
+when you already know what you want to write. They are divided by problem type — a value, a control of
+flow, a function — and each line refers, when necessary, to the chapter that explains the choice.
 
-### 26.1 Valori
+### 26.1 Values
 
-| vuoi | scrivi |
+| do you want | write |
 |---|---|
-| un intero | `42`, `1_000` |
-| un float **[Full]** | `3.14`, `1e-9` |
-| un booleano | `true`, `false` |
-| il vuoto | `nothing` |
-| una stringa | `"testo"` |
-| un simbolo | `:alice` |
-| una lista | `[1, 2, 3]` |
-| una lambda | `x -> x + 1` |
-| una funzione | `function (x) x end` |
-| un record Core | `[:Punto, 1, 2]` |
-| una struct **[Full]** | `Point(3, 4)` |
-| codice come dato **[Full]** | `:(a + b)`, `quote … end` |
+| an integer | `42`, `1_000` |
+| a float **[Full]** | `3.14`, `1e-9` |
+| a boolean | `true`, `false` |
+| the void | `nothing` |
+| a string | `"text"` |
+| a symbol | `:alice` |
+| a list | `[1, 2, 3]` |
+| a lambda | `x -> x + 1` |
+| a function | `function (x) x end` |
+| a Core record | `[:Point, 1, 2]` |
+| a struct **[Full]** | `Point(3, 4)` |
+| code as given **[Full]** | `:(a + b)`, `quote … end` |
 
-### 26.2 Controllo di flusso
+### 26.2 Flow control
 
-| vuoi | scrivi |
+| do you want | write |
 |---|---|
-| una condizione | `if c … elseif d … else … end` |
-| una condizione breve | `c ? a : b` |
-| un ciclo | `while c … end` **[Core]** · `for x in xs … end` **[Full]** |
-| uscire dal ciclo | `break` |
-| saltare al passo dopo | `continue` |
-| uscire dalla funzione | `return e` |
-| uno scope nuovo | `let x = 1 … end` |
-| un blocco senza scope | `begin … end` |
-| una lista costruita **[Full]** | `[x * x for x in xs]` |
-| catturare un errore **[Full]** | `try b catch e h end` |
+| a condition | `if c … elseif d … else … end` |
+| a short condition | `c ? a : b` |
+| a cycle | `while c … end` **[Core]** · `for x in xs … end` **[Full]** |
+| exit the loop | `break` |
+| skip to the next step | `continue` |
+| exit the function | `return is |
+| a new scope | `let x = 1 … end` |
+| a scopeless block | `begin … end` |
+| a constructed list **[Full]** | `[x * x for x in xs]` |
+| catch an error **[Full]** | `try b catch and h end` |
 
-### 26.3 Funzioni
+### 26.3 Functions
 
-| vuoi | scrivi |
+| do you want | write |
 |---|---|
-| una funzione | `f(x) = x + 1` |
-| un corpo multi-istruzione | `function f(x) … end` |
-| un tipo di ritorno **[Full]** | `function f(x)::Float … end` |
-| un effetto **[Full]** | `function f(x) !io … end` |
-| un predicato in un goal **[Full]** | `function evena(n) n % 2 == 0 end` |
-| una precondizione **[Full]** | `requires cond` |
-| una postcondizione **[Full]** | `ensures cond` |
+| a function | `f(x) = x + 1` |
+| a multi-education body | `function f(x) … end` |
+| a **[Full]** return type | `function f(x)::Float … end` |
+| a **[Full]** effect | `function f(x) !io … end` |
+| a predicate in a goal **[Full]** | `function evena(n) n % 2 == 0 end` |
+| a **[Full]** precondition | `requires cond` |
+| a **[Full]** postcondition | `ensures cond` |
 
 ---
 
 <a id="cap-27"></a>
 
-## 27. Tabella degli errori
+## 27. Error table
 
-La tabella raccoglie i messaggi che l'interprete di riferimento stampa oggi in Triad-Core, con la
-causa tipica. I messaggi sono dell'implementazione, non dello standard: la categoria dell'errore è
-normativa (cap. 11.3), il testo no, quindi non scrivere programmi che dipendono da queste stringhe.
+The table collects the messages that the reference interpreter prints today in Triad-Core, with the
+typical cause. The messages are from the implementation, not the standard: the error category is
+regulations (chap. 11.3), the text does not, so do not write programs that depend on these strings.
 
 ### 27.1 In Core
 
-Core non ha `try`/`catch` né valori `Err`: un errore **termina il processo** con exit code `1` e un
-messaggio diagnostico su stderr. Quello già stampato su stdout resta.
+Core has no `try`/`catch` or `Err` values: an error **terminates the process** with exit code `1` and a
+diagnostic message on stderr. The one already printed on stdout remains.
 
-| messaggio | causa |
+| message | cause |
 |---|---|
-| `parse error: unexpected token …` / `parse error: expected …` | sintassi non Core (`1.5`, `/`, `() -> …`, `end` mancante) |
-| `error: undefined variable NOME` | nome mai assegnato, o funzione chiamata prima di essere definita |
-| `error: not a function` | si chiama un valore che non è una funzione (`x = 5; x(1)`) |
-| `error: arity mismatch` | numero di argomenti diverso dai parametri |
-| `error: index out of range` | `xs[i]` con `i < 1` o `i > length(xs)` |
-| `error: + type error` (e simili) | operandi di tipo sbagliato (`1 + "a"`) |
-| `error: if cond` / `while cond` / `ternary cond` / `&& expects bool` | condizione non `Bool` |
+| `parse error: unexpected token …` / `parse error: expected …` | non-Core syntax (`1.5`, `/`, `() -> …`, `end` missing) |
+| `error: undefined variable NAME` | name never assigned, or function called before being defined |
+| `error: not a function` | a value that is not a function is called (`x = 5; x(1)`) |
+| `error: arity mismatch` | number of arguments other than parameters |
+| `error: index out of range` | `xs[i]` with `i < 1` or `i > length(xs)` |
+| `error: + type error` (and similar) | operands of wrong type (`1 + "a"`) |
+| `error: if cond` / `while cond` / `ternary cond` / `&& expects bool` | non `Bool` condition |
 | `error: div by zero` / `negative exponent` | `x % 0`, `2 ^ -1` |
-| `error: unknown function NOME` | builtin riservato usato in modo non supportato |
-| `cannot read file: …` | file inesistente o non leggibile |
-| `usage: triad FILE [ARG...]` (exit 2) | nessun file passato |
+| `error: unknown function NAME` | reserved builtin used in an unsupported way |
+| `cannot read file: …` | file non-existent or unreadable |
+| `usage: triad FILE [ARG...]` (exit 2) | no files passed |
 
 ### 27.2 In Triad-Full
 
-Gli stessi fallimenti arrivano come `Err` con un `kind` (cap. 11.3), invece di terminare il
-processo. Un errore non gestito al top level stampa `riga N: …` e esce con codice `1`.
-
+The same failures arrive as `Err` with a `kind` (ch. 11.3), instead of terminating the
+process. An unhandled error at the top level prints `line N: …` and exits with code `1`.
 ---
 
 <a id="cap-28"></a>
 
-## 28. Glossario
+## 28. Glossary
 
-Il glossario raccoglie i termini che il manuale usa con un significato preciso e che ricorrono in
-capitoli diversi. Le definizioni sono brevi apposta: il rimando al capitolo serve quando la parola
-da sola non basta.
+The glossary collects the terms that the manual uses with a precise meaning and that occur in
+different chapters. The definitions are short on purpose: the reference to the chapter is useful when the word
+alone is not enough.
 
-| termine | significato |
+| term | meaning |
 |---|---|
-| **Albero uniforme** | l'unico tipo di nodo prodotto dal parser, `Node(head, args)`; è anche ciò che il kernel esegue |
-| **Ambiente** | l'insieme dei legami di nomi a valori visibile in un punto del programma |
-| **Backtracking** | il motore logico torna sui legami e prova la clausola successiva |
-| **Budget** | limite di passi eseguibili; esaurito produce `Err(:budget)` |
-| **Clausola** | un `fact` o una `rule` della knowledge base |
-| **Chiusura** | funzione che cattura l'ambiente in cui è stata creata |
-| **Dispatch** | scelta del metodo in base ai **tipi** degli argomenti |
-| **Effetto** | capacità dichiarata di una funzione: `io`, `state` |
-| **Err** | l'errore come dato: `kind`, `msg`, `data` |
-| **Goal** | una domanda alla knowledge base: predicato, congiunzione, disgiunzione, unificazione |
-| **Knowledge base** | l'insieme dei fatti e delle regole |
-| **Macro** | una funzione che riceve e restituisce codice |
-| **Occurs-check** | la regola che impedisce a `?x` di unificarsi con un termine che contiene `?x` |
-| **Porta (di Byrd)** | uno dei quattro eventi `:call`, `:exit`, `:redo`, `:fail` che descrivono un passo della ricerca logica (cap. 14) |
-| **Precedenza** | l'ordine in cui gli operatori si raggruppano (12 livelli in Full, 10 in Core) |
-| **Profilo** | un sottoinsieme normativo dello standard: Core o Full |
-| **Scope lessicale** | un nome è visibile dove è stato legato e all'interno, mai all'esterno |
-| **Soluzione** | una `Solution`: i legami prodotti da un goal risolto |
-| **Standardizzazione a parte** | le variabili di una clausola vengono rinominate a ogni uso |
-| **Termine** | un dato della logica: costante, variabile logica o forma composta, non valutata finché non serve |
-| **Tracciato** | il valore `Traced(result, trace)` restituito da `with trace` o `solve … trace` |
-| **Unificazione** | l'uguaglianza logica: due termini si rendono identici legando le variabili |
-| **Valori di prima classe** | funzioni e operatori usabili come qualsiasi altro valore |
+| **Uniform tree** | the only node type produced by the parser, `Node(head, args)`; it's also what the kernel does |
+| **Environment** | the set of links between names and values ​​visible at a point in the program |
+| **Backtracking** | the logic engine goes back to the bonds and tries the next clause |
+| **Budget** | limit of executable steps; exhausted produces `Err(:budget)` |
+| **Clause** | a knowledge base `fact` or `rule` |
+| **Closing** | function that captures the environment in which it was created |
+| **Dispatch** | choice of method based on the **types** of the arguments |
+| **Effect** | declared capability of a function: `i`, `state` |
+| **Err** | the error as given: `kind`, `msg`, `data` |
+| **Goal** | a question to the knowledge base: predicate, conjunction, disjunction, unification |
+| **Knowledge base** | the set of facts and rules |
+| **Macros** | a function that receives and returns code |
+| **Occurs-check** | the rule that prevents `?x` from merging with a term containing `?x` |
+| **Door (Byrd)** | one of the four events `:call`, `:exit`, `:redo`, `:fail` that describe a logical search step (chap. 14) |
+| **Precedence** | the order in which the operators are grouped (12 levels in Full, 10 in Core) |
+| **Profile** | a regulatory subset of the standard: Core or Full |
+| **Lexical Scope** | a name is visible where it was linked and on the inside, never on the outside |
+| **Solution** | a `Solution`: the bonds produced by a solved goal |
+| **Standardization aside** | the variables of a clause are renamed each time | is used
+| **Term** | a logical data: constant, logical variable or composite form, not evaluated until needed |
+| **Track** | the `Traced(result, trace)` value returned by `with trace` or `solve … trace` |
+| **Unification** | logical equality: two terms become identical by linking the variables |
+| **First class values** | functions and operators that can be used like any other value |
 
 ---
 
 <a id="cap-29"></a>
 
-## 29. Cosa gira oggi
+## 29. What's going on today
 
-Questa sezione non fa parte del linguaggio: è lo stato delle implementazioni, utile per orientarsi
-prima di scrivere codice. Serve a rispondere a una domanda che un manuale rischia di lasciare
-implicita: quello che hai appena letto è **definito** dallo standard, ma che cosa puoi **eseguire**
-oggi? Le due cose non coincidono, e confonderle porta a due errori opposti: credere che un esempio
-Full non funzioni perché è sbagliato, o credere che un programma Core funzioni su ogni runtime.
+This section is not part of the language: it is the status of the implementations, useful for orientation
+before writing code. It serves to answer a question that a manual risks leaving
+implicit: what you just read is **defined** by the standard, but what can you **execute**
+today? The two things do not coincide, and confusing them leads to two opposite errors: believing that an example
+Full doesn't work because it's wrong, or believing that a Core program works on every runtime.
 
-| profilo | stato |
+| profile | status |
 |---|---|
-| **Triad-Core** | **eseguibile**: interprete di riferimento JavaScript `seed/dev/triad_core.cjs` (37/37 casi Core) e, in parte, il seed Windows `seed/windows-x86_64/seed.exe` |
-| **Triad-Full** | **non eseguibile**: struct, dispatch, logica, macro, contratti, budget, tracce, effetti, destrutturazione, `for`, `try`, `Float` sono specifica; nella conformance Full passa solo `errore` |
+| **Triad-Core** | **executable**: JavaScript reference interpreter `seed/dev/triad_core.cjs` (37/37 Core cases) and, in part, the Windows seed `seed/windows-x86_64/seed.exe` |
+| **Triad-Full** | **not executable**: struct, dispatch, logic, macro, contracts, budget, traces, effects, destructuring, `for`, `try`, `Float` are specific; in Full conformance only `error` |
 
-Il profilo Full non è «quasi pronto»: è definito per intero nello standard, e i suoi esempi hanno
-risultati attesi conservati dalla suite, ma nessuno dei runtime del repository lo esegue oggi. Quando
-nel libro vedi `**Output (golden Full):**`, quindi, leggi un valore atteso, non una verifica appena
-fatta. Sul versante Core la situazione è diversa: l'interprete JavaScript passa l'intera suite,
-mentre il seed Windows copre solo una parte dei casi — in particolare le liste restano parziali.
+The Full profile is not "almost ready": it is fully defined in the standard, and its examples have
+expected results preserved by the suite, but none of the repository runtimes run it today. When
+in the book you see `**Output (golden Full):**`, therefore, you read an expected value, not a verification just
+done. On the Core side the situation is different: the JavaScript interpreter passes the entire suite,
+while the Windows seed covers only a part of the cases — in particular the lists remain partial.
 
-Anche restando in Core, «eseguibile» non significa «identico ovunque»: esistono due runtime, e non
-coprono lo stesso sottoinsieme. La tabella elenca le differenze che contano per chi scrive codice
-destinato a girare su entrambi; leggerla prima di scegliere un costrutto evita di scoprire il
-problema solo quando il programma arriva sul seed.
+Even staying in Core, "executable" does not mean "identical everywhere": there are two runtimes, and not
+they cover the same subset. The table lists the differences that matter to code writers
+intended to run on both; reading it before choosing a construct avoids discovering the
+problem only when the program arrives on the seed.
 
-Differenze note fra i due runtime Core:
+Known differences between the two Core runtimes:
 
-| funzionalità | interprete JS | seed Windows |
+| functionality | JS interpreter | seed Windows |
 |---|---|---|
-| `return`, `break`, `continue` | sì | non elencati nel README del seed |
-| lambda | più parametri | **un solo parametro** |
-| chiusure | condivise | **per valore**, solo l'ultimo legame del frame |
-| `string(x)` | tutti i tipi | solo `Int` e `String` |
-| liste | eterogenee, `xs[i]`, `length`, `push!` | solo interi; costruzione, stampa, `push!` |
-| `get(xs, i)` | non esiste | funzione ausiliaria **non standard**, indici **da 0** |
-| `ARGS`, primitivi di bootstrap | sì | non elencati nel README del seed |
-| messaggi di errore | su stderr | solo exit code |
+| `return`, `break`, `continue` | yes | not listed in the seed README |
+| lambda | more parameters | **only one parameter** |
+| closures | shared | **by value**, only the last binding of the frame |
+| `string(x)` | all types | only `Int` and `String` |
+| lists | heterogeneous, `xs[i]`, `length`, `push!` | only integers; construction, press, `push!` |
+| `get(xs, i)` | does not exist | **non-standard** auxiliary function, indices **from 0** |
+| `ARGS`, bootstrap primitives | yes | not listed in the seed README |
+| error messages | on stderr | exit code only |
 
-Le righe più importanti sono le prime tre. Un `return` o un `break` che l'interprete JS esegue può
-non essere supportato dal seed; una lambda con due parametri funziona su uno e non sull'altro; una
-chiusura che aggiorna uno stato condiviso si comporta diversamente. Sono differenze di
-implementazione, non di standard: la semantica corretta è quella dell'interprete JS e della
-specifica, e il seed è il runtime più limitato. Se un programma deve girare su entrambi, scegli il
-sottoinsieme comune e non contare su ciò che una sola colonna dichiara.
+The most important lines are the first three. A `return` or a `break` that the JS interpreter executes can
+not be supported by the seed; a lambda with two parameters works on one and not the other; one
+closure that updates a shared state behaves differently. They are differences of
+implementation, not standard: the correct semantics are those of the JS interpreter and the
+specification, and the seed is the most limited runtime. If a program needs to run on both, choose the
+common subset and don't rely on what a single column declares.
 
-Regola pratica: **scrivi codice che rispetta `SPEC-CORE` e verificalo con l'interprete JS**; se deve
-girare anche sul seed, restringiti alle funzionalità elencate nella colonna di destra e verificalo
-su Windows.
+Rule of thumb: **write code that respects `SPEC-CORE` and test it with the JS interpreter**; if he must
+also turn on the seed, narrow down to the features listed in the right column and check it out
+on Windows.
 
-Due limiti noti che il lettore deve conoscere prima di scrivere codice:
+Two known limitations that the reader should be aware of before writing code:
 
-- **ogni a capo chiude l'istruzione**, anche dentro `( )`, `[ ]` e negli argomenti di una chiamata.
-  L'eccezione prevista da `SPEC §1` per Triad-Full (a capo dentro le parentesi, o subito dopo un
-  operatore binario) non è implementata nell'interprete di riferimento. Scrivi una istruzione per
-  riga;
-- **il seed Windows non implementa l'indicizzazione standard `xs[i]`**: lì c'è la funzione
-  ausiliaria non standard `get(xs, i)`, con indici **da 0**.
+- **each newline closes the statement**, even inside `( )`, `[ ]` and in the arguments of a call.
+  The exception provided by `SPEC §1` for Triad-Full (wrapped inside parentheses, or immediately after a
+binary operator) is not implemented in the reference interpreter. Write an instruction for
+  row;
+- **Windows seed does not implement standard `xs[i]` indexing**: the function is there
+  non-standard auxiliary `get(xs, i)`, with indices **from 0**.
 
-A questi due limiti va aggiunto un dettaglio di piattaforma: il seed Linux è allo stadio E0 e stampa
-solo un messaggio di prova, quindi per eseguire programmi su Linux oggi si usa l'interprete
-JavaScript (`node seed/dev/triad_core.cjs`). Il seed Windows è il runtime in codice macchina più
-completo, ma non è l'unico modo di eseguire Triad.
+To these two limits a platform detail must be added: the Linux seed is at the E0 stage and prints
+just a test message, so to run programs on Linux today you use the interpreter
+JavaScript (`node seed/dev/triad_core.cjs`). The Windows seed is the most machine code runtime
+complete, but it's not the only way to run Triad.
 
-Che cosa farne, in pratica: per studiare e per scrivere codice usa l'interprete JS; per verificare la
-portabilità verso il bootstrap prova sul seed; per gli esempi Full leggi e confronta con i golden,
-sapendo che nessun runtime li esegue ancora. Il manuale non promette ciò che il repository non sa
-fare, e questa sezione esiste per rendere esplicito il confine.
+What to do with it, in practice: to study and write code use the JS interpreter; to check the
+portability to the bootstrap test on the seed; for Full examples read and compare with the golden ones,
+knowing that no runtime executes them yet. The manual doesn't promise what the repository doesn't know
+do, and this section exists to make the boundary explicit.
 
 ---
 
 <a id="app-a"></a>
 
-# Appendice A — Influenze dichiarate
+# Appendix A — Claimed influences
 
-Triad nasce da idee di Julia, Prolog e Lisp, ma **non è un dialetto di nessuno dei tre**: la
-definizione del linguaggio è la specifica.
+Triad was born from ideas of Julia, Prolog and Lisp, but **is not a dialect of any of the three**: the
+definition of the language is the specification.
 
-Conoscere le influenze non è curiosità: se vieni da uno di questi linguaggi, sapere che cosa Triad
-ha ripreso e che cosa ha cambiato ti aiuta a non importare abitudini sbagliate. La tabella non è un
-elenco di parentele, è un avviso: le somiglianze sono di idea, non di comportamento.
+Knowing the influences is not curiosity: if you come from one of these languages, knowing what Triad
+has resumed and what has changed helps you not to import bad habits. The table is not a
+list of relatives, is a warning: the similarities are of idea, not of behavior.
 
-| da | idea ripresa |
+| from | idea resumed |
 |---|---|
-| Julia | blocchi `function … end`, `struct`, tipi con `::`, multiple dispatch, operatori-funzione, `if`/`for`/`while`/`let` |
-| Prolog | `fact`/`rule` come costrutti, unificazione con occurs-check, backtracking, `solve`, variabili logiche `?x` |
-| Lisp | codice come dato, albero uniforme, `:( … )`/`quote` con `$`, macro |
+| Julia | `function … end` blocks, `struct`, types with `::`, multiple dispatch, function-operators, `if`/`for`/`while`/`let` |
+| Prolog | `fact`/`rule` as constructs, unification with occurs-check, backtracking, `solve`, `?x` logical variables |
+| Lisp | code as given, uniform tree, `:( … )`/`quote` with `$`, macro |
 
-**Propri di Triad**, non presi in prestito: errori come dati, contratti, budget, tracce ed effetti
-dichiarati come parte del linguaggio, e l'integrazione dei tre modelli in una sintassi a blocchi.
+**Own by Triad**, not borrowed: errors such as data, contracts, budgets, tracks and effects
+declared as part of the language, and integrating the three patterns into a block syntax.
 
 ---
 
 <a id="app-b"></a>
 
-# Appendice B — Dove guardare
+# Appendix B — Where to look
 
-Questa appendice elenca dove approfondire. Sono materiali **facoltativi**: il manuale è
-autosufficiente, e questi rimandi servono a chi vuole risalire alla fonte normativa, controllare un
-caso limite o vedere il codice del progetto. Il percorso di studio per capitoli e la visita al
-codice sono un complemento, non un prerequisito.
+This appendix lists where to learn more. These are **optional** materials: the manual is
+self-sufficient, and these references are useful to those who want to trace the regulatory source, check a
+corner case or see project code. The study path by chapters and the visit to
+code are a complement, not a prerequisite.
 
-| vuoi | leggi |
+| do you want | read |
 |---|---|
-| la definizione normativa completa | [`SPEC.md`](SPEC.md) |
-| il sottoinsieme di bootstrap | [`SPEC-CORE.md`](SPEC-CORE.md) |
-| il percorso di studio per capitoli e il codice del progetto | [`TUTORIAL.md`](../tutorial/TUTORIAL.md) |
-| gli esempi completi con output | `examples/` |
-| il contratto eseguibile, con i golden | [`conformance/`](conformance/README.md) |
-| lo stato del bootstrap | [`STATUS.md`](STATUS.md) · [`BOOTSTRAP.md`](BOOTSTRAP.md) |
-| il piano di lavoro | [`plan.md`](plan.md) · [`TASK.md`](TASK.md) |
-| gli strumenti per gli editor | [`editors/`](editors/README.md) |
-| la licenza | [`LICENSE`](LICENSE) — MIT |
+| the complete regulatory definition | [`SPEC.md`](SPEC.md) |
+| the bootstrap subset | [`SPEC-CORE.md`](SPEC-CORE.md) |
+| the study path by chapters and the project code | [`TUTORIAL.md`](../tutorial/TUTORIAL.md) |
+| the complete examples with output | `examples/` |
+| the executable contract, with the golden | [`conformance/`](conformance/README.md) |
+| the state of the bootstrap | [`STATUS.md`](STATUS.md) · [`BOOTSTRAP.md`](BOOTSTRAP.md) |
+| the work plan | [`plan.md`](plan.md) · [`TASK.md`](TASK.md) |
+| tools for editors | [`editors/`](editors/README.md) |
+| the license | [`LICENSE`](LICENSE) — MIT |
 
 ---
 
-*Manuale scritto per lo standard Triad `0.2.0`. Le sezioni normative sono in [`SPEC.md`](SPEC.md) e
-[`SPEC-CORE.md`](SPEC-CORE.md); in caso di divergenza, prevale la specifica.*
+*Manual written for the Triad `0.2.0` standard. The regulatory sections are in [`SPEC.md`](SPEC.md) and
+[`SPEC-CORE.md`](SPEC-CORE.md); in case of divergence, the specification prevails.*

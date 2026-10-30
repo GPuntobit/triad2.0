@@ -2,7 +2,7 @@
 # triad-cli — launcher POSIX della CLI di sviluppo (richiede Node.js >= 18).
 # Uso: triad-cli <comando> [opzioni]   (es. triad-cli status)
 set -e
-# Risoluzione del path reale dello script (segue i symlink): il launcher può
+# Resolution of the real path of the script (follows symlinks): the launcher can
 # essere installato come link simbolico in ~/.local/bin, quindi dirname $0
 # da solo non basta.
 self="$0"

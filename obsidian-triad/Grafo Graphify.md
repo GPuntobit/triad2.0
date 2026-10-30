@@ -1,51 +1,43 @@
-# Grafo Graphify
-
-## Snapshot
-
-- Repository: [GPuntobit/triad2.0](https://github.com/GPuntobit/triad2.0), ramo `main`.
-- Commit indicizzato: `aa1841bf27f50f787964bc8dacb1f4dbec4c4d45`.
-- Generato in locale con `graphify update .` (estrazione AST, nessun LLM): 26 ottobre 2026.
-- Statistiche: **1245 nodi**, **2272 relazioni**, **75 comunità**, **101 file** rappresentati.
-- Relazioni per tipo: `calls` 901, `contains` 857, `defines` 252, `references` 105, `imports` 77, `imports_from` 73, `inherits` 4, `dynamic_import` 2, `declares` 1.
-
-Artefatti dell’esportazione, salvati nel vault:
-
-- [[graphify/GRAPH_REPORT|GRAPH_REPORT]] — report di Graphify (comunità, hub, freschezza del grafo).
-- [Grafo interattivo `graph.html`](<./graphify/graph.html>) — da aprire nel browser.
-
-Per rigenerare: `graphify update .` dalla radice del repository, poi copiare `graphify-out/GRAPH_REPORT.md` e `graphify-out/graph.html` in `obsidian-triad/graphify/`.
-
-## Tutti i file nel grafo
-
-Elenco completo dei file presenti in `graph.json`, con il numero di nodi e di relazioni che hanno origine in ciascun file. Le pagine di dettaglio esistenti sono collegate nell’ultima colonna.
-
-| File sorgente | Area | Nodi | Relazioni | Pagina |
+# Graphify graph
+## Snapshots
+- Repository: [GPuntobit/triad2.0](https://github.com/GPuntobit/triad2.0), `main` branch.
+- Indexed commit: `aa1841bf27f50f787964bc8dacb1f4dbec4c4d45`.
+- Generated locally with `graphify update.` (AST extraction, no LLM): October 26, 2026.
+- Statistics: **1245 nodes**, **2272 relationships**, **75 communities**, **101 files** represented.
+- Relationships by type: `calls` 901, `contains` 857, `defines` 252, `references` 105, `imports` 77, `imports_from` 73, `inherits` 4, `dynamic_import` 2, `declares` 1.
+Export artifacts, saved in the vault:
+- [[graphify/GRAPH_REPORT|GRAPH_REPORT]] — Graphify report (community, hub, graph freshness).
+- [Interactive graph `graph.html`](<./graphify/graph.html>) — opens in browser.
+To regenerate: `graphify update .` from the repository root, then copy `graphify-out/GRAPH_REPORT.md` and `graphify-out/graph.html` to `obsidian-triad/graphify/`.
+## All files in the graph
+Complete list of files in `graph.json`, with the number of nodes and relationships that originate in each file. Existing detail pages are linked in the last column.
+| Source File | Area | Nodes | Relationships | Page |
 |---|---|---:|---:|---|
-| [`AGENTS.md`](<../AGENTS.md>) | Radice | 3 | 2 |  |
-| [`BOOTSTRAP.md`](<../BOOTSTRAP.md>) | Radice | 13 | 13 |  |
-| [`CHANGELOG.md`](<../CHANGELOG.md>) | Radice | 5 | 5 |  |
-| [`HANDOFF-CODEX.md`](<../HANDOFF-CODEX.md>) | Radice | 9 | 8 |  |
-| [`HANDOFF-HERMES.md`](<../HANDOFF-HERMES.md>) | Radice | 15 | 14 |  |
-| [`HANDOFF-KILO.md`](<../HANDOFF-KILO.md>) | Radice | 9 | 8 |  |
-| [`HANDOFF-QODER.md`](<../HANDOFF-QODER.md>) | Radice | 9 | 8 |  |
-| [`HANDOFF-QWEN.md`](<../HANDOFF-QWEN.md>) | Radice | 9 | 8 |  |
-| [`PROMPT_JEV.md`](<../PROMPT_JEV.md>) | Radice | 20 | 19 |  |
-| [`README.md`](<../README.md>) | Radice | 14 | 19 |  |
-| [`SPEC-CORE.md`](<../SPEC-CORE.md>) | Radice | 14 | 13 |  |
-| [`SPEC.md`](<../SPEC.md>) | Radice | 25 | 24 |  |
-| [`STATUS.md`](<../STATUS.md>) | Radice | 15 | 14 |  |
-| [`TASK.md`](<../TASK.md>) | Radice | 39 | 38 |  |
-| [`TUTORIAL.md`](<../TUTORIAL.md>) | Radice | 58 | 60 |  |
-| [`_probe.jl`](<../_probe.jl>) | Radice | 30 | 62 |  |
-| [`_probe2.jl`](<../_probe2.jl>) | Radice | 2 | 1 |  |
-| [`_probe3.jl`](<../_probe3.jl>) | Radice | 2 | 1 |  |
-| [`_qc.jl`](<../_qc.jl>) | Radice | 2 | 1 |  |
-| [`_smoke.jl`](<../_smoke.jl>) | Radice | 1 | 0 |  |
-| [`opencode.json`](<../opencode.json>) | Radice | 7 | 6 |  |
-| [`plan.md`](<../plan.md>) | Radice | 13 | 12 |  |
-| [`syntax.jl`](<../syntax.jl>) | Radice | 45 | 201 |  |
-| [`test_parser.ps1`](<../test_parser.ps1>) | Radice | 1 | 0 |  |
-| [`triad.jl`](<../triad.jl>) | Radice | 128 | 463 | [[File - triad.jl]] |
+| [`AGENTS.md`](<../AGENTS.md>) | Root | 3 | 2 |  |
+| [`BOOTSTRAP.md`](<../BOOTSTRAP.md>) | Root | 13 | 13 |  |
+| [`CHANGELOG.md`](<../CHANGELOG.md>) | Root | 5 | 5 |  |
+| [`HANDOFF-CODEX.md`](<../HANDOFF-CODEX.md>) | Root | 9 | 8 |  |
+| [`HANDOFF-HERMES.md`](<../HANDOFF-HERMES.md>) | Root | 15 | 14 |  |
+| [`HANDOFF-KILO.md`](<../HANDOFF-KILO.md>) | Root | 9 | 8 |  |
+| [`HANDOFF-QODER.md`](<../HANDOFF-QODER.md>) | Root | 9 | 8 |  |
+| [`HANDOFF-QWEN.md`](<../HANDOFF-QWEN.md>) | Root | 9 | 8 |  |
+| [`PROMPT_JEV.md`](<../PROMPT_JEV.md>) | Root | 20 | 19 |  |
+| [`README.md`](<../README.md>) | Root | 14 | 19 |  |
+| [`SPEC-CORE.md`](<../SPEC-CORE.md>) | Root | 14 | 13 |  |
+| [`SPEC.md`](<../SPEC.md>) | Root | 25 | 24 |  |
+| [`STATUS.md`](<../STATUS.md>) | Root | 15 | 14 |  |
+| [`TASK.md`](<../TASK.md>) | Root | 39 | 38 |  |
+| [`TUTORIAL.md`](<../tutorial/TUTORIAL.md>) | Root | 58 | 60 |  |
+| [`_probe.jl`](<../_probe.jl>) | Root | 30 | 62 |  |
+| [`_probe2.jl`](<../_probe2.jl>) | Root | 2 | 1 |  |
+| [`_probe3.jl`](<../_probe3.jl>) | Root | 2 | 1 |  |
+| [`_qc.jl`](<../_qc.jl>) | Root | 2 | 1 |  |
+| [`_smoke.jl`](<../_smoke.jl>) | Root | 1 | 0 |  |
+| [`opencode.json`](<../opencode.json>) | Root | 7 | 6 |  |
+| [`plan.md`](<../plan.md>) | Root | 13 | 12 |  |
+| [`syntax.jl`](<../syntax.jl>) | Root | 45 | 201 |  |
+| [`test_parser.ps1`](<../test_parser.ps1>) | Root | 1 | 0 |  |
+| [`triad.jl`](<../triad.jl>) | Root | 128 | 463 | [[File - triad.jl]] |
 | [`.github/copilot-instructions.md`](<../.github/copilot-instructions.md>) | .github/ | 2 | 1 |  |
 | [`.github/workflows/ci.yml`](<../.github/workflows/ci.yml>) | .github/ | 26 | 31 |  |
 | [`.kilo/agents/data.md`](<../.kilo/agents/data.md>) | .kilo/ | 1 | 0 |  |
@@ -90,7 +82,7 @@ Elenco completo dei file presenti in `graph.json`, con il numero di nodi e di re
 | [`ai/tasks/01_somma/task.md`](<../ai/tasks/01_somma/task.md>) | ai/ | 2 | 1 |  |
 | [`ai/tasks/02_fattoriale/task.md`](<../ai/tasks/02_fattoriale/task.md>) | ai/ | 2 | 1 |  |
 | [`ai/tasks/03_fibonacci/task.md`](<../ai/tasks/03_fibonacci/task.md>) | ai/ | 2 | 1 |  |
-| [`ai/tasks/04_stringhe/task.md`](<../ai/tasks/04_stringhe/task.md>) | ai/ | 2 | 1 |  |
+| [`ai/tasks/04_strings/task.md`](<../ai/tasks/04_strings/task.md>) | ai/ | 2 | 1 |  |
 | [`ai/tasks/05_chiusure/task.md`](<../ai/tasks/05_chiusure/task.md>) | ai/ | 2 | 1 |  |
 | [`ai/verify.jl`](<../ai/verify.jl>) | ai/ | 6 | 8 | [[File - ai verify.jl]] |
 | [`bin/build_standalone.jl`](<../bin/build_standalone.jl>) | bin/ | 3 | 2 |  |
@@ -98,8 +90,8 @@ Elenco completo dei file presenti in `graph.json`, con il numero di nodi e di re
 | [`conformance/README.md`](<../conformance/README.md>) | conformance/ | 6 | 6 |  |
 | [`conformance/core/README.md`](<../conformance/core/README.md>) | conformance/ | 4 | 5 |  |
 | [`conformance/run.jl`](<../conformance/run.jl>) | conformance/ | 6 | 7 |  |
-| [`docs/confronto-linguaggi.md`](<../docs/confronto-linguaggi.md>) | docs/ | 11 | 12 |  |
-| [`docs/estrazione-e0.md`](<../docs/estrazione-e0.md>) | docs/ | 8 | 8 |  |
+| [`docs/comparison-languages.md`](<../docs/comparison-languages.md>) | docs/ | 11 | 12 |  |
+| [`docs/extraction-e0.md`](<../docs/extraction-e0.md>) | docs/ | 8 | 8 |  |
 | [`editors/README.md`](<../editors/README.md>) | editors/ | 7 | 6 |  |
 | [`editors/linguist/README.md`](<../editors/linguist/README.md>) | editors/ | 5 | 4 |  |
 | [`editors/linguist/languages.yml`](<../editors/linguist/languages.yml>) | editors/ | 9 | 8 |  |
@@ -112,7 +104,7 @@ Elenco completo dei file presenti in `graph.json`, con il numero di nodi e di re
 | [`obsidian-triad/File - ai verify.jl.md`](<./File - ai verify.jl.md>) | obsidian-triad/ | 5 | 5 |  |
 | [`obsidian-triad/File - triad.jl.md`](<./File - triad.jl.md>) | obsidian-triad/ | 5 | 5 |  |
 | [`obsidian-triad/Grafo Graphify.md`](<./Grafo Graphify.md>) | obsidian-triad/ | 5 | 5 |  |
-| [`obsidian-triad/Indice.md`](<./Indice.md>) | obsidian-triad/ | 5 | 9 |  |
+| [`obsidian-triad/Index.md`](<./Index.md>) | obsidian-triad/ | 5 | 9 |  |
 | [`obsidian-triad/wiki/Welcome to Karpathy LLM Wiki.md`](<./wiki/Welcome to Karpathy LLM Wiki.md>) | obsidian-triad/ | 10 | 9 |  |
 | [`seed/README.md`](<../seed/README.md>) | seed/ | 6 | 8 |  |
 | [`seed/dev/README.md`](<../seed/dev/README.md>) | seed/ | 6 | 5 |  |
@@ -122,15 +114,10 @@ Elenco completo dei file presenti in `graph.json`, con il numero di nodi e di re
 | [`seed/windows-x86_64/README.md`](<../seed/windows-x86_64/README.md>) | seed/ | 9 | 8 |  |
 | [`test/oracles/oracle_tests.jl`](<../test/oracles/oracle_tests.jl>) | test/ | 6 | 5 |  |
 | [`test/runtests.jl`](<../test/runtests.jl>) | test/ | 10 | 11 |  |
-
-Moduli esterni referenziati (senza file nel repository): `node:child_process`, `node:util`.
-
-## Copertura
-
-- A differenza dello snapshot precedente (ricerca semantica via MCP, nessun elenco enumerabile), `graph.json` permette di elencare **tutti** i file indicizzati: la tabella sopra è completa.
-- Graphify ha saltato 226 file senza estensione supportata (soprattutto `.td`, `.out`, `.code`): i sorgenti Triad `.td` non sono quindi rappresentati nel grafo.
-- I bundle dei plugin in `.obsidian/plugins/` non sono inclusi nell’estrazione locale; le pagine [[File - KarpathyWiki main.js]] e [[File - Templater main.js]] restano dallo snapshot precedente.
-
-## Snapshot precedente
-
-Indicizzazione MCP del 25 ottobre 2026 sul commit `929a9269ef08d07088d65217f269c5aeafabd62a`: 3.197 nodi, 7.794 relazioni, 206 comunità. I conteggi non sono confrontabili con quelli attuali (estrattore diverso, bundle dei plugin inclusi).
+Referenced external modules (no files in repository): `node:child_process`, `node:util`.
+## Coverage
+- Unlike the previous snapshot (semantic search via MCP, no enumerable list), `graph.json` allows you to list **all** indexed files: the table above is complete.
+- Graphify skipped 226 files without supported extension (mostly `.td`, `.out`, `.code`): Triad `.td` sources are therefore not represented in the graph.
+- Plugin bundles in `.obsidian/plugins/` are not included in the local extraction; the [[File - KarpathyWiki main.js]] and [[File - Templater main.js]] pages remain from the previous snapshot.
+## Previous snapshot
+October 25, 2026 MCP indexing on commit `929a9269ef08d07088d65217f269c5aeafabd62a`: 3,197 nodes, 7,794 relationships, 206 communities. Counts are not comparable with current ones (different extractor, plugin bundle included).

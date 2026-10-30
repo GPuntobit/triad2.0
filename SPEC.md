@@ -90,9 +90,8 @@ macrodef   = "macro" NAME "(" [ NAME { "," NAME } ] ")" block "end" ;
 
 fact       = "fact" term ;
 rule       = "rule" term [ ":-" goal { "," goal } ] ;
-             (* la virgola può stare anche a inizio riga, quando il corpo va a capo *)
-
-expr       = (* Pratt: precedenze dalla più bassa alla più alta *)
+(* the comma can also be at the beginning of the line, when the body goes to a new line *)
+expr       = (* Pratt: precedences from lowest to highest *)
   1  a = b   a += b   a -= b   a *= b                 (destra)
   2  x -> e   (a, b) -> e   c ? a : b                 (destra)
   3  ||
@@ -199,7 +198,7 @@ converted against `T` (`y::Float = 1.0; y = 2` → `2.0`; `x::Int = 1; x = 0.5` 
 ## 5. Functions and multiple dispatch
 ```julia
 area(n::Number) = :number
-area(n::Int)    = :int            # più specifico: vince per gli Int
+area(n::Int)    = :int            # more specific: wins for Ints
 area(p::Point)  = :point
 function +(a::Point, b::Point)    # gli operatori si estendono come funzioni
     Point(a.x + b.x, a.y + b.y)
@@ -450,7 +449,7 @@ triad -                          # legge lo script da stdin
 triad> ?- ancestor(:tom, ?d)
 ?d = :bob ;
 ?d = :liz.
-triad> mother(?m, ?c)                # un goal su un predicato della KB è già una query
+triad> mother(?m, ?c)                # a goal on a KB predicate is already a query
 ?m = :pat,
 ?c = :jim.
 triad> parent(:jim, ?x)

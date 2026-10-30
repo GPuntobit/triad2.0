@@ -1,5 +1,5 @@
 'use strict';
-// fs è usato solo nella modalità CLI (Node); nel browser lo shim `fs` evita
+// fs is used only in CLI mode (Node); in the browser the `fs` shim avoids
 // che il require fallisca e non viene mai invocato.
 const fs = (typeof require === 'function') ? require('fs') : { readFileSync() { throw new Error('fs non disponibile'); } };
 // ---------- Value helpers ----------
