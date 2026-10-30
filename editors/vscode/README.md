@@ -1,9 +1,6 @@
-# Triad per VS Code
-
-Estensione locale di sintassi per il linguaggio **Triad** (`source.triad`).
-
-## Installazione (sviluppo)
-
+# Triad for VS Code
+Local syntax extension for the **Triad** language (`source.triad`).
+## Installation (development)
 ```sh
 # dentro editors/vscode
 npm install -g @vscode/vsce   # una volta
@@ -11,19 +8,15 @@ vsce package                  # crea triad-0.2.0.vsix
 code --install-extension triad-0.2.0.vsix
 ```
 
-In alternativa, copia questa cartella in `~/.vscode/extensions/triad` (o
-`%USERPROFILE%\.vscode\extensions\triad`) e riavvia VS Code.
-
-## Cosa copre
-
-- estensioni `.triad` (canonica) e `.td` (storica);
-- commenti `#` e `#= ... =#`, shebang, stringhe con escape e interpolazione `$x`/`$(...)`;
-- variabili logiche `?x`, simboli `:nome`, macro `@nome`, parole chiave e opzioni di
+Alternatively, copy this folder to `~/.vscode/extensions/triad` (or
+`%USERPROFILE%\.vscode\extensions\triad`) and restart VS Code.
+## What it covers
+- `.triad` (canonical) and `.td` (historical) extensions;
+- comments `#` and `#= ... =#`, shebang, escaped strings and interpolation `$x`/`$(...)`;
+- `?x` logical variables, `:name` symbols, `@name` macros, keywords and options
   `solve` (`limit`, `depth`, `steps`, `trace`);
-- tipi builtin e nomi di tipo (iniziale maiuscola), call e definizioni di funzione;
-- operatori, `:-` delle regole, parentesi e indentazione su `end`.
-
-## Nota su `.td`
-
-`.td` è anche l'estensione di **LLVM TableGen**; se hai installato un'estensione TableGen,
-VS Code può chiedere con quale linguaggio associare i `.td`. Per nuovi file usa `.triad`.
+- builtin types and type names (capital letters), calls and function definitions;
+- operators, `:-` of rules, brackets and indentation on `end`.
+## Note about `.td`
+`.td` is also the extension of **LLVM TableGen**; if you have installed a TableGen extension,
+VS Code may ask which language to associate the `.td` with. For new files use `.triad`.

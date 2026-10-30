@@ -1,9 +1,9 @@
-# Voce pronta per github-linguist/linguist (lib/linguist/languages.yml).
-# Non è ancora parte di Linguist: va proposta con una PR.
+# Ready entry for github-linguist/linguist (lib/linguist/languages.yml).
+# It is not yet part of Linguist: it must be proposed with a PR.
 #
-# Nota: .td è già assegnata a TableGen (LLVM); per questo la voce usa .triad come
-# estensione canonica. Le heuristics di Linguist possono in futuro aggiungere .td solo
-# con un discriminatore affidabile: per ora non lo facciamo (evita falsi positivi).
+# Note: .td is already assigned to TableGen (LLVM); that's why the entry uses .triad as
+# canonical extension. Linguist heuristics may in the future append .td only
+# with a reliable discriminator: we don't do this for now (avoids false positives).
 Triad:
   type: programming
   color: "#2f6f9f"
@@ -13,4 +13,4 @@ Triad:
     - triad
   tm_scope: source.triad
   ace_mode: text
-  language_id: 0  # linguist assegna un id univoco nella PR
+  language_id: 0 # linguist assigns a unique id in the PR

@@ -93,6 +93,87 @@ function runCase(runtime, dir) {
   return { code, stdout, stderr: res.stderr || '' };
 }
 
+function isWithinDirectory(directory, target) {
+  const rel = path.relative(directory, target);
+  return rel === '' || (rel !== '..' && !rel.startsWith(`..${path.sep}`) && !path.isAbsolute(rel));
+}
+
+function assertSafeGoldenPath(caseRoot, name) {
+  const filePath = path.join(caseRoot, name);
+  let info;
+  try {
+    info = fs.lstatSync(filePath);
+  } catch (error) {
+    if (error.code === 'ENOENT') return;
+    throw error;
+  }
+  if (info.isSymbolicLink() || !info.isFile()) {
+    throw new Error(`Rifiutato golden non regolare: ${filePath}`);
+  }
+  const resolved = fs.realpathSync(filePath);
+  if (!isWithinDirectory(caseRoot, resolved)) {
+    throw new Error(`Rifiutato golden fuori dalla directory del caso: ${filePath}`);
+  }
+}
+
+function openGoldenForWrite(caseRoot, name) {
+  const filePath = path.join(caseRoot, name);
+  let existing;
+  try {
+    existing = fs.lstatSync(filePath);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+
+  if (existing && (existing.isSymbolicLink() || !existing.isFile())) {
+    throw new Error(`Rifiutato golden non regolare: ${filePath}`);
+  }
+  const flags = fs.constants.O_WRONLY |
+    (fs.constants.O_NOFOLLOW || 0) |
+    (existing ? 0 : fs.constants.O_CREAT | fs.constants.O_EXCL);
+  const fd = fs.openSync(filePath, flags, 0o666);
+  try {
+    const opened = fs.fstatSync(fd);
+    const resolved = fs.realpathSync(filePath);
+    if (!isWithinDirectory(caseRoot, resolved)) {
+      throw new Error(`Rifiutato golden fuori dalla directory del caso: ${filePath}`);
+    }
+    const current = fs.statSync(resolved);
+    if (!opened.isFile() || !opened.ino || !current.ino ||
+        opened.dev !== current.dev || opened.ino !== current.ino ||
+        (existing && (opened.dev !== existing.dev || opened.ino !== existing.ino))) {
+      throw new Error(`Golden cambiato durante l'apertura: ${filePath}`);
+    }
+    return { fd, filePath };
+  } catch (error) {
+    fs.closeSync(fd);
+    throw error;
+  }
+}
+
+function writeGoldens(dir, stdout, code) {
+  const caseRoot = fs.realpathSync(dir);
+  const entries = [
+    ['expected.out', stdout],
+    ['expected.golden', stdout],
+    ['expected.code', String(code)],
+  ];
+  for (const [name] of entries) assertSafeGoldenPath(caseRoot, name);
+
+  const opened = [];
+  try {
+    for (const [name, content] of entries) {
+      opened.push({ ...openGoldenForWrite(caseRoot, name), content });
+    }
+    for (const { fd, content } of opened) {
+      fs.ftruncateSync(fd, 0);
+      fs.writeFileSync(fd, content, 'utf8');
+    }
+  } finally {
+    for (const { fd } of opened) fs.closeSync(fd);
+  }
+}
+
 function main() {
   const { cases, update, skip } = parseArgs(process.argv.slice(2));
   const runtime = findRuntime();
@@ -110,9 +191,7 @@ function main() {
     const name = path.basename(dir);
     const { code, stdout } = runCase(runtime, dir);
     if (update) {
-      fs.writeFileSync(path.join(dir, 'expected.out'), stdout, 'utf8');
-      fs.writeFileSync(path.join(dir, 'expected.golden'), stdout, 'utf8');
-      fs.writeFileSync(path.join(dir, 'expected.code'), String(code), 'utf8');
+      writeGoldens(dir, stdout, code);
       console.log('aggiornato  ' + name);
       continue;
     }

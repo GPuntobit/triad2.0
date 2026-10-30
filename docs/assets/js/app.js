@@ -1,4 +1,5 @@
-﻿const RAW_BASE = 'https://raw.githubusercontent.com/GPuntobit/triad2.0/main/';
+/* global DOMPurify, marked */
+const RAW_BASE = 'https://raw.githubusercontent.com/GPuntobit/triad2.0/main/';
 
 const NAV = [
   { href: 'index.html', label: 'Home' },
@@ -8,6 +9,7 @@ const NAV = [
   { href: 'pages/tutorial.html', label: 'Tutorial' },
   { href: 'pages/apprendimento.html', label: 'Apprendimento' },
   { href: 'pages/examples.html', label: 'Esempi' },
+  { href: 'pages/playground.html', label: 'Playground' },
   { href: 'pages/conformance.html', label: 'Conformance' },
   { href: 'pages/bootstrap.html', label: 'Bootstrap' },
   { href: 'pages/editors.html', label: 'Editor' },
@@ -21,7 +23,7 @@ function renderHeader(active) {
 <header class="site-header">
   <div class="container nav">
     <a class="brand" href="index.html"><span class="logo">T</span> Triad 2.0</a>
-    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+    <button class="nav-toggle">☰</button>
     <nav class="nav-links">${links}</nav>
   </div>
 </header>`;
@@ -63,11 +65,19 @@ function renderFooter() {
 }
 
 function mount(active) {
-  const headerSlot = document.getElementById('site-header');
-  const footerSlot = document.getElementById('site-footer');
-  if (headerSlot) headerSlot.innerHTML = renderHeader(active);
-  if (footerSlot) footerSlot.innerHTML = renderFooter();
-  const prefix = /\/pages\/[^/]*$/.test(location.pathname) ? '../' : '';
+  const headerSlot = globalThis.document.getElementById('site-header');
+  const footerSlot = globalThis.document.getElementById('site-footer');
+  if (headerSlot) {
+    headerSlot.replaceChildren(DOMPurify.sanitize(renderHeader(active), { RETURN_DOM_FRAGMENT: true }));
+    const navToggle = headerSlot.querySelector('.nav-toggle');
+    if (navToggle) {
+      navToggle.addEventListener('click', () => {
+        headerSlot.querySelector('.nav-links').classList.toggle('open');
+      });
+    }
+  }
+  if (footerSlot) footerSlot.replaceChildren(DOMPurify.sanitize(renderFooter(), { RETURN_DOM_FRAGMENT: true }));
+  const prefix = /\/pages\/[^/]*$/.test(globalThis.location.pathname) ? '../' : '';
   if (prefix) [headerSlot, footerSlot].forEach(slot => slot && slot.querySelectorAll('a[href]').forEach(a => {
     const href = a.getAttribute('href');
     if (!/^([a-z]+:|#|\/)/i.test(href)) a.setAttribute('href', prefix + href);
@@ -75,14 +85,18 @@ function mount(active) {
 }
 
 async function loadMarkdown(targetId, file) {
-  const el = document.getElementById(targetId);
+  const el = globalThis.document.getElementById(targetId);
   if (!el) return;
   el.innerHTML = '<div class="doc-loading">Caricamento…</div>';
   try {
-    const res = await fetch(RAW_BASE + file);
+    const res = await globalThis.fetch(RAW_BASE + file);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const md = await res.text();
-    el.innerHTML = marked.parse(md);
+    const safeMarkdown = DOMPurify.sanitize(marked.parse(md), {
+      USE_PROFILES: { html: true },
+      RETURN_DOM_FRAGMENT: true
+    });
+    el.replaceChildren(safeMarkdown);
     el.querySelectorAll('a').forEach(a => {
       const href = a.getAttribute('href');
       if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('mailto:')) {
@@ -90,7 +104,7 @@ async function loadMarkdown(targetId, file) {
         a.target = '_blank';
       }
     });
-    const siteRoot = /\/pages\/[^/]*$/.test(location.pathname) ? '../' : '';
+    const siteRoot = /\/pages\/[^/]*$/.test(globalThis.location.pathname) ? '../' : '';
     const fileDir = file.includes('/') ? file.slice(0, file.lastIndexOf('/') + 1) : '';
     el.querySelectorAll('img[src]').forEach(img => {
       const src = img.getAttribute('src');
@@ -99,17 +113,20 @@ async function loadMarkdown(targetId, file) {
       img.src = path.startsWith('docs/') ? siteRoot + path.slice(5) : RAW_BASE + path;
     });
   } catch (e) {
-    el.innerHTML = '<div class="doc-loading">Impossibile caricare il documento: ' + e.message + '</div>';
+    const errorMessage = globalThis.document.createElement('div');
+    errorMessage.className = 'doc-loading';
+    errorMessage.textContent = 'Impossibile caricare il documento: ' + e.message;
+    el.replaceChildren(errorMessage);
   }
 }
 
 function initDocViewer() {
-  const params = new URLSearchParams(location.search);
+  const params = new globalThis.URLSearchParams(globalThis.location.search);
   const file = params.get('file');
   const title = params.get('title');
-  const t = document.getElementById('doc-title');
+  const t = globalThis.document.getElementById('doc-title');
   if (t && title) t.textContent = title;
   if (file) loadMarkdown('doc-content', file);
 }
 
-window.TriadSite = { mount, loadMarkdown, initDocViewer };
+globalThis.TriadSite = { mount, loadMarkdown, initDocViewer };

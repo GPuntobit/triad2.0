@@ -1,63 +1,49 @@
-# Triad-Core — sottoinsieme di bootstrap (standard 0.2.0)
-
-**Stato:** normativo, parte dello standard Triad 0.2.0 (profilo §16.1 di `SPEC.md`).
-Definisce il sottoinsieme di Triad che il seed in codice macchina (S0) deve saper eseguire e
-in cui è scritta l'implementazione completa self-hosted (S1). Ogni programma Triad-Core,
-**esclusi i primitivi di bootstrap** del §8, è anche un programma Triad valido e deve
-comportarsi allo stesso modo in un'implementazione Triad-Full.
-
-## 1. Scopo e criteri
-
-Triad-Core è scelto per due proprietà:
-
-1. **implementabile in codice macchina scritto a mano** (il seed S0): poche forme, pochi tipi,
-   nessuna macro, nessuna risoluzione logica, nessun dispatch;
-2. **sufficientemente espressivo** per scrivere in Triad-Core l'interprete di tutto Triad
-   (S1): valori dinamici, liste, stringhe, chiusure e ricorsione, più i primitivi di I/O e di
-   accesso ai caratteri necessari a leggere/analizzare il sorgente Triad.
-
-Regola: tutto ciò che in Triad-Full è zucchero sintattico o comodità (Prolog, macro, `quote`,
-struct, dispatch, contratti, budget, tracce, effetti, destrutturazione, `for`, `try`) **non**
-fa parte di Core: S1 lo implementa in Core e lo espone ai programmi Full.
-
-## 2. Lessico
-
-Incluso:
-
-| elemento | forma |
+# Triad-Core — bootstrap subset (standard 0.2.0)
+**Status:** Regulatory, part of the Triad 0.2.0 standard (profile §16.1 of `SPEC.md`).
+Defines the subset of Triad that the machine code seed (S0) must be able to execute e
+where the complete self-hosted implementation (S1) is written. Each Triad-Core program,
+**excluding bootstrap primitives** from §8, it is also a valid Triad program and must
+behave the same way in a Triad-Full implementation.
+## 1. Purpose and criteria
+Triad-Core is chosen for two properties:
+1. **implementable in handwritten machine code** (the S0 seed): few shapes, few types,
+   no macros, no logical resolution, no dispatch;
+2. **expressive enough** to write the interpreter of all Triad in Triad-Core
+   (S1): dynamic values, lists, strings, closures, and recursion, plus I/O and
+   access to the characters needed to read/analyze the Triad source.
+Rule: everything in Triad-Full is syntactic sugar or convenience (Prolog, macro, `quote`,
+struct, dispatch, contracts, budget, tracks, effects, destructuring, `for`, `try`) **not**
+it is part of Core: S1 implements it in Core and exposes it to Full programs.
+## 2. Vocabulary
+Included:
+| element | shape |
 |---|---|
-| identificatore | lettera o `_`, poi lettere/cifre/`_`; `!` finale ammesso |
-| intero | `42`, `1_000` (segno gestito dall'operatore unario) |
-| booleano | `true`, `false` |
+| identifier | letter or `_`, then letters/digits/`_`; final `!` allowed |
+| integer | `42`, `1_000` (sign handled by unary operator) |
+| boolean | `true`, `false` |
 | nothing | `nothing` |
-| stringa | `"..."` con escape `\n \t \" \\`; **nessuna** interpolazione `$` |
-| simbolo | `:` + nome o operatore (`:alice`, `:+`) |
-| commento | `#` fino a fine riga; `#= ... =#` |
-| separatore | a capo o `;` |
-| operatori | `+ - * % ^ == != < <= > >= && \|\| ! = += -= *= -> ?:` |
-
-Esclusi: i letterali `Float`, le variabili logiche `?x`, i caratteri (Triad non ne ha), le
-macro `@nome`, lo shebang viene comunque ignorato dal seed.
-
-## 3. Tipi e valori
-
-| tipo | valori |
+| string | `"..."` escaped `\n \t \" \\`; **no** interpolation `$` |
+| symbol | `:` + name or operator (`:alice`, `:+`) |
+| comment | `#` to end of line; `#= ... =#` |
+| separator | newline or `;` |
+| operators | `+ - * % ^ == != < <= > >= && \|\| ! = += -= *= -> ?:` |
+Excluded: `Float` literals, `?x` logical variables, characters (Triad has none),
+macro `@name`, the shebang is still ignored by the seed.
+## 3. Types and values
+| type | values ​​|
 |---|---|
-| `Int` | interi con segno a 64 bit, aritmetica con wrap (complemento a due) |
+| `Int` | 64-bit signed integers, wrapped arithmetic (two's complement) |
 | `Bool` | `true`, `false` |
-| `String` | sequenza di byte UTF-8 immutabile |
-| `Symbol` | `:nome`; due simboli sono uguali se hanno lo stesso nome |
-| `List` | lista eterogenea mutabile, indici da 1 |
-| `Function` | funzione nominata, lambda o chiusura |
+| `String` | immutable UTF-8 byte sequence |
+| `Symbol` | `:name`; two symbols are equal if they have the same name |
+| `List` | mutable heterogeneous list, indices of 1 |
+| `Function` | named function, lambda or closure |
 | `Nothing` | `nothing` |
-
-Non ci sono `Float`, struct utente, `Term`, `Solution`, `Err` come valori del linguaggio:
-S1 rappresenta questi concetti con i tipi Core (es. una struct come lista taggata, un errore
-come lista `[Err, kind, msg]`). `readfile`/`strbyte`/`strsub` (§8) sono primitivi di bootstrap,
-non tipi.
-
-## 4. Sintassi
-
+There are no `Float`, user struct, `Term`, `Solution`, `Err` as language values:
+S1 represents these concepts with Core types (e.g. a struct as a tagged list, an error
+as a list `[Err, kind, msg]`). `readfile`/`strbyte`/`strsub` (§8) are bootstrap primitives,
+not types.
+## 4. Syntax
 ```ebnf
 program  = { sep } { stmt sep { sep } } ;
 stmt     = funcdef | "return" [ expr ] | "break" | "continue" | expr ;
@@ -86,110 +72,90 @@ primary  = INT | STRING | SYMBOL | "true" | "false" | "nothing" | NAME
 block    = { stmt sep { sep } } ;                   (* fino a end/else/elseif *)
 ```
 
-`elseif` è incluso; `for`, `elif`, destrutturazione, `try`, `with`, `solve`, `quote`,
-`struct`, `macro` non lo sono.
-
-## 5. Semantica
-
-- Tutto è un'espressione; un blocco vale il valore dell'ultima istruzione (`nothing` se vuota).
-- **Scope lessicale:** `function`, lambda, `let` e `while` introducono ambienti; un nome è
-  visibile nell'ambiente in cui è legato e in quelli interni. Dentro una funzione
-  l'assegnamento lega nel frame locale (o in una chiusura interna); al top level i cicli
-  aggiornano i globali.
-- **Chiusure:** una lambda cattura l'ambiente in cui è creata; le variabili catturate sono
-  condivise (mutazioni visibili).
-- **Ricorsione:** le funzioni nominate sono visibili nel proprio corpo (ricorsione diretta).
-- **Condizioni:** solo `Bool`; niente truthiness. `&&`/`||` cortocircuitano.
-- **Uguaglianza:** numeri, stringhe e simboli per valore; liste elemento per elemento;
-  funzioni per identità.
-- **Indici:** da 1; fuori range è un errore di esecuzione (§9).
-- **Aritmetica:** `+ - * % ^` su `Int` con wrap a 64 bit; `%` è resto con segno del dividendo
-  (come `rem` in Julia). `/` non esiste in Core (S1 implementa la divisione razionale di
+`elseif` is included; `for`, `elif`, destructuring, `try`, `with`, `solve`, `quote`,
+`struct`, `macro` are not.
+## 5. Semantics
+- Everything is an expression; a block is worth the value of the last statement (`nothing` if empty).
+- **Lexical Scope:** `function`, lambda, `let` and `while` introduce environments; a name is
+  visible in the environment in which it is tied and in the internal ones. Inside a function
+  the assignment binds in the local frame (or in an internal closure); cycles at the top level
+  they update the globals.
+- **Closures:** a lambda captures the environment in which it is created; the captured variables are
+  shared (visible mutations).
+- **Recursion:** the named functions are visible in their body (direct recursion).
+- **Conditions:** `Bool` only; no truthiness. `&&`/`||` short circuit.
+- **Equality:** numbers, strings and symbols by value; element-by-element lists;
+  identity functions.
+- **Indexes:** from 1; out of range is an execution error (§9).
+- **Arithmetic:** `+ - * % ^` to `Int` with 64-bit wrap; `%` is remainder with dividend sign
+  (like `rem` in Julia). `/` does not exist in Core (S1 implements rational division of
   Triad-Full).
-- **Valori di ritorno:** `return e` termina la funzione; senza espressione restituisce
+- **Return values:** `return e` ends the function; without expression returns
   `nothing`.
-- **`break`/`continue`** agiscono sul `while` più interno.
-- **Formattazione di `println`/`print`:** concatenano gli argomenti senza separatori;
-  `Int` decimale, `Bool` `true`/`false`, `String` così com'è, `Symbol` senza `:` a livello
-  top-level, `List` come `[a, b]` con i simboli come `:a`, `Nothing` come `nothing`.
-
-## 6. Espressioni e istruzioni incluse
-
-- assegnamento semplice e `+= -= *=` (il lato sinistro è valutato una volta sola);
-- `if`/`elseif`/`else`, `while`, `let`, `begin`, ternario;
-- `function` nominata, forma breve `f(x) = e`, lambda `x -> e`, `function (x) … end`;
-- chiamata, indicizzazione di lista, `return`, `break`, `continue`;
-- commenti e separatori.
-
-## 7. Primitive del linguaggio (visibili anche a Triad-Full)
-
-| categoria | primitive |
+- **`break`/`continue`** act on the innermost `while`.
+- **Formatting of `println`/`print`:** concatenate arguments without separators;
+  `Int` decimal, `Bool` `true`/`false`, `String` as-is, `Symbol` without `:` level
+  top-level, `List` as `[a, b]` with symbols as `:a`, `Nothing` as `nothing`.
+## 6. Expressions and instructions included
+- simple assignment and `+= -= *=` (the left side is evaluated only once);
+- `if`/`elseif`/`else`, `while`, `let`, `begin`, ternary;
+- named `function`, short form `f(x) = e`, lambda `x -> e`, `function (x) … end`;
+- call, list indexing, `return`, `break`, `continue`;
+- comments and separators.
+## 7. Language primitives (also visible at Triad-Full)
+| category | primitives |
 |---|---|
-| aritmetica | `+ - * % ^`, unario `-` |
-| confronto | `== != < <= > >=` |
-| logica | `&& \|\| !` |
-| liste | `length`, `push!`, indicizzazione `xs[i]`, `[a, b]` |
-| stringhe | `*` (concatenazione), `length` |
-| conversioni | `Int("42")`, `string(x)`, `Symbol("nome")` |
+| arithmetic | `+ - * % ^`, unary `-` |
+| comparison | `== != < <= > >=` |
+| logic | `&& \|\| !` |
+| lists | `length`, `push!`, indexing `xs[i]`, `[a, b]` |
+| strings | `*` (concatenation), `length` |
+| conversions | `Int("42")`, `string(x)`, `Symbol("name")` |
 | I/O | `print`, `println` |
-| introspezione | `typeof` (nome del tipo come `Symbol`) |
-
-Anche `ARGS` è disponibile come lista di stringhe (gli argomenti dello script). Non ci sono
-`map`, `filter`, `reduce`, `sum`, `sort`, `div`, `mod`: S1 li implementa in Core.
-
-## 8. Primitivi di bootstrap (solo per l'implementazione self-hosted)
-
-Questi servono a S1 per leggere e analizzare il sorgente Triad; **non** fanno parte del
-linguaggio Triad-Full e non compaiono in `SPEC.md` §13:
-
-| primitiva | semantica |
+| introspection | `typeof` (type name like `Symbol`) |
+`ARGS` is also available as a list of strings (the script arguments). They aren't there
+`map`, `filter`, `reduce`, `sum`, `sort`, `div`, `mod`: S1 implements these in Core.
+## 8. Bootstrap primitives (for self-hosted deployment only)
+These are used by S1 to read and analyze the Triad source; They are **not** part of the
+Triad-Full language and do not appear in `SPEC.md` §13:
+| primitive | semantics |
 |---|---|
-| `readfile(path)` | restituisce il contenuto del file come `String`; errore di esecuzione se non leggibile |
-| `strlen(s)` | numero di byte della stringa |
-| `strbyte(s, i)` | byte (`Int`, 0–255) alla posizione 1-based |
-| `strsub(s, a, b)` | sottostringa dai byte `a` a `b` inclusi (1-based) |
-| `exit(n)` | termina il processo con codice `n` |
-
-Il seed deve comunque fornire `readfile` per caricare S1 stesso; `strlen`/`strbyte`/`strsub`
-sono richiesti solo quando S1 deve analizzare sorgente.
-
-## 9. Errori
-
-Core non ha `try`/`catch` né valori `Err`: un errore di esecuzione (variabile non definita,
-tipo sbagliato, indice fuori range, divisione per zero, file non leggibile) **termina il
-processo con exit code 1** e un messaggio diagnostico su stderr. S1, scritta in Core, usa
-valori espliciti (liste `[Err, kind, msg]`) per propagare gli errori dei programmi Full senza
-affidarsi a eccezioni del seed.
-
-## 10. Interfaccia a riga di comando
-
-Triad-Core usa la stessa interfaccia dello §14 di `SPEC.md`, limitatamente a:
-
+| `readfile(path)` | returns the contents of the file as `String`; execution error if not readable |
+| `strlen(s)` | number of bytes of string |
+| `strbyte(s, i)` | bytes (`Int`, 0–255) at position 1-based |
+| `strsub(s, a, b)` | substring from bytes `a` to `b` inclusive (1-based) |
+| `exit(n)` | terminate the process with code `n` |
+The seed must still provide `readfile` to load S1 itself; `strlen`/`strbyte`/`strsub`
+they are only required when S1 needs to analyze source.
+## 9. Errors
+Core has no `try`/`catch` nor `Err` values: an execution error (undefined variable,
+wrong type, index out of range, division by zero, file not readable) **ends on
+process with exit code 1** and a diagnostic message on stderr. S1, written in Core, uses
+explicit values (`[Err, kind, msg]` lists) to propagate errors of Full programs without
+rely on seed exceptions.
+## 10. Command line interface
+Triad-Core uses the same interface as §14 of `SPEC.md`, limited to:
 ```
 triad FILE [ARG...]     # esegue FILE come script, ARGS = [ARG...]
 triad -                 # legge lo script da stdin
 ```
 
-Exit: `0` successo, `1` errore, `2` uso non valido. Il REPL non fa parte di Core: lo fornisce
-S1 per Triad-Full.
-
-## 11. Conformità
-
-- I casi in `conformance/core/cases/` usano **solo** il sottoinsieme dei §2–§7 (quindi girano
-  sia su Triad-Core sia su Triad-Full) e sono normative per entrambi i profili.
-- I primitivi del §8 sono verificati dai test del seed (non possono girare su Triad-Full).
-- Un'implementazione Core è conforme se passa `conformance/core/` e produce l'output atteso
-  byte per byte con gli stessi exit code.
-
-## 12. Note per l'implementazione in codice macchina (informative)
-
-- Rappresentazione consigliata: word taggata a 64 bit; `Int` immediato, gli altri valori
-  puntatori a oggetti con header (tipo, dimensione).
-- Ambienti: catena di frame con associazione nome→valore; oppure liste di associazioni.
-- Liste: vettore dinamico con capacità; stringhe: (puntatore, lunghezza) immutabili.
-- Allocatore: arena a bump; niente GC nella prima versione (i programmi di bootstrap sono
-  brevi), poi mark-sweep.
-- Funzioni: oggetto con puntatore all'AST e ambiente catturato; valutazione ricorsiva con
-  stack esplicito per non dipendere dallo stack di sistema.
-- Il seed S0 deve implementare il **lexer** e il **parser** di Core, non quelli di Full: è S1
-  a implementare il parser completo.
+Exit: `0` success, `1` error, `2` invalid use. The REPL is not part of Core - it provides it
+S1 for Triad-Full.
+## 11. Compliance
+- Cases in `conformance/core/cases/` use **only** the subset of §2–§7 (so they run
+  both on Triad-Core and on Triad-Full) and are normative for both profiles.
+- The primitives in §8 are verified by seed tests (cannot run on Triad-Full).
+- A Core implementation is conformant if it passes `conformance/core/` and produces the expected output
+  byte by byte with the same exit codes.
+## 12. Notes for implementation in machine code (informative)
+- Recommended representation: 64-bit tagged word; `Int` immediate, other values
+  pointers to objects with headers (type, size).
+- Environments: chain of frames with name→value association; or lists of associations.
+- Lists: dynamic vector with capacity; strings: (pointer, length) immutable.
+- Allocator: bump arena; no GC in the first version (bootstrap programs are
+  short), then mark-sweep.
+- Functions: object with pointer to the AST and captured environment; recursive evaluation with
+  explicit stack to not depend on the system stack.
+- The seed S0 must implement the **lexer** and the **parser** of Core, not those of Full: it is S1
+  to implement the complete parser.

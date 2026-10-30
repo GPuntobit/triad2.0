@@ -84,7 +84,7 @@ if [ -f "$CONFIG_FILE" ]; then
   if [ -z "$PYTHON_CMD" ]; then
     echo "No python interpreter found; using built-in observer defaults." >&2
   else
-    _config=$(CLV2_CONFIG="$CONFIG_FILE" "$PYTHON_CMD" -c "
+    _config=$(CLV2_CONFIG="$CONFIG_FILE" "$PYTHON_CMD" -I -c "
 import json, os
 with open(os.environ['CLV2_CONFIG']) as f:
     cfg = json.load(f)

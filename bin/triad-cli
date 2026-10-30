@@ -2,7 +2,18 @@
 # triad-cli — launcher POSIX della CLI di sviluppo (richiede Node.js >= 18).
 # Uso: triad-cli <comando> [opzioni]   (es. triad-cli status)
 set -e
-TRIAD_HOME=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+# Resolution of the real path of the script (follows symlinks): the launcher can
+# essere installato come link simbolico in ~/.local/bin, quindi dirname $0
+# da solo non basta.
+self="$0"
+while [ -L "$self" ]; do
+    link=$(readlink "$self")
+    case $link in
+        /*) self="$link" ;;
+        *)  self="$(dirname "$self")/$link" ;;
+    esac
+done
+TRIAD_HOME=$(CDPATH= cd -- "$(dirname -- "$self")/.." && pwd -P)
 if ! command -v node >/dev/null 2>&1; then
     echo "triad-cli: Node.js non trovato (serve Node.js >= 18)." >&2
     exit 1

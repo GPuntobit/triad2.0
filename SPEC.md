@@ -1,22 +1,17 @@
-# Standard Triad — specifica del linguaggio (versione 0.2.0, bozza)
-
-**Stato del documento:** bozza normativa. Definisce il linguaggio Triad — lessico,
-grammatica, tipi, semantica, modello di esecuzione, errori, contratti, effetti, logica,
-introspezione e interfaccia a riga di comando — **indipendentemente da qualsiasi
-implementazione**.
-
-**Normatività:** le sezioni §1–§14 e §16 sono normative. Il §15 e l'Appendice A sono
-informativi. Un'implementazione è **conforme** se soddisfa i requisiti del §16 e passa la
-suite di conformità in `conformance/`.
-
-**Triad in breve.** Triad è un linguaggio a sé, con sintassi a blocchi e tipi dichiarati,
-multiple dispatch, programmazione logica integrata (`fact`, `rule`, `solve`), codice come
-dato (albero uniforme, quote, macro) e, come parte del linguaggio e non di una libreria:
-errori come dati, contratti, budget, tracce ed effetti dichiarati.
-
-**Estensione dei file:** `.triad` è l'estensione canonica; `.td` è accettata come alias
-storico. L'estensione si può omettere sulla riga di comando.
-
+# Standard Triad — language specification (version 0.2.0, draft)
+**Document status:** regulatory draft. Defines the language Triad — lexicon,
+grammar, types, semantics, execution model, errors, contracts, effects, logic,
+introspection and command line interface — **regardless of any
+implementation**.
+**Normativity:** Sections §1–§14 and §16 are normative. §15 and Appendix A are
+informative. An implementation is **compliant** if it meets the requirements of §16 and passes the
+conformance suite in `conformance/`.
+**Triad in brief.** Triad is a language in itself, with block syntax and declared types,
+multiple dispatch, integrated logic programming (`fact`, `rule`, `solve`), code as
+data (uniform tree, dimensions, macros) and, as part of the language and not of a library:
+errors such as data, contracts, budgets, tracks and declared effects.
+**File extension:** `.triad` is the canonical extension; `.td` is accepted as an alias
+historical. The extension can be omitted on the command line.
 ```triad
 struct Point
     x::Float
@@ -40,49 +35,39 @@ end
 result = solve grandparent(:alice, ?who) limit 5     # [{who = :dave}]
 ```
 
-`solve` restituisce un valore normale, cioè una lista di soluzioni. Si può passare a una
-funzione, filtrare, indicizzare (`result[1].who`) o usare per il dispatch, senza stampare
-niente.
-
-**Implementazione di riferimento (transitoria, informativa):** `triad.jl` e `syntax.jl`,
-oggi scritti in Julia per il bootstrap; non fanno parte della definizione del linguaggio e
-verranno sostituiti dall'implementazione self-hosted (vedi `BOOTSTRAP.md`). La specifica
-eseguibile è `conformance/`.
-
+`solve` returns a normal value, i.e. a list of solutions. You can switch to one
+function, filter, index (`result[1].who`) or use for dispatch, without printing
+nothing.
+**Reference implementation (transitional, informational):** `triad.jl` and `syntax.jl`,
+today written in Julia for bootstrapping; they are not part of the definition of the language e
+they will be replaced by the self-hosted implementation (see `BOOTSTRAP.md`). The specification
+executable is `conformance/`.
 ---
-
-## 1. Lessico
-
-| elemento | forma | esempi |
+## 1. Vocabulary
+| element | shape | examples |
 |---|---|---|
-| identificatore | lettera o `_`, poi lettere, cifre, `_`; `!` finale ammesso se non seguito da `=` | `x`, `push!`, `età` |
-| variabile logica | `?` **attaccato** a un nome | `?x`, `?who` |
-| variabile anonima | `?_`: ogni occorrenza è una variabile nuova | `parent(?x, ?_)` |
-| simbolo | `:` seguito da un nome o da un operatore, se non è attaccato a un valore precedente (`:-` resta il `:-` delle regole) | `:alice`, `:+`, `:<=` |
-| numeri | `Int` (`42`, `1_000`) e `Float` (`3.14`, `1e-9`) | |
-| stringhe | `"..."` con escape `\n \t \" \\ \$` e interpolazione `$x`, `$(espr)` | `"x = $x"` |
-| commenti | `#` fino a fine riga; `#= ... =#` su più righe | |
-| separatori | a capo oppure `;` | |
-| macro | `@nome(...)` | `@unless(c, e)` |
-
-**Parole chiave:** `function struct macro end if elseif else for in while let begin return
+| identifier | letter or `_`, then letters, digits, `_`; Final `!` allowed if not followed by `=` | `x`, `push!`, `age` |
+| logical variable | `?` **attached** to a name | `?x`, `?who` |
+| anonymous variable | `?_`: each occurrence is a new variable | `parent(?x, ?_)` |
+| symbol | `:` followed by a name or an operator, if it is not attached to a previous value (`:-` remains the `:-` of the rules) | `:alice`, `:+`, `:<=` |
+| numbers | `Int` (`42`, `1_000`) and `Float` (`3.14`, `1e-9`) | |
+| strings | `"..."` escaped `\n \t \" \\ \$` and interpolated `$x`, `$(expr)` | `"x = $x"` |
+| comments | `#` to end of line; `#= ... =#` on multiple lines | |
+| separators | newline or `;` | |
+| macros | `@name(...)` | `@unless(c, e)` |
+**Keywords:** `function struct macro end if elseif else for in while let begin return
 break continue fact rule solve quote try catch with requires ensures true false nothing isa is`.
-Sono contestuali (dopo `solve`) `limit depth steps trace`.
-
-**Regole sui due punti** (il problema classico di `:`):
-- `1:n` e `xs[2:end]`: un `:` attaccato a un valore e senza spazi è un range;
-- `f(:a)`, `x = :a`: un `:` non preceduto da un valore e seguito da un nome è un simbolo;
-- `:( ... )`: è codice quotato;
-- `c ? a : b`: un `:` circondato da spazi è il separatore del ternario.
-
-Anche `?` ha due usi: `?x` (attaccato) è una variabile logica, mentre `? ` con uno spazio dopo
-è il ternario.
-
-Gli **a capo** chiudono un'istruzione, tranne dentro `( )`, `[ ]` e `:( )`, e tranne
-subito dopo un operatore binario o una virgola di `rule`.
-
-## 2. Sintassi (EBNF)
-
+They are contextual (after `solve`) `limit depth steps trace`.
+**Colon rules** (the classic `:` problem):
+- `1:n` and `xs[2:end]`: a `:` attached to a value and without spaces is a range;
+- `f(:a)`, `x = :a`: a `:` not preceded by a value and followed by a name is a symbol;
+- `:( ... )`: is quoted code;
+- `c ? a : b`: a `:` surrounded by spaces is the ternary separator.
+`?` also has two uses: `?x` (attached) is a logical variable, while `? ` with a space after it
+it is the ternary.
+**Newlines** end a statement, except inside `( )`, `[ ]`, and `:( )`, and except
+immediately after a binary operator or a `rule` comma.
+## 2. Syntax (EBNF)
 ```ebnf
 program    = { sep } { stmt sep { sep } } ;
 sep        = NEWLINE | ";" ;
@@ -105,9 +90,8 @@ macrodef   = "macro" NAME "(" [ NAME { "," NAME } ] ")" block "end" ;
 
 fact       = "fact" term ;
 rule       = "rule" term [ ":-" goal { "," goal } ] ;
-             (* la virgola può stare anche a inizio riga, quando il corpo va a capo *)
-
-expr       = (* Pratt: precedenze dalla più bassa alla più alta *)
+(* the comma can also be at the beginning of the line, when the body goes to a new line *)
+expr       = (* Pratt: precedences from lowest to highest *)
   1  a = b   a += b   a -= b   a *= b                 (destra)
   2  x -> e   (a, b) -> e   c ? a : b                 (destra)
   3  ||
@@ -140,187 +124,167 @@ primary    = NUMBER | STRING | SYMBOL | LVAR | NAME | "true" | "false" | "nothin
 modifier   = "budget" "(" "steps" "=" expr ")" | "trace" ;
 ```
 
-Tutto è un'espressione con un valore: `if`, `let`, `try`, `with`, `solve` e i blocchi
-restituiscono il valore dell'ultima istruzione eseguita (`nothing` se non ce n'è).
-
-## 3. L'albero uniforme
-
-Il parser produce un solo tipo di nodo, `Node(head, args)`. È lo stesso albero che il kernel
-esegue, che `:( ... )` restituisce come valore e che `--tree` stampa come S-expression:
-
+Everything is an expression with a value: `if`, `let`, `try`, `with`, `solve` and the blocks
+they return the value of the last executed statement (`nothing` if there is none).
+## 3. The uniform tree
+The parser produces only one node type, `Node(head, args)`. It is the same tree as the kernel
+executes, which `:( ... )` returns as a value and which `--tree` prints as an S-expression:
 ```
 $ julia triad.jl --tree examples/assaggio.td
 (rule (call grandparent ?x ?z) (call parent ?x ?y) (call parent ?y ?z))
 (assign result (solve (call grandparent (sym alice) ?who) (tuple (assign limit 5))))
 ```
 
-| sintassi | nodo |
+| syntax | node |
 |---|---|
-| `f(a, b)`, `a + b` | `(call f a b)`, `(call + a b)`: gli operatori sono chiamate |
-| `a && b`, `a \|\| b` | `(and a b)`, `(or a b)`: cortocircuito |
+| `f(a, b)`, `a + b` | `(call f a b)`, `(call + a b)`: the operators are calls |
+| `a && b`, `a \|\| b` | `(and a b)`, `(or a b)`: short circuit |
 | `x = e` | `(assign x e)` |
-| `:alice` | `(sym alice)`; un nome nudo `x` è il Symbol `x` (riferimento a variabile) |
-| `?x` | la variabile logica stessa (foglia) |
+| `:alice` | `(sym alice)`; a bare name `x` is the Symbol `x` (variable reference) |
+| `?x` | the logical variable itself (leaf) |
 | `a.x`, `xs[i]` | `(dot a x)`, `(index xs i)` |
 | `[a, b]`, `[h \| t]` | `(list a b)`, `(cons (list h) t)` |
 | `[e for x in xs if c]` | `(comprehension e x xs c)` |
-| `x -> e` | `(lambda (tuple x) e)` |
+| `x -> is | `(lambda (tuple x) e)` |
 | `x::T` | `(typed x T)` |
-| `"a $x"` | `(string "a " x)` |
+| `"to $x"` | `(string "a " x)` |
 | `if c a else b end`, `c ? a : b` | `(if c (block a) (block b))` |
 | `while`, `for`, `let`, `begin` | `(while c body)`, `(for x iter body)`, `(let (tuple binds…) body)`, `(block …)` |
 | `function f(a::T)::R !io ... end` | `(function f (tuple (typed a T)) R (tuple io) body)` |
 | `struct P; x::Float; end` | `(struct P (tuple (typed x Float)))` |
 | `macro m(a) ... end`, `@m(e)` | `(macro m (tuple a) body)`, `(macrocall m e)` |
-| `:(e)`, `quote … end`, `$e` | `(quasi e)`, `(quasi (block …))`, `(unquote e)` |
+| `:(e)`, `quote … end`, `$e` | `(almost e)`, `(almost (block …))`, `(unquote e)` |
 | `fact t`, `rule h :- g1, g2` | `(fact t)`, `(rule h g1 g2)` |
 | `solve g limit 5 trace` | `(solve g (tuple (assign limit 5) (assign trace true)))` |
-| `try b catch e h end` | `(try b e h)` |
+| `try b catch and h end` | `(try b and h)` |
 | `with budget(steps = N), trace … end` | `(with (tuple (call budget (assign steps N)) trace) body)` |
 | `requires c`, `ensures c`, `return e` | `(requires c)`, `(ensures c)`, `(return e)` |
-
-Il codice quotato è un valore di tipo `Expr`: `c.head` e `c.args` lo ispezionano,
-`Expr(:call, :f, 1)` lo costruisce, `eval(c)` lo esegue, `parse(s)` e `unparse(c)` convertono
-tra testo e albero, `sexpr(c)` ne dà la vista a S-expression.
-
-## 4. Valori e tipi
-
-| tipo | valori |
+The quoted code is a value of type `Expr`: `c.head` and `c.args` inspect it,
+`Expr(:call, :f, 1)` constructs it, `eval(c)` executes it, `parse(s)` and `unparse(c)` convert
+between text and tree, `sexpr(c)` gives the view to S-expression.
+## 4. Values ​​and types
+| type | values ​​|
 |---|---|
-| `Int`, `Float` (sottotipi di `Number`) | `42`, `3.5` |
+| `Int`, `Float` (subtypes of `Number`) | `42`, `3.5` |
 | `Bool` | `true`, `false` |
-| `String` | `"testo"` |
-| `Symbol` | `:alice` (è anche l'atomo della logica) |
+| `String` | `"text"` |
+| `Symbol` | `:alice` (also the atom of logic) |
 | `Nothing` | `nothing` |
-| `List` | `[1, :a, "x"]`: lista eterogenea, indici da 1 |
-| `Function` | lambda, funzioni generiche, builtin |
-| `Expr` | codice quotato |
-| `Term`, `LVar` | termini e variabili logiche (`f(?x)`, `?x`) |
+| `List` | `[1, :a, "x"]`: heterogeneous list, indices of 1 |
+| `Function` | lambda, generic functions, builtins |
+| `Expr` | quoted code |
+| `Term`, `LVar` | logical terms and variables (`f(?x)`, `?x`) |
 | `Solution` | `{who = :dave}`: `s.who`, `s[:who]`, `vars(s)` |
-| `Err` | errore come dato (§8) |
-| `Type` | i tipi stessi sono valori: `typeof(3) == Int` |
-| struct utente | `Point(3.0, 4.0)` |
-
-- **Gerarchia:** `Int <: Number`, `Float <: Number`, e ogni tipo è sottotipo di `Any`.
-- **Struct:** sono immutabili e il costruttore è posizionale (`Point(3, 4)`). Il costruttore
-  controlla i campi tipati; un `Int` passato a un campo `Float` viene convertito in `Float`.
-  Un valore di tipo non convertibile produce `Err(:type)`.
-- **Conversioni:** `Int(x)`, `Float(x)`, `String(x)`, `Symbol(x)`. Il nome del tipo usato come
-  funzione converte; il nome di una struct usato come funzione costruisce.
-- **Asserzione:** `e::T` restituisce `e` se è di tipo `T`, altrimenti produce `Err(:type)`.
-- **Vincolo del dichiarato:** `x::T = e` (e un parametro `x::T`) *fissa* il tipo di quel nome
-  nell'ambiente dove nasce: gli assegnamenti successivi sono controllati e
-  convertiti contro `T` (`y::Float = 1.0; y = 2` → `2.0`; `x::Int = 1; x = 0.5` → `Err(:type)`).
-  Una nuova dichiarazione `x::U = ...` sullo stesso nome sostituisce il vincolo, un nome non
-  dichiarato con tipo resta libero (`s = "a"; s = 3` va bene), e una rilegatura in un ambiente
-  interno (`let x = 2.5`) non eredita il vincolo dell'esterno.
-- **Condizioni:** `if`, `while`, `&&`, `||`, `!` e i filtri accettano solo `Bool`. Non esiste
-  un concetto di "truthy", e una condizione non booleana dà `Err(:type)`.
-- **`print` e `show`:** `println(:a)` stampa `a`; dentro una lista o in un `repr` il simbolo
-  si stampa come `:a`.
-
-## 5. Funzioni e multiple dispatch
-
+| `Err` | error as given (§8) |
+| `Type` | the types themselves are values: `typeof(3) == Int` |
+| struct user | `Point(3.0, 4.0)` |
+- **Hierarchy:** `Int <: Number`, `Float <: Number`, and each type is a subtype of `Any`.
+- **Struct:** are immutable and the constructor is positional (`Point(3, 4)`). The builder
+  check typed fields; an `Int` passed to a `Float` field is converted to `Float`.
+  A non-convertible type value produces `Err(:type)`.
+- **Conversions:** `Int(x)`, `Float(x)`, `String(x)`, `Symbol(x)`. The name of the type used as
+  convert function; the name of a struct used as a construct function.
+- **Assertion:** `e::T` returns `e` if it is of type `T`, otherwise it produces `Err(:type)`.
+- **Declarer constraint:** `x::T = e` (and a `x::T` parameter) *fixes* the type of that name
+  in the environment where it is born: subsequent assignments are controlled and
+converted against `T` (`y::Float = 1.0; y = 2` → `2.0`; `x::Int = 1; x = 0.5` → `Err(:type)`).
+  A new declaration `x::U = ...` on the same name replaces the constraint, a non-name
+  declared with type remains free (`s = "a"; s = 3` is fine), and a binding in an environment
+  interior (`let x = 2.5`) does not inherit the constraint of the exterior.
+- **Conditions:** `if`, `while`, `&&`, `||`, `!` and filters only accept `Bool`. It doesn't exist
+  a concept of "truthy", and a non-boolean condition gives `Err(:type)`.
+- **`print` and `show`:** `println(:a)` prints `a`; inside a list or in a `repr` the symbol
+  it prints as `:a`.
+## 5. Functions and multiple dispatch
 ```julia
 area(n::Number) = :number
-area(n::Int)    = :int            # più specifico: vince per gli Int
+area(n::Int)    = :int            # more specific: wins for Ints
 area(p::Point)  = :point
 function +(a::Point, b::Point)    # gli operatori si estendono come funzioni
     Point(a.x + b.x, a.y + b.y)
 end
 ```
 
-- Una funzione generica è un insieme di metodi. Ridefinire la stessa firma sostituisce il
-  metodo precedente.
-- **Selezione del metodo:** tra i metodi applicabili (stessa arità, ogni argomento sottotipo
-  del parametro) vince il più specifico. Un metodo A è più specifico di B se ogni suo
-  parametro è sottotipo del corrispondente parametro di B e le firme differiscono.
-  - Se nessun metodo è applicabile si ottiene `Err(:method)`. Se il nome è anche un builtin,
-    per esempio `+` sui numeri, si usa il builtin.
-  - Più metodi massimali danno `Err(:ambiguous)`.
-- **Tipo di ritorno:** `::R` è controllato all'uscita, con la conversione Int→Float. Se il
-  valore non è conforme si ottiene `Err(:type)`.
-- **Valori di prima classe:** funzioni e operatori sono valori (`reduce(+, xs)`,
-  `map(sq, xs)`), le lambda (`x -> x + 1`) sono chiusure.
-- **Funzioni locali:** una `function` definita dentro un'altra funzione è una chiusura locale,
-  senza dispatch.
-- **Scope lessicale:** ogni `function`, lambda, `let`, `for`, `while` e comprehension
-  introduce un ambiente. Un nome è visibile nell'ambiente in cui è legato e in quelli
-  interni, non in quelli esterni. Dentro una funzione, un assegnamento lega il nome
-  nell'ambiente locale (o in una chiusura interna), mai nei globali; al top level i cicli
-  possono aggiornare i globali.
-- **`return`, `break`, `continue`:** `return e` termina la funzione restituendo il valore di
-  `e` (`nothing` senza espressione); `break` esce dal `for`/`while` più interno; `continue`
-  salta al passo successivo del ciclo più interno.
-
-## 6. Logica
-
-### 6.1 Fatti, regole, termini
-
+- A generic function is a collection of methods. Redefine the same signature replaces the
+  previous method.
+- **Method selection:** among the applicable methods (same arity, each argument subtype
+  of the parameter) the most specific wins. A method A is more specific than B if each its
+  parameter is subtype of the corresponding parameter of B and the signatures differ.
+  - If no method is applicable you get `Err(:method)`. If the name is also a builtin,
+    for example `+` on numbers, the builtin is used.
+  - More maximal methods give `Err(:ambiguous)`.
+- **Return type:** `::R` is checked on exit, with Int→Float conversion. If the
+  value does not conform you get `Err(:type)`.
+- **First-class values:** functions and operators are values ​​(`reduce(+, xs)`,
+`map(sq, xs)`), lambdas (`x -> x + 1`) are closures.
+- **Local functions:** a `function` defined inside another function is a local closure,
+  without dispatch.
+- **Lexical Scope:** each `function`, lambda, `let`, `for`, `while` and comprehension
+  introduces an environment. A name is visible in the environment in which it is linked and in those
+  internal, not external ones. Inside a function, an assignment binds the name
+  in the local environment (or in an internal closure), never in globals; cycles at the top level
+  they can update globals.
+- **`return`, `break`, `continue`:** `return ends the function returning the value of
+  `e` (`nothing` without expression); `break` exits the innermost `for`/`while`; `continue`
+  jumps to the next step of the innermost loop.
+## 6. Logic
+### 6.1 Facts, rules, terms
 ```julia
 fact parent(:tom, :bob)
 rule ancestor(?a, ?d) :- parent(?a, ?d)
 rule ancestor(?a, ?d) :- parent(?a, ?x), ancestor(?x, ?d)
 ```
 
-Dentro un termine:
-- `:atomo` è un simbolo; `?x` è una variabile logica; numeri, stringhe e liste sono se stessi.
-- `f(t1, t2)` è un termine composto. Anche `?x + 1` è un termine (`+(?x, 1)`) e non viene
-  valutato.
-- **un nome nudo è un valore dell'ambiente corrente**, letto al momento in cui viene eseguito
-  `fact`, `rule` o `solve`: `chi = :bob; solve parent(chi, ?c)`.
-- `$(espr)` inserisce esplicitamente un valore calcolato: `fact eta(:bob, $(2026 - 1975))`.
-- `[a, b]` e `[?h | ?t]` sono liste e pattern su liste.
-- Il nome di una struct con argomenti, come `Point(?x, ?y)`, unifica con le istanze di quella
+Within a term:
+- `:atom` is a symbol; `?x` is a logical variable; numbers, strings and lists are themselves.
+- `f(t1, t2)` is a composite term. `?x + 1` is also a term (`+(?x, 1)`) and does not come
+  evaluated.
+- **a bare name is a value from the current environment**, read at the time it is executed
+  `fact`, `rule` or `solve`: `chi = :bob; solve parent(chi, ?c)`.
+- `$(expr)` explicitly inserts a calculated value: `fact age(:bob, $(2026 - 1975))`.
+- `[a, b]` and `[?h | ?t]` are lists and patterns on lists.
+- The name of a struct with arguments, such as `Point(?x, ?y)`, unifies with instances of that
   struct (pattern matching).
-
-Le variabili di una clausola vengono rinominate a ogni uso (standardizzazione a parte).
-L'unificazione fa l'**occurs-check**: `solve ?x = f(?x)` non ha soluzioni.
-
-### 6.2 Goal
-
-| goal | significato |
+Variables in a clause are renamed each time they are used (standardization aside).
+Unification does the **occurs-check**: `solve ?x = f(?x)` has no solutions.
+### 6.2 Goals
+| goals | meaning |
 |---|---|
-| `p(t…)` | predicato della knowledge base, risolto con SLD e backtracking, clausole in ordine |
-| `g1 && g2`, `(g1, g2)` | congiunzione; nelle `rule` anche con `,` |
-| `g1 \|\| g2` | disgiunzione |
-| `!g`, `not(g)` | negazione per fallimento |
-| `not(b)` | *fuori* da un goal `not/1` è una funzione: nega un `Bool` (`not(true) == false`) |
-| `a = b` | unificazione |
-| `?y is espr` | valuta `espr` (le variabili devono essere legate) e unifica con `?y` |
-| `a < b`, `==`, `!=`, `<=`, `>`, `>=` | confronto tra valori, valutati |
-| `f(t…)` con `f` funzione Triad | chiama la funzione con gli argomenti valutati; deve restituire `Bool` |
-| `true`, `false` | successo, fallimento |
-
-Un predicato senza clausole con quell'arità, che non sia nemmeno una funzione, dà
-`Err(:undef, "predicato sconosciuto: p/2")`. Una variabile non legata dentro un'espressione dà
+| `p(t…)` | knowledge base predicate, solved with SLD and backtracking, clauses in order |
+| `g1 && g2`, `(g1, g2)` | conjunction; in `rules` also with `,` |
+| `g1 \|\| g2` | disjunction |
+| `!g`, `not(g)` | denial for failure |
+| `not(b)` | *out* of a goal `not/1` is a function: negate a `Bool` (`not(true) == false`) |
+| `a = b` | unification |
+| `?y is expr` | evaluates `expr` (variables must be bound) and unifies with `?y` |
+| `a < b`, `==`, `!=`, `<=`, `>`, `>=` | comparison between values, evaluated |
+| `f(t…)` with `f` function Triad | calls the function with the evaluated arguments; must return `Bool` |
+| `true`, `false` | success, failure |
+A predicate without clauses with that arity, which is not even a function, gives
+`Err(:undef, "unknown predicate: p/2")`. An unbound variable within an expression gives
 `Err(:instantiation)`.
-
-### 6.3 `solve` è un valore
-
+### 6.3 `solve` is a value
 ```julia
 sols = solve ancestor(:tom, ?d) limit 10 depth 50 steps 100_000
 [s.d for s in sols]                 # comprehension sulle soluzioni
 ```
 
-- `solve g` restituisce una lista (`List`) di `Solution`. Ogni soluzione lega le variabili
-  della query **non anonime**, nell'ordine in cui compaiono. Le variabili rimaste libere
-  restano `?x#n`.
-- Opzioni:
-  - `limit n`: al massimo `n` soluzioni;
-  - `depth d`: i rami più profondi di `d` vengono tagliati (cioè falliscono);
-  - `steps s`: al massimo `s` passi di risoluzione, altrimenti `Err(:budget)`; il default è
+- `solve g` returns a list (`List`) of `Solution`. Each solution links the variables
+  of the query **not anonymous**, in the order in which they appear. The variables left free
+  `?x#n` remain.
+- Options:
+  - `limit n`: at most `n` solutions;
+  - `depth d`: branches deeper than `d` are cut (i.e. fail);
+  - `steps s`: at most `s` resolution steps, otherwise `Err(:budget)`; the default is
     1 000 000;
-  - `trace`: si veda §11.
-- **Predicato in un'espressione:** chiamare un predicato dove ci si aspetta un valore
-  restituisce `Bool`, cioè dice se il goal è dimostrabile:
-  `if grandparent(:alice, :dave) … end`, `filter(p -> !parent(p, ?_), persone)`.
-- Il motore è iterativo, con uno stack esplicito e uno store dei legami con trail. Non usa la
-  ricorsione dell'implementazione, quindi la ricorsione infinita, anche sinistra, finisce in
-  `Err(:budget)` e non in uno stack overflow.
-
-## 7. Macro e codice come dato
-
+  - `trace`: see §11.
+- **Predicate in an expression:** Call a predicate where a value is expected
+  returns `Bool`, i.e. it says whether the goal is provable:
+  `if grandparent(:alice, :dave) … end`, `filter(p -> !parent(p, ?_), people)`.
+- The engine is iterative, with an explicit stack and a trail link store. Don't use it
+implementation recursion, so infinite recursion, even left, ends in
+  `Err(:budget)` and not on a stack overflow.
+## 7. Macros and code as given
 ```julia
 macro swap(a, b)
     t = gensym(:tmp)
@@ -333,51 +297,43 @@ end
 @swap(x, y)
 ```
 
-- `:(e)` e `quote … end` restituiscono codice (`Expr`). Dentro, `$x` e `$(e)` inseriscono il
-  **valore** di un'espressione: se è codice viene innestato, se è un numero, una lista o altro
-  diventa una costante, se è un Symbol diventa un identificatore.
-- Una macro riceve gli argomenti **come codice**, non valutati, e restituisce codice, che viene
-  poi eseguito al posto della chiamata `@nome(...)` nello scope del chiamante.
-- L'espansione è pura (§12) e non è igienica: per i nomi temporanei si usa `gensym()`.
-- `eval(c)` esegue codice nello scope globale.
-
-## 8. Errori come dati
-
-Un errore è un valore `Err` con tre campi:
-- `kind::Symbol`: la categoria, su cui si può fare dispatch;
+- `:(e)` and `quote … end` return code (`Expr`). Inside, `$x` and `$(e)` insert the
+  **value** of an expression: if it is a code it is nested, if it is a number, a list or something else
+  it becomes a constant, if it is a Symbol it becomes an identifier.
+- A macro receives arguments **as code**, not evaluated, and returns code, which is
+  then executed in place of the `@name(...)` call in the caller's scope.
+- Expansion is pure (§12) and is not hygienic: `gensym()` is used for temporary names.
+- `eval(c)` executes code in global scope.
+## 8. Errors as data
+An error is an `Err` value with three fields:
+- `kind::Symbol`: the category on which dispatch can be performed;
 - `msg::String`;
-- `data`: un valore qualsiasi, spesso un record `Info(...)` con i dettagli.
-
-| costrutto | effetto |
+- `data`: any value, often an `Info(...)` record with details.
+| construct | effect |
 |---|---|
-| `err(:kind, "msg"[, data])` | costruisce un `Err` senza sollevarlo |
-| `throw(e)`, `error("msg")` | solleva (`error` produce `Err(:error, …)`) |
-| `try b catch e h end` | se `b` solleva, `e` è legato all'`Err` e si valuta `h` |
-| `try b end` | **l'errore diventa il valore** dell'espressione |
-| `iserr(x)` | controlla se `x` è un `Err` |
-
-Tutti i fallimenti del linguaggio e dell'implementazione (divisione intera per zero,
-`sqrt(-1.0)`, indici fuori range…), arrivano come `Err` e mai come fallimenti fatali:
-
-| kind | quando |
+| `err(:kind, "msg"[, data])` | constructs an `Err` without raising it |
+| `throw(e)`, `error("msg")` | raise (`error` produces `Err(:error, …)`) |
+| `try b catch and h end` | if `b` raises, `e` is related to `Err` and `h` | is evaluated
+| `try b end` | **the error becomes the value** of the expression |
+| `iserr(x)` | checks if `x` is an `Err` |
+All language and implementation failures (integer division by zero,
+`sqrt(-1.0)`, indices out of range…), arrive as `Err` and never as fatal failures:
+| kind | when |
 |---|---|
-| `:syntax` | errore di parse; `data` contiene `line`, `col` e `incomplete` (usato dal REPL) |
-| `:undef` | nome, funzione, macro o predicato non definito |
-| `:type` | tipo sbagliato (campi, ritorno, `::`, condizioni non `Bool`) |
-| `:method` | nessun metodo applicabile; `data.types` contiene i tipi degli argomenti |
-| `:ambiguous` | più metodi ugualmente specifici |
-| `:field`, `:bounds`, `:domain` | campo inesistente, indice fuori range, errore matematico |
-| `:instantiation` | variabile logica non legata dove serve un valore |
-| `:contract` | `requires`/`ensures` violata (§9) |
-| `:budget` | passi esauriti (§10) |
-| `:effect` | effetto non dichiarato (§12) |
-| `:host` | qualsiasi altro errore dell'interprete |
-
-Un errore non gestito al top level interrompe il programma. Il messaggio riporta la riga
-dell'istruzione (`riga 12: …`) e il codice di uscita è 1.
-
-## 9. Contratti
-
+| `:syntax` | parse error; `data` contains `line`, `col` and `incomplete` (used by the REPL) |
+| `:undef` | undefined name, function, macro or predicate |
+| `:type` | wrong type (fields, return, `::`, conditions not `Bool`) |
+| `:method` | no applicable method; `data.types` contains the types of the arguments |
+| `:ambiguous` | multiple equally specific methods |
+| `:field`, `:bounds`, `:domain` | non-existent field, index out of range, mathematical error |
+| `:instantiation` | unbound logical variable where a | value is needed
+| `:contract` | `requires`/`ensures` violated (§9) |
+| `:budget` | steps exhausted (§10) |
+| `:effect` | undeclared effect (§12) |
+| `:host` | any other interpreter errors |
+An unhandled error at the top level interrupts the program. The message displays the line
+of the statement (`line 12: …`) and the exit code is 1.
+## 9. Contracts
 ```julia
 function safe_div(a::Number, b::Number)::Float
     requires b != 0
@@ -386,17 +342,15 @@ function safe_div(a::Number, b::Number)::Float
 end
 ```
 
-- `requires c` viene controllata nel punto in cui compare: per convenzione all'inizio del
-  corpo.
-- `ensures c` viene registrata e controllata all'uscita della funzione, con `result` legato al
-  valore restituito, dopo il controllo del tipo di ritorno.
-- Una violazione produce `Err(:contract, "requires violata in safe_div: b != 0", Info(fn, clause, cond[, result]))`.
-  `cond` contiene il codice della condizione: è un dato, si può ispezionare.
-- Le condizioni sono **pure**: un effetto dentro un contratto dà `Err(:effect)`.
-- Al top level `requires c` funziona come un'asserzione.
-
+- `requires c` is checked where it appears: by convention at the beginning of
+  body.
+- `ensures c` is recorded and checked at function exit, with `result` bound to
+  return value, after checking the return type.
+- A violation produces `Err(:contract, "requires violated in safe_div: b != 0", Info(fn, clause, cond[, result]))`.
+  `cond` contains the condition code: it is data, it can be inspected.
+- The conditions are **pure**: an effect inside a contract gives `Err(:effect)`.
+- At the top level `requires c` works like an assertion.
 ## 10. Budget
-
 ```julia
 r = with budget(steps = 10_000)
     calcolo_che_potrebbe_non_finire()
@@ -404,18 +358,15 @@ end
 iserr(r) && r.kind == :budget
 ```
 
-- Un **passo** è una chiamata, un'iterazione di un ciclo o un passo di risoluzione.
-- `with budget(steps = N) … end` limita i passi del corpo. Se il budget si esaurisce,
-  **il valore del `with` è `Err(:budget)`**: il programma non si blocca e non viene
-  interrotto.
-- I budget si annidano: vale il più stretto. Un `with` converte in valore solo l'esaurimento
-  del **proprio** budget, mentre quello di un budget esterno continua a propagarsi.
-- `solve … steps N` è il budget specifico di una query.
-
-## 11. Tracce
-
-La traccia di un calcolo è un **valore**, non output stampato:
-
+- A **step** is a call, loop iteration, or resolution step.
+- `with budget(steps = N) … end` limits the body steps. If the budget runs out,
+  **the value of the `with` is `Err(:budget)`**: the program does not crash and does not
+  interrupted.
+- Budgets are nested: the tightest applies. A `with` converts only the depletion to a value
+  of **own** budget, while that of an external budget continues to propagate.
+- `solve … steps N` is the specific budget of a query.
+## 11. Tracks
+The trace of a calculation is a **value**, not printed output:
 ```julia
 t = with trace
     fib(3)
@@ -427,18 +378,15 @@ t = solve path(:a, :c) trace
 t.trace                          # Event(port = :call | :redo | :exit | :fail | :depth, goal, depth)
 ```
 
-- `with trace … end` restituisce `Traced(result, trace)` con gli eventi `:call` e `:exit` di
-  ogni funzione generica chiamata nel corpo.
-- `solve … trace` restituisce `Traced(result, trace)`, dove `result` è la lista delle
-  soluzioni e gli eventi sono le porte del modello a scatole di Byrd (`call`, `exit`, `redo`,
-  `fail`) più `depth`, quando un ramo viene tagliato da `depth`.
-- Gli eventi sono record: si filtrano e si contano come ogni altro valore
+- `with trace … end` returns `Traced(result, trace)` with the `:call` and `:exit` events of
+  any generic function called in the body.
+- `solve … trace` returns `Traced(result, trace)`, where `result` is the list of
+  solutions and events are the gates of the Byrd box model (`call`, `exit`, `redo`,
+  `fail`) plus `depth`, when a branch is cut by `depth`.
+- Events are records: they are filtered and counted like any other value
   (`[e.args for e in t.trace if e.port == :call]`).
-
-## 12. Effetti
-
-Le funzioni sono **pure per default**. Gli effetti si dichiarano nella firma:
-
+## 12. Effects
+The functions are **pure by default**. The effects are declared in the signature:
 ```julia
 function saluta(nome::String) !io
     println("ciao, ", nome)
@@ -448,39 +396,33 @@ function impara(x) !state
 end
 ```
 
-| effetto | operazioni |
+| effect | operations |
 |---|---|
-| `io` | `println`, `print` |
-| `state` | `fact`/`rule` eseguiti dentro una funzione (modificano la knowledge base) |
-
-- **Controllo dinamico.** Una funzione viene eseguita solo con gli effetti che dichiara, e solo
-  se il chiamante li permette. Se una funzione pura chiama `println`, o chiama una funzione
-  `!io`, si ottiene `Err(:effect)`. `data` contiene `fn`, `caller` e `missing`.
-- Il top level permette tutti gli effetti.
-- Le lambda ereditano gli effetti del contesto in cui vengono eseguite.
-- Macro e contratti sono puri.
-- Leggere la knowledge base (`solve`, chiamare un predicato) è puro.
-- La mutazione locale di dati (`push!` su una lista, assegnamento a variabili locali) non è un
-  effetto: modifica solo valori raggiungibili dall'ambiente locale.
-
+| `I` | `println`, `print` |
+| `state` | `fact`/`rule` executed inside a function (modifies the knowledge base) |
+- **Dynamic control.** A function executes only with the effects it declares, and only
+  if the caller allows them. If a pure function calls `println`, or calls a function
+  `!io`, you get `Err(:effect)`. `data` contains `fn`, `caller` and `missing`.
+- The top level allows all effects.
+- Lambdas inherit the effects of the context in which they are executed.
+- Macros and contracts are pure.
+- Reading the knowledge base (`solve`, calling a predicate) is pure.
+- Local data mutation (`push!` on a list, assignment to local variables) is not a
+  effect: only changes values reachable from the local environment.
 ## 13. Builtin
-
-| ambito | funzioni |
+| scope | functions |
 |---|---|
-| aritmetica e confronto | `+ - * / ^ % == != < <= > >= !`, `abs sqrt floor ceil round exp log sin cos div mod min max`; `*` concatena le stringhe |
-| liste | `length isempty first last rest reverse sort sum push! pop! append! vcat collect`, `a:b`, `x in xs` |
-| ordine superiore | `map filter reduce any all count` |
-| stringhe e output | `string repr println print` |
-| tipi | `typeof`, `isa`, `Int Float String Symbol` |
-| errori | `err iserr throw error` |
-| codice | `eval parse unparse sexpr Expr gensym` |
-| logica | `vars(sol)` |
-
-## 14. Interfaccia a riga di comando
-
-Un'implementazione conforme espone un comando `triad` con questa interfaccia. La forma è
-normativa; sono ammesse opzioni aggiuntive, purché compatibili.
-
+| arithmetic and comparison | `+ - * / ^ % == != < <= > >= !`, `abs sqrt floor ceil round exp log sin cos div mod min max`; `*` concatenate strings |
+| lists | `length is empty first last rest reverse sort sum push! pop! append! vcat collect`, `a:b`, `x in xs` |
+| higher order | `map filter reduce any all count` |
+| strings and output | `string repr println print` |
+| types | `typeof`, `isa`, `Int Float String Symbol` |
+| errors | `err iserr throw error` |
+| code | `eval parse unparse sexpr Expr gensym` |
+| logic | `vars(sol)` |
+## 14. Command line interface
+A compliant implementation exposes a `triad` command with this interface. The shape is
+legislation; additional options are permitted, as long as they are compatible.
 ```
 triad                            # REPL
 triad FILE [ARG...]              # esegue FILE; ARGS == [ARG...]
@@ -495,96 +437,77 @@ triad -v, --version
 triad -                          # legge lo script da stdin
 ```
 
-- Le azioni si eseguono nell'ordine dato; poi lo script.
-- L'estensione `.triad` (canonica) o `.td` (storica) si può omettere.
-- Un file `.triad`/`.td` può avere shebang `#!/usr/bin/env triad`; la prima riga `#!...` è
-  ignorata prima del parsing.
-- Il programma vede gli argomenti in `ARGS`, lista di stringhe, senza il nome del programma.
-- Codici di uscita: `0` successo, `1` errore non gestito, `2` uso non valido. Un errore non
-  gestito è stampato su stderr.
-
-**REPL.** Senza script, l'implementazione apre un REPL con questo comportamento:
-
+- The actions are performed in the given order; then the script.
+- The `.triad` (canonical) or `.td` (historical) extension can be omitted.
+- A `.triad`/`.td` file can have shebang `#!/usr/bin/env triad`; the first line `#!...` is
+  ignored before parsing.
+- The program sees the arguments in `ARGS`, list of strings, without the program name.
+- Exit codes: `0` success, `1` unhandled error, `2` invalid use. Not an error
+  managed is printed to stderr.
+**REPL.** Without scripting, the implementation opens a REPL with this behavior:
 ```
 triad> ?- ancestor(:tom, ?d)
 ?d = :bob ;
 ?d = :liz.
-triad> mother(?m, ?c)                # un goal su un predicato della KB è già una query
+triad> mother(?m, ?c)                # a goal on a KB predicate is already a query
 ?m = :pat,
 ?c = :jim.
 triad> parent(:jim, ?x)
 false.
 ```
 
-- Le righe sono codice Triad; i blocchi restano aperti finché non sono chiusi da `end`.
-- `?- goal` (il `.` finale è facoltativo) esegue una query con le opzioni di `solve`:
+- The lines are Triad code; blocks remain open until closed by `end`.
+- `?- goal` (the trailing `.` is optional) runs a query with the `solve` options:
   `limit`, `depth`, `steps`, `trace`.
-- Un'istruzione che è un goal su un predicato della knowledge base è trattata come query.
-- Dopo ogni soluzione: `;`, `n` o spazio per la successiva, `a` per tutte le rimanenti,
-  invio o `.` per fermarsi. `false.` significa nessun'altra soluzione. Se stdin non è un
-  terminale le soluzioni sono stampate tutte.
-- Comandi: `:load FILE...` (`:l`), `:reload` (`:r`, `make`), `:listing [nome|nome/arità]`
-  (`:ls`), `:tree CODICE`, `:reset`, `:help` (`:h`), `:quit` (`:q`, `halt`, Ctrl-D).
-- Ctrl-C interrompe il calcolo in corso; un errore non gestito è stampato e il REPL continua.
-
-La suite di conformità copre la parte non interattiva dell'interfaccia (script, argomenti,
-exit code); il REPL è coperto dai test dell'implementazione.
-
-## 15. Stato dell'implementazione di riferimento (informativo)
-
-Questa sezione non è normativa.
-
-- L'implementazione di riferimento attuale (`triad.jl`, `syntax.jl`) è scritta in Julia ed è
-  transitoria: serve al bootstrap e sarà sostituita dall'implementazione self-hosted
+- A statement that is a goal on a knowledge base predicate is treated as a query.
+- After each solution: `;`, `n` or space for the next one, `a` for all the remaining ones,
+  enter or `.` to stop. `false.` means no other solution. If stdin is not a
+  terminal the solutions are all printed.
+- Commands: `:load FILE...` (`:l`), `:reload` (`:r`, `make`), `:listing [name|name/arity]`
+  (`:ls`), `:tree CODE`, `:reset`, `:help` (`:h`), `:quit` (`:q`, `halt`, Ctrl-D).
+- Ctrl-C stops the calculation in progress; an unhandled error is printed and the REPL continues.
+The conformance suite covers the non-interactive part of the interface (scripts, arguments,
+exit code); the REPL is covered by implementation testing.
+## 15. Reference implementation status (informational)
+This section is not regulatory.
+- The current reference implementation (`triad.jl`, `syntax.jl`) is written in Julia and is
+  transitional: used for bootstrapping and will be replaced by the self-hosted implementation
   (`BOOTSTRAP.md`).
-- Non ancora implementati nel riferimento: argomenti con nome (salvo `budget(steps = …)`),
-  struct mutabili, tipi astratti utente, tipi parametrici, macro senza parentesi, quote
-  annidate a più livelli, cut.
-- Il controllo degli effetti è dinamico; è previsto un controllo statico.
-- Il vecchio kernel a S-expression è conservato in `legacy/triad_sexpr_v1.jl`.
-
-## 16. Conformità e versionamento
-
-### 16.1 Profili di conformità
-
-- **Triad-Core** — sottoinsieme richiesto per eseguire il bootstrap e le implementazioni
-  self-hosted: valori, funzioni e chiusure, controllo di flusso, liste, stringhe, I/O e
-  primitive di bootstrap. È definito in modo normativo in `SPEC-CORE.md`; i casi condivisi
-  con Triad-Full sono in `conformance/core/`.
-- **Triad-Full** — tutto il linguaggio descritto in questo documento, inclusi logica (§6),
-  macro (§7), contratti (§9), budget (§10), tracce (§11), effetti (§12).
-
-### 16.2 Verifica
-
-Un'implementazione è conforme a un profilo se:
-
-1. passa i casi di `conformance/`, producendo per ognuno esattamente `expected.out` ed
-   `expected.code` (formato in `conformance/README.md`);
-2. implementa l'interfaccia a riga di comando del §14 per la parte coperta dalla suite;
-3. per Triad-Full passa tutti i casi; per Triad-Core, il sottoinsieme dichiarato.
-
-La suite di conformità è parte dello standard: i suoi golden sono normativi e versionati
-insieme alla specifica. Un'implementazione non può dichiararsi conforme senza eseguirla.
-
-### 16.3 Versionamento
-
-- La versione dello standard è `MAJOR.MINOR.PATCH` (`0.2.0` attuale, in `VERSION`).
-- `MAJOR` cambia per modifiche incompatibili; `MINOR` per estensioni compatibili e
-  chiarimenti; `PATCH` per correzioni non normative o di implementazione.
-- Ogni modifica normativa aggiorna `CHANGELOG.md`, `VERSION` e, se cambia il comportamento,
-  i golden della conformità.
-
-## Appendice A — Influenze dichiarate (informativo)
-
-Triad nasce da idee di **Julia**, **Prolog** e **Lisp**, ma non è un dialetto di nessuno dei
-tre: la definizione del linguaggio è questa specifica. Le somiglianze sono note informative.
-
-| da | idea ripresa |
+- Not yet implemented in the reference: named arguments (except `budget(steps = …)`),
+  mutable structs, user abstract types, parametric types, bracketless macros, quotas
+  nested at multiple levels, cut.
+- Effects control is dynamic; a static control is foreseen.
+- The old S-expression kernel is preserved in `legacy/triad_sexpr_v1.jl`.
+## 16. Compliance and versioning
+### 16.1 Compliance Profiles
+- **Triad-Core** — subset required to perform bootstrapping and deployments
+  self-hosted: values, functions and closures, flow control, lists, strings, I/O and
+  bootstrap primitives. It is normatively defined in `SPEC-CORE.md`; shared cases
+  with Triad-Full they are in `conformance/core/`.
+- **Triad-Full** — all language described in this document, including logic (§6),
+  macros (§7), contracts (§9), budgets (§10), tracks (§11), effects (§12).
+### 16.2 Verification
+An implementation conforms to a profile if:
+1. pass the cases of `conformance/`, producing exactly `expected.out` for each and
+   `expected.code` (format in `conformance/README.md`);
+2. implement the command line interface of §14 for the part covered by the suite;
+3. for Triad-Full all cases pass; for Triad-Core, the declared subset.
+The compliance suite is part of the standard: its goldens are normative and versioned
+together with the specification. An implementation cannot declare itself compliant without running it.
+### 16.3 Versioning
+- The standard version is `MAJOR.MINOR.PATCH` (current `0.2.0`, in `VERSION`).
+- `MAJOR` changes for incompatible changes; `MINOR` for compatible extensions e
+  clarifications; `PATCH` for non-normative or implementation fixes.
+- Each regulatory change updates `CHANGELOG.md`, `VERSION` and, if the behavior changes,
+  the goldens of conformity.
+## Appendix A — Claimed Influences (Informative)
+Triad was born from ideas of **Julia**, **Prolog** and **Lisp**, but is not a dialect of any of
+three: the definition of the language is this specification. Similarities are informative notes.
+| from | idea resumed |
 |---|---|
-| Julia | blocchi `function ... end`, tipi `::`, `struct`, multiple dispatch, operatori-funzione, `if`/`for`/`while`/`let` |
-| Prolog | `fact`/`rule` come costrutti, unificazione con occurs-check, backtracking, `solve`, variabili `?x` |
-| Lisp | codice come dato, albero uniforme, `:( ... )`/`quote` con `$`, macro |
-
-Propri di Triad, non presi in prestito: errori come dati, contratti, budget, tracce ed
-effetti dichiarati come parte del linguaggio, e l'integrazione dei tre modelli in un'unica
-sintassi a blocchi.
+| Julia | `function ... end` blocks, `::` types, `struct`, multiple dispatch, function-operators, `if`/`for`/`while`/`let` |
+| Prolog | `fact`/`rule` as constructs, unification with occurs-check, backtracking, `solve`, `?x` variables |
+| Lisp | code as given, uniform tree, `:( ... )`/`quote` with `$`, macro |
+Triad's own, not borrowed: errors such as data, contracts, budgets, tracks and
+effects declared as part of the language, and the integration of the three models into one
+block syntax.

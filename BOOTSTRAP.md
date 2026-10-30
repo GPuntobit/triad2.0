@@ -1,33 +1,24 @@
-# Triad senza linguaggi ospiti — piano di bootstrap
-
-Stato: **fase 0** (contratto di conformità + piano). Obiettivo: Triad che non dipende da
-Julia né da qualunque altro linguaggio di programmazione, in nessuna fase (runtime,
+# Triad without guest languages ​​— bootstrap plan
+Status: **phase 0** (compliance contract + plan). Objective: Triad that does not depend on
+Julia nor by any other programming language, at any stage (runtime,
 bootstrap, build).
-
-## 0. Requisito e conseguenza
-
-Il requisito "nessun altro linguaggio" esclude le scorciatoie ovvie:
-
-| Scorciatoia | Perché è esclusa |
+## 0. Requirement and consequence
+The "no other languages" requirement excludes obvious shortcuts:
+| Shortcut | Why it is excluded |
 |---|---|
-| Riscrivere il kernel in Rust/C/Go | introdurrebbe una dipendenza da un altro linguaggio |
-| Tenere Julia come runtime dentro un binario impacchettato | è ancora Julia che esegue Triad |
-| Committare un seed binario precompilato (prodotto una volta da Julia) | viola "nessun seed precompilato" |
-
-L'unica catena coerente è:
-
-1. il **primo eseguibile** è un interprete per un sottoinsieme di Triad (**Triad-Core**)
-   scritto a mano in **codice macchina** (byte x86-64 annotati, nessun compilatore/assembler);
-2. con quel seed si esegue l'**implementazione completa di Triad scritta in Triad-Core**;
-3. l'implementazione completa include un **compilatore nativo scritto in Triad** che compila
-   se stesso: da lì in poi il seed è ritirato e la catena è Triad → Triad.
-
-Questo è l'unico modo per non dipendere da un altro linguaggio: un linguaggio non può
-"compilarsi dal nulla", e il seed qui non è un binario ereditato ma la parte scritta a mano
-in codice macchina, che resta nel repository come sorgente (dump esadecimale annotato).
-
-## 1. Catena di bootstrap
-
+| Rewriting the kernel in Rust/C/Go | would introduce a dependency on another language |
+| Keep Julia as a runtime inside a packaged binary | it's Julia again performing Triad |
+| Commit a precompiled binary seed (produced once by Julia) | purple "no seed precompiled" |
+The only coherent chain is:
+1. the **first executable** is an interpreter for a subset of Triad (**Triad-Core**)
+   handwritten in **machine code** (x86-64 bytes noted, no compiler/assembler);
+2. with that seed you run the **complete implementation of Triad written in Triad-Core**;
+3. the complete implementation includes a **native compiler written in Triad** that compiles
+   itself: from then on the seed is withdrawn and the chain is Triad → Triad.
+This is the only way to not depend on another language: a language cannot
+"compile from scratch", and the seed here is not an inherited binary but the handwritten part
+in machine code, which remains in the repository as source (annotated hex dump).
+## 1. Bootstrap chain
 ```
 S0  seed: interprete Triad-Core in codice macchina (manuale, x86-64)
      │  esegue
@@ -40,112 +31,89 @@ S3  compilatore nativo self-hosted (nessun seed, nessun altro linguaggio)
 S4  Triad completo: REPL, CLI, esempi, conformance
 ```
 
-Punti fissi:
-- il seed **non contiene Julia** e non è generato da Julia;
-- S1/S2 sono sorgenti Triad nel repository (`selfhost/`), versionati come testo;
-- il repository finale non richiede Julia, Rust o C per costruire o usare Triad.
-
-## 2. Il seed: cosa deve fare (e quanto costa)
-
-Il seed è un interprete per **Triad-Core**, non per tutto Triad. Deve saper leggere un
-sorgente Triad-Core da file, valutarlo e stampare su stdout. Triad-Core è scelto per essere:
-
-- **abbastanza piccolo** da stare in un interprete scritto a mano in codice macchina;
-- **abbastanza espressivo** (Turing-completo) da implementarci sopra tutto Triad.
-
-Componenti del seed:
-1. lettura del file (apertura, read, chiusura) e parsing del lessico Triad-Core;
-2. valutatore con ambienti e chiusure;
-3. valori dinamici: Int, Bool, String, Symbol, List, Function, Nothing;
-4. primitive aritmetiche/confronti, liste, stringhe, I/O byte su stdout/stderr;
-5. allocatore (arena bump) e, in una fase successiva, GC mark-sweep;
-6. entrypoint CLI: `seed program.td [args...]` + argomenti in `ARGS`.
-
-**Costo**: questa è la parte critica del progetto. Un interprete del genere in codice
-macchina scritto a mano è nell'ordine delle migliaia di byte/istruzioni; è un lavoro
-plurisettimanale e va fatto a milestone verificabili (vedi §6). Non è comprimibile con
-scorciatoie senza reintrodurre un linguaggio ospite.
-
-## 3. Triad-Core (minimo sindacale)
-
-Definito in modo normativo in [`SPEC-CORE.md`](SPEC-CORE.md). Sintesi:
-
-- tipi: `Int`, `Bool`, `String`, `Symbol`, `List`, `Function`, `Nothing` (niente `Float`:
-  S1 rappresenta i `Float` di Triad-Full con i tipi Core);
-- forme: `x = e`, `if/elseif/else`, `while`, `let`, `begin`, `function`/lambda, `return`,
-  `break`, `continue`, chiamata, ternario; niente `quote`, macro, `for`, `struct`, `try`;
-- primitive: `+ - * % ^`, confronti, logica, `length`, `push!`, indicizzazione, `*` per
-  stringhe, `string`, `Symbol`, `Int`, `typeof`, `print`/`println`;
-- primitivi di bootstrap (solo S1, non Triad-Full): `readfile`, `strlen`, `strbyte`,
+Fixed points:
+- the seed **does not contain Julia** and is not generated by Julia;
+- S1/S2 are Triad sources in the repository (`selfhost/`), versioned as text;
+- the final repository does not require Julia, Rust or C to build or use Triad.
+## 2. The seed: what it must do (and how much it costs)
+The seed is an interpreter for **Triad-Core**, not for all Triad. Must be able to read a
+Triad-Core source from file, evaluate it and print to stdout. Triad-Core is chosen to be:
+- **small enough** to fit in a handwritten machine code interpreter;
+- **expressive enough** (Turing-complete) to implement all of Triad on top of it.
+Seed components:
+1. reading the file (opening, reading, closing) and parsing the Triad-Core lexicon;
+2. evaluator with environments and closures;
+3. dynamic values: Int, Bool, String, Symbol, List, Function, Nothing;
+4. arithmetic primitives/comparisons, lists, strings, I/O bytes to stdout/stderr;
+5. allocator (arena bump) and, in a subsequent phase, GC mark-sweep;
+6. CLI entrypoint: `seed program.td [args...]` + arguments in `ARGS`.
+**Cost**: This is the critical part of the project. An interpreter of the genre in code
+handwritten machine is in the order of thousands of bytes/instructions; it's a job
+multi-weekly and must be done at verifiable milestones (see §6). It is not compressible with
+shortcuts without reintroducing a guest language.
+## 3. Triad-Core (minimum wage)
+Defined normatively in [`SPEC-CORE.md`](SPEC-CORE.md). Synthesis:
+- types: `Int`, `Bool`, `String`, `Symbol`, `List`, `Function`, `Nothing` (nothing `Float`:
+  S1 represents Triad-Full `Floats` with Core types);
+- forms: `x = e`, `if/elseif/else`, `while`, `let`, `begin`, `function`/lambda, `return`,
+  `break`, `continue`, call, ternary; no `quote`, macros, `for`, `struct`, `try`;
+- primitives: `+ - * % ^`, comparisons, logic, `length`, `push!`, indexing, `*` for
+  strings, `string`, `Symbol`, `Int`, `typeof`, `print`/`println`;
+- bootstrap primitives (S1 only, not Triad-Full): `readfile`, `strlen`, `strbyte`,
   `strsub`, `exit`;
-- niente Prolog nel seed: `fact`/`rule`/`solve` sono implementati in S1 a livello Triad;
-- niente eccezioni nel seed: gli errori terminano con exit code 1.
-
-Il seed implementa **solo** Triad-Core; S1 usa Triad-Core per implementare il resto
-(Prolog, dispatch, macro, contratti, effetti, budget, tracce, REPL). I casi
-`conformance/core/` usano solo il sottoinsieme condiviso con Triad-Full.
-
-## 4. Rappresentazione, memoria, generazione di codice
-
-- Valori: word taggata a 64 bit (tag nei bit bassi), heap a blocchi con header; liste come
-  vettori dinamici; stringhe come (ptr,len) immutabili.
-- Ambiente: catena di frame o hash table lineare (inizialmente liste di associazioni).
-- GC: inizialmente **nessun GC** (arena che cresce; i programmi di bootstrap sono brevi),
-  poi mark-sweep per far girare S1 e la suite.
-- Codice: x86-64. Il seed è **una funzione nativa** con codice e dati in un unico file PE
-  per Windows e, in seguito, ELF per Linux. Chiamate OS isolate in 4–5 routine
-  (`os_open`, `os_read`, `os_write`, `os_exit`, `os_alloc`), unico punto da riportare.
-- Niente libc: su Windows si importa solo `kernel32` (ReadFile/WriteFile/GetCommandLineA/
-  ExitProcess); su Linux si usano syscall dirette (`open/read/write/mmap/exit`).
-
-## 5. Piattaforme
-
-| Piattaforma | Stato | Motivo |
+- no Prolog in the seed: `fact`/`rule`/`solve` are implemented in S1 at Triad level;
+- no exceptions in the seed: errors end with exit code 1.
+The seed implements **only** Triad-Core; S1 uses Triad-Core to implement the rest
+(Prolog, dispatch, macros, contracts, effects, budgets, tracks, REPL). The cases
+`conformance/core/` only use the subset shared with Triad-Full.
+## 4. Representation, memory, code generation
+- Values: 64-bit tagged word (tagged in low bits), block heap with header; lists like
+  dynamic vectors; strings like (ptr,len) immutable.
+- Environment: frame chain or linear hash table (initially association lists).
+- GC: initially **no GC** (growing arena; bootstrap programs are short),
+  then mark-sweep to run S1 and the suite.
+- Code: x86-64. The seed is **a native function** with code and data in a single PE file
+  for Windows and, later, ELF for Linux. OS calls isolated in 4–5 routines
+  (`os_open`, `os_read`, `os_write`, `os_exit`, `os_alloc`), only point to report.
+- No libc: on Windows you only import `kernel32` (ReadFile/WriteFile/GetCommandLineA/
+  ExitProcess); on Linux direct syscalls are used (`open/read/write/mmap/exit`).
+## 5. Platforms
+| Platform | Status | Reason |
 |---|---|---|
-| Windows x86-64 (PE) | **prima**, testabile qui | unica piattaforma eseguibile in questo ambiente; nessun compilatore installato |
-| Linux x86-64 (ELF) | in corso: **E0 ✅** (ELF minimale testato su CachyOS); E1/E2/E3 dopo | ambiente Linux disponibile (CachyOS nativo) |
-| macOS/ARM | dopo | dipende dalle prime due |
-
-La logica del seed è per la gran parte indipendente dall'OS: si cambia solo il layer
-`os_*` e il formato dell'eseguibile. Il primo traguardo è Windows; il port Linux è una
-milestone dedicata, non un'aggiunta a posteriori.
-
-## 6. Milestone e criteri di accettazione
-
-| # | Milestone | Accettazione |
+| Windows x86-64 (PE) | **before**, testable here | only platform executable in this environment; no compiler installed |
+| Linux x86-64 (ELF) | in progress: **E0 ✅** (minimal ELF tested on CachyOS); E1/E2/E3 after | Linux environment available (native CachyOS) |
+| macOS/ARM | after | depends on the first two |
+The seed logic is largely OS independent: you only change the layer
+`os_*` and the format of the executable. The first goal is Windows; the Linux port is one
+dedicated milestone, not an afterthought.
+## 6. Milestone and acceptance criteria
+| # | Milestones | Acceptance |
 |---|---|---|
 | M0 | piano + conformance suite golden | `conformance/` esiste, lo stage0 Julia la passa; nessuna dipendenza finale da Julia |
-| M1 | seed "hello" in codice macchina | un PE x86-64 scritto come byte nel repository stampa una riga ed esce con 0 su Windows |
-| M2 | seed con I/O file/argomenti | legge il file dal primo argomento e ne scrive i byte su stdout; exit 1/2 per errori (il vettore `ARGS` completo arriva con l'interprete in M3) |
-| M3 | seed = interprete Triad-Core | esegue un programma Triad-Core con funzioni, liste, stringhe, chiusure |
-| M4 | S1: Triad completo in Triad-Core | esempi `examples/*.td` e conformance girano sopra seed+S1 |
-| M5 | S2: compilatore nativo in Triad | compila S1; S1 compilato passa la conformance senza seed |
-| M6 | self-hosting | il compilatore nativo compila se stesso (fixed point), seed ritirato |
-| M7 | parità + port Linux | conformance verde su Linux ELF; CLI/REPL; docs |
-
-## 7. Tool di sviluppo (fuori dal prodotto)
-
-Il prodotto e la catena di bootstrap non usano altri linguaggi. Per **sviluppare e
-verificare** serve però qualcosa che esegua i test mentre il seed non esiste ancora:
-
-- lo **stage0 attuale** (kernel Julia) è usato solo come generatore una tantum dei golden
-  e come riferimento di comportamento durante M0–M4; non fa parte di S0–S4;
-- i golden sono file di testo committati: da M3 in poi nessun test richiede Julia;
-- il runner di conformità definitivo è `triad --conformance DIR`, implementato in Triad
-  (S1/M4). Fino ad allora si usa `conformance/run.jl` come strumento temporaneo;
-- materializzare il seed dai byte committati usa solo strumenti di sistema (decodifica esadecimale, `certutil`/`xxd`), non compilatori o interpreti; - il runner di conformance e' `conformance/run.mjs` (Node).
-- il generatore del seed (`seed/dev/gen_seed.js`, Node) è uno strumento di **sola
-  manutenzione**: produce il dump, non è richiesto per costruire/usare il seed e non fa parte
-  di S0–S4. È versionato perché il codice macchina altrimenti non sarebbe più estendibile
-  (è già stato perso una volta e ricostruito, verificato contro l'hash).
-
-Regola: **nessuno di questi strumenti deve essere necessario per usare Triad o per
-ricostruire la catena S0→S4** quando M6 è raggiunta.
-
-## 8. Contratto di conformità
-
-La specifica eseguibile è `conformance/`: ogni caso è
-
+| M1 | seed "hello" in codice macchina | an x86-64 PE written as bytes in the repository prints a line and exits with 0 on Windows |
+| M2 | seed con I/O file/argomenti | reads the file from the first argument and writes its bytes to stdout; exit 1/2 for errors (the complete `ARGS` vector comes with the interpreter in M3) |
+| M3 | seed = interprete Triad-Core | runs a Triad-Core program with functions, lists, strings, closures |
+| M4 | S1: Triad completo in Triad-Core | examples `examples/*.td` and conformance run on seed+S1 |
+| M5 | S2: compilatore nativo in Triad | fill out S1; S1 compilato passa la conformance senza seed |
+| M6 | self-hosting | native compiler compiles itself (fixed point), seed withdrawn |
+| M7 | parity + Linux port | conformance verde su Linux ELF; CLI/REPL; docs |
+## 7. Development tools (outside the product)
+The bootstrap product and chain do not use other languages. To **develop and
+verify** however you need something that runs the tests while the seed does not yet exist:
+- the **current stage0** (Julia kernel) is only used as a one-time golden generator
+  and as a behavioral reference during M0–M4; not part of S0–S4;
+- goldens are committed text files: from M3 onwards no tests require Julia;
+- the final conformance runner is `triad --conformance DIR`, implemented in Triad
+  (S1/M4). Until then, use `conformance/run.jl` as a temporary tool;
+- materializing the seed from committed bytes uses only system tools (hex decoding, `certutil`/`xxd`), not compilers or interpreters; - the conformance runner is `conformance/run.mjs` (Node).
+- the seed generator (`seed/dev/gen_seed.js`, Node) is a **only tool
+  maintenance**: produces the dump, is not required to build/use the seed and is not part of
+  of S0–S4. It is versioned because the machine code would otherwise no longer be extensible
+  (it has already been lost once and rebuilt, checked against the hash).
+Rule: **None of these tools should be required to use Triad or to
+reconstruct the chain S0→S4** when M6 is reached.
+## 8. Compliance Agreement
+The executable specification is `conformance/`: each case is
 ```
 conformance/cases/<nome>/
   program.td        # programma Triad
@@ -154,35 +122,30 @@ conformance/cases/<nome>/
   expected.code     # exit code atteso
 ```
 
-Un'implementazione passa la suite se, eseguendo `program.td` come script con `ARGS` da
-`args.txt`, produce `expected.out` e `expected.code`. La suite è indipendente dal
-linguaggio dell'implementazione: la eseguiranno il seed, S1 e il compilatore nativo.
-
-I golden sono generati una tantum con lo stage0 (`conformance/run.mjs --update`) e poi committati: da quel momento sono il contratto e il runner Node basta per verificarli.
-
-## 9. Rischi
-
-| Rischio | Mitigazione |
+An implementation passes the suite if, running `program.td` as a script with `ARGS` from
+`args.txt`, produces `expected.out` and `expected.code`. The suite is independent from
+implementation language: the seed, S1 and the native compiler will execute it.
+The goldens are generated one-off with stage0 (`conformance/run.mjs --update`) and then committed: from that moment they are the contract and the Node runner is enough to verify them.
+## 9. Risks
+| Risk | Mitigation |
 |---|---|
-| Scrivere a mano un interprete in codice macchina è lentissimo e fragile | Triad-Core minimale; milestone M1/M2 verificabili subito; annotazioni byte per byte; niente GC all'inizio |
-| Nessun ambiente Linux per testare ELF | risolto: CachyOS su secondo disco; E0 verificato, CI Linux in arrivo |
-| Divergenza tra stage0 e implementazione indipendente | conformance golden come unico contratto; oracle stage0 solo per rigenerare i golden |
-| Seed troppo legato a Windows | M2 usa ancora `KERNEL32` direttamente: isolare le chiamate in routine `os_*` prima di M3/M7 |
-| Aspettative sui tempi | il seed è un progetto plurisettimanale: M0-M2 sono le tappe intermedie da verificare |
-
-## 10. Stato attuale
-
-- [x] Requisito definito: nessun linguaggio ospite, nessun seed precompilato.
-- [x] Piano S0→S4 e milestone.
-- [x] `SPEC-CORE.md` — sottoinsieme Triad-Core normativo (tipi, forme, primitive,
-  primitivi di bootstrap, conformità).
-- [x] `conformance/` — 12 casi Full + 29 casi Core, verdi sullo stage0.
-- [x] **M1** — seed "Triad seed OK" in codice macchina: Windows x86-64 PE da 1024 byte,
-  `seed/windows-x86_64/`, costruito solo decodificando un dump esadecimale.
-- [x] **M2** — seed con I/O: legge il file dal primo argomento e ne scrive i byte su stdout
-  (blocchi da 4 KiB), exit `0`/`1`/`2`, path tra virgolette; PE da 2560 byte, nessun runtime.
-- [ ] **M3** (in corso) — `SPEC-CORE.md` ✅ e `conformance/core/` ✅ pronti;
-  **M3b1** ✅ interi; **M3b2a** ✅ variabili; **M3b2b1** ✅ funzioni; **M3b2b2** ✅
-  confronti/ternario/ricorsione; **M3b2b3a-e** ✅ Bool, operatori, `if`, `while`, lambda;
-  **M3b2b3f** ⚠️ cattura instabile. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ corpo multi-istruzione; **M3b2b3j** ✅ frame lessicali e `let`; **M3b2b3k** ✅ chiusure; **M3b2b3l** ✅ `begin`/`end` e **CI**; **M3b2b3m** ✅ stringhe heap base; **M3b2b3n** ✅ `nothing`; **M3b2b3o/p/q** ✅ concat/simboli/coverage; **M7/E0** ✅ ELF Linux minimale. Serve AST/bytecode per cattura multi-binding, `elseif`, liste; poi E1/E2 del seed Linux.
-  Prossimo: `elseif` (caso `controllo`), liste (casi `liste` e `valori`), cattura multi-binding; poi E1/E2 del seed Linux.
+| Writing an interpreter in machine code by hand is very slow and fragile | Minimal Triad-Core; M1/M2 milestones verifiable immediately; byte-by-byte annotations; no GC at the beginning |
+| No Linux environment to test ELF | fixed: CachyOS on second disk; E0 verified, Linux CI coming soon |
+| Divergence between stage0 and independent implementation | conformance golden as the only contract; oracle stage0 just to regenerate the golden |
+| Seed too tied to Windows | M2 still uses `KERNEL32` directly: isolate calls in `os_*` routines before M3/M7 |
+| Timing expectations | the seed is a multi-week project: M0-M2 are the intermediate stages to be verified |
+## 10. Current status
+- [x] Requirement defined: no guest language, no precompiled seeds.
+- [x] Plan S0→S4 and milestones.
+- [x] `SPEC-CORE.md` — normative Triad-Core subset (types, shapes, primitives,
+  bootstrap primitives, conformity).
+- [x] `conformance/` — 12 Full cases + 29 Core cases, green on stage0.
+- [x] **M1** — seed "Triad seed OK" in machine code: Windows x86-64 PE 1024 byte,
+  `seed/windows-x86_64/`, built only by decoding a hex dump.
+- [x] **M2** — seed with I/O: reads the file from the first argument and writes its bytes to stdout
+  (4 KiB blocks), exit `0`/`1`/`2`, path in quotes; 2560 byte PE, no runtime.
+- [ ] **M3** (in progress) — `SPEC-CORE.md` ✅ and `conformance/core/` ✅ ready;
+  **M3b1** ✅ integers; **M3b2a** ✅ variables; **M3b2b1** ✅ functions; **M3b2b2** ✅
+  comparisons/ternary/recursion; **M3b2b3a-e** ✅ Bool, operators, `if`, `while`, lambda;
+  **M3b2b3f** ⚠️ unstable capture. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ multi-statement body; **M3b2b3j** ✅ lexical frames and `let`; **M3b2b3k** ✅ closures; **M3b2b3l** ✅ `begin`/`end` and **CI**; **M3b2b3m** ✅ basic heap strings; **M3b2b3n** ✅ `nothing`; **M3b2b3o/p/q** ✅ concat/symboli/coverage; **M7/E0** ✅ Minimal ELF Linux. Needs AST/bytecode for multi-binding capture, `elseif`, lists; then E1/E2 of the Linux seed.
+  Next: `elseif` (case `control`), lists (cases `lists` and `values`), capture multi-binding; then E1/E2 of the Linux seed.

@@ -1,0 +1,40 @@
+// Markdownlint configuration for the Triad project.
+// Read automatically by VS Code's markdownlint extension,
+// from markdownlint-cli and markdownlint-cli2.
+{
+  "default": true,
+// The structural rules (heading, lists, naked URLs, first line H1)
+  // remain ACTIVE: the project files are fixed, not silenced.
+// Long lines: The documentation uses Italian tables, badges, and phrases
+  // that exceed 100/80 characters without penalizing readability.
+  "MD013": false,
+// Duplicate headers allowed between different releases/sections
+  // (e.g. "CLI", "Documentation" recurring in the changelog).
+  "MD024": { "siblings_only": true },
+// Inline HTML required for banners, badges and centered layouts in READMEs;
+  // anchor <a id="..."> for MANUAL/TUTORIAL deep indexes.
+  "MD033": false,
+// Language-free ``` blocks: in a cross-platform repo (VS Code,
+  // GitHub, Obsidian ) automatic highlighting is preferable to a
+  // forced or fictitious language.
+  "MD040": false,
+// Bold/italic "headings" used as visual pseudo-headers in
+  // AI prompt and in internal notes: they are content, not structure.
+  "MD036": false,
+// "compact" table style used throughout the project.
+  "MD060": false,
+// Generated or external folders: not part of the documentation
+  // of the language (node_modules, Obsidian wiki, agent/skill template,
+  // third-party tool config, Jekyll output).
+  "ignorePaths": [
+    "node_modules",
+    "cli/node_modules",
+    "obsidian-triad",
+    ".github/agents",
+    ".github/skills",
+    ".kiro",
+    ".kilo",
+    "docs/_site",
+    "docs/node_modules"
+  ]
+}

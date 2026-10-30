@@ -1,21 +1,13 @@
 # Bundle Templater — `main.js`
-
-File sorgente: [`main.js`](./.obsidian/plugins/templater-obsidian/main.js) · [cartella del plugin](./.obsidian/plugins/templater-obsidian/)
-
-## Ruolo nel progetto
-
-Bundle JavaScript del plugin Templater configurato per questo vault. Graphify associa al file 323 simboli; tra quelli individuati: `get_new_file_template_for_file()`, `get_new_file_template_for_folder()`, `resolve_template_file()`, `update_file_menu()` e `on_file_creation()`.
-
-## Flusso di creazione file
-
-La definizione Graphify di [`on_file_creation()`](./.obsidian/plugins/templater-obsidian/main.js#L20) gestisce i template all’arrivo di un nuovo file:
-
-- seleziona un template per cartella o per regex, tramite `get_new_file_template_for_folder()` o `get_new_file_template_for_file()`;
-- scrive il template con `write_template_to_file()`;
-- per i file Markdown non vuoti, può passare a `overwrite_file_commands()`.
-
-## Collegamenti
-
-- [[Grafo Graphify]]
-- [Cartella Obsidian del vault](./.obsidian/)
-- [Cartella plugins](./.obsidian/plugins/)
+Source file: [`main.js`](./.obsidian/plugins/templater-obsidian/main.js) · [plugin folder](./.obsidian/plugins/templater-obsidian/)
+## Role in the project
+Templater plugin JavaScript bundle configured for this vault. Graphify associates 323 symbols with the file; among those identified: `get_new_file_template_for_file()`, `get_new_file_template_for_folder()`, `resolve_template_file()`, `update_file_menu()` and `on_file_creation()`.
+## File creation flow
+The Graphify definition of [`on_file_creation()`](./.obsidian/plugins/templater-obsidian/main.js#L20) handles templates when a new file arrives:
+- select a template for folder or for regex, via `get_new_file_template_for_folder()` or `get_new_file_template_for_file()`;
+- write the template with `write_template_to_file()`;
+- for non-empty Markdown files, can switch to `overwrite_file_commands()`.
+## Links
+- [[Graphify graph]]
+- [Vault Obsidian folder](./.obsidian/)
+- [plugins folder](./.obsidian/plugins/)

@@ -2,12 +2,14 @@ name: CI
 on:
   push:
   pull_request:
+permissions:
+  contents: read
 jobs:
   conformance-core:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
       - name: Decode seed (Linux)
@@ -20,7 +22,7 @@ jobs:
   seed-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: "AV exclusion (PE generato dal dump: falso positivo noto)"
         shell: pwsh
         continue-on-error: true
@@ -49,7 +51,7 @@ jobs:
         shell: pwsh
         run: |
           $out = Join-Path $env:TEMP "test_get.out"
-          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "test_get.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
+          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "probes\\test_get.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
           if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for test_get.td" }
           $got = (Get-Content $out -Raw) -replace "`r`n", "`n"
           if ($got -cne "20`n") { throw "unexpected output for test_get.td: $got" }
@@ -72,7 +74,7 @@ jobs:
   seed-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Decode ELF
         run: |
           sudo apt-get update
@@ -87,3 +89,26 @@ jobs:
         run: |
           h=$(sha256sum seed/linux-x86_64/seed.hex | cut -d' ' -f1)
           test "$h" = "ad4c9f08176d9964d5be17d44c72230184434025980447395e7a3250f63ca5ea"
+
+  linux-toolchain:
+    # Verifica che l'intera toolchain POSIX funzioni su Linux: launcher,
+    # install.sh (senza root), esecuzione di programmi .td e suite di
+    # conformità tramite i launcher installati.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+      - name: Launcher bin/triad esegue un programma
+        run: ./bin/triad probes/test_simple.td | grep -q '^test$'
+      - name: install.sh (utente non root, prefix temporaneo)
+        run: |
+          ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop
+          export PATH="$RUNNER_TEMP/triad-bin:$PATH"
+          triad probes/test_let.td | grep -q '^15$'
+          triad-cli status >/dev/null
+      - name: Conformance via launcher installato
+        run: |
+          export PATH="$RUNNER_TEMP/triad-bin:$PATH"
+          triad-cli test conformance

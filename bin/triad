@@ -6,7 +6,7 @@
 #    1. bin/triad-native  (eseguibile standalone per il sistema corrente)
 #    2. seed/<piattaforma>/seed  (interprete Triad-Core in codice macchina)
 #
-#  Non dipende da Julia né da altri linguaggi ospiti: l'esecuzione del
+#  Does not depend on Julia or other host languages: execution of
 #  codice .triad avviene tramite il seed in codice macchina.
 #
 #  Uso:  triad [opzioni] [file.td [argomenti...]]
@@ -34,7 +34,7 @@ while [ -L "$self" ]; do
 done
 TRIAD_HOME="$(cd "$(dirname "$self")/.." && pwd)"
 
-# --- Modalità --build (non più supportata) -----------------------------
+# --- Mode --build (no longer supported) -----------------------------
 if [ "${1:-}" = "--build" ]; then
     shift
     echo "triad --build: non disponibile (nessuna dipendenza da Julia)." >&2
@@ -46,8 +46,14 @@ fi
 RUNTIME=""
 SEED=""
 
+# TRIAD_SEED permette di forzare un seed specifico (usato anche dalla CI).
+if [ -n "${TRIAD_SEED:-}" ] && [ -x "${TRIAD_SEED:-}" ]; then
+    SEED="$TRIAD_SEED"
+    RUNTIME="seed"
+fi
+
 # 1. Eseguibile standalone (nessuna dipendenza)
-if [ -x "$TRIAD_HOME/bin/triad-native" ]; then
+if [ -z "$RUNTIME" ] && [ -x "$TRIAD_HOME/bin/triad-native" ]; then
     RUNTIME="standalone"
 fi
 
@@ -58,8 +64,21 @@ if [ -z "$RUNTIME" ]; then
         *)       SEED_CAND="" ;;
     esac
     if [ -n "$SEED_CAND" ] && [ -x "$SEED_CAND" ]; then
-        SEED="$SEED_CAND"
-        RUNTIME="seed"
+        # The E0 seed is a stub (prints only "Triad seed Linux OK"): if given
+        # a .td file it cannot execute it. Recognized by
+        # dimensione (< 4 KB) e in quel caso si usa l'interprete JS di
+        # riferimento, come fa conformance/run.mjs. Sostituire il seed con la
+        # versione E2 rimuove automaticamente il fallback.
+        seed_size=$(wc -c < "$SEED_CAND" 2>/dev/null || echo 0)
+        if [ "$seed_size" -gt 4096 ]; then
+            SEED="$SEED_CAND"
+            RUNTIME="seed"
+        elif [ -f "$TRIAD_HOME/seed/dev/triad_core.cjs" ] && command -v node >/dev/null 2>&1; then
+            RUNTIME="jsref"
+        else
+            SEED="$SEED_CAND"   # stays seed: stub will at least print its output
+            RUNTIME="seed"
+        fi
     fi
 fi
 
@@ -67,6 +86,11 @@ fi
 case "$RUNTIME" in
     standalone)
         exec "$TRIAD_HOME/bin/triad-native" "$@"
+        ;;
+    jsref)
+        # Interprete JS di riferimento (seed/dev/triad_core.cjs): identico
+        # behavior used by the conformance suite on Linux.
+        exec node "$TRIAD_HOME/seed/dev/triad_core.cjs" "$@"
         ;;
     seed)
         exec "$SEED" "$@"
