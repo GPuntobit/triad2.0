@@ -2,6 +2,8 @@
   <img src="docs/triad-logo.webp" alt="Logo di Triad" width="240">
 </p>
 
+[Il libro di triad (Books) - Italian Edition](https://a.co/d/0iwB7IdX)
+
 # Triad 2.0 — Programming Language  
 A standalone language with a normative specification, executable conformance, `.triad` extension, and editor tooling. Bootstrap independent of Julia and any host language: S0 seed in machine code (Windows x86-64) and a roadmap to self-hosting.
 
@@ -26,7 +28,7 @@ They are part of the language, not a library: errors as data (Err), contracts (r
 ## Learning curve
 
 <p align="center">
-  <img src="docs/assets/img/curva-apprendimento.svg" alt="Learning curve and learning threshold for Triad 2.0" width="900">
+  <img src="docs/assets/img/learning-curve.svg" alt="Learning curve and learning threshold for Triad 2.0" width="900">
 </p>
 
 Derived from the chapters in [tutorial/TUTORIAL.md](tutorial/TUTORIAL.md) and [docs/MANUALE.md](docs/MANUALE.md): Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).

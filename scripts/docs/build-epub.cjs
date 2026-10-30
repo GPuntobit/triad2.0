@@ -9,6 +9,7 @@ const preface = fs.readFileSync(path.join(root, 'docs', 'PREFazione.md'), 'utf8'
 const manual = fs.readFileSync(path.join(root, 'docs', 'MANUALE.md'), 'utf8');
 const tutorial = fs.readFileSync(path.join(root, 'tutorial', 'TUTORIAL.md'), 'utf8');
 marked.setOptions({ gfm: true, breaks: false });
+
 function rewriteRepositoryLinks(html) {
   return html.replace(/href="([^"]+)"/g, (match, target) => {
     if (/^(?:https?:|mailto:|#)/.test(target)) return match;
@@ -17,6 +18,7 @@ function rewriteRepositoryLinks(html) {
     return `href="https://github.com/GPuntobit/triad2.0/${kind}/main/${path}"`;
   });
 }
+
 function stripFirstH1(md) {
   const lines = md.split(/\r?\n/);
   let inFence = false;
@@ -27,16 +29,23 @@ function stripFirstH1(md) {
   if (index !== -1) lines.splice(index, 1);
   return lines.join('\n');
 }
-// Remove internal indexes
-function stripIndex(md, heading, endMarker) {
-  const start = md.indexOf(heading);
+
+// Remove the internal tables of contents
+function stripIndex(md, headings, endMarker) {
+  const candidates = Array.isArray(headings) ? headings : [headings];
+  let start = -1;
+  for (const h of candidates) {
+    const at = md.indexOf(h);
+    if (at !== -1 && (start === -1 || at < start)) start = at;
+  }
   if (start === -1) return md;
   const end = md.indexOf(endMarker, start);
   if (end === -1) return md;
   return md.slice(0, start) + md.slice(end);
 }
-const manualClean = stripIndex(manual, '### Index', '\n<a id="part-1">');
-const tutorialClean = stripIndex(tutorial, '## Index', '\n<a id="part-1">');
+const manualClean = stripIndex(manual, ['### Index', '### Indice'], '\n<a id="parte-1">');
+const tutorialClean = stripIndex(tutorial, ['## Index', '## Indice'], '\n<a id="parte-1">');
+
 function extractHeadings(md, maxLevel) {
   const lines = md.split(/\r?\n/);
   const out = [];
@@ -57,13 +66,14 @@ function extractHeadings(md, maxLevel) {
 }
 const manH = extractHeadings(manualClean, 3);
 const tutH = extractHeadings(tutorialClean, 3);
-let summaryHtml = '<p>Complete list of all chapters and sections.</p>';
-summaryHtml += '<h2>Triad 2.0 Handbook</h2><ul>';
-for (const h of manH) summaryHtml += '<li>' + h.text + '</li>';
-summaryHtml += '</ul>';
-summaryHtml += '<h2>Triad 2.0 Tutorial</h2><ul>';
-for (const h of tutH) summaryHtml += '<li>' + h.text + '</li>';
-summaryHtml += '</ul>';
+let sommarioHtml = '<p>Complete list of all chapters and sections.</p>';
+sommarioHtml += '<h2>The Triad 2.0 Handbook</h2><ul>';
+for (const h of manH) sommarioHtml += '<li>' + h.text + '</li>';
+sommarioHtml += '</ul>';
+sommarioHtml += '<h2>The Triad 2.0 Tutorial</h2><ul>';
+for (const h of tutH) sommarioHtml += '<li>' + h.text + '</li>';
+sommarioHtml += '</ul>';
+
 const css = `
 body { font-family: serif; font-size: 1em; line-height: 1.6; color: #1a1a1a; }
 h1, h2, h3 { font-family: sans-serif; color: #0d0a0f; page-break-before: always; }
@@ -79,48 +89,51 @@ th, td { border: 0.5pt solid #b8b0aa; padding: 0.3em 0.5em; }
 th { background: #ece8e4; font-weight: bold; }
 blockquote { border-left: 2pt solid #7d5157; margin: 0.8em 0; padding: 0.3em 0.8em; font-style: italic; }
 `;
-const contents = [
+
+const content = [
   {
     title: 'Preface',
     data: rewriteRepositoryLinks(marked.parse(stripFirstH1(preface)))
   },
   {
-    title: 'Summary',
-    data: summaryHtml
+    title: 'Contents',
+    data: sommarioHtml
   },
   {
-    title: 'Triad Manual 2.0',
+    title: 'The Triad 2.0 Handbook',
     data: rewriteRepositoryLinks(marked.parse(stripFirstH1(manualClean)))
   },
   {
-    title: 'Triad 2.0 Tutorial',
+    title: 'The Triad 2.0 Tutorial',
     data: rewriteRepositoryLinks(marked.parse(stripFirstH1(tutorialClean)))
   },
   {
     title: 'Back cover',
     data: `<div style="background:#0d0a0f;color:#f5f5f4;padding:1em;">
       <h1>The Book of Triad</h1>
-      <p>Triad 2.0 is an autonomous programming language, defined by a specific regulation independent of any implementation.</p>
-      <p>The project is released under the MIT license. SPEC.md (standard 0.2.0), SPEC-CORE.md, conformance/ with verifiable golden.</p>
-      <p>The goal is an autonomous and recognized language: own standard, conformance executable, .triad extension, tooling editor, bootstrap without guest languages and self-hosting.</p>
+      <p>Triad 2.0 is a standalone programming language, defined by a normative specification independent of any implementation.</p>
+      <p>The project is released under the MIT license. SPEC.md (standard 0.2.0), SPEC-CORE.md, conformance/ with verifiable goldens.</p>
+      <p>The goal is a standalone and recognised language: its own standard, executable conformance, the .triad extension, editor tooling, bootstrap without host languages and, finally, self-hosting.</p>
     </div>`
   }
 ];
+
 const options = {
   title: 'The Book of Triad',
   author: 'GPuntobit',
   publisher: 'GPuntobit',
-  description: 'The Triad book — learning the language and code of the triad2.0 project',
-  cover: fs.existsSync(path.join(outDir, 'frontespizio.png')) ? path.join(outDir, 'frontespizio.png') : undefined,
-  content: contents,
+  description: 'The Book of Triad — learn the language and the code of the triad2.0 project',
+  cover: path.join(outDir, 'frontespizio.png'),
+  content: content,
   css: css,
   tocTitle: 'Index',
   version: 3,
-  lang: 'it'
+  lang: 'en'
 };
-const epub = new Epub(options, path.join(outDir, 'The-book-of-Triad.epub'));
+
+const epub = new Epub(options, path.join(outDir, 'The-Book-of-Triad.epub'));
 epub.promise.then(() => {
-  console.log('written book.epub');
+  console.log('wrote The-Book-of-Triad.epub');
 }).catch(err => {
   console.error('epub error:', err);
 });

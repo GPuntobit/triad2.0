@@ -6,11 +6,11 @@ const root = path.join(__dirname, '..', '..');
 const libroDir = path.join(root, 'docs', 'libro');
 let html = fs.readFileSync(path.join(libroDir, 'libro.html'), 'utf8');
 
-// Rimuovi immagini webp (non supportate da tutte le versioni di Word)
+// Remove webp images (not supported by every version of Word)
 html = html.replace(/<img[^>]*webp[^>]*>/gi, '');
 
-// html-to-docx incorpora solo immagini http(s) o data-URI: le immagini locali
-// (copertina, logo) vanno trasformate in data-URI, altrimenti vengono perse.
+// html-to-docx embeds only http(s) or data-URI images: local images
+// (cover, logo) must be turned into data-URIs, otherwise they are lost.
 const mimeByExt = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -30,9 +30,9 @@ html = html.replace(/<img\b([^>]*?)\bsrc="([^"]+)"([^>]*)>/gi, (match, before, s
 
 (async () => {
   const buffer = await htmlToDocx(html, null, {
-    title: 'Il libro di Triad',
+    title: 'The Book of Triad',
     creator: 'GPuntobit',
-    description: 'Il libro di Triad',
+    description: 'The Book of Triad',
     font: 'Times New Roman',
     fontSize: 22,
     complexScriptFontSize: 22,
@@ -43,5 +43,5 @@ html = html.replace(/<img\b([^>]*?)\bsrc="([^"]+)"([^>]*)>/gi, (match, before, s
     skipFirstHeaderFooter: true
   }, '<p style="text-align: center;"></p>');
   fs.writeFileSync(path.join(root, 'docs', 'libro', 'libro.docx'), buffer);
-  console.log('scritto libro.docx, size:', buffer.length);
+  console.log('wrote libro.docx, size:', buffer.length);
 })();

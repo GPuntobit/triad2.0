@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <title>The Book of Triad</title>
+<meta name="description" content="The Book of Triad: the complete study path of the Triad programming language — handbook, tutorial, exercises and reference." />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   @page { size: 152.4mm 228.6mm; margin: 15mm 12mm; @bottom-center { content: counter(page); font-size: 9pt; color: #666; } }
   @page :first { margin: 0; }
@@ -51,7 +53,11 @@
 </style>
 </head>
 <body>
-  <div class="cover" style="text-align:center"><img src="frontespizio.png" alt="Frontespizio — The book of Triad" /></div>
+  <div class="cover" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;background:#0d0a0f;color:#f5f5f4">
+    <img src="triad-logo.webp" alt="Triad logo" style="max-width:38%;margin-bottom:18pt" />
+    <h1 style="border:none;font-size:20pt;margin:0 0 6pt 0">The Book of Triad</h1>
+    <p style="text-align:center;font-style:italic;color:#a8a29e;margin:0">Learn the language and the code of the triad2.0 project,<br />from the first programs to the machine-code seed</p>
+  </div>
   <div class="preface-page">
     <h1>Preface</h1>
 <p>Triad is a standalone programming language: block syntax and declared types, multiple
@@ -452,7 +458,7 @@ the output of a single runtime as the language definition.</p>
 <p>Examples marked <code>triad</code> are run with the JavaScript reference interpreter:</p>
 <pre><code class="language-sh">node seed/dev/triad_core.cjs program.triad
 </code></pre>
-<p>The program receives arguments in <code>ARGS</code> (list of strings, without the program name) and lo
+<p>The program receives arguments in <code>ARGS</code> (list of strings, without the program name) and the
 shebang <code>#!</code> in first line is ignored by the parser.</p>
 <pre><code class="language-triad">#!/usr/bin/env triad
 # greeting.triad
@@ -545,7 +551,7 @@ println(&quot;x + 1 = $(x + 1)&quot;)
 they have the same name. In Triad-Full the symbol is also the atom of logic (chap. 16). <strong>[Core]</strong></p>
 <p>A symbol serves to give a stable name to a thing — a category, a key, an atom — without the
 flexibility and the cost of a string. The difference compared to a string is not just one of convenience:
-<code>:alice</code> is an identity, <code>&quot;alice&quot;</code> is a sequence of bytes; two symbols with the same name are lo
+<code>:alice</code> is an identity, <code>&quot;alice&quot;</code> is a sequence of bytes; two symbols with the same name are the
 same value wherever they appear, while two strings must be compared character by character. It is
 this property that makes the symbols suitable for record keys (chap. 2), list tags and
 to the atoms of facts (chap. 16).</p>
@@ -1210,7 +1216,7 @@ true
 of the last executed statement (<code>nothing</code> if there is none).</p>
 <p>The exceptions are <code>return</code>, <code>break</code> and <code>continue</code>: they don&#39;t produce a value, they stop the flow.
 Assignment, on the other hand, is an expression (chap. 3), and this uniformity is what makes it possible
-write <code>v = if condition … end</code> without special syntax: a block is an expression like lo
+write <code>v = if condition … end</code> without special syntax: a block is an expression like
 it is a sum.</p>
 <p>This rule unifies two uses that often have separate syntaxes in other languages: choose a
 branch and calculate a result. In <code>v = if condition ... end</code>, the complete expression produces the
@@ -1327,7 +1333,7 @@ println(xs[2:end])
 3
 [2, 3]
 </code></pre>
-<p><code>end</code> is a special name that takes the position of the last element and can be used inside le
+<p><code>end</code> is a special name that takes the position of the last element and can be used inside the
 square brackets of an index: <code>xs[end]</code> is the last element, <code>xs[2:end]</code> is the tail from the second
 element onwards. The range <code>a:b</code> is inclusive at both ends, so <code>1:10</code> contains ten
 values; it is a form of Triad-Full, and in Core it is achieved with a loop. Destructuring in the <code>for</code>
@@ -1452,7 +1458,7 @@ println(apply_all(x -&gt; x * x, [1, 2, 3]))
 <p>The point of <code>apply_all</code> isn&#39;t function specific: it&#39;s that <code>f</code> is a parameter like the others, and
 <code>x -&gt; x * x</code> is a value constructed at call time. This is the difference between writing
 ten almost equal cycles and write a cycle only once; in Core <code>map</code> and <code>filter</code> do not exist
-because the bootstrap language needs to stay small, not because the idea is foreign to Triad. Le
+because the bootstrap language needs to stay small, not because the idea is foreign to Triad. The
 functions of chapter 22.1 are the practical answer: write them once and use them again.</p>
 <h3 id="man-6-4-the-io-effect-annotation">6.4 The <code>!io</code> effect annotation</h3>
 <p>A function that prints must declare <code>!io</code> in the signature. Core <strong>accepts the annotation and the
@@ -1565,7 +1571,7 @@ println(double(5), &quot; &quot;, sum(1, 2), &quot; &quot;, apply(x -&gt; x * x)
 <p><strong>Output:</strong></p>
 <pre><code class="language-text">10 3 9
 </code></pre>
-<p>A lambda with a multi-statement body is written with <code>begin … end</code> or with <code>function (…) … end</code>. Le
+<p>A lambda with a multi-statement body is written with <code>begin … end</code> or with <code>function (…) … end</code>. The
 parameterless lambdas (<code>() -&gt; …</code>) are <strong>not</strong> supported: use <code>function () … end</code>.</p>
 <h3 id="man-8-2-closures">8.2 Closures</h3>
 <p>A lambda captures the environment in which it is created. According to <code>SPEC-CORE §5</code> the captured variables are
@@ -2322,7 +2328,7 @@ println(length(sols))
 dave
 1
 </code></pre>
-<p>Each solution binds the <strong>non-anonymous</strong> query variables, in the order they appear. Le
+<p>Each solution binds the <strong>non-anonymous</strong> query variables, in the order they appear. The
 variables left free remain <code>?x#n</code>. <code>vars(sol)</code> returns bound names.
 <code>Solution</code> is a record with the query names: <code>sols[1].who</code> reads the binding, and <code>vars(sol)</code> lists the
 names. The result of <code>solve</code> is a normal list, so you can filter, sort or count the
@@ -2398,7 +2404,7 @@ executes, which <code>:( … )</code> returns as a value and which <code>triad -
 <strong>[Full]</strong></p>
 <p>The idea behind it is radical: the program is not a sequence of commands but the evaluator
 interpret by hand, it is a <strong>given</strong>. The parser produces the tree, the evaluator executes the tree, the
-macros receive tree pieces and return others. Since there is only one type of node, chi
+macros receive tree pieces and return others. Since there is only one type of node, which
 writes code that manipulates the program does not have to know ten different representations: it knows
 <code>Node(head, args)</code> and that&#39;s it.</p>
 <p>The table shows how shapes you&#39;ve already encountered become knots: read it like a dictionary
@@ -3215,7 +3221,7 @@ println(evaluate(&quot;2*3+4*5&quot;, []))
 </code></pre>
 </details><h3 id="man-exercise-8-a-dictionary-environment">Exercise 8 — A dictionary environment</h3>
 <p>Extend exercise 7 (the evaluator with environment) by removing a name, and write
-<code>environment_from_list</code> which constructs an environment from <code>[name, value]</code> pairs. Check with <code>env_get</code> ed
+<code>environment_from_list</code> which constructs an environment from <code>[name, value]</code> pairs. Check with <code>env_get</code> and
 <code>env_set</code> from chapter 22.3.</p>
 <details>
 <summary>Solution</summary><pre><code class="language-triad">function env_get(env, name)
@@ -4803,7 +4809,7 @@ grouping from an error in the value of the operands.</p>
 <p>Flow control decides which instructions to execute and how many times. Triad has a constraint that
 simplifies the mental model: <strong>everything is an expression</strong>, and so are <code>if</code>, <code>while</code>, <code>let</code> and
 <code>begin</code> have a value (that of the last executed statement, <code>nothing</code> if none are executed
-none). There are therefore no two separate worlds — instructions that are worthless ed
+none). There are therefore no two separate worlds — instructions that are worthless and
 expressions that are worth something — but only one mechanism, and blocks are expressions that
 contain other expressions.</p>
 <h3 id="tut-8-1-if-elseif-else">8.1 <code>if</code> / <code>elseif</code> / <code>else</code></h3>
@@ -6345,7 +6351,7 @@ end
 </ul>
 <p>The effect declaration is a dynamic check of execution permissions, not an annotation
 purely descriptive. The runtime checks the call chain when a function tries
-an operation with effect: an <code>!io</code> function can print only if the calling context lo
+an operation with effect: a <code>!io</code> function can print only if the calling context
 allows. The top level is the most permissive context; a pure function called from there does not become
 therefore authorized to print. Listing <code>!io</code> in the signature documents the requirement for i
 callers and allows the runtime to reject the effect at the point where it would violate the declaration.</p>

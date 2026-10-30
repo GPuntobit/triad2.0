@@ -77,5 +77,8 @@ graphify.skill
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
 
+# Git credentials (token GitHub) - NON committare
+.git-credentials
+
 # Pacchetti estensione editor
 *.vsix

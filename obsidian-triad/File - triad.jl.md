@@ -14,5 +14,5 @@ load_file!()
 - [`load_file!()`](../triad.jl#L1725) resolves the path with [`find_source()`](../triad.jl#L1716), sends the source to [`run_source()`](../triad.jl#L1656) and reports errors with [`report()`](../triad.jl#L1707).
 - `reload!()` is defined next to load functions ([`triad.jl`](../triad.jl#L1739)).
 ## Links
-- [[Graphify graph]]
+- [[Grafo Graphify|Graphify graph]]
 - [Project root](../)
