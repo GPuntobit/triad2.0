@@ -95,6 +95,7 @@ behavior, the goldens of `conformance/`.
 - webcmd Graphify plugin moved from `.webcmd/` to `tools/webcmd-graphify/`.
 - Removed two empty files accidentally committed in the root: `Developer` and
   `install-triad-ext.bat` (no active reference in the repository).
+<<<<<<< HEAD
 - `scripts/` split by purpose: build helpers in `scripts/docs/`, Windows seed
   wrappers in `scripts/seed-runner/`, one-off dev experiments in
   `scripts/experiments/`. Tutorial translations consolidated in `tutorial/`.
@@ -111,6 +112,36 @@ behavior, the goldens of `conformance/`.
   `docs/worklog/`, `scripts/*` subfolders; documented contract paths unchanged
   (`bin/`, `seed/<platform>/`, `conformance/`, `selfhost/`, `examples/`,
   `probes/`, `cli/`, `editors/`, `VERSION`, `LICENSE`, `install.sh`).
+=======
+
+## Unreleased — CI runner pinning (Ubuntu 26 migration)
+
+- Pinned all Linux jobs from `ubuntu-latest` to the explicit image
+  `ubuntu-24.04` in `ci.yml`, `download-chart.yml`, `pages.yml` and
+  `static.yml`. GitHub migrates `ubuntu-latest` to Ubuntu 22→24→26
+  starting 2026-10-19 (actions/runner-images#14748); the floating label
+  would have silently switched every Linux job to Ubuntu 26 on that
+  date. Pinning keeps toolchain-dependent steps stable (`xxd` install,
+  ELF seed execution, Node conformance runner) until an audited
+  migration to 26.04 is done deliberately.
+- `node-version: '20'` kept as-is: setup-node downloads the runtime
+  itself, so it is unaffected by the runner-image change.
+
+## Unreleased — 2026-10-30: deeper folder organization
+
+- `scripts/` split by purpose: build helpers in `scripts/docs/`
+  (`build-libro.mjs`, `build-epub.cjs`, `build-docx.cjs`, `frontespizio.mjs`,
+  `download_chart.py`), Windows seed wrappers in `scripts/seed-runner/`,
+  one-off dev experiments in `scripts/experiments/`. Internal paths of the
+  build scripts and the `download-chart.yml` workflow updated accordingly.
+- Tutorial translations consolidated in `tutorial/` (moved
+  `docs/TUTORIAL-RU.md` → `tutorial/TUTORIAL.ru.md`, alongside the existing
+  `TUTORIAL.md`, `TUTORIAL.it.md`, `TUTORIAL.zh.md`); links in README, manual,
+  site pages and build scripts updated.
+- `README.md`: "Project Structure" section updated to the new layout.
+- `scripts/download_chart.py`: repaired indentation/typos and use asset download counts; default repo fixed.
+- `scripts/build-epub.cjs`, `scripts/build-libro.mjs`: repaired `continue` typo and variable mismatches.
+>>>>>>> pr-30
 
 
 ## 0.8.0-beta.3 — 2026-10-29

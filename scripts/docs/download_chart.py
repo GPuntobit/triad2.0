@@ -27,16 +27,16 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-DEFAULT_REPO = "GPuntobit/triad2.0"
-OUT_PATH = Path(__file__).resolve().parent.parent / "docs" / "assets" / "img" / "downloads.svg"
+DEFAULT_REPO = "GPuntobit/triad"
+OUT_PATH = Path(__file__).resolve().parents[2] / "docs" / "assets" / "img" / "downloads.svg"
 
-# Chart dimensions
+# Dimensioni del grafico
 W, H = 720, 360
 M_L, M_R, M_T, M_B = 70, 24, 44, 56
 
 
 def fetch_releases(repo: str, token: str | None) -> list[dict]:
-    """Download every release of the repository from the GitHub API."""
+    """Scarica tutte le release del repository dalla GitHub API."""
     releases: list[dict] = []
     page = 1
     while True:
@@ -58,58 +58,78 @@ def fetch_releases(repo: str, token: str | None) -> list[dict]:
     return releases
 
 
+def resolve_git_path() -> str | None:
+    """Risolve git a un eseguibile ASSOLUTO e fidato prima di invocarlo.
+
+    Hardening (Codacy, medium risk): invocare il nudo nome "git" lascerebbe
+    la ricerca alla PATH, che un aggressore può anteporre con una voce
+    repository-controlled o relativa (PATH hijacking / DLL side-loading su
+    Windows). Strategia:
+      1) candidate esplicite nei percorsi di sistema standard — assoluta,
+         reale (niente symlink), eseguibile e FUORI dal repo; se una
+         corrisponde, è quella usata, indipendentemente dalla PATH;
+      2) altrimenti shutil.which + validazione equivalente (assoluto,
+         file reale non sotto repo_root);
+      3) se nulla passa i controlli, None: nessun subprocess e fallback
+         esistente (return []), come quando git non è disponibile.
+    Node/Python non espongono GetSystemDirectoryW: l'alternativa prevista è
+    validazione + reject/fallback, coerente con utils.js (commandExists).
+    """
+    repo_root = Path(__file__).resolve().parents[2]
+
+    def is_trusted(cand: Path) -> bool:
+        try:
+            real = cand.resolve(strict=True)
+        except OSError:
+            return False
+        if not cand.is_absolute() or not real.is_file():
+            return False
+        if os.name != "nt":
+            if not os.access(real, os.X_OK):
+                return False
+        # mai eseguire un git "portatile" controllato dal repository
+        if real == repo_root or repo_root in real.parents:
+            return False
+        return True
+
+    # 1) percorsi di sistema canonici, non derivati da variabili d'ambiente
+    if os.name == "nt":
+        candidates = [Path(rf"{d}:\Program Files\Git\cmd\git.exe") for d in "CDE"]
+    else:
+        candidates = [Path("/usr/bin/git"), Path("/usr/local/bin/git"), Path("/bin/git")]
+    for cand in candidates:
+        if is_trusted(cand):
+            return str(cand)
+
+    # 2) risoluzione via PATH, ma solo se il risultato supera la validazione
+    found = shutil.which("git")
+    if found and is_trusted(Path(found)):
+        return str(Path(found))
+
+    # 3) niente binario fidato: fallback (nessun subprocess)
+    return None
+
+
 def load_releases_from_tags() -> list[dict]:
     """Fallback offline: usa i tag git locali come snapshot (conteggio 0).
 
     Serve solo per generare un segnaposto quando la API non è raggiungibile;
     il workflow in CI usa sempre la via API con GITHUB_TOKEN.
     """
+    git_bin = resolve_git_path()
+    if git_bin is None:
+        return []
     try:
-        # SECURITY: resolve git to a trusted absolute executable path before
-        # invoking subprocess.run. Canonical system locations are checked first
-        # so the lookup never depends on PATH or attacker-influenced env vars;
-        # shutil.which is only a fallback and its result is accepted solely
-        # when it is an absolute, real executable outside this repository
-        # (PATH-hijack guard against a project-controlled ./git).
-        repo_root = Path(__file__).resolve().parent.parent.parent
-
-        def _trusted_git() -> str | None:
-            candidates = [
-                "/usr/bin/git", "/usr/local/bin/git", "/bin/git",
-                r"C:\Program Files\Git\cmd\git.exe",
-                r"D:\Program Files\Git\cmd\git.exe",
-            ]
-            for cand in candidates:
-                c = Path(cand)
-                if c.is_file():
-                    return str(c)
-            found = shutil.which("git")
-            if not found or not os.path.isabs(found):
-                return None
-            real = Path(os.path.realpath(found))
-            if not real.is_file():
-                return None
-            try:
-                real.relative_to(repo_root)
-                return None  # inside the repo: untrusted
-            except ValueError:
-                pass
-            if os.path.basename(real).lower() not in ("git", "git.exe"):
-                return None
-            return str(real)
-
-        git_exe = _trusted_git()
-        if git_exe is None:
-            return []
         out = subprocess.run(
-            [git_exe, "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
-            capture_output=True, text=True, check=True, shell=False, cwd=repo_root,
+            [git_bin, "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
+            capture_output=True, text=True, check=True, shell=False,
+            cwd=Path(__file__).resolve().parents[2],
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []
     releases = []
     for line in out.splitlines():
-        if "\t" not in line:
+        if not _is_safe_tag_line(line):
             continue
         name, date = line.split("\t", 1)
         if not re.match(r"^v\d", name):
@@ -118,8 +138,24 @@ def load_releases_from_tags() -> list[dict]:
     return releases
 
 
+def _is_safe_tag_line(line: str) -> bool:
+    """Pre-validazione a tempo lineare della riga di tag prima della regex.
+
+    Rigetta input ostili (controllati dal repo/attacker via git tag) senza
+    backtracking: niente caratteri di controllo, lunghezza limitata, presenza
+    obbligatoria del tab separatore e prefisso 'v' + cifra nel nome. Questo
+    rende la successiva `re.match` immune a ReDoS anche su input malformato.
+    """
+    if len(line) > 256 or "\t" not in line:
+        return False
+    if any(ord(c) < 32 and c != "\t" for c in line):
+        return False
+    name = line.split("\t", 1)[0]
+    return len(name) <= 128 and name.startswith("v") and name[1:2].isdigit()
+
+
 def build_svg(points: list[tuple[datetime, int]], repo: str) -> str:
-    """Build the SVG of the cumulative download chart."""
+    """Costruisce l'SVG del grafico cumulativo dei download."""
     total = points[-1][1] if points else 0
     n = len(points)
     plot_w = W - M_L - M_R
@@ -129,7 +165,7 @@ def build_svg(points: list[tuple[datetime, int]], repo: str) -> str:
         return M_L + (plot_w * i / (n - 1) if n > 1 else plot_w / 2)
 
     max_y = max(total, 1)
-    # round the y axis to the nearest "nice" multiple
+    # arrotonda l'asse y al multiplo "bello" più vicino
     step = 10 ** max(0, len(str(max_y)) - 2) if max_y >= 10 else 1
     top = ((max_y // step) + 1) * step
 
@@ -141,10 +177,10 @@ def build_svg(points: list[tuple[datetime, int]], repo: str) -> str:
         f'viewBox="0 0 {W} {H}" font-family="Segoe UI, Helvetica, Arial, sans-serif">',
         f'<rect width="{W}" height="{H}" fill="#ffffff"/>',
         f'<text x="{W / 2}" y="26" text-anchor="middle" font-size="16" font-weight="600" '
-        f'fill="#1f2328">Total downloads — {repo}</text>',
+        f'fill="#1f2328">Download totali — {repo}</text>',
     ]
 
-    # grid and y axis
+    # griglia e assi y
     ticks = 5
     for t in range(ticks + 1):
         val = int(top * t / ticks)
@@ -162,7 +198,7 @@ def build_svg(points: list[tuple[datetime, int]], repo: str) -> str:
                          f'font-size="11" fill="#656d76">{d}</text>')
 
     if n >= 2:
-        # filled area under the line
+        # area riempita sotto la linea
         area = [f"M {x(0):.1f} {y(points[0][1]):.1f}"]
         area += [f"L {x(i):.1f} {y(v):.1f}" for i, (_, v) in enumerate(points)]
         area.append(f"L {x(n - 1):.1f} {y(0):.1f} L {x(0):.1f} {y(0):.1f} Z")
@@ -175,14 +211,14 @@ def build_svg(points: list[tuple[datetime, int]], repo: str) -> str:
         parts.append(f'<circle cx="{x(n - 1):.1f}" cy="{y(points[-1][1]):.1f}" r="4" fill="#0969da"/>')
         parts.append(f'<text x="{x(n - 1) - 8:.1f}" y="{y(points[-1][1]) - 10:.1f}" '
                      f'text-anchor="end" font-size="13" font-weight="600" fill="#0969da">'
-                     f'{total:,} downloads</text>')
+                     f'{total:,} download</text>')
     else:
         parts.append(f'<text x="{W / 2}" y="{H / 2}" text-anchor="middle" font-size="14" '
-                     f'fill="#656d76">No release with downloads available</text>')
+                     f'fill="#656d76">Nessuna release con download disponibili</text>')
 
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     parts.append(f'<text x="{W - M_R}" y="{H - 10}" text-anchor="end" font-size="10" '
-                 f'fill="#8b949e">Updated: {generated} · GitHub Releases API</text>')
+                 f'fill="#8b949e">Aggiornato: {generated} · GitHub Releases API</text>')
     parts.append("</svg>")
     return "\n".join(parts) + "\n"
 
@@ -202,7 +238,7 @@ def main() -> int:
         print(f"Avviso: API non raggiungibile ({exc}); uso i tag git locali.", file=sys.stderr)
         releases = load_releases_from_tags()
 
-    # cumulative downloads over time, excluding drafts and prereleases without assets
+    # scarica cumulative nel tempo, escludendo draft e prerelease senza asset
     dated = []
     for r in releases:
         pub = r.get("published_at")
@@ -224,7 +260,7 @@ def main() -> int:
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(svg, encoding="utf-8")
-    print(f"Chart written to {out} ({len(points)} points, total {points[-1][1] if points else 0} downloads)")
+    print(f"Grafico scritto in {out} ({len(points)} punti, totale {points[-1][1] if points else 0} download)")
     return 0
 
 

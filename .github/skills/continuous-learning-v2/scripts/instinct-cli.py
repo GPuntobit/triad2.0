@@ -1950,7 +1950,19 @@ def _evolved_description(trigger: str, instincts: list, kind: str) -> str:
     )
     # `: ` breaks strict YAML parsers in an unquoted scalar; `<`/`>` can inject
     # into the system prompt.
-    return description.replace(': ', ' - ').replace('<', '(').replace('>', ')')
+    sanitized = description.replace(': ', ' - ').replace('<', '(').replace('>', ')')
+    # Fix incomplete multi-character sanitization (CodeQL, High): a single
+    # pass over attacker-controlled text can re-create forbidden markup by
+    # nesting/splicing (e.g. "<scr<script>ipt>" -> "<script>"). Loop to a
+    # fixed point so no "<script" substring can survive, and strip any
+    # remaining '<' or '>' as a belt-and-braces measure against HTML element
+    # injection in every downstream consumer (frontmatter, prompts, viewers).
+    while True:
+        prev = sanitized
+        sanitized = sanitized.replace('<', '(').replace('>', ')')
+        if sanitized == prev:
+            break
+    return sanitized
 
 
 def _generate_evolved(skill_candidates: list, workflow_instincts: list, agent_candidates: list, evolved_dir: Path, limit: int = 0) -> list[str]:

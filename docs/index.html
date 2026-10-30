@@ -92,6 +92,7 @@ println(fib(10))</div>
 <section class="section">
   <div class="container">
     <h2 class="section-title">Quick Start</h2>
+<<<<<<< HEAD
     <p class="section-sub">The runtime is the machine-code seed: no Julia, no external packages. The launcher finds it for you.</p>
     <div class="grid grid-2">
       <div class="code-card"># run a program (add bin/ to the PATH)
@@ -102,6 +103,20 @@ bin/triad-cli status
 node conformance/run.mjs
 # run the full CLI
 bin/triad-cli test conformance</div>
+=======
+    <p class="section-sub">Install with the official script (native seed) or run programs in the browser playground — no install needed.</p>
+    <div class="grid grid-2">
+      <div class="code-card"># Linux / macOS / Termux
+curl -fsSL https://raw.githubusercontent.com/GPuntobit/triad2.0/main/install.sh | sh
+export PATH="$PWD/bin:$PATH"
+
+# run a file
+triad examples/benvenuto.triad
+# evaluate an expression
+triad-cli -E '1 + 2'
+# REPL
+triad-cli repl</div>
+>>>>>>> pr-30
       <div>
         <h3>Documentation</h3>
         <ul class="feature-list">

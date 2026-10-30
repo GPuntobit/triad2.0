@@ -31,7 +31,11 @@ They are part of the language, not a library: errors as data (Err), contracts (r
   <img src="docs/assets/img/learning-curve.svg" alt="Learning curve and learning threshold for Triad 2.0" width="900">
 </p>
 
+<<<<<<< HEAD
 Derived from the chapters in [tutorial/TUTORIAL.md](tutorial/TUTORIAL.md) and [docs/MANUALE.md](docs/MANUALE.md): Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
+=======
+Derived from the chapters in [TUTORIAL.md](tutorial/TUTORIAL.md) and [docs/MANUALE.md](docs/MANUALE.md): Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
+>>>>>>> pr-30
 
 https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
 <p align="center">
@@ -196,6 +200,10 @@ STATUS.md / TASK.md         bootstrap progress status, roadmap, task log
 SECURITY.md                 vulnerability reporting policy
 plan.md                     work plan (checklist)
 VERSION / CHANGELOG.md      standard version and history
+<<<<<<< HEAD
+=======
+README.md / tutorial/TUTORIAL.md  introduction and complete usage tutorial
+>>>>>>> pr-30
 LICENSE                     MIT license (open source)
 ```
 
