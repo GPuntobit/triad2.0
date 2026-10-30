@@ -14,6 +14,19 @@ behavior, the goldens of `conformance/`.
 - Removed two empty files accidentally committed in the root: `Developer` and
   `install-triad-ext.bat` (no active reference in the repository).
 
+## Unreleased — CI runner pinning (Ubuntu 26 migration)
+
+- Pinned all Linux jobs from `ubuntu-latest` to the explicit image
+  `ubuntu-24.04` in `ci.yml`, `download-chart.yml`, `pages.yml` and
+  `static.yml`. GitHub migrates `ubuntu-latest` to Ubuntu 22→24→26
+  starting 2026-10-19 (actions/runner-images#14748); the floating label
+  would have silently switched every Linux job to Ubuntu 26 on that
+  date. Pinning keeps toolchain-dependent steps stable (`xxd` install,
+  ELF seed execution, Node conformance runner) until an audited
+  migration to 26.04 is done deliberately.
+- `node-version: '20'` kept as-is: setup-node downloads the runtime
+  itself, so it is unaffected by the runner-image change.
+
 ## Unreleased — 2026-10-30: deeper folder organization
 
 - `scripts/` split by purpose: build helpers in `scripts/docs/`
