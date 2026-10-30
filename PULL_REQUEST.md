@@ -28,6 +28,17 @@ Riorganizza il repository senza modificare i percorsi contrattuali (`bin/`, `see
 
 Nota: i file di registrazione storica (`STATUS.md`, `TASK.md`, vecchi `PULL_REQUEST`) conservano i nomi precedenti dei probe perché documentano eventi passati. `obsidian-triad/Grafo Graphify.md` è output generato: va rigenerato con `graphify update .`.
 
+## Fix CI: workflow download-chart (Node.js 20 deprecato)
+
+Il job `chart` mostrava il warning di deprecazione perche' usava
+`actions/checkout@v4` e `actions/setup-python@v5`, che vengono forzati su
+Node.js 24 con avviso (Node 20 deprecato: github.blog/changelog/2025-09-19).
+Adeguati i pin a `checkout@v7` (gia' usato negli altri workflow) e rimosso
+`setup-python`: `scripts/download_chart.py` usa solo la libreria standard e
+`python3` e' gia' presente su ubuntu-latest. YAML validato; script eseguito
+localmente senza dipendenze extra (exit 0, fallback ai tag git se l'API non e'
+raggiungibile).
+
 ## Verifica post-spostamento
 
 - `node conformance/run.mjs` → `conformance: OK` (37/37)
