@@ -89,6 +89,21 @@ tar -xzOf triad-seed-linux-x86_64.tar.gz seed/linux-x86_64/seed | sha256sum
 ```
 Compare against the table above (PowerShell: `Get-FileHash -Algorithm SHA256`).
 
+## Also in this release (consolidated)
+- English project wiki (`wiki/`, 10 pages) and repository folder reorganization
+  (probes → `probes/`, docs → `docs/` + `docs/releases/` + `docs/worklog/`,
+  scripts split by purpose, tutorial translations consolidated in `tutorial/`).
+- Website generated with Triad itself (`tools/site-gen/`) and GitHub Pages
+  updated to the Triad-generated site; CodeRabbit configuration versioned
+  (`.github/config.yml`).
+- Fixed broken CI submodule sync (orphan gitlink `obsidian-triad/github-wiki`)
+  and the `build-libro.mjs` output-directory crash.
+- `examples/benvenuto.triad` repaired: it now runs end-to-end with the
+  reference interpreter (`triad examples/benvenuto.triad` →
+  `Benvenuto in Triad`). The remaining `.td` showcase files use Triad-Full
+  constructs (facts/rules/solve, contracts, macros) that are spec'd but not yet
+  runnable until the self-hosted runtime lands — labeled as such on the site.
+
 ## Compliance status at this release
 - Triad-Core: 37/37 executable conformance cases pass with the reference
   interpreter; 33 Core cases run on the Windows PE seed in CI.

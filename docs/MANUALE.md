@@ -3741,7 +3741,6 @@ codice sono un complemento, non un prerequisito.
 
 | vuoi | leggi |
 |---|---|
-<<<<<<< HEAD
 | the complete regulatory definition | [`SPEC.md`](SPEC.md) |
 | the bootstrap subset | [`SPEC-CORE.md`](SPEC-CORE.md) |
 | the study path by chapters and the project code | [`TUTORIAL.md`](../tutorial/TUTORIAL.md) |
@@ -3751,17 +3750,6 @@ codice sono un complemento, non un prerequisito.
 | the work plan | [`plan.md`](plan.md) · [`TASK.md`](TASK.md) |
 | tools for editors | [`editors/`](editors/README.md) |
 | the license | [`LICENSE`](LICENSE) — MIT |
-=======
-| la definizione normativa completa | [`SPEC.md`](SPEC.md) |
-| il sottoinsieme di bootstrap | [`SPEC-CORE.md`](SPEC-CORE.md) |
-| il percorso di studio per capitoli e il codice del progetto | [`TUTORIAL.md`](../tutorial/TUTORIAL.md) |
-| gli esempi completi con output | `examples/` |
-| il contratto eseguibile, con i golden | [`conformance/`](conformance/README.md) |
-| lo stato del bootstrap | [`STATUS.md`](STATUS.md) · [`BOOTSTRAP.md`](BOOTSTRAP.md) |
-| il piano di lavoro | [`plan.md`](plan.md) · [`TASK.md`](TASK.md) |
-| gli strumenti per gli editor | [`editors/`](editors/README.md) |
-| la licenza | [`LICENSE`](LICENSE) — MIT |
->>>>>>> pr-30
 
 ---
 
