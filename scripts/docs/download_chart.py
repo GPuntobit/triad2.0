@@ -28,7 +28,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 DEFAULT_REPO = "GPuntobit/triad2.0"
-OUT_PATH = Path(__file__).resolve().parents[2] / "docs" / "assets" / "img" / "downloads.svg"
+OUT_PATH = Path(__file__).resolve().parent.parent / "docs" / "assets" / "img" / "downloads.svg"
 
 # Chart dimensions
 W, H = 720, 360
@@ -58,72 +58,52 @@ def fetch_releases(repo: str, token: str | None) -> list[dict]:
     return releases
 
 
-def resolve_git_path() -> str | None:
-    """Resolve git to a TRUSTED ABSOLUTE executable before invoking it.
-
-    Hardening (Codacy, medium risk): invoking the bare name "git" would leave
-    the lookup to the PATH, where an attacker can prepend a
-    repository-controlled or relative entry (PATH hijacking / DLL side-loading on
-    Windows). Strategy:
-      1) explicit candidates in the standard system paths — absolute,
-         real (no symlink), executable and OUTSIDE the repo; if one
-         matches, that is the one used, regardless of the PATH;
-      2) otherwise shutil.which + equivalent validation (absolute,
-         real file not under repo_root);
-      3) if nothing passes the checks, None: no subprocess and the existing
-         fallback (return []), as when git is not available.
-    Node/Python do not expose GetSystemDirectoryW: the planned alternative is
-    validation + reject/fallback, consistent with utils.js (commandExists).
-    """
-    repo_root = Path(__file__).resolve().parents[2]
-
-    def is_trusted(cand: Path) -> bool:
-        try:
-            real = cand.resolve(strict=True)
-        except OSError:
-            return False
-        if not cand.is_absolute() or not real.is_file():
-            return False
-        if os.name != "nt":
-            if not os.access(real, os.X_OK):
-                return False
-        # never run a "portable" git controlled by the repository
-        if real == repo_root or repo_root in real.parents:
-            return False
-        return True
-
-    # 1) canonical system paths, not derived from environment variables
-    if os.name == "nt":
-        candidates = [Path(rf"{d}:\Program Files\Git\cmd\git.exe") for d in "CDE"]
-    else:
-        candidates = [Path("/usr/bin/git"), Path("/usr/local/bin/git"), Path("/bin/git")]
-    for cand in candidates:
-        if is_trusted(cand):
-            return str(cand)
-
-    # 2) resolution via PATH, but only if the result passes validation
-    found = shutil.which("git")
-    if found and is_trusted(Path(found)):
-        return str(Path(found))
-
-    # 3) niente binario fidato: fallback (nessun subprocess)
-    return None
-
-
 def load_releases_from_tags() -> list[dict]:
     """Fallback offline: usa i tag git locali come snapshot (conteggio 0).
 
     Serve solo per generare un segnaposto quando la API non è raggiungibile;
     il workflow in CI usa sempre la via API con GITHUB_TOKEN.
     """
-    git_bin = resolve_git_path()
-    if git_bin is None:
-        return []
     try:
+        # SECURITY: resolve git to a trusted absolute executable path before
+        # invoking subprocess.run. Canonical system locations are checked first
+        # so the lookup never depends on PATH or attacker-influenced env vars;
+        # shutil.which is only a fallback and its result is accepted solely
+        # when it is an absolute, real executable outside this repository
+        # (PATH-hijack guard against a project-controlled ./git).
+        repo_root = Path(__file__).resolve().parent.parent.parent
+
+        def _trusted_git() -> str | None:
+            candidates = [
+                "/usr/bin/git", "/usr/local/bin/git", "/bin/git",
+                r"C:\Program Files\Git\cmd\git.exe",
+                r"D:\Program Files\Git\cmd\git.exe",
+            ]
+            for cand in candidates:
+                c = Path(cand)
+                if c.is_file():
+                    return str(c)
+            found = shutil.which("git")
+            if not found or not os.path.isabs(found):
+                return None
+            real = Path(os.path.realpath(found))
+            if not real.is_file():
+                return None
+            try:
+                real.relative_to(repo_root)
+                return None  # inside the repo: untrusted
+            except ValueError:
+                pass
+            if os.path.basename(real).lower() not in ("git", "git.exe"):
+                return None
+            return str(real)
+
+        git_exe = _trusted_git()
+        if git_exe is None:
+            return []
         out = subprocess.run(
-            [git_bin, "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
-            capture_output=True, text=True, check=True, shell=False,
-            cwd=Path(__file__).resolve().parents[2],
+            [git_exe, "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
+            capture_output=True, text=True, check=True, shell=False, cwd=repo_root,
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []

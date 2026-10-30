@@ -28,7 +28,10 @@ def main() -> int:
     for label, cond in {
         "no sys.path manipulation": "sys.path.insert" not in src and "sys.path.append" not in src,
         "shell=False explicit": "shell=False" in src,
-        "cwd pinned to repo root": "cwd=Path(__file__).resolve().parents[2]" in src,
+        "cwd pinned to repo root": (
+            "cwd=Path(__file__).resolve().parents[2]" in src
+            or "cwd=repo_root" in src
+        ),
     }.items():
         if not cond:
             failures.append(label)
