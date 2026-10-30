@@ -62,8 +62,8 @@
 |---|---|---|
 | `triad-seed-windows-x86_64.zip` (10 KB) | Windows x86-64 runtime | `930c8011ce306f3bc4a904fe696e3d3a9d8889512a9a1a74ab5f19912f49cd03` |
 | `triad-seed-linux-x86_64.tar.gz` (454 B) | Linux x86-64 runtime (ELF E0) | `9f58b55bd19fec5823cd1b8ae08ccd77c750e3dc0aa56d8886d9d0c322b3fd09` |
-| `triad-source.zip` (7.6 MB) | Any OS + Node.js ≥ 20 | `73e40bd543f0a82de23f930a4243938e5d60f1f059e850e073f86aea8db10602` |
-| `triad-source.tar.gz` | Any OS + Node.js ≥ 20 | `93eec488042138ba000534065b4c8aabe723fb318c6adc3353a23eeba2c5eb7b` |
+| `triad-source.zip` (500 KB) | Any OS + Node.js ≥ 20 | `f331d4bf43eca3f19e91f2edae7e326b2ed68ba5f53768de13a17d4e381c86a4` |
+| `triad-source.tar.gz` (423 KB) | Any OS + Node.js ≥ 20 | `19e02ad53778a431c7a9665c9081c89770c1e4962cb00f3a4c86cecb896b83c9` |
 
 Inner binaries (verified identical to the repository files):
 `seed/windows-x86_64/seed.exe` — `f2352418485383038952748e5e2767662ba5cca724c7f4195b672e254fa6b7ce`;
