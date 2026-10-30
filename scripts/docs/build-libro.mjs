@@ -1,4 +1,4 @@
-import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
@@ -240,6 +240,7 @@ const html = `<!DOCTYPE html>
 </body>
 </html>`;
 
+mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'libro.html'), html, 'utf8');
 copyFileSync(join(root, 'docs', 'triad-logo.webp'), join(outDir, 'triad-logo.webp'));
 console.log('scritto', join(outDir, 'libro.html'));
