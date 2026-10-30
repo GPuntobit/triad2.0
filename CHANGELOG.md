@@ -29,6 +29,22 @@ behavior, the goldens of `conformance/`.
 - `scripts/download_chart.py`: repaired indentation/typos and use asset download counts; default repo fixed.
 - `scripts/build-epub.cjs`, `scripts/build-libro.mjs`: repaired `continue` typo and variable mismatches.
 
+## Unreleased — 2026-10-31: root and folders cleanup (third pass)
+
+- PR descriptions moved out of the root into a dedicated worklog folder:
+  `PULL_REQUEST.md` → `docs/worklog/PULL_REQUEST-current.md` (active draft),
+  `docs/PULL_REQUEST.md` → `docs/worklog/PULL_REQUEST-pr30.md` (archived).
+- Push helper relocated to the tools area: `scripts/git-push-with-token.ps1`
+  → `tools/git-push-with-token.ps1`.
+- `obsidian-triad/github-wiki/` removed from the index: it was an empty
+  leftover directory that broke CI submodule sync ("No url found for submodule
+  path 'obsidian-triad/github-wiki' in .gitmodules").
+- `README.md` "Project Structure": stale `docs/TUTORIAL-RU.md` entry replaced
+  with the `tutorial/` translations line; added `tests/security/`,
+  `docs/worklog/`, `scripts/*` subfolders; documented contract paths unchanged
+  (`bin/`, `seed/<platform>/`, `conformance/`, `selfhost/`, `examples/`,
+  `probes/`, `cli/`, `editors/`, `VERSION`, `LICENSE`, `install.sh`).
+
 
 ## 0.8.0-beta.3 — 2026-10-29
 **Triad 2.0 – Beta 3.** Pre-release of the Triad 2.0 series: includes *all*
