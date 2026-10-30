@@ -34,6 +34,19 @@ Nota: i file di registrazione storica (`STATUS.md`, `TASK.md`, vecchi `PULL_REQU
 - Traduzioni del tutorial accentrate in `tutorial/`: `docs/TUTORIAL-RU.md` → `tutorial/TUTORIAL.ru.md` accanto a `TUTORIAL.md`, `TUTORIAL.it.md`, `TUTORIAL.zh.md`; aggiornati i link in README, MANUALE e tabelle file.
 - Verifiche: `python3 scripts/docs/download_chart.py` esegue con exit 0 (fallback tag git); build script puntano ai percorsi corretti; suite conformita' invariata.
 
+## Hardening CI: azioni pinnate a SHA completi
+
+Tutte le GitHub Actions nei 4 workflow (`ci.yml`, `download-chart.yml`,
+`pages.yml`, `static.yml`) sono ora referenziate con commit SHA a 40
+caratteri invece che per tag, come richiesto dal scanner di sicurezza
+("action not pinned to a full length commit SHA"). Il tag aggiornato resta
+come commento per la manutenzione. SHA risolti via API GitHub al momento del
+commit: checkout@3d3c42e (v7), setup-node@949feb2 (v7), configure-pages@45bfe01
+(v6), upload-pages-artifact@fc324d3 (v5), deploy-pages@368f825 (v5). Questo
+rende immutabile il codice delle azioni usate in CI (anti tag-flipping /
+supply-chain attack); per gli aggiornamenti futuri ricreare i pin da un tag
+nuovo (o usare Dependabot `package-ecosystem: "github-actions"`).
+
 ## Fix CI: workflow download-chart (Node.js 20 deprecato)
 
 Il job `chart` mostrava il warning di deprecazione perche' usava
