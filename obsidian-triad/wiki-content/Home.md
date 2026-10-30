@@ -6,6 +6,10 @@
 
 Un libro in quattro parti, da leggere in ordine: ogni capitolo spiega il perché delle cose, ne mostra l'uso con esempi commentati (quelli di Triad-Core sono eseguiti e il loro output è riportato fedelmente) e si chiude con riepilogo ed esercizi. In fondo, le appendici per la consultazione.
 
+---
+
+**English version**: [[Home-en|The Book of Triad (English)]]
+
 ## Sommario
 
 **[Prefazione](Libro-00-Prefazione)**

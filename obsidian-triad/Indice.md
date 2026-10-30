@@ -16,7 +16,8 @@ Project consultation vault [triad2.0](../). Source links point to the actual fil
 ## GitHub Wiki — Il libro di Triad
 Complete book on Triad language (50 pages). Synced from [GitHub Wiki](https://github.com/GPuntobit/triad2.0/wiki) on October 30, 2026.
 
-- [[wiki-content/Home|Home]] — Book table of contents
+- [[wiki-content/Home|Home (Italiano)]] — Book table of contents
+- [[wiki-content/Home-en|Home (English)]] — English version
 - [[wiki-content/_Sidebar|Sidebar]] — Wiki navigation
 
 ### Book Chapters
