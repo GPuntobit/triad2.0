@@ -27,16 +27,16 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-DEFAULT_REPO = "GPuntobit/triad"
+DEFAULT_REPO = "GPuntobit/triad2.0"
 OUT_PATH = Path(__file__).resolve().parents[2] / "docs" / "assets" / "img" / "downloads.svg"
 
-# Dimensioni del grafico
+# Chart dimensions
 W, H = 720, 360
 M_L, M_R, M_T, M_B = 70, 24, 44, 56
 
 
 def fetch_releases(repo: str, token: str | None) -> list[dict]:
-    """Scarica tutte le release del repository dalla GitHub API."""
+    """Download every release of the repository from the GitHub API."""
     releases: list[dict] = []
     page = 1
     while True:
@@ -59,21 +59,21 @@ def fetch_releases(repo: str, token: str | None) -> list[dict]:
 
 
 def resolve_git_path() -> str | None:
-    """Risolve git a un eseguibile ASSOLUTO e fidato prima di invocarlo.
+    """Resolve git to a TRUSTED ABSOLUTE executable before invoking it.
 
-    Hardening (Codacy, medium risk): invocare il nudo nome "git" lascerebbe
-    la ricerca alla PATH, che un aggressore può anteporre con una voce
-    repository-controlled o relativa (PATH hijacking / DLL side-loading su
-    Windows). Strategia:
-      1) candidate esplicite nei percorsi di sistema standard — assoluta,
-         reale (niente symlink), eseguibile e FUORI dal repo; se una
-         corrisponde, è quella usata, indipendentemente dalla PATH;
-      2) altrimenti shutil.which + validazione equivalente (assoluto,
-         file reale non sotto repo_root);
-      3) se nulla passa i controlli, None: nessun subprocess e fallback
-         esistente (return []), come quando git non è disponibile.
-    Node/Python non espongono GetSystemDirectoryW: l'alternativa prevista è
-    validazione + reject/fallback, coerente con utils.js (commandExists).
+    Hardening (Codacy, medium risk): invoking the bare name "git" would leave
+    the lookup to the PATH, where an attacker can prepend a
+    repository-controlled or relative entry (PATH hijacking / DLL side-loading on
+    Windows). Strategy:
+      1) explicit candidates in the standard system paths — absolute,
+         real (no symlink), executable and OUTSIDE the repo; if one
+         matches, that is the one used, regardless of the PATH;
+      2) otherwise shutil.which + equivalent validation (absolute,
+         real file not under repo_root);
+      3) if nothing passes the checks, None: no subprocess and the existing
+         fallback (return []), as when git is not available.
+    Node/Python do not expose GetSystemDirectoryW: the planned alternative is
+    validation + reject/fallback, consistent with utils.js (commandExists).
     """
     repo_root = Path(__file__).resolve().parents[2]
 
@@ -87,12 +87,12 @@ def resolve_git_path() -> str | None:
         if os.name != "nt":
             if not os.access(real, os.X_OK):
                 return False
-        # mai eseguire un git "portatile" controllato dal repository
+        # never run a "portable" git controlled by the repository
         if real == repo_root or repo_root in real.parents:
             return False
         return True
 
-    # 1) percorsi di sistema canonici, non derivati da variabili d'ambiente
+    # 1) canonical system paths, not derived from environment variables
     if os.name == "nt":
         candidates = [Path(rf"{d}:\Program Files\Git\cmd\git.exe") for d in "CDE"]
     else:
@@ -101,7 +101,7 @@ def resolve_git_path() -> str | None:
         if is_trusted(cand):
             return str(cand)
 
-    # 2) risoluzione via PATH, ma solo se il risultato supera la validazione
+    # 2) resolution via PATH, but only if the result passes validation
     found = shutil.which("git")
     if found and is_trusted(Path(found)):
         return str(Path(found))
@@ -139,7 +139,7 @@ def load_releases_from_tags() -> list[dict]:
 
 
 def build_svg(points: list[tuple[datetime, int]], repo: str) -> str:
-    """Costruisce l'SVG del grafico cumulativo dei download."""
+    """Build the SVG of the cumulative download chart."""
     total = points[-1][1] if points else 0
     n = len(points)
     plot_w = W - M_L - M_R
@@ -149,7 +149,7 @@ def build_svg(points: list[tuple[datetime, int]], repo: str) -> str:
         return M_L + (plot_w * i / (n - 1) if n > 1 else plot_w / 2)
 
     max_y = max(total, 1)
-    # arrotonda l'asse y al multiplo "bello" più vicino
+    # round the y axis to the nearest "nice" multiple
     step = 10 ** max(0, len(str(max_y)) - 2) if max_y >= 10 else 1
     top = ((max_y // step) + 1) * step
 
@@ -161,10 +161,10 @@ def build_svg(points: list[tuple[datetime, int]], repo: str) -> str:
         f'viewBox="0 0 {W} {H}" font-family="Segoe UI, Helvetica, Arial, sans-serif">',
         f'<rect width="{W}" height="{H}" fill="#ffffff"/>',
         f'<text x="{W / 2}" y="26" text-anchor="middle" font-size="16" font-weight="600" '
-        f'fill="#1f2328">Download totali — {repo}</text>',
+        f'fill="#1f2328">Total downloads — {repo}</text>',
     ]
 
-    # griglia e assi y
+    # grid and y axis
     ticks = 5
     for t in range(ticks + 1):
         val = int(top * t / ticks)
@@ -182,7 +182,7 @@ def build_svg(points: list[tuple[datetime, int]], repo: str) -> str:
                          f'font-size="11" fill="#656d76">{d}</text>')
 
     if n >= 2:
-        # area riempita sotto la linea
+        # filled area under the line
         area = [f"M {x(0):.1f} {y(points[0][1]):.1f}"]
         area += [f"L {x(i):.1f} {y(v):.1f}" for i, (_, v) in enumerate(points)]
         area.append(f"L {x(n - 1):.1f} {y(0):.1f} L {x(0):.1f} {y(0):.1f} Z")
@@ -195,14 +195,14 @@ def build_svg(points: list[tuple[datetime, int]], repo: str) -> str:
         parts.append(f'<circle cx="{x(n - 1):.1f}" cy="{y(points[-1][1]):.1f}" r="4" fill="#0969da"/>')
         parts.append(f'<text x="{x(n - 1) - 8:.1f}" y="{y(points[-1][1]) - 10:.1f}" '
                      f'text-anchor="end" font-size="13" font-weight="600" fill="#0969da">'
-                     f'{total:,} download</text>')
+                     f'{total:,} downloads</text>')
     else:
         parts.append(f'<text x="{W / 2}" y="{H / 2}" text-anchor="middle" font-size="14" '
-                     f'fill="#656d76">Nessuna release con download disponibili</text>')
+                     f'fill="#656d76">No release with downloads available</text>')
 
     generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     parts.append(f'<text x="{W - M_R}" y="{H - 10}" text-anchor="end" font-size="10" '
-                 f'fill="#8b949e">Aggiornato: {generated} · GitHub Releases API</text>')
+                 f'fill="#8b949e">Updated: {generated} · GitHub Releases API</text>')
     parts.append("</svg>")
     return "\n".join(parts) + "\n"
 
@@ -222,7 +222,7 @@ def main() -> int:
         print(f"Avviso: API non raggiungibile ({exc}); uso i tag git locali.", file=sys.stderr)
         releases = load_releases_from_tags()
 
-    # scarica cumulative nel tempo, escludendo draft e prerelease senza asset
+    # cumulative downloads over time, excluding drafts and prereleases without assets
     dated = []
     for r in releases:
         pub = r.get("published_at")
@@ -244,7 +244,7 @@ def main() -> int:
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(svg, encoding="utf-8")
-    print(f"Grafico scritto in {out} ({len(points)} punti, totale {points[-1][1] if points else 0} download)")
+    print(f"Chart written to {out} ({len(points)} points, total {points[-1][1] if points else 0} downloads)")
     return 0
 
 

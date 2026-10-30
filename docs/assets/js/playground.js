@@ -84,7 +84,7 @@ function run() {
     const C = window.TriadCore;
     output.classList.remove('err');
     output.textContent = '';
-    if (!C) { output.textContent = 'Error: Triad engine not loaded (triad_core.js missing).'; return; }
+    if (!C) { output.textContent = 'Error: Triad engine not loaded (assets/js/triad-core.js missing).'; return; }
 const src = editor.value;
     // Output hook: core writes with process.stdout.write; the shim browser
     // (triad_core.cjs) redirects writes to window.__TRIAD_OUT__.

@@ -3,18 +3,18 @@ const RAW_BASE = 'https://raw.githubusercontent.com/GPuntobit/triad2.0/main/';
 
 const NAV = [
   { href: 'index.html', label: 'Home' },
-  { href: 'pages/getting-started.html', label: 'Inizia' },
+  { href: 'pages/getting-started.html', label: 'Get started' },
   { href: 'pages/language-tour.html', label: 'Tour' },
   { href: 'pages/spec.html', label: 'Spec' },
   { href: 'pages/tutorial.html', label: 'Tutorial' },
-  { href: 'pages/apprendimento.html', label: 'Apprendimento' },
-  { href: 'pages/examples.html', label: 'Esempi' },
+  { href: 'pages/apprendimento.html', label: 'Learning' },
+  { href: 'pages/examples.html', label: 'Examples' },
   { href: 'pages/playground.html', label: 'Playground' },
   { href: 'pages/conformance.html', label: 'Conformance' },
   { href: 'pages/bootstrap.html', label: 'Bootstrap' },
   { href: 'pages/editors.html', label: 'Editor' },
   { href: 'pages/ai.html', label: 'AI' },
-  { href: 'pages/status.html', label: 'Stato' },
+  { href: 'pages/status.html', label: 'Status' },
 ];
 
 function renderHeader(active) {
@@ -36,30 +36,30 @@ function renderFooter() {
     <div class="footer-grid">
       <div>
         <h4>Triad 2.0</h4>
-        <p>Linguaggio di programmazione autonomo: sintassi a blocchi, tipi dichiarati, multiple dispatch, logica integrata, codice come dato.</p>
+        <p>Self-contained programming language: block syntax, declared types, multiple dispatch, integrated logic, code as data.</p>
       </div>
       <div>
-        <h4>Documenti</h4>
+        <h4>Documents</h4>
         <a href="pages/spec.html">SPEC.md</a>
         <a href="pages/tutorial.html">TUTORIAL.md</a>
         <a href="pages/bootstrap.html">BOOTSTRAP.md</a>
         <a href="pages/status.html">STATUS.md</a>
       </div>
       <div>
-        <h4>Risorse</h4>
+        <h4>Resources</h4>
         <a href="https://github.com/GPuntobit/triad2.0" target="_blank" rel="noopener">Repository</a>
-        <a href="pages/examples.html">Esempi</a>
+        <a href="pages/examples.html">Examples</a>
         <a href="pages/conformance.html">Conformance</a>
         <a href="pages/editors.html">Editor</a>
       </div>
       <div>
-        <h4>Comunita</h4>
+        <h4>Community</h4>
         <a href="pages/ai.html">AI benchmark</a>
-        <a href="https://github.com/GPuntobit/triad2.0/issues" target="_blank" rel="noopener">Issue</a>
-        <a href="pages/license.html">Licenza MIT</a>
+        <a href="https://github.com/GPuntobit/triad2.0/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="pages/license.html">MIT license</a>
       </div>
     </div>
-    <div class="copyright">2026 Triad 2.0 - distribuito sotto licenza MIT. Standard 0.2.0.</div>
+    <div class="copyright">2026 Triad 2.0 - distributed under the MIT license. Standard 0.2.0.</div>
   </div>
 </footer>`;
 }
@@ -87,7 +87,7 @@ function mount(active) {
 async function loadMarkdown(targetId, file) {
   const el = globalThis.document.getElementById(targetId);
   if (!el) return;
-  el.innerHTML = '<div class="doc-loading">Caricamento…</div>';
+  el.innerHTML = '<div class="doc-loading">Loading…</div>';
   try {
     const res = await globalThis.fetch(RAW_BASE + file);
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -115,7 +115,7 @@ async function loadMarkdown(targetId, file) {
   } catch (e) {
     const errorMessage = globalThis.document.createElement('div');
     errorMessage.className = 'doc-loading';
-    errorMessage.textContent = 'Impossibile caricare il documento: ' + e.message;
+    errorMessage.textContent = 'Could not load the document: ' + e.message;
     el.replaceChildren(errorMessage);
   }
 }
