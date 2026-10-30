@@ -29,7 +29,7 @@ They are part of the language, not a library: errors as data (Err), contracts (r
   <img src="docs/assets/img/curva-apprendimento.svg" alt="Learning curve and learning threshold for Triad 2.0" width="900">
 </p>
 
-Derived from the chapters in [TUTORIAL.md](TUTORIAL.md) and MANUALE.md: Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
+Derived from the chapters in [TUTORIAL.md](TUTORIAL.md) and [docs/MANUALE.md](docs/MANUALE.md): Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
 
 https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
 <p align="center">
@@ -162,30 +162,36 @@ CI (`.github/workflows/ci.yml`): `conformance-core` (Ubuntu, Node runner), `seed
 ## Project Structure
 
 ```text
-bin/triad                   POSIX launcher (sh)
-bin/triad.cmd               Windows launcher (cmd)
-bin/triad-cli, triad-cli.cmd development CLI launchers
+bin/                        POSIX and Windows launchers (triad, triad-cli)
 cli/                        development CLI (triad-cli, Node.js)
 conformance/                golden suite: executable contract for implementations
 conformance/run.mjs         conformance runner (Node, without Julia)
-ai/                         LLM generation benchmark + verifier (development tool)
+probes/                     small Core probe programs used by CI and install.sh
 seed/                       S0 machine code seed (Windows PE + Linux ELF E0)
 seed/windows-x86_64/        seed.hex (source) and seed.exe: Triad-Core interpreter
 seed/linux-x86_64/          first Linux ELF (E0): write/exit syscalls, "Triad seed Linux OK"
 seed/dev/                   seed generators and triad_core.cjs reference interpreter
 selfhost/                   S1: Triad interpreter written in Triad-Core (in progress)
+scripts/                    build helpers (book/EPUB/DOCX, charts, Windows seed runners)
+tools/webcmd-graphify/      Graphify webcmd plugin (code-graph tools for agents)
 editors/                    VS Code, Vim/Neovim, and Linguist entry
 examples/*.triad, *.td      Triad examples (.triad canonical, .td historical alias)
-docs/                       GitHub Pages site and support documents
+ai/                         LLM generation benchmark + verifier (development tool)
+docs/                       GitHub Pages site and long-form documentation
+docs/MANUALE.md             full manual (Core + Full presented together)
+docs/TUTORIAL-RU.md         Russian translation of TUTORIAL.md
+docs/releases/              per-version release notes
 obsidian-triad/             Obsidian vault with index and Graphify graph of the repository
 .github/workflows/          CI (ci.yml) and Pages publishing (pages.yml, static.yml)
 BOOTSTRAP.md                plan for independence from Julia and any other language
 SPEC.md                     Triad standard: normative specification (0.2.0)
 SPEC-CORE.md                Triad-Core profile (normative, for self-hosted bootstrap)
 STATUS.md                   bootstrap progress status and roadmap
+TASK.md / PULL_REQUEST.md   task log and PR description template
+SECURITY.md                 vulnerability reporting policy
 plan.md                     work plan (checklist)
 VERSION / CHANGELOG.md      standard version and history
-TUTORIAL.md                 complete usage tutorial
+README.md / TUTORIAL.md     introduction and complete usage tutorial
 LICENSE                     MIT license (open source)
 ```
 
@@ -194,7 +200,6 @@ LICENSE                     MIT license (open source)
 - **Triad Standard:** no dependencies; it is defined by this repository (`SPEC.md` + `conformance/`).
 - **Runtime:** machine code seed (S0); no dependencies on Julia or other host languages.
 - **Development:** Node.js 20 for `conformance/run.mjs`, `cli/`, the generators in `seed/dev/`, and the reference interpreter on Linux.
-
 
 ### Termux (Android)
 

@@ -2881,7 +2881,7 @@ codice che contiene.
 | `docs/` | HTML/CSS/JS | sito GitHub Pages e materiali pubblicati dal repository |
 | `obsidian-triad/` | Markdown | vault Obsidian con indice dei file e grafo del progetto |
 | `.github/workflows/` | YAML | CI (`ci.yml`) e pubblicazione del sito (`pages.yml`, `static.yml`) |
-| `test_*.td`, `min_*.td` (root) | Triad-Core | piccoli probe usati durante lo sviluppo del seed (es. `test_get.td` in CI) |
+| `probes/test_*.td` | Triad-Core | piccoli probe usati durante lo sviluppo del seed e nella CI (es. `probes/test_get.td`) |
 
 Convenzioni comuni:
 - documentazione, commenti e messaggi sono in **italiano**;

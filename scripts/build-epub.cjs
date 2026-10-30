@@ -6,8 +6,8 @@ const Epub = require('epub-gen');
 const root = path.join(__dirname, '..');
 const outDir = path.join(root, 'docs', 'libro');
 
-const preface = fs.readFileSync(path.join(root, 'PREFazione.md'), 'utf8');
-const manuale = fs.readFileSync(path.join(root, 'MANUALE.md'), 'utf8');
+const preface = fs.readFileSync(path.join(root, 'docs', 'PREFazione.md'), 'utf8');
+const manuale = fs.readFileSync(path.join(root, 'docs', 'MANUALE.md'), 'utf8');
 const tutorial = fs.readFileSync(path.join(root, 'TUTORIAL.md'), 'utf8');
 
 marked.setOptions({ gfm: true, breaks: false });

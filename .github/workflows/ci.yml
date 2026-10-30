@@ -51,7 +51,7 @@ jobs:
         shell: pwsh
         run: |
           $out = Join-Path $env:TEMP "test_get.out"
-          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "test_get.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
+          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "probes\\test_get.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
           if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for test_get.td" }
           $got = (Get-Content $out -Raw) -replace "`r`n", "`n"
           if ($got -cne "20`n") { throw "unexpected output for test_get.td: $got" }
@@ -101,12 +101,12 @@ jobs:
         with:
           node-version: '20'
       - name: Launcher bin/triad esegue un programma
-        run: ./bin/triad test_simple.td | grep -q '^test$'
+        run: ./bin/triad probes/test_simple.td | grep -q '^test$'
       - name: install.sh (utente non root, prefix temporaneo)
         run: |
           ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop
           export PATH="$RUNNER_TEMP/triad-bin:$PATH"
-          triad test_let.td | grep -q '^15$'
+          triad probes/test_let.td | grep -q '^15$'
           triad-cli status >/dev/null
       - name: Conformance via launcher installato
         run: |
