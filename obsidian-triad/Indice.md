@@ -13,6 +13,69 @@ Project consultation vault [triad2.0](../). Source links point to the actual fil
 - [[File - KarpathyWiki main.js]] — KarpathyWiki plugin bundle.
 - [[File - Templater main.js]] — Templater plugin bundle.
 
+## GitHub Wiki — Il libro di Triad
+Complete book on Triad language (50 pages). Synced from [GitHub Wiki](https://github.com/GPuntobit/triad2.0/wiki) on October 30, 2026.
+
+- [[wiki-content/Home|Home]] — Book table of contents
+- [[wiki-content/_Sidebar|Sidebar]] — Wiki navigation
+
+### Book Chapters
+- [[wiki-content/Libro-00-Prefazione|Prefazione]]
+- [[wiki-content/Libro-01-Perche-Triad|Capitolo 1 — Perché Triad]]
+- [[wiki-content/Libro-02-Profili-e-bootstrap|Capitolo 2 — Due profili e una catena]]
+- [[wiki-content/Libro-03-Primo-programma|Capitolo 3 — L'ambiente e il primo programma]]
+- [[wiki-content/Libro-04-Lessico|Capitolo 4 — Le parole del linguaggio]]
+- [[wiki-content/Libro-05-Valori-e-tipi|Capitolo 5 — Valori e tipi]]
+- [[wiki-content/Libro-06-Espressioni|Capitolo 6 — Espressioni, operatori e variabili]]
+- [[wiki-content/Libro-07-Controllo-del-flusso|Capitolo 7 — Decidere e ripetere]]
+- [[wiki-content/Libro-08-Funzioni|Capitolo 8 — Funzioni e ricorsione]]
+- [[wiki-content/Libro-09-Chiusure-e-scope|Capitolo 9 — Lambda, chiusure e visibilità]]
+- [[wiki-content/Libro-10-Liste|Capitolo 10 — Liste e dati strutturati]]
+- [[wiki-content/Libro-11-Stringhe-e-byte|Capitolo 11 — Stringhe, simboli e byte]]
+- [[wiki-content/Libro-12-Errori-e-runtime|Capitolo 12 — Quando le cose vanno storte]]
+- [[wiki-content/Libro-13-Progetto-interprete|Capitolo 13 — Progetto: interprete]]
+- [[wiki-content/Libro-14-Tipi-e-dispatch|Capitolo 14 — Tipi, struct e dispatch]]
+- [[wiki-content/Libro-15-Logica|Capitolo 15 — Programmazione logica]]
+- [[wiki-content/Libro-16-Codice-come-dato|Capitolo 16 — Codice come dato e macro]]
+- [[wiki-content/Libro-17-Garanzie-e-interfaccia|Capitolo 17 — Garanzie e interfaccia]]
+- [[wiki-content/Libro-18-Anatomia-e-conformance|Capitolo 18 — Anatomia e conformance]]
+- [[wiki-content/Libro-19-Interprete-di-riferimento|Capitolo 19 — Interprete di riferimento]]
+- [[wiki-content/Libro-20-Seed|Capitolo 20 — Il seed in codice macchina]]
+- [[wiki-content/Libro-21-Self-hosting|Capitolo 21 — Verso il self-hosting]]
+- [[wiki-content/Libro-22-Strumenti|Capitolo 22 — Gli strumenti di sviluppo]]
+
+### Appendices
+- [[wiki-content/Riferimento-builtin-Core|Riferimento builtin Core]]
+- [[wiki-content/Catalogo-conformance-Core|Catalogo conformance Core]]
+- [[wiki-content/Catalogo-conformance-Full|Catalogo conformance Full]]
+- [[wiki-content/Sorgenti-esempi|Sorgenti degli esempi]]
+- [[wiki-content/Sorgenti-self-hosted|Sorgenti self-hosted]]
+- [[wiki-content/Documenti|Documenti di riferimento]]
+- [[wiki-content/Indice-analitico|Indice analitico]]
+
+### Reference Manual
+- [[wiki-content/Parte-I-Primi-passi|Primi passi]]
+- [[wiki-content/Parte-II-Triad-Core|Triad-Core]]
+- [[wiki-content/Parte-III-Triad-Full|Triad-Full]]
+- [[wiki-content/Parte-IV-Codice-del-progetto|Codice del progetto]]
+- [[wiki-content/Parte-V-Riferimento|Riferimento]]
+
+### Documentation Files
+- [[wiki-content/Doc-BOOTSTRAP|BOOTSTRAP]]
+- [[wiki-content/Doc-CHANGELOG|CHANGELOG]]
+- [[wiki-content/Doc-SPEC|SPEC]]
+- [[wiki-content/Doc-SPEC-CORE|SPEC-CORE]]
+- [[wiki-content/Doc-STATUS|STATUS]]
+- [[wiki-content/Doc-ai-README|AI README]]
+- [[wiki-content/Doc-cli-README|CLI README]]
+- [[wiki-content/Doc-conformance-README|Conformance README]]
+- [[wiki-content/Doc-confronto-linguaggi|Confronto linguaggi]]
+- [[wiki-content/Doc-editors-README|Editors README]]
+- [[wiki-content/Doc-seed-README|Seed README]]
+- [[wiki-content/Doc-seed-dev-README|Seed dev README]]
+- [[wiki-content/Doc-seed-linux-README|Seed Linux README]]
+- [[wiki-content/Doc-seed-windows-README|Seed Windows README]]
+
 ## Project folders
 - [Repository root](../)
 - [`ai/` folder](../ai/) — AI tools and task files
