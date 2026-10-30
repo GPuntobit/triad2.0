@@ -1,16 +1,14 @@
-# Artefatti generati localmente
-# NOTA: questo file deve essere committato.
-# I binari seed e i lockfile restano versionati; qui ignoriamo solo cache,
-# build locali e file temporanei.
-
+# Locally generated artifacts
+# NOTE: This file must be committed.
+# Seed binaries and lockfiles remain versioned; here we just ignore cache,
+# local builds and temporary files.
 ## Build standalone (PackageCompiler, bin/build_standalone.jl)
 bin/triad-native
 bin/triad-native.exe
 bin/_precompile_triad.jl
 bin/lib/
 bin/*.ji
-
-## Julia: artefatti runtime (Manifest.toml resta versionato)
+## Julia: runtime artifacts (Manifest.toml remains versioned)
 *.ji
 *.jm
 *.jl.cov
@@ -18,18 +16,15 @@ bin/*.ji
 *.jl.mem
 /deps/deps.jl
 .julia/
-
-## triad-vm (lane Rust, se presente; Cargo.lock resta versionato)
+## triad-vm (Rust lane, if present; Cargo.lock remains versioned)
 /target/
 **/*.rs.bk
-
-## Sistema operativo
+## Operating system
 .DS_Store
 Thumbs.db
 desktop.ini
 $RECYCLE.BIN/
 ehthumbs.db
-
 ## Editor / IDE
 .idea/
 .vscode/
@@ -37,41 +32,32 @@ ehthumbs.db
 *.swo
 *~
 .~lock.*#
-
 ## GitHub Copilot ECC installation
 /.github/agents/
 /.github/skills/
-/.github/ecc/
+/.github/etc/
 /.github/ecc-install-state.json
-
-## Log e temporanei
+## Logs and temporary
 *.log
 tmp/
 node_modules/
-
-## AI benchmark: soluzioni generate localmente
+## AI benchmark: locally generated solutions
 ai/tasks/*/solution.triad
-
-## Probe locali temporanei
+## Temporary local probes
 /_probe.jl
 /_probe2.jl
 /_probe3.jl
 /_qc.jl
 /_smoke.jl
-
-## AI generated files (esclusionale)
+## AI generated files (exclusive)
 /ai/
-
-## File di log generici (già presenti ma aggiunti per completezza)
+## Generic log files (already present but added for completeness)
 *.log
-
-## Cache del sistema operativo
+## Operating system cache
 .Cache/
 .cache/
-
-## Backup editoriali
+## Editorial backups
 *.bak
 *.backup
-
-## File di trapock (es. Python, Node)
-# pieni di cache, non servono in repo
+## Trapock files (e.g. Python, Node)
+# full of cache, no use in repo

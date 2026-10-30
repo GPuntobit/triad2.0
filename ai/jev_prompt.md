@@ -13,8 +13,8 @@ overestimate and the result cannot be aggregated or verified.
 The prompt is therefore **decomposed**:
 | Level | Question to Jev | Who aggregates |
 | --- | --- | --- |
-| 1 file | "does this file have a defect? ​​what class? how serious? how many?" | — |
-| 2 project | sum of per-file waits | **the code** (`expectedCount`) |
+| 1 file | "does this file have a defect? ​​​​​​what class? how serious? how many?" | — |
+| 2 projects | sum of per-file waits | **the code** (`expectedCount`) |
 | 3 localization | "in which 40 line window does the defect fit?" | **the code** (window → lines) |
 The counting is never asked of the model. The model classifies each file into
 a band (`0`, `1`, `2`, `3+` defects) and returns the distribution of
@@ -76,7 +76,7 @@ with severity 3 and low confidence it should still be looked at first.
 ### `defect_count` — Score
 Bands: `0`, `1`, `2`, `3+`. The code calculates
 ```
-expectedCount = Σ (indice del livello) × (probabilità del livello)
+expectedCount = Σ (level index) × (level probability)
 ```
 
 and sum over all files. The result is an **expected estimate**, not an integer

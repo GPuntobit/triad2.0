@@ -17,13 +17,12 @@ jobs:
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
       - name: Conformance Core (Node runner)
-        run: node conformance/run.mjs --cases conformance/core/cases --skip liste
-
-  seed-windows:
+        run: node conformance/run.mjs --cases conformance/core/cases --skip lists
+seed-windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
-      - name: "AV exclusion (PE generato dal dump: falso positivo noto)"
+      - name: "AV exclusion (PE generated from dump: known false positive)"
         shell: pwsh
         continue-on-error: true
         run: Add-MpPreference -ExclusionPath "${{ github.workspace }}\seed\windows-x86_64"
@@ -35,7 +34,7 @@ jobs:
       - name: Seed conformance cases
         shell: pwsh
         run: |
-          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','if_elseif','if_nested','if_no_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni_io','funzioni','aritmetica','begin_block','formula','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if','liste_base','liste_push')
+          $cases = @('integers','variables','simple_functions','recursion','comparisons','operators','if_else','if_elseif','if_nested','if_no_else','while_loop','lambda','closure','closures','scope','block_functions','io_functions','functions' ,'arithmetic','begin_block','formula','strings','base_strings','nothing_base','concat_strings','base_symbols','multi_strings','local_closures','let_nested','let_close','close_in_if','base_lists','push_lists')
           foreach ($c in $cases) {
             $out = Join-Path $env:TEMP "$c.out"
             Remove-Item $out -ErrorAction SilentlyContinue
@@ -51,7 +50,7 @@ jobs:
         shell: pwsh
         run: |
           $out = Join-Path $env:TEMP "test_get.out"
-          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "test_get.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
+$p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "test_get.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
           if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for test_get.td" }
           $got = (Get-Content $out -Raw) -replace "`r`n", "`n"
           if ($got -cne "20`n") { throw "unexpected output for test_get.td: $got" }
@@ -88,27 +87,26 @@ jobs:
       - name: Hash check
         run: |
           h=$(sha256sum seed/linux-x86_64/seed.hex | cut -d' ' -f1)
-          test "$h" = "ad4c9f08176d9964d5be17d44c72230184434025980447395e7a3250f63ca5ea"
-
-  linux-toolchain:
-    # Verifica che l'intera toolchain POSIX funzioni su Linux: launcher,
-    # install.sh (senza root), esecuzione di programmi .td e suite di
-    # conformità tramite i launcher installati.
+test "$h" = "ad4c9f08176d9964d5be17d44c72230184434025980447395e7a3250f63ca5ea"
+linux-toolchain:
+    # Verify that the entire POSIX toolchain works on Linux: launcher,
+    # install.sh (without root), running .td and suite programs
+    # compliance via installed launchers.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: '20'
-      - name: Launcher bin/triad esegue un programma
+      - name: Launcher bin/triad runs a program
         run: ./bin/triad test_simple.td | grep -q '^test$'
-      - name: install.sh (utente non root, prefix temporaneo)
+      - name: install.sh (non-root user, temporary prefix)
         run: |
           ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop
           export PATH="$RUNNER_TEMP/triad-bin:$PATH"
           triad test_let.td | grep -q '^15$'
           triad-cli status >/dev/null
-      - name: Conformance via launcher installato
+      - name: Conformance via installed launcher
         run: |
           export PATH="$RUNNER_TEMP/triad-bin:$PATH"
           triad-cli test conformance

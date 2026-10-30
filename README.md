@@ -29,7 +29,7 @@ They are part of the language, not a library: errors as data (Err), contracts (r
   <img src="docs/assets/img/curva-apprendimento.svg" alt="Learning curve and learning threshold for Triad 2.0" width="900">
 </p>
 
-Derived from the chapters in [TUTORIAL.md](TUTORIAL.md) and MANUALE.md: Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
+Derived from the chapters in [tutorial/TUTORIAL.md](tutorial/TUTORIAL.md) and MANUALE.md: Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
 
 https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
 <p align="center">
@@ -185,7 +185,7 @@ SPEC-CORE.md                Triad-Core profile (normative, for self-hosted boots
 STATUS.md                   bootstrap progress status and roadmap
 plan.md                     work plan (checklist)
 VERSION / CHANGELOG.md      standard version and history
-TUTORIAL.md                 complete usage tutorial
+tutorial/TUTORIAL.md        complete usage tutorial
 LICENSE                     MIT license (open source)
 ```
 

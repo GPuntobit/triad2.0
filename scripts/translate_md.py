@@ -27,7 +27,7 @@ def translate_text(text):
     cur = []
     cur_len = 0
     for line in lines:
-        if cur_len + len(line) + 1 > 800 and cur:
+        if cur_len + len(line) + 1 > 2000 and cur:
             chunks.append('\n'.join(cur))
             cur = [line]
             cur_len = len(line)
@@ -39,7 +39,7 @@ def translate_text(text):
     res = []
     for c in chunks:
         res.append(translate_chunk(c))
-        time.sleep(0.3)
+        time.sleep(0.2)
     return '\n'.join(res)
 
 def translate_markdown(path_in, path_out):

@@ -2,16 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const marked = require('marked');
 const Epub = require('epub-gen');
-
 const root = path.join(__dirname, '..');
-const outDir = path.join(root, 'docs', 'libro');
-
+const outDir = path.join(root, 'docs', 'book');
 const preface = fs.readFileSync(path.join(root, 'PREFazione.md'), 'utf8');
-const manuale = fs.readFileSync(path.join(root, 'MANUALE.md'), 'utf8');
-const tutorial = fs.readFileSync(path.join(root, 'TUTORIAL.md'), 'utf8');
-
+const manual = fs.readFileSync(path.join(root, 'MANUALE.md'), 'utf8');
+const tutorial = fs.readFileSync(path.join(root, 'tutorial', 'TUTORIAL.md'), 'utf8');
 marked.setOptions({ gfm: true, breaks: false });
-
 function rewriteRepositoryLinks(html) {
   return html.replace(/href="([^"]+)"/g, (match, target) => {
     if (/^(?:https?:|mailto:|#)/.test(target)) return match;
@@ -20,7 +16,6 @@ function rewriteRepositoryLinks(html) {
     return `href="https://github.com/GPuntobit/triad2.0/${kind}/main/${path}"`;
   });
 }
-
 function stripFirstH1(md) {
   const lines = md.split(/\r?\n/);
   let inFence = false;
@@ -31,29 +26,27 @@ function stripFirstH1(md) {
   if (index !== -1) lines.splice(index, 1);
   return lines.join('\n');
 }
-
-// Rimuovi indici interni
-function stripIndice(md, heading, endMarker) {
+// Remove internal indexes
+function stripIndex(md, heading, endMarker) {
   const start = md.indexOf(heading);
   if (start === -1) return md;
   const end = md.indexOf(endMarker, start);
   if (end === -1) return md;
   return md.slice(0, start) + md.slice(end);
 }
-const manualeClean = stripIndice(manuale, '### Indice', '\n<a id="parte-1">');
-const tutorialClean = stripIndice(tutorial, '## Indice', '\n<a id="parte-1">');
-
+const manualClean = stripIndex(manual, '### Index', '\n<a id="part-1">');
+const tutorialClean = stripIndex(tutorial, '## Index', '\n<a id="part-1">');
 function extractHeadings(md, maxLevel) {
   const lines = md.split(/\r?\n/);
   const out = [];
   let inFence = false;
   let firstH1 = true;
   for (const line of lines) {
-    if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
+    if (/^```/.test(line.trim())) { inFence = !inFence; continuous; }
     if (inFence) continue;
     const m = line.match(/^(#{1,6})\s+(.+)$/);
     if (!m || m[1].length > maxLevel) continue;
-    if (m[1].length === 1 && firstH1) { firstH1 = false; continue; }
+    if (m[1].length === 1 && firstH1) { firstH1 = false; continuous; }
     const text = m[2].trim();
     if (/[.](triad|td)\b/.test(text)) continue;
     if (/^[a-z]/.test(text)) continue;
@@ -61,16 +54,15 @@ function extractHeadings(md, maxLevel) {
   }
   return out;
 }
-const manH = extractHeadings(manualeClean, 3);
+const manH = extractHeadings(manualClean, 3);
 const tutH = extractHeadings(tutorialClean, 3);
-let sommarioHtml = '<p>Elenco completo di tutti i capitoli e le sezioni.</p>';
-sommarioHtml += '<h2>Manuale di Triad 2.0</h2><ul>';
-for (const h of manH) sommarioHtml += '<li>' + h.text + '</li>';
-sommarioHtml += '</ul>';
-sommarioHtml += '<h2>Tutorial di Triad 2.0</h2><ul>';
-for (const h of tutH) sommarioHtml += '<li>' + h.text + '</li>';
-sommarioHtml += '</ul>';
-
+let summaryHtml = '<p>Complete list of all chapters and sections.</p>';
+summaryHtml += '<h2>Triad 2.0 Handbook</h2><ul>';
+for (const h of manH) summaryHtml += '<li>' + h.text + '</li>';
+summaryHtml += '</ul>';
+summaryHtml += '<h2>Triad 2.0 Tutorial</h2><ul>';
+for (const h of tutH) summaryHtml += '<li>' + h.text + '</li>';
+summaryHtml += '</ul>';
 const css = `
 body { font-family: serif; font-size: 1em; line-height: 1.6; color: #1a1a1a; }
 h1, h2, h3 { font-family: sans-serif; color: #0d0a0f; page-break-before: always; }
@@ -86,51 +78,48 @@ th, td { border: 0.5pt solid #b8b0aa; padding: 0.3em 0.5em; }
 th { background: #ece8e4; font-weight: bold; }
 blockquote { border-left: 2pt solid #7d5157; margin: 0.8em 0; padding: 0.3em 0.8em; font-style: italic; }
 `;
-
-const content = [
+const contents = [
   {
-    title: 'Prefazione',
+    title: 'Preface',
     data: rewriteRepositoryLinks(marked.parse(stripFirstH1(preface)))
   },
   {
-    title: 'Sommario',
-    data: sommarioHtml
+    title: 'Summary',
+    data: summaryHtml
   },
   {
-    title: 'Manuale di Triad 2.0',
+    title: 'Triad Manual 2.0',
     data: rewriteRepositoryLinks(marked.parse(stripFirstH1(manualeClean)))
   },
   {
-    title: 'Tutorial di Triad 2.0',
+    title: 'Triad 2.0 Tutorial',
     data: rewriteRepositoryLinks(marked.parse(stripFirstH1(tutorialClean)))
   },
   {
-    title: 'Quarta di copertina',
+    title: 'Back cover',
     data: `<div style="background:#0d0a0f;color:#f5f5f4;padding:1em;">
-      <h1>Il libro di Triad</h1>
-      <p>Triad 2.0 è un linguaggio di programmazione autonomo, definito da una specifica normativa indipendente da qualsiasi implementazione.</p>
-      <p>Il progetto è rilasciato sotto licenza MIT. SPEC.md (standard 0.2.0), SPEC-CORE.md, conformance/ con golden verificabili.</p>
-      <p>L'obiettivo è un linguaggio autonomo e riconosciuto: standard proprio, conformance eseguibile, estensione .triad, tooling editor, bootstrap senza linguaggi ospiti e self-hosting.</p>
+      <h1>The Book of Triad</h1>
+      <p>Triad 2.0 is an autonomous programming language, defined by a specific regulation independent of any implementation.</p>
+      <p>The project is released under the MIT license. SPEC.md (standard 0.2.0), SPEC-CORE.md, conformance/ with verifiable golden.</p>
+      <p>The goal is an autonomous and recognized language: own standard, conformance executable, .triad extension, tooling editor, bootstrap without guest languages and self-hosting.</p>
     </div>`
   }
 ];
-
 const options = {
-  title: 'Il libro di Triad',
+  title: 'The Book of Triad',
   author: 'GPuntobit',
   publisher: 'GPuntobit',
-  description: 'Il libro di Triad — imparare il linguaggio e il codice del progetto triad2.0',
+  description: 'The Triad book — learning the language and code of the triad2.0 project',
   cover: path.join(outDir, 'frontespizio.png'),
   content: content,
   css: css,
-  tocTitle: 'Indice',
+  tocTitle: 'Index',
   version: 3,
   lang: 'it'
 };
-
-const epub = new Epub(options, path.join(outDir, 'Il-libro-di-Triad.epub'));
+const epub = new Epub(options, path.join(outDir, 'The-book-of-Triad.epub'));
 epub.promise.then(() => {
-  console.log('scritto libro.epub');
+  console.log('written book.epub');
 }).catch(err => {
-  console.error('errore epub:', err);
+  console.error('epub error:', err);
 });

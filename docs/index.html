@@ -1,10 +1,10 @@
 ﻿<!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Triad 2.0 — linguaggio di programmazione</title>
-<meta name="description" content="Triad 2.0: linguaggio autonomo con sintassi a blocchi, tipi dichiarati, multiple dispatch, logica integrata, codice come dato." />
+<title>Triad 2.0 — programming language</title>
+<meta name="description" content="Triad 2.0: Self-contained language with block syntax, declared types, multiple dispatch, integrated logic, code as data." />
 <link rel="stylesheet" href="assets/css/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js" integrity="sha384-JEyTNhjM6R1ElGoJns4U2Ln4ofPcqzSsynQkmEc/KGy6336qAZl70tDLufbkla+3" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
@@ -18,14 +18,14 @@
       <div class="badges">
         <span class="badge">v0.2.0</span>
         <span class="badge">MIT</span>
-        <span class="badge">Spec normativa</span>
+        <span class="badge">Regulatory spec</span>
         <span class="badge">Conformance 33/33</span>
       </div>
-      <h1>Un linguaggio <span>a sé</span>, definito dal suo standard</h1>
-      <p>Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple dispatch, programmazione logica integrata (<code>fact</code>, <code>rule</code>, <code>solve</code>), codice come dato. Errori, contratti, budget, tracce ed effetti sono parte del linguaggio, non di una libreria.</p>
+      <h1>A language <span>in itself</span>, defined by its standard</h1>
+      <p>Triad is a self-contained programming language: block syntax and declared types, multiple dispatch, integrated logic programming (<code>fact</code>, <code>rule</code>, <code>solve</code>), code as data. Errors, contracts, budgets, tracks and effects are part of the language, not a library.</p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="pages/playground.html">▶ Prova il Playground</a>
-        <a class="btn btn-ghost" href="pages/getting-started.html">Inizia ora</a>
+        <a class="btn btn-primary" href="pages/playground.html">▶ Try the Playground</a>
+        <a class="btn btn-ghost" href="pages/getting-started.html">Start now</a>
         <a class="btn btn-ghost" href="https://github.com/GPuntobit/triad2.0" target="_blank" rel="noopener">GitHub</a>
       </div>
     </div>
@@ -33,77 +33,70 @@
     x::<span class="ty">Float</span>
     y::<span class="ty">Float</span>
 <span class="kw">end</span>
-
 <span class="kw">function</span> dist(a::<span class="ty">Point</span>, b::<span class="ty">Point</span>)::<span class="ty">Float</span>
     <span class="kw">requires</span> a.x != b.x || a.y != b.y
     sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
 <span class="kw">end</span>
-
 <span class="kw">fact</span> parent(:alice, :bob)
 <span class="kw">rule</span> grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)
-
 result = solve grandparent(:alice, ?who) limit 5
-println(result)   <span class="cm"># [{who = :dave}]</span></div>
+println(result) <span class="cm"># [{who = :dave}]</span></div>
   </div>
 </section>
 <section class="section alt">
   <div class="container">
-    <h2 class="section-title">Perché Triad</h2>
-    <p class="section-sub">Una specifica normativa indipendente dall'implementazione, una suite di conformità eseguibile, un percorso di bootstrap verso il self-hosting.</p>
+    <h2 class="section-title">Why Triad</h2>
+    <p class="section-sub">An implementation-independent policy specification, an executable compliance suite, a bootstrapping path to self-hosting.</p>
     <div class="grid grid-3">
-      <div class="card"><div class="icon">📜</div><h3>Specifica normativa</h3><p>SPEC.md (0.2.0): lessico, grammatica, tipi, semantica, esecuzione, errori, contratti, effetti, logica, CLI. §1–§14 e §16 normativi.</p></div>
-      <div class="card"><div class="icon">✅</div><h3>Conformance eseguibile</h3><p>Casi golden con stdout ed exit code attesi. Qualsiasi implementazione (seed in codice macchina, Triad-Core, compilatore nativo) deve passarli.</p></div>
-      <div class="card"><div class="icon">🧬</div><h3>Bootstrap autonomo</h3><p>Seed S0 in codice macchina (PE Windows + ELF Linux). Roadmap S1–S4 verso Triad senza linguaggi ospiti. Vedi BOOTSTRAP.md.</p></div>
-      <div class="card"><div class="icon">🧠</div><h3>Logica integrata</h3><p>fact, rule, unificazione con occurs-check, backtracking, solve con variabili logiche ?x. Come in Prolog, ma nel linguaggio.</p></div>
-      <div class="card"><div class="icon">🪞</div><h3>Codice come dato</h3><p>Albero uniforme Node, quote :( … ) con $, macro. Introspezione e metaprogrammazione native.</p></div>
-      <div class="card"><div class="icon">🛡️</div><h3>Contratti ed effetti</h3><p>requires/ensures, budget (with budget), tracce (with trace), effetti dichiarati (!io, !state). Errori come dati (Err).</p></div>
+      <div class="card"><div class="icon">📜</div><h3>Normative specification</h3><p>SPEC.md (0.2.0): vocabulary, grammar, types, semantics, execution, errors, contracts, effects, logic, CLI. §1–§14 and §16 regulations.</p></div>
+      <div class="card"><div class="icon">✅</div><h3>Executable conformance</h3><p>Golden cases with expected stdout and exit code. Any implementation (seed in machine code, Triad-Core, native compiler) must pass them.</p></div>
+      <div class="card"><div class="icon">🧬</div><h3>Standalone bootstrap</h3><p>Seed S0 in machine code (PE Windows + ELF Linux). Roadmap S1–S4 towards Triad without guest languages. See BOOTSTRAP.md.</p></div>
+      <div class="card"><div class="icon">🧠</div><h3>Integrated logic</h3><p>fact, rule, unification with occurs-check, backtracking, solve with ?x logic variables. Like in Prolog, but in the language.</p></div>
+      <div class="card"><div class="icon">🪞</div><h3>Code as given</h3><p>Uniform tree Node, quote :( … ) with $, macro. Native introspection and metaprogramming.</p></div>
+      <div class="card"><div class="icon">🛡️</div><h3>Contracts and effects</h3><p>requires/ensures, budget (with budget), traces (with trace), declared effects (!io, !state). Errors as data (Err).</p></div>
     </div>
   </div>
 </section>
 <section class="section">
   <div class="container">
-    <h2 class="section-title">Triad-Core in azione</h2>
-    <p class="section-sub">Un programma digitato carattere per carattere ed eseguito con l'interprete JS: l'output mostrato è quello reale.</p>
-    <p class="chart-link"><img src="assets/img/anteprima-codice.svg" alt="Anteprima animata: un programma Triad-Core digitato carattere per carattere e il suo output" style="max-width:100%;height:auto;display:block;margin:0 auto"></p>
+    <h2 class="section-title">Triad-Core in action</h2>
+    <p class="section-sub">A program typed character by character and executed with the JS interpreter: the output shown is the real one.</p>
+<p class="chart-link"><img src="assets/img/premiere-codice.svg" alt="Animated Preview: A Triad-Core Program Typed Character by Character and Its Output" style="max-width:100%;height:auto;display:block;margin:0 auto"></p>
   </div>
 </section>
-
 <section class="section">
   <div class="container">
-    <h2 class="section-title">Soglia di apprendimento</h2>
-    <p class="section-sub">Dai capitoli di TUTORIAL.md e MANUALE.md: Triad-Core si impara facendo, Triad-Full oggi solo leggendo. Alla soglia di Triad-Full la padronanza reale si ferma, mentre quella teorica continua a salire.</p>
+    <h2 class="section-title">Learning threshold</h2>
+    <p class="section-sub">From the chapters of TUTORIAL.md and MANUALE.md: Triad-Core is learned by doing, Triad-Full today only by reading. At the Triad-Full threshold, real mastery stops, while theoretical mastery continues to rise.</p>
     <div class="chart-card" id="lc-home"></div>
-    <p class="chart-link"><a href="pages/apprendimento.html">Analisi completa: fasi, difficoltà e metodo →</a></p>
+    <p class="chart-link"><a href="pages/learning.html">Complete analysis: phases, difficulties and method →</a></p>
   </div>
 </section>
 <section class="section">
   <div class="container">
-    <h2 class="section-title">Avvio rapido</h2>
-    <p class="section-sub">L'implementazione di riferimento è in Julia (transitoria per il bootstrap), zero pacchetti esterni.</p>
+    <h2 class="section-title">Quick Start</h2>
+    <p class="section-sub">The reference implementation is in Julia (transient for bootstrap), zero external packages.</p>
     <div class="grid grid-2">
       <div class="code-card"># REPL
 julia --startup-file=no triad.jl
-
-# esegui un file
+# run a file
 julia --startup-file=no triad.jl examples/assaggio.td
-
-# valuta un'espressione
+# evaluate an expression
 julia --startup-file=no triad.jl -E '1 + 2'
-
-# launcher (bin/ nel PATH)
+# launcher (bin/ in the PATH)
 triad examples/assaggio.td</div>
       <div>
-        <h3>Documentazione</h3>
+        <h3>Documentation</h3>
         <ul class="feature-list">
-          <li><a href="pages/getting-started.html">Inizia: installazione e CLI</a></li>
-          <li><a href="pages/language-tour.html">Tour del linguaggio</a></li>
+          <li><a href="pages/getting-started.html">Get started: installation and CLI</a></li>
+          <li><a href="pages/language-tour.html">Language tour</a></li>
           <li><a href="pages/spec.html">SPEC.md — standard 0.2.0</a></li>
-          <li><a href="pages/tutorial.html">TUTORIAL.md — completo</a></li>
-          <li><a href="pages/apprendimento.html">Curva e soglia di apprendimento</a></li>
-          <li><a href="pages/examples.html">Esempi (.triad / .td)</a></li>
+          <li><a href="pages/tutorial.html">TUTORIAL.md — complete</a></li>
+          <li><a href="pages/learning.html">Learning curve and threshold</a></li>
+          <li><a href="pages/examples.html">Examples (.triad / .td)</a></li>
           <li><a href="pages/conformance.html">Conformance suite</a></li>
-          <li><a href="pages/bootstrap.html">BOOTSTRAP.md — piano self-hosting</a></li>
-          <li><a href="pages/status.html">STATUS.md — stato e roadmap</a></li>
+          <li><a href="pages/bootstrap.html">BOOTSTRAP.md — self-hosting plan</a></li>
+          <li><a href="pages/status.html">STATUS.md — status and roadmap</a></li>
         </ul>
       </div>
     </div>
