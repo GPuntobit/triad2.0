@@ -70,8 +70,8 @@
   if (typeof globalThis !== 'undefined') globalThis.Buffer = Shim;
 })();
 // fs is used only in CLI mode (Node); in the browser the `fs` shim avoids
-// che il require fallisca e non viene mai invocato.
-const fs = (typeof require === 'function' && typeof module !== 'undefined') ? require('fs') : { readFileSync() { throw new Error('fs non disponibile'); } };
+// a failing require that would never be invoked anyway.
+const fs = (typeof require === 'function' && typeof module !== 'undefined') ? require('fs') : { readFileSync() { throw new Error('fs not available'); } };
 // ---------- Value helpers ----------
 const NOTHING = {t:'nothing'};
 const BUILTIN_NAMES = new Set(['print','println','length','push!','Int','string','Symbol','typeof','readfile','strlen','strbyte','strsub','exit']);

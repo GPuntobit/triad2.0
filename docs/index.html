@@ -61,24 +61,24 @@ println(result) <span class="cm"># [{who = :dave}]</span></div>
   <div class="container">
     <h2 class="section-title">Triad-Core in action</h2>
     <p class="section-sub">A program and the output it actually produces, run by the same interpreter that executes the conformance suite.</p>
-<div class="grid grid-2">
-  <div class="code-card"><span class="cm"># functions, block form, recursion</span>
+    <div class="grid grid-2">
+      <div class="code-card"><span class="cm"># functions, block form, recursion</span>
 <span class="kw">function</span> area(base, height)
     base * height
 <span class="kw">end</span>
 
-quadrato(x) = x * x
+square(x) = x * x
 fib(n) = n &lt; 2 ? n : fib(n - 1) + fib(n - 2)
 
 println(area(7, 6))
-println(quadrato(4))
+println(square(4))
 println(fib(10))</div>
-  <div class="code-card"><span class="cm"># output</span>
+      <div class="code-card"><span class="cm"># output</span>
 42
 16
 55</div>
-</div>
-<p class="chart-link"><a href="pages/playground.html">▶ Run it in the Playground</a> &nbsp;·&nbsp; <a href="pages/examples.html">Browse the examples</a></p>
+    </div>
+    <p class="chart-link"><a href="pages/playground.html">▶ Run it in the Playground</a> &nbsp;·&nbsp; <a href="pages/examples.html">Browse the examples</a></p>
   </div>
 </section>
 <section class="section">

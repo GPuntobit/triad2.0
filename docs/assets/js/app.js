@@ -44,6 +44,8 @@ function renderFooter() {
         <a href="pages/tutorial.html">TUTORIAL.md</a>
         <a href="pages/bootstrap.html">BOOTSTRAP.md</a>
         <a href="pages/status.html">STATUS.md</a>
+        <a href="libro/book.html">The book</a>
+        <a href="libro/The-book-of-Triad.epub">EPUB</a>
       </div>
       <div>
         <h4>Resources</h4>
