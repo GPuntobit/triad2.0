@@ -20,6 +20,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import urllib.request
@@ -64,11 +65,16 @@ def load_releases_from_tags() -> list[dict]:
     il workflow in CI usa sempre la via API con GITHUB_TOKEN.
     """
     try:
+        git_exe = shutil.which("git")
+        if not git_exe or not os.path.isabs(git_exe):
+            return []
+        if os.path.basename(git_exe).lower() not in ("git", "git.exe"):
+            return []
         out = subprocess.run(
-            ["git", "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
+            [git_exe, "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
             capture_output=True, text=True, check=True, cwd=Path(__file__).resolve().parent.parent,
         ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
         return []
     releases = []
     for line in out.splitlines():
