@@ -174,18 +174,14 @@ seed/windows-x86_64/        seed.hex (source) and seed.exe: Triad-Core interpret
 seed/linux-x86_64/          first Linux ELF (E0): write/exit syscalls, "Triad seed Linux OK"
 seed/dev/                   seed generators and triad_core.cjs reference interpreter
 selfhost/                   S1: Triad interpreter written in Triad-Core (in progress)
-scripts/                    project scripts, organized by purpose
-scripts/docs/               build helpers (book/EPUB/DOCX, cover, download chart)
-scripts/seed-runner/        Windows .bat wrappers to run the seed on selfhost/
-scripts/experiments/        one-off dev experiments (translation, debug probes)
+scripts/                    build helpers (book/EPUB/DOCX, charts, Windows seed runners)
 tools/webcmd-graphify/      Graphify webcmd plugin (code-graph tools for agents)
 editors/                    VS Code, Vim/Neovim, and Linguist entry
 examples/*.triad, *.td      Triad examples (.triad canonical, .td historical alias)
 ai/                         LLM generation benchmark + verifier (development tool)
 docs/                       GitHub Pages site and long-form documentation
 docs/MANUALE.md             full manual (Core + Full presented together)
-tutorial/                   tutorial in three languages (it/en/zh)
-tutorial/TUTORIAL.ru.md     Russian translation of TUTORIAL.md
+docs/TUTORIAL-RU.md         Russian translation of TUTORIAL.md
 docs/releases/              per-version release notes
 obsidian-triad/             Obsidian vault with index and Graphify graph of the repository
 .github/workflows/          CI (ci.yml) and Pages publishing (pages.yml, static.yml)
@@ -241,7 +237,7 @@ Written and maintained by **Kilo** — software engineer agent for the Triad 2.0
 
 ## Downloads
 
-Trend of total downloads of Triad releases on GitHub (automatically updated daily by the [`.github/workflows/download-chart.yml`](.github/workflows/download-chart.yml) workflow, which reads data via the GitHub API and regenerates the chart with [`scripts/docs/download_chart.py`](scripts/docs/download_chart.py)).
+Trend of total downloads of Triad releases on GitHub (automatically updated daily by the [`.github/workflows/download-chart.yml`](.github/workflows/download-chart.yml) workflow, which reads data via the GitHub API and regenerates the chart with [`scripts/download_chart.py`](scripts/download_chart.py)).
 
 ![Triad download chart](docs/assets/img/downloads.svg)
 

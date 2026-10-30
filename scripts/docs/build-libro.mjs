@@ -1,11 +1,10 @@
-import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
-
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const outDir = join(root, 'docs', 'libro');
-
+mkdirSync(outDir, { recursive: true });
 marked.setOptions({ gfm: true, breaks: false });
 
 function slugify(s) {
@@ -45,14 +44,8 @@ const preface = readFileSync(join(root, 'docs', 'PREFazione.md'), 'utf8');
 const prefaceHtml = rewriteRepositoryLinks(marked.parse(preface));
 const manualRaw = readFileSync(join(root, 'docs', 'MANUALE.md'), 'utf8');
 const tutorialRaw = readFileSync(join(root, 'tutorial', 'TUTORIAL.md'), 'utf8');
-
-function stripIndex(md, headings, endMarker) {
-  const candidates = Array.isArray(headings) ? headings : [headings];
-  let start = -1;
-  for (const h of candidates) {
-    const at = md.indexOf(h);
-    if (at !== -1 && (start === -1 || at < start)) start = at;
-  }
+function stripIndex(md, heading, endMarker) {
+  const start = md.indexOf(heading);
   if (start === -1) return md;
   const end = md.indexOf(endMarker, start);
   if (end === -1) return md;
