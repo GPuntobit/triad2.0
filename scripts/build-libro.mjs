@@ -68,7 +68,7 @@ function extractHeadings(md, maxLevel) {
   const out = [];
   let inFence = false;
   for (const line of lines) {
-    if (/^```/.test(line.trim())) { inFence = !inFence; continuous; }
+    if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
     if (inFence) continue;
     const m = line.match(/^(#{1,6})\s+(.+)$/);
     if (!m || m[1].length > maxLevel) continue;

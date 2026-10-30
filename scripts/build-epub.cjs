@@ -42,11 +42,11 @@ function extractHeadings(md, maxLevel) {
   let inFence = false;
   let firstH1 = true;
   for (const line of lines) {
-    if (/^```/.test(line.trim())) { inFence = !inFence; continuous; }
+    if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
     if (inFence) continue;
     const m = line.match(/^(#{1,6})\s+(.+)$/);
     if (!m || m[1].length > maxLevel) continue;
-    if (m[1].length === 1 && firstH1) { firstH1 = false; continuous; }
+    if (m[1].length === 1 && firstH1) { firstH1 = false; continue; }
     const text = m[2].trim();
     if (/[.](triad|td)\b/.test(text)) continue;
     if (/^[a-z]/.test(text)) continue;
@@ -89,7 +89,7 @@ const contents = [
   },
   {
     title: 'Triad Manual 2.0',
-    data: rewriteRepositoryLinks(marked.parse(stripFirstH1(manualeClean)))
+    data: rewriteRepositoryLinks(marked.parse(stripFirstH1(manualClean)))
   },
   {
     title: 'Triad 2.0 Tutorial',
@@ -110,8 +110,8 @@ const options = {
   author: 'GPuntobit',
   publisher: 'GPuntobit',
   description: 'The Triad book — learning the language and code of the triad2.0 project',
-  cover: path.join(outDir, 'frontespizio.png'),
-  content: content,
+  cover: fs.existsSync(path.join(outDir, 'frontespizio.png')) ? path.join(outDir, 'frontespizio.png') : undefined,
+  content: contents,
   css: css,
   tocTitle: 'Index',
   version: 3,
