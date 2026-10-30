@@ -2,7 +2,7 @@
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
-## Unreleased — 2026-10-30: repository structure reorganization
+## 0.8.0-beta.6 — 2026-10-30: repository structure reorganization & tooling fixes
 
 - Probe `.td` moved from the root to `probes/` (`test_simple.td`, `test_let.td`,
   `test_get.td`, `test_td.txt`); paths updated in `.github/workflows/ci.yml`
@@ -14,6 +14,8 @@ behavior, the goldens of `conformance/`.
 - Removed two empty files accidentally committed in the root: `Developer` and
   `install-triad-ext.bat` (no active reference in the repository).
 - `README.md`: "Project Structure" section updated to the new layout.
+- `scripts/download_chart.py`: repaired indentation/typos and use asset download counts; default repo fixed.
+- `scripts/build-epub.cjs`, `scripts/build-libro.mjs`: repaired `continue` typo and variable mismatches.
 
 
 ## 0.8.0-beta.3 — 2026-10-29
