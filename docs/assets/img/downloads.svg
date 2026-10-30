@@ -1,18 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360" font-family="Segoe UI, Helvetica, Arial, sans-serif">
 <rect width="720" height="360" fill="#ffffff"/>
-<text x="360.0" y="26" text-anchor="middle" font-size="16" font-weight="600" fill="#1f2328">Download totali — GPuntobit/triad2.0</text>
+<text x="360.0" y="26" text-anchor="middle" font-size="16" font-weight="600" fill="#1f2328">Download totali ÔÇö GPuntobit/triad2.0</text>
 <line x1="70" y1="304.0" x2="696" y2="304.0" stroke="#d0d7de" stroke-width="1" stroke-dasharray=""/>
 <text x="62" y="308.0" text-anchor="end" font-size="11" fill="#656d76">0</text>
-<line x1="70" y1="304.0" x2="696" y2="304.0" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
-<text x="62" y="308.0" text-anchor="end" font-size="11" fill="#656d76">0</text>
-<line x1="70" y1="304.0" x2="696" y2="304.0" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
-<text x="62" y="308.0" text-anchor="end" font-size="11" fill="#656d76">0</text>
-<line x1="70" y1="174.0" x2="696" y2="174.0" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
-<text x="62" y="178.0" text-anchor="end" font-size="11" fill="#656d76">1</text>
-<line x1="70" y1="174.0" x2="696" y2="174.0" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
-<text x="62" y="178.0" text-anchor="end" font-size="11" fill="#656d76">1</text>
+<line x1="70" y1="257.6" x2="696" y2="257.6" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="261.6" text-anchor="end" font-size="11" fill="#656d76">5</text>
+<line x1="70" y1="201.9" x2="696" y2="201.9" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="205.9" text-anchor="end" font-size="11" fill="#656d76">11</text>
+<line x1="70" y1="155.4" x2="696" y2="155.4" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="159.4" text-anchor="end" font-size="11" fill="#656d76">16</text>
+<line x1="70" y1="99.7" x2="696" y2="99.7" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
+<text x="62" y="103.7" text-anchor="end" font-size="11" fill="#656d76">22</text>
 <line x1="70" y1="44.0" x2="696" y2="44.0" stroke="#d0d7de" stroke-width="1" stroke-dasharray="3,3"/>
-<text x="62" y="48.0" text-anchor="end" font-size="11" fill="#656d76">2</text>
-<text x="360.0" y="180.0" text-anchor="middle" font-size="14" fill="#656d76">Nessuna release con download disponibili</text>
-<text x="696" y="350" text-anchor="end" font-size="10" fill="#8b949e">Aggiornato: 2026-10-29 09:57 UTC · GitHub Releases API</text>
+<text x="62" y="48.0" text-anchor="end" font-size="11" fill="#656d76">28</text>
+<text x="70.0" y="324" text-anchor="middle" font-size="11" fill="#656d76">26/10/2026</text>
+<text x="383.0" y="324" text-anchor="middle" font-size="11" fill="#656d76">28/10/2026</text>
+<text x="696.0" y="324" text-anchor="middle" font-size="11" fill="#656d76">28/10/2026</text>
+<path d="M 70.0 62.6 L 70.0 62.6 L 226.5 62.6 L 383.0 62.6 L 539.5 53.3 L 696.0 53.3 L 696.0 304.0 L 70.0 304.0 Z" fill="#0969da" fill-opacity="0.12"/>
+<path d="M 70.0 62.6 L 226.5 62.6 L 383.0 62.6 L 539.5 53.3 L 696.0 53.3" fill="none" stroke="#0969da" stroke-width="2.5"/>
+<circle cx="696.0" cy="53.3" r="4" fill="#0969da"/>
+<text x="688.0" y="43.3" text-anchor="end" font-size="13" font-weight="600" fill="#0969da">27 download</text>
+<text x="696" y="350" text-anchor="end" font-size="10" fill="#8b949e">Aggiornato: 2026-10-30 03:09 UTC ┬À GitHub Releases API</text>
 </svg>
