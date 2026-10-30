@@ -19,7 +19,7 @@ jobs:
   chart:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       # setup-python non serve: download_chart.py usa solo la libreria standard
       # e su ubuntu-latest python3 e' gia' presente. (Inoltre le azioni v4/v5
