@@ -20,6 +20,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import urllib.request
@@ -57,16 +58,72 @@ def fetch_releases(repo: str, token: str | None) -> list[dict]:
     return releases
 
 
+def resolve_git_path() -> str | None:
+    """Risolve git a un eseguibile ASSOLUTO e fidato prima di invocarlo.
+
+    Hardening (Codacy, medium risk): invocare il nudo nome "git" lascerebbe
+    la ricerca alla PATH, che un aggressore può anteporre con una voce
+    repository-controlled o relativa (PATH hijacking / DLL side-loading su
+    Windows). Strategia:
+      1) candidate esplicite nei percorsi di sistema standard — assoluta,
+         reale (niente symlink), eseguibile e FUORI dal repo; se una
+         corrisponde, è quella usata, indipendentemente dalla PATH;
+      2) altrimenti shutil.which + validazione equivalente (assoluto,
+         file reale non sotto repo_root);
+      3) se nulla passa i controlli, None: nessun subprocess e fallback
+         esistente (return []), come quando git non è disponibile.
+    Node/Python non espongono GetSystemDirectoryW: l'alternativa prevista è
+    validazione + reject/fallback, coerente con utils.js (commandExists).
+    """
+    repo_root = Path(__file__).resolve().parents[2]
+
+    def is_trusted(cand: Path) -> bool:
+        try:
+            real = cand.resolve(strict=True)
+        except OSError:
+            return False
+        if not cand.is_absolute() or not real.is_file():
+            return False
+        if os.name != "nt":
+            if not os.access(real, os.X_OK):
+                return False
+        # mai eseguire un git "portatile" controllato dal repository
+        if real == repo_root or repo_root in real.parents:
+            return False
+        return True
+
+    # 1) percorsi di sistema canonici, non derivati da variabili d'ambiente
+    if os.name == "nt":
+        candidates = [Path(rf"{d}:\Program Files\Git\cmd\git.exe") for d in "CDE"]
+    else:
+        candidates = [Path("/usr/bin/git"), Path("/usr/local/bin/git"), Path("/bin/git")]
+    for cand in candidates:
+        if is_trusted(cand):
+            return str(cand)
+
+    # 2) risoluzione via PATH, ma solo se il risultato supera la validazione
+    found = shutil.which("git")
+    if found and is_trusted(Path(found)):
+        return str(Path(found))
+
+    # 3) niente binario fidato: fallback (nessun subprocess)
+    return None
+
+
 def load_releases_from_tags() -> list[dict]:
     """Fallback offline: usa i tag git locali come snapshot (conteggio 0).
 
     Serve solo per generare un segnaposto quando la API non è raggiungibile;
     il workflow in CI usa sempre la via API con GITHUB_TOKEN.
     """
+    git_bin = resolve_git_path()
+    if git_bin is None:
+        return []
     try:
         out = subprocess.run(
-            ["git", "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
-            capture_output=True, text=True, check=True, cwd=Path(__file__).resolve().parents[2],
+            [git_bin, "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
+            capture_output=True, text=True, check=True, shell=False,
+            cwd=Path(__file__).resolve().parents[2],
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
         return []

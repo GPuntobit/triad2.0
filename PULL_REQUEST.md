@@ -74,6 +74,24 @@ Adeguati i pin a `checkout@v7` (gia' usato negli altri workflow) e rimosso
 localmente senza dipendenze extra (exit 0, fallback ai tag git se l'API non e'
 raggiungibile).
 
+## Sicurezza: `git` risolto a path assoluto fidato in download_chart.py
+
+Finding Codacy (medium risk) su `load_releases_from_tags()`: invocava il nudo
+nome `"git"` in `subprocess.run`, lasciando la risoluzione alla PATH — un
+valore controllato da aggressore puo' anteporre una voce repository-controlled
+o relativa (PATH hijacking). Aggiunta `resolve_git_path()`: prima cerca i
+percorsi di sistema canonici hardcoded (`/usr/bin/git`, `/usr/local/bin/git`,
+`/bin/git`; su Windows `%ProgramFiles%` standard, assente CWD), poi accetta un
+risultato di `shutil.which` solo se assoluto, file reale (niente symlink) e
+fuori dal repository; altrimenti None. Invocazione invariata per gli altri
+requisiti: lista argomenti, `shell=False`, cwd = radice del repo, e fallback
+esistente (nessun subprocess, ritorno `[]`) quando git non e' disponibile o
+non e' fidato. Python non espone `GetSystemDirectoryW`, quindi vale
+l'alternativa "valida e rifiuta/fallback" prevista dal finding, coerente con
+utils.js. Test empirici: hijack con git finto in cima alla PATH -> eseguito
+comunque /usr/bin/git; PATH relativa -> candidato relativo rigettato; git
+assente -> `[]` senza subprocess; output normale invariato (4 release dai tag).
+
 ## Verifica post-spostamento
 
 - `node conformance/run.mjs` → `conformance: OK` (37/37)
