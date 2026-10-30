@@ -19,7 +19,7 @@ function addHeadingIds(html, prefix, toc) {
   const used = new Set();
   let firstH1 = true;
   return html.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (m, level, text) => {
-    const plain = text.replace(/<[^>]+>/g, '').trim();
+    const plain = text.replace(/<[^>]+>/g, '').replace(/[<>]/g, '').trim();
     if (level === '1' && firstH1) { firstH1 = false; return m; }
     const base = prefix + '-' + slugify(plain);
     let slug = base;
