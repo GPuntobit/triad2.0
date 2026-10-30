@@ -79,3 +79,6 @@ graphify.skill
 
 # Pacchetti estensione editor
 *.vsix
+
+# Bundle browser del playground, generato da scripts/docs/sync-playground-core.mjs
+docs/pages/triad-core.js

@@ -75,16 +75,18 @@ println(result) <span class="cm"># [{who = :dave}]</span></div>
 <section class="section">
   <div class="container">
     <h2 class="section-title">Quick Start</h2>
-    <p class="section-sub">The reference implementation is in Julia (transient for bootstrap), zero external packages.</p>
+    <p class="section-sub">Install with the official script (native seed) or run programs in the browser playground — no install needed.</p>
     <div class="grid grid-2">
-      <div class="code-card"># REPL
-julia --startup-file=no triad.jl
+      <div class="code-card"># Linux / macOS / Termux
+curl -fsSL https://raw.githubusercontent.com/GPuntobit/triad2.0/main/install.sh | sh
+export PATH="$PWD/bin:$PATH"
+
 # run a file
-julia --startup-file=no triad.jl examples/assaggio.td
+triad examples/benvenuto.triad
 # evaluate an expression
-julia --startup-file=no triad.jl -E '1 + 2'
-# launcher (bin/ in the PATH)
-triad examples/assaggio.td</div>
+triad-cli -E '1 + 2'
+# REPL
+triad-cli repl</div>
       <div>
         <h3>Documentation</h3>
         <ul class="feature-list">
