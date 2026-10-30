@@ -6,7 +6,7 @@ rem  Cerca un runtime Triad in questo ordine:
 rem    1. bin\triad-native.exe  (eseguibile standalone)
 rem    2. seed\windows-x86_64\seed.exe  (interprete Triad-Core in codice macchina)
 rem
-rem  Non dipende da Julia né da altri linguaggi ospiti: l'esecuzione del
+rem  Does not depend on Julia or other host languages: execution of
 rem  codice .triad avviene tramite il seed in codice macchina.
 rem
 rem  Uso: triad [opzioni] [file.td [argomenti...]]
@@ -19,7 +19,7 @@ setlocal DisableDelayedExpansion
 
 set "TRIAD_HOME=%~dp0.."
 
-rem --- Modalità --build (non più supportata) ----------------------------
+rem --- Mode --build (no longer supported) ----------------------------
 if "%~1"=="--build" goto :build_dev
 
 rem --- Ricerca del runtime ---------------------------------------------

@@ -8,7 +8,7 @@ Rule applied: extract only values ​​explicitly declared in the document; If 
 ## 1. Basis of extraction
 - **Document:** chosen by the agent with explicit authorization ("Document: you choose") and confirmed by the user ("I confirm!"). The choice itself is not in the document: Source **Inferred**.
 - **Fields:** 21 lines, of which 19 are filled in and 2 are left blank (License, Release Date) because they are absent in the document. The list of fields was not provided by the user: proposed by the agent by reading the sections of the document (Source **Inferred**) and confirmed.
-## 2. Table (ANCÒRA + RADAR)
+## 2. Table (STILL + RADAR)
 | Field | Value | Section | Reason (if blank) | Source | Evidence |
 |---|---|---|---|---|---|
 | Title/Artifact | `S0 / Linux x86-64 — seed ELF (E0)` | Title | — | Extract | — |
@@ -41,19 +41,19 @@ All fields in the table have Source **Extract**. The only **Inferred** items are
 | Draw date | Inferred | Taken from the system clock, not from the document. |
 ## 4. MIRROR — quality control
 1. **Non-explicit assumptions:** the document was chosen by the agent (Inferred, then confirmed) and the list of fields was proposed by the agent (Inferred, then confirmed).
-2. **Values ​​that can be interpreted differently:** `173 bytes` of file versus `33 + 20` bytes of code and message may seem inconsistent (the rest is header/padding, but the document doesn't explain it: it wasn't added); «E0» can be read as a complete state or as the start of the port; `exit 0` is declared, not checked by running the ELF.
+2. **Values ​​​​​​that can be interpreted differently:** `173 bytes` of file versus `33 + 20` bytes of code and message may seem inconsistent (the rest is header/padding, but the document doesn't explain it: it wasn't added); «E0» can be read as a complete state or as the start of the port; `exit 0` is declared, not checked by running the ELF.
 3. **Calculations between different sections:** none; no sum, no recalculated hash, no combined value.
 4. **Reliability per line:** see §4.2.
 ### 4.2 Problem fields
 | Field | Reliability | Why |
 |---|---|---|
-| Selected document | Average | Arbitrary choice (although authorised); no explicit criteria in the document. |
+| Selected document | Average | Arbitrary choice (although authorized); no explicit criteria in the document. |
 | List of fields | Low | Never provided by the user; derived from the agent, possible oriented selection. |
 | Output stdout / Exit code | Average | Literals in the document, but not executed in this session (Windows environment). |
 | sha256 `seed.hex` / ELF | Average | Literally copied, not recalculated. |
 | License / Release Date | High | Fields confirmed and correctly empty: absence verified in the document. |
 | Other fields (title, numbers, commands, next steps) | High | Literals, cited section. |
 ## 5. Limits stated
-- The Linux ELF was not run in this session: output and exit code are values ​​declared by the document, not checked here.
+- The Linux ELF was not run in this session: output and exit code are values declared by the document, not checked here.
 - Hashes are copied character by character, not recalculated.
 - License and issue date remain blank due to absence in the document, not due to forgetfulness.

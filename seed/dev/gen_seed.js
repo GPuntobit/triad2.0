@@ -465,7 +465,7 @@ movRsiR14();
 maskStoreImm(0);                        // maschera di stop dei blocchi
 flagStoreImm(0);                        // dentro una funzione/chiusura?
 breakFlagStoreImm(0);                    // stato break
-leaRdxR14(0xF028); movMemRdxImm32(0, 0); // modalità di stampa inline
+leaRdxR14(0xF028); movMemRdxImm32(0, 0); // inline print mode
 callL('parse_program');
 xorEcx(); callIat(6, IAT);
 
@@ -635,7 +635,7 @@ L('st_func_done');
 addRspImm8();
 jmp('pp_loop');
 
-// scan_end: da rsi all' 'end'/'else' di chiusura a profondità 0.
+// scan_end: from rsi to the closing 'end'/'else' at depth 0.
 // r9d != 0: si ferma anche su 'else'; output r10d=1 se else, 0 se end.
 L('scan_end');
 xorEdi();
@@ -1229,7 +1229,7 @@ movRaxRdi(); orRaxImm2(); pushRax();
 callL('skip_text');
 popRax(); ret();
 
-// skip_text: salta un'espressione fino a un delimitatore a profondità 0
+// skip_text: skip an expression up to a delimiter at depth 0
 L('skip_text');
 xorEdi();
 L('skt_loop');
@@ -1461,7 +1461,7 @@ L('ident_return');
 movR9Rcx();
 ret();
 
-// env_find: r8=ptr nome, r9=len -> rdx = entry oppure 0 (cerca dalla più recente)
+// env_find: r8=ptr name, r9=len -> rdx = entry or 0 (search from most recent)
 L('env_find');
 movRdiRbx();
 L('ef_loop');
@@ -1491,7 +1491,7 @@ movMemRdxR8(); movMemRdx8R9(); movMemRdxRax16();
 incRbx();
 ret();
 
-// env_assign: aggiorna la variabile più recente se esiste, altrimenti la crea
+// env_assign: update the most recent variable if it exists, otherwise create it
 L('env_assign');
 pushRax();
 movRdiRbx();

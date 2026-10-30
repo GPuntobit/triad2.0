@@ -77,7 +77,7 @@ search_icons() {
     done
 
     local encoded_query
-    encoded_query="$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$query")"
+    encoded_query="$(python3 -I -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$query")"
     local url="${API_BASE}/search?query=${encoded_query}&limit=${LIMIT}"
     if [[ -n "$prefix" ]]; then
         url="${url}&prefix=${prefix}"
@@ -87,11 +87,11 @@ search_icons() {
     response=$(curl "${CURL_OPTS[@]}" "$url") || { echo "ERROR: Search request failed"; exit 1; }
 
     local total
-    total=$(echo "$response" | python3 -c "import sys,json; print(json.load(sys.stdin).get('total',0))")
+    total=$(echo "$response" | python3 -I -c "import sys,json; print(json.load(sys.stdin).get('total',0))")
 
     echo "Found ${total} icons for '${query}':"
     echo ""
-    echo "$response" | python3 -c "
+    echo "$response" | python3 -I -c "
 import sys, json
 data = json.load(sys.stdin)
 for icon in data.get('icons', []):
@@ -107,7 +107,7 @@ list_collections() {
     echo ""
     local resp
     resp=$(curl "${CURL_OPTS[@]}" "${API_BASE}/collections") || { echo "ERROR: Failed to fetch collections list"; exit 1; }
-    echo "$resp" | python3 -c "
+    echo "$resp" | python3 -I -c "
 import sys, json
 data = json.load(sys.stdin)
 popular = ['mdi','lucide','tabler','ph','ri','carbon','solar','heroicons','bi','octicon','ion','fe','charm','ci','iconoir','basil','uil','mingcute','flowbite','mynaui']
