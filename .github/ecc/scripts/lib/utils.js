@@ -475,6 +475,33 @@ function appendFile(filePath, content) {
   fs.appendFileSync(filePath, content, 'utf8');
 }
 
+// Fixed fallback for the Windows system root when %SystemRoot% is unset or
+// untrusted. C: is the default install volume on every supported Windows SKU.
+const DEFAULT_WINDOWS_SYSTEM_ROOT = 'C:\\WINDOWS';
+
+/**
+ * Resolve the Windows system directory (…\System32) through trusted sources
+ * only. %SystemRoot% comes from the environment and an attacker who controls
+ * it could redirect execution to a repository-controlled or relative
+ * where.exe, so the value is validated before use and otherwise rejected in
+ * favour of the fixed default. Node has no GetSystemDirectoryW binding, so
+ * validation is the strongest available trust signal here.
+ *
+ * Accepted shape: exactly "<drive>:\windows" (case-insensitive), i.e. the
+ * installation root of a standard Windows volume. Anything else — nested
+ * paths such as C:\Program Files\Windows, UNC shares, relative segments,
+ * traversal, wildcards, non-string values — is refused. Refusing exotic but
+ * legitimate custom locations is intentional: security over compatibility,
+ * since commandExists() is only a feature probe.
+ */
+function getWindowsSystemDir() {
+  const raw = process.env.SystemRoot;
+  const trusted = typeof raw === 'string' && /^[a-z]:\\windows$/i.test(path.win32.normalize(raw))
+    ? raw
+    : DEFAULT_WINDOWS_SYSTEM_ROOT;
+  return path.win32.join(trusted, 'System32');
+}
+
 /**
  * Check if a command exists in PATH
  * Uses execFileSync to prevent command injection
@@ -487,12 +514,14 @@ function commandExists(cmd) {
 
   try {
     if (isWindows) {
-      // SECURITY: resolve where.exe through a trusted absolute path under the
-      // Windows system directory. Searching by bare name can pick up a
+      // SECURITY: resolve where.exe through a validated absolute path under
+      // the Windows system directory. Searching by bare name can pick up a
       // project-controlled where.exe from the current directory and run it
-      // with the operator's permissions.
-      const sysRoot = process.env.SystemRoot || 'C:\\Windows';
-      const whereExe = path.join(sysRoot, 'System32', 'where.exe');
+      // with the operator's permissions, and trusting %SystemRoot% blindly
+      // would let an attacker-controlled value redirect that lookup — hence
+      // getWindowsSystemDir() validates and falls back instead of accepting
+      // any environment value.
+      const whereExe = path.win32.join(getWindowsSystemDir(), 'where.exe');
       const result = spawnSync(whereExe, [cmd], { stdio: 'pipe' });
       return result.status === 0;
     } else {

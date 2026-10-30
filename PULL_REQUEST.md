@@ -34,6 +34,22 @@ Nota: i file di registrazione storica (`STATUS.md`, `TASK.md`, vecchi `PULL_REQU
 - Traduzioni del tutorial accentrate in `tutorial/`: `docs/TUTORIAL-RU.md` → `tutorial/TUTORIAL.ru.md` accanto a `TUTORIAL.md`, `TUTORIAL.it.md`, `TUTORIAL.zh.md`; aggiornati i link in README, MANUALE e tabelle file.
 - Verifiche: `python3 scripts/docs/download_chart.py` esegue con exit 0 (fallback tag git); build script puntano ai percorsi corretti; suite conformita' invariata.
 
+## Sicurezza: validazione del SystemRoot in `commandExists()`
+
+Il finding #1 di SECURITY-REVIEW.md era stato chiuso risolvendo `where.exe`
+percorso assoluto, ma il valore veniva preso da `%SystemRoot%` senza verifica:
+un aggressore che controlla l'ambiente poteva reindirizzare l'esecuzione verso
+un `where.exe` controllato dal repository (path relativo o annidato). Ora la
+risoluzione passa da `getWindowsSystemDir()`: %SystemRoot% e' accettato solo se,
+dopo normalizzazione, corrisponde esattamente a `<drive>:\windows` (case-insensitive);
+qualsiasi altro valore — UNC, percorso relativo, traversal, sottocartelle come
+`C:\Program Files\Windows`, valori non-stringa, vuoto/non impostato — viene
+rifiutato con fallback fisso su `C:\WINDOWS\System32`. Nota di trasparenza: Node
+non espone GetSystemDirectoryW, quindi la validazione dell'shape e' il segnale di
+fiducia disponibile piu' forte; le installazioni Windows custom fuori schema sono
+rigettate di proposito (commandExists e' solo un probe di feature). Testato con
+harness locale su 17 casi (accettazione/rifiuto/fallback, nessun throw).
+
 ## Hardening CI: azioni pinnate a SHA completi
 
 Tutte le GitHub Actions nei 4 workflow (`ci.yml`, `download-chart.yml`,
