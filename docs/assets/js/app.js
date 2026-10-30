@@ -72,9 +72,18 @@ function mount(active) {
   if (headerSlot) {
     headerSlot.replaceChildren(DOMPurify.sanitize(renderHeader(active), { RETURN_DOM_FRAGMENT: true }));
     const navToggle = headerSlot.querySelector('.nav-toggle');
-    if (navToggle) {
-      navToggle.addEventListener('click', () => {
-        headerSlot.querySelector('.nav-links').classList.toggle('open');
+    const navLinks = headerSlot.querySelector('.nav-links');
+    if (navToggle && navLinks) {
+      navToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navLinks.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', navLinks.classList.contains('open') ? 'true' : 'false');
+      });
+      navLinks.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => navLinks.classList.remove('open'));
+      });
+      globalThis.document.addEventListener('click', (e) => {
+        if (!headerSlot.contains(e.target)) navLinks.classList.remove('open');
       });
     }
   }

@@ -6,8 +6,8 @@
     "organization": "GPuntobit",
     "repositoryId": "917582",
     "repositoryName": "triad2.0",
-    "createdAt": "2026-10-30T14:27:20.228Z",
-    "updatedAt": "2026-10-30T14:27:20.228Z",
+    "createdAt": "2026-10-30T16:34:29.786Z",
+    "updatedAt": "2026-10-30T16:34:29.786Z",
     "languages": [
       "CSharp",
       "CSS",
@@ -21,6 +21,7 @@
       "Shell",
       "Swift",
       "TypeScript",
+      "XML",
       "YAML"
     ]
   },
