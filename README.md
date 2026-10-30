@@ -195,6 +195,27 @@ LICENSE                     MIT license (open source)
 - **Runtime:** machine code seed (S0); no dependencies on Julia or other host languages.
 - **Development:** Node.js 20 for `conformance/run.mjs`, `cli/`, the generators in `seed/dev/`, and the reference interpreter on Linux.
 
+
+### Termux (Android)
+
+The S0 seeds are native executables for x86-64 only (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) and cannot run on Android devices, which are ARM64. There is no ARM64 native seed yet (see [STATUS.md](STATUS.md)). On Termux, Triad runs through the Node.js reference interpreter fallback (`seed/dev/triad_core.cjs`), exactly like the conformance runner does on platforms without a usable seed:
+
+```sh
+pkg install nodejs git
+git clone https://github.com/GPuntobit/triad2.0.git && cd triad2.0
+export PATH="$PWD/bin:$PATH"
+printf 'x = 6 * 7\nprintln(x)\n' > demo.td
+triad demo.td                     # prints 42 via the Node.js fallback interpreter
+node conformance/run.mjs          # full Core suite passes on Termux (37/37)
+```
+
+Notes:
+
+- `bin/triad` finds no runnable native seed on Android and transparently executes programs with `node seed/dev/triad_core.cjs`; the only runtime requirement on Termux is therefore `pkg install nodejs`.
+- The same fallback covers any architecture without a prebuilt x86-64 seed (ARM64 Linux, macOS).
+- Shebang scripts (`#!/usr/bin/env triad` + `chmod +x file.td`) work as long as `bin/` is in the `PATH`.
+- On Termux you can run Triad-Core programs (the subset covered by the conformance suite); Triad-Full constructs still require the future self-hosted runtime ([BOOTSTRAP.md](BOOTSTRAP.md)).
+
 ## Website
 
 The project website is in `docs/` and is published via GitHub Pages using `.github/workflows/pages.yml`. To enable it: Settings -> Pages -> Source: "GitHub Actions". The site includes a landing page and a documentation viewer (SPEC, TUTORIAL, BOOTSTRAP, STATUS, README, conformance, editor, AI, license) that loads Markdown directly from the repository.
