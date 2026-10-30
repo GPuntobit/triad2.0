@@ -1,0 +1,17 @@
+﻿C:\Users\xbos\Documents\progetti\triad2.0\.github\agents\bengali-reviewer.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\agent-architecture-audit\SKILL.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\ai-regression-testing\SKILL.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\bengali-nlp\SKILL.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\generating-python-installer\SKILL.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\living-docs-governance\SKILL.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\loop-design-check\SKILL.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\openclaw-persona-forge\SKILL.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\openclaw-persona-forge\references\avatar-style.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\openclaw-persona-forge\references\boundary-rules.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\openclaw-persona-forge\references\error-handling.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\openclaw-persona-forge\references\identity-tension.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\openclaw-persona-forge\references\naming-system.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\openclaw-persona-forge\references\output-template.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\prompt-optimizer\SKILL.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\visa-doc-translate\README.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\skills\visa-doc-translate\SKILL.md

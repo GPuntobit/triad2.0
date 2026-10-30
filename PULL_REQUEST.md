@@ -28,6 +28,70 @@ Riorganizza il repository senza modificare i percorsi contrattuali (`bin/`, `see
 
 Nota: i file di registrazione storica (`STATUS.md`, `TASK.md`, vecchi `PULL_REQUEST`) conservano i nomi precedenti dei probe perché documentano eventi passati. `obsidian-triad/Grafo Graphify.md` è output generato: va rigenerato con `graphify update .`.
 
+## Secondo passaggio: cartelle piu' ordinate
+
+- `scripts/` divisa per scopo: `scripts/docs/` (build libro/EPUB/DOCX, frontespizio, grafico download), `scripts/seed-runner/` (12 wrapper .bat del seed Windows), `scripts/experiments/` (script one-off di traduzione/debug + liste md temporanee). Corretti i percorsi interni (`root` da `__dirname/../..`) e i riferimenti in `.github/workflows/download-chart.yml`, README, plan.md, CHANGELOG.
+- Traduzioni del tutorial accentrate in `tutorial/`: `docs/TUTORIAL-RU.md` → `tutorial/TUTORIAL.ru.md` accanto a `TUTORIAL.md`, `TUTORIAL.it.md`, `TUTORIAL.zh.md`; aggiornati i link in README, MANUALE e tabelle file.
+- Verifiche: `python3 scripts/docs/download_chart.py` esegue con exit 0 (fallback tag git); build script puntano ai percorsi corretti; suite conformita' invariata.
+
+## Sicurezza: validazione del SystemRoot in `commandExists()`
+
+Il finding #1 di SECURITY-REVIEW.md era stato chiuso risolvendo `where.exe`
+percorso assoluto, ma il valore veniva preso da `%SystemRoot%` senza verifica:
+un aggressore che controlla l'ambiente poteva reindirizzare l'esecuzione verso
+un `where.exe` controllato dal repository (path relativo o annidato). Ora la
+risoluzione passa da `getWindowsSystemDir()`: %SystemRoot% e' accettato solo se,
+dopo normalizzazione, corrisponde esattamente a `<drive>:\windows` (case-insensitive);
+qualsiasi altro valore — UNC, percorso relativo, traversal, sottocartelle come
+`C:\Program Files\Windows`, valori non-stringa, vuoto/non impostato — viene
+rifiutato con fallback fisso su `C:\WINDOWS\System32`. Nota di trasparenza: Node
+non espone GetSystemDirectoryW, quindi la validazione dell'shape e' il segnale di
+fiducia disponibile piu' forte; le installazioni Windows custom fuori schema sono
+rigettate di proposito (commandExists e' solo un probe di feature). Testato con
+harness locale su 17 casi (accettazione/rifiuto/fallback, nessun throw).
+
+## Hardening CI: azioni pinnate a SHA completi
+
+Tutte le GitHub Actions nei 4 workflow (`ci.yml`, `download-chart.yml`,
+`pages.yml`, `static.yml`) sono ora referenziate con commit SHA a 40
+caratteri invece che per tag, come richiesto dal scanner di sicurezza
+("action not pinned to a full length commit SHA"). Il tag aggiornato resta
+come commento per la manutenzione. SHA risolti via API GitHub al momento del
+commit: checkout@3d3c42e (v7), setup-node@949feb2 (v7), configure-pages@45bfe01
+(v6), upload-pages-artifact@fc324d3 (v5), deploy-pages@368f825 (v5). Questo
+rende immutabile il codice delle azioni usate in CI (anti tag-flipping /
+supply-chain attack); per gli aggiornamenti futuri ricreare i pin da un tag
+nuovo (o usare Dependabot `package-ecosystem: "github-actions"`).
+
+## Fix CI: workflow download-chart (Node.js 20 deprecato)
+
+Il job `chart` mostrava il warning di deprecazione perche' usava
+`actions/checkout@v4` e `actions/setup-python@v5`, che vengono forzati su
+Node.js 24 con avviso (Node 20 deprecato: github.blog/changelog/2025-09-19).
+Adeguati i pin a `checkout@v7` (gia' usato negli altri workflow) e rimosso
+`setup-python`: `scripts/download_chart.py` usa solo la libreria standard e
+`python3` e' gia' presente su ubuntu-latest. YAML validato; script eseguito
+localmente senza dipendenze extra (exit 0, fallback ai tag git se l'API non e'
+raggiungibile).
+
+## Sicurezza: `git` risolto a path assoluto fidato in download_chart.py
+
+Finding Codacy (medium risk) su `load_releases_from_tags()`: invocava il nudo
+nome `"git"` in `subprocess.run`, lasciando la risoluzione alla PATH — un
+valore controllato da aggressore puo' anteporre una voce repository-controlled
+o relativa (PATH hijacking). Aggiunta `resolve_git_path()`: prima cerca i
+percorsi di sistema canonici hardcoded (`/usr/bin/git`, `/usr/local/bin/git`,
+`/bin/git`; su Windows `%ProgramFiles%` standard, assente CWD), poi accetta un
+risultato di `shutil.which` solo se assoluto, file reale (niente symlink) e
+fuori dal repository; altrimenti None. Invocazione invariata per gli altri
+requisiti: lista argomenti, `shell=False`, cwd = radice del repo, e fallback
+esistente (nessun subprocess, ritorno `[]`) quando git non e' disponibile o
+non e' fidato. Python non espone `GetSystemDirectoryW`, quindi vale
+l'alternativa "valida e rifiuta/fallback" prevista dal finding, coerente con
+utils.js. Test empirici: hijack con git finto in cima alla PATH -> eseguito
+comunque /usr/bin/git; PATH relativa -> candidato relativo rigettato; git
+assente -> `[]` senza subprocess; output normale invariato (4 release dai tag).
+
 ## Verifica post-spostamento
 
 - `node conformance/run.mjs` → `conformance: OK` (37/37)

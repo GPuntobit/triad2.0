@@ -1,0 +1,19 @@
+﻿C:\Users\xbos\Documents\progetti\triad2.0\RELEASE_NOTES_v0.3.0.md
+C:\Users\xbos\Documents\progetti\triad2.0\.github\agents\marketing-agent.md
+C:\Users\xbos\Documents\progetti\triad2.0\ai\jev_prompt.md
+C:\Users\xbos\Documents\progetti\triad2.0\ai\README.md
+C:\Users\xbos\Documents\progetti\triad2.0\ai\SYSTEM_PROMPT.md
+C:\Users\xbos\Documents\progetti\triad2.0\cli\README.md
+C:\Users\xbos\Documents\progetti\triad2.0\docs\estrazione-e0.en.md
+C:\Users\xbos\Documents\progetti\triad2.0\docs\estrazione-e0.md
+C:\Users\xbos\Documents\progetti\triad2.0\editors\README.md
+C:\Users\xbos\Documents\progetti\triad2.0\editors\linguist\README.md
+C:\Users\xbos\Documents\progetti\triad2.0\editors\vscode\README.md
+C:\Users\xbos\Documents\progetti\triad2.0\obsidian-triad\File - KarpathyWiki main.js.md
+C:\Users\xbos\Documents\progetti\triad2.0\obsidian-triad\File - Templater main.js.md
+C:\Users\xbos\Documents\progetti\triad2.0\obsidian-triad\File - triad.jl.md
+C:\Users\xbos\Documents\progetti\triad2.0\obsidian-triad\Indice.md
+C:\Users\xbos\Documents\progetti\triad2.0\seed\README.md
+C:\Users\xbos\Documents\progetti\triad2.0\seed\dev\README.md
+C:\Users\xbos\Documents\progetti\triad2.0\seed\linux-x86_64\README.md
+C:\Users\xbos\Documents\progetti\triad2.0\seed\windows-x86_64\README.md

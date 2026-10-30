@@ -8,6 +8,6 @@ The Graphify definition of [`on_file_creation()`](./.obsidian/plugins/templater-
 - write the template with `write_template_to_file()`;
 - for non-empty Markdown files, can switch to `overwrite_file_commands()`.
 ## Links
-- [[Graphify graph]]
+- [[Grafo Graphify|Graphify graph]]
 - [Vault Obsidian folder](./.obsidian/)
 - [plugins folder](./.obsidian/plugins/)

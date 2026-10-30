@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const htmlToDocx = require('html-to-docx');
 
-const root = path.join(__dirname, '..');
+const root = path.join(__dirname, '..', '..');
 const libroDir = path.join(root, 'docs', 'libro');
 let html = fs.readFileSync(path.join(libroDir, 'libro.html'), 'utf8');
 

@@ -7,6 +7,6 @@ JavaScript bundle of the Obsidian KarpathyWiki plugin present in the vault. Grap
 - Graphify reports `onOpen()` as the caller of `buildFolderTree()` (call site L89499).
 - Other symbols found in the graph include `getOrBuild()` (L84869), `buildGraphFromContent()` (L84816), `pageLinks()` (L85222), and `filterSeedsToGraph()` (L87016).
 ## Links
-- [[Graphify graph]]
+- [[Grafo Graphify|Graphify graph]]
 - [Vault Obsidian folder](./.obsidian/)
 - [plugins folder](./.obsidian/plugins/)

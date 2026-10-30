@@ -8,10 +8,10 @@
 
 | # | Severity | File | Lines | Finding | Confidence | Status |
 |---|----------|------|-------|---------|------------|--------|
-| 1 | 🟠 HIGH | `.github/ecc/scripts/lib/utils.js` | 491 | Windows package-manager detection starts `where` by name. A project-controlled `where.exe` may be selected from the current directory and run with the operator's permissions. | 8/10 | Open |
-| 2 | 🟠 HIGH | `.github/skills/continuous-learning-v2/hooks/observe.sh` | 106-109, 169, 212-218, 262, 268-269, 316-329, 495-498 | Inline Python invocations import `json` while the checkout can remain on the module search path. A repository `json.py` can run during normal hook event parsing, before skip checks. | 9/10 | Open |
-| 3 | 🟠 HIGH | `ai/jev_audit.mjs` | 74-128, 330 | The audit could follow a tracked symlink while reading file content, exposing an outside file in dry-run output or an API request. | 8/10 | Fix and regression test present in the working tree; not included in this report-only commit |
-| 4 | 🟡 MEDIUM | `conformance/run.mjs` | 101-171, 194 | Golden regeneration could follow a symlink and overwrite a file outside the case directory. | 9/10 | Fix and regression tests present in the working tree; not included in this report-only commit |
+| 1 | 🟠 HIGH | `.github/ecc/scripts/lib/utils.js` | 491 | Windows package-manager detection starts `where` by name. A project-controlled `where.exe` may be selected from the current directory and run with the operator's permissions. | 8/10 | Fixed (2026-10-30): resolved through an absolute `…\System32\where.exe` path. Hardened again (2026-10-30): `%SystemRoot%` is no longer trusted blindly — it must match exactly `<drive>:\windows` after normalization, otherwise a fixed `C:\WINDOWS\System32` fallback is used (UNC/relative/traversal/nested paths rejected) |
+| 2 | 🟠 HIGH | `.github/skills/continuous-learning-v2/hooks/observe.sh` | 106-109, 169, 212-218, 262, 268-269, 316-329, 495-498 | Inline Python invocations import `json` while the checkout can remain on the module search path. A repository `json.py` can run during normal hook event parsing, before skip checks. | 9/10 | Fixed (2026-10-30): all inline `-c` parsers run in isolated mode (`-I`, implies `-E -s`) in observe.sh, scripts/detect-project.sh, agents/start-observer.sh; verified with a shadowing `json.py` PoC |
+| 3 | 🟠 HIGH | `ai/jev_audit.mjs` | 74-128, 330 | The audit could follow a tracked symlink while reading file content, exposing an outside file in dry-run output or an API request. | 8/10 | Fixed: symlink protections + regression test (`ai/jev_audit.test.mjs`) |
+| 4 | 🟡 MEDIUM | `conformance/run.mjs` | 101-171, 194 | Golden regeneration could follow a symlink and overwrite a file outside the case directory. | 9/10 | Fixed: symlink protections + regression tests (`conformance/run.test.mjs`) |
 
 ## Recommended remediation
 
