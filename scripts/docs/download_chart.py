@@ -121,7 +121,8 @@ def load_releases_from_tags() -> list[dict]:
         return []
     try:
         out = subprocess.run(  # nosec B603 B607
-            [git_bin, "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
+            ["git", "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
+            executable=git_bin,
             capture_output=True, text=True, check=True, shell=False,
             cwd=Path(__file__).resolve().parents[2],
         ).stdout
