@@ -7556,6 +7556,18 @@
       "toolId": "Bandit",
       "useLocalConfigurationFile": true,
       "patterns": []
+    },
+    {
+      "toolId": "Duplication",
+      "patterns": [
+        {
+          "patternId": "duplicate",
+          "scope": {
+            "file": "scripts/docs/download_chart.py",
+            "line": 124
+          }
+        }
+      ]
     }
   ],
   "exclude": [
