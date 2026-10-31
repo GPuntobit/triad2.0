@@ -125,7 +125,7 @@ def load_releases_from_tags() -> list[dict]:
             capture_output=True, text=True, check=True, shell=False,
             cwd=Path(__file__).resolve().parents[2],
         ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
         return []
     releases = []
     for line in out.splitlines():
