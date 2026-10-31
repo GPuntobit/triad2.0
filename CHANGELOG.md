@@ -29,6 +29,7 @@ behavior, the goldens of `conformance/`.
 - `scripts/download_chart.py`: repaired indentation/typos and use asset download counts; default repo fixed.
 - `scripts/build-epub.cjs`, `scripts/build-libro.mjs`: repaired `continue` typo and variable mismatches.
 
+- `seed/dev/triad_core.cjs`: added direct execution support for `.td`/`.triad` files via Node module system (`require.extensions`), enabling `node --require ./seed/dev/triad_core.cjs nome-file.td [arg...]`; program arguments are normalized into `ARGS`. The simpler launcher form `triad nomefile.td` / `triad nome-file.triad` remains supported.
 
 ## 0.8.0-beta.3 — 2026-10-29
 **Triad 2.0 – Beta 3.** Pre-release of the Triad 2.0 series: includes *all*
