@@ -1,0 +1,4 @@
+[submodule "obsidian-triad/github-wiki"]
+	path = obsidian-triad/github-wiki
+	url = https://github.com/GPuntobit/triad2.0.wiki.git
+	branch = master
