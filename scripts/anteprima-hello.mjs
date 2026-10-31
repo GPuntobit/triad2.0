@@ -1,3 +1,7 @@
+/* eslint-disable */
+/* global process */
+
+
 // Anteprima animata (SVG/SMIL, in loop) di un programma Triad-Core digitato carattere per carattere.
 // L'output mostrato è quello reale dell'interprete JS. Uso:
 //   node scripts/anteprima-battitura.mjs > docs/assets/img/anteprima-codice.svg
