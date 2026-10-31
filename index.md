@@ -5,6 +5,9 @@ title: Triad 2.0
 
 <style>body{background:#0f172a!important;color:#e5e7eb!important;min-height:100vh;}</style>
 
+![Hello World typing animation]({{ site.baseurl }}/docs/assets/img/anteprima-hello.svg)
+
+
 ![Triad 2.0 logo]({{ site.baseurl }}/docs/triad-logo.webp)
 
 # Triad 2.0
