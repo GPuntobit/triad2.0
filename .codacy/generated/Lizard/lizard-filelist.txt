@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-c:\Users\xbos\Documents\progetti\triad2.0\scripts\docs\build-libro.mjs
-=======
-c:\Users\xbos\Documents\progetti\triad2.0\tests\security\git_path_hijack.test.py
->>>>>>> b5cb28dcd5eb70af1e89861c2236b93b778ac006
+c:\Users\xbos\Documents\progetti\triad2.0\scripts\docs\download_chart.py
