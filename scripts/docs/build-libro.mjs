@@ -9,6 +9,26 @@ mkdirSync(outDir, { recursive: true });
 
 marked.setOptions({ gfm: true, breaks: false });
 
+// Single-pass, linear-time tag stripper. Unlike a repeated replace(/<[^>]+>/g),
+// this removes only one nesting level per pass and never reconstructs a tag
+// from fragments (e.g. "<scr<script>ipt>" -> "<script>", which a single-pass
+// regex would leave behind). Used to sanitize heading text before it is placed
+// into the table of contents / id attributes.
+function stripHtmlTagsSafely(text) {
+  let out = '';
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '<') {
+      const close = text.indexOf('>', i);
+      if (close !== -1) { i = close + 1; continue; }
+      // Unterminated tag: keep the '<' and sanitize the rest to plain text.
+      out += '&lt;'; i++; continue;
+    }
+    out += text[i++];
+  }
+  return out.replace(/\s+/g, ' ').trim();
+}
+
 function slugify(s) {
   return String(s).toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -41,7 +61,7 @@ function addHeadingIds(html, prefix, toc) {
     const m = html.slice(h.start, h.end);
     const level = h.level;
     const text = html.slice(h.textStart, h.textEnd);
-    const plain = text.replace(/<[^>]+>/g, '').trim();
+    const plain = stripHtmlTagsSafely(text);
     if (level === '1' && firstH1) { firstH1 = false; out += m; cursor = h.end; continue; }
     const base = prefix + '-' + slugify(plain);
     let slug = base;
