@@ -3,6 +3,8 @@ layout: default
 title: Triad 2.0
 ---
 
+<style>body{background:linear-gradient(135deg,#60a5fa,#a78bfa)!important;color:#fff!important;min-height:100vh;}</style>
+
 ![Triad 2.0 logo]({{ site.baseurl }}/docs/triad-logo.webp)
 
 # Triad 2.0
