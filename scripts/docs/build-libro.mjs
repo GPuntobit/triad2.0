@@ -19,17 +19,41 @@ function slugify(s) {
 function addHeadingIds(html, prefix, toc) {
   const used = new Set();
   let firstH1 = true;
-  return html.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (m, level, text) => {
+  // ReDoS-safe heading matcher: linear scan instead of the nested-quantifier
+  // regex /<h([1-6])>([\s\S]*?)<\/h\1>/g, which CodeQL flags as polynomial.
+  // Semantics preserved: only bare <hN> tags (no attributes) are processed and
+  // each match consumes up to its closing </hN>, so nested headings are handled
+  // by subsequent iterations exactly like the original global regex did.
+  const headings = [];
+  const openRe = /<h([1-6])>/g;
+  let om;
+  while ((om = openRe.exec(html)) !== null) {
+    const close = html.indexOf('</h' + om[1] + '>', om.index);
+    if (close === -1) continue;
+    headings.push({ start: om.index, end: close + om[0].length + om[1].length, level: om[1], textStart: om.index + om[0].length, textEnd: close });
+    openRe.lastIndex = close;
+  }
+  let cursor = 0;
+  let out = '';
+  for (const h of headings) {
+    if (h.start < cursor) continue;
+    out += html.slice(cursor, h.start);
+    const m = html.slice(h.start, h.end);
+    const level = h.level;
+    const text = html.slice(h.textStart, h.textEnd);
     const plain = text.replace(/<[^>]+>/g, '').trim();
-    if (level === '1' && firstH1) { firstH1 = false; return m; }
+    if (level === '1' && firstH1) { firstH1 = false; out += m; cursor = h.end; continue; }
     const base = prefix + '-' + slugify(plain);
     let slug = base;
     let n = 1;
     while (used.has(slug)) { slug = base + '-' + n++; }
     used.add(slug);
     toc.push({ level: +level, text: plain, slug });
-    return '<h' + level + ' id="' + slug + '">' + text + '</h' + level + '>';
-  });
+    out += '<h' + level + ' id="' + slug + '">' + text + '</h' + level + '>';
+    cursor = h.end;
+  }
+  out += html.slice(cursor);
+  return out;
 }
 
 const preface = readFileSync(join(root, 'docs', 'PREFazione.md'), 'utf8');
