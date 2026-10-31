@@ -68,7 +68,7 @@ test('python _evolved_description reaches fixed point and keeps invariant', () =
     '_evolved_description loops to a fixed point');
   // emulate the python logic in JS with identical semantics
   const evolve = t => {
-    let s = t.replace(': ', ' - ').replace('<', '(').replace('>', ')');
+    let s = t.replace(/: /g, ' - ').replace(/</g, '(').replace(/>/g, ')');
     while (true) {
       const prev = s;
       s = s.replace(/</g, '(').replace(/>/g, ')');
