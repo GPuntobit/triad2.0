@@ -93,31 +93,39 @@ async function trackedFiles() {
 
 async function readTrackedFile(rel) {
   const path = join(ROOT, rel);
-  // All checks below are advisory pre-flight screens; the authoritative reads
-  // happen through the descriptor obtained next, so nothing here can be raced
-  // into making us read a different file than the one we verified.
-  const info = await lstat(path);
-  if (info.isSymbolicLink() || !info.isFile()) {
+
+  // Open FIRST. Once we hold an fd, the inode is pinned: no concurrent
+  // rename/swap of the path can redirect the bytes we read, which is what
+  // makes the rest of this function race-free. Every check below therefore
+  // runs against the fd (fstat) or re-resolves the path only to confirm
+  // containment; the content is read from the fd, never by re-opening path.
+  const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);
+  let file;
+  try {
+    file = await open(path, flags);
+  } catch {
     throw new Error(`Refusing to audit non-regular file: ${rel}`);
   }
-
-  const resolved = await realpath(path);
-  if (!isWithinRoot(resolved)) {
-    throw new Error(`Refusing to audit file outside the repository: ${rel}`);
-  }
-
-  // O_NOFOLLOW refuses to open a symlink at the final component and O_RDONLY
-  // cannot create or replace anything, so the descriptor is bound to exactly
-  // this inode for its lifetime. Every subsequent operation (file.stat() is an
-  // fstat on the fd, file.readFile() reads from the fd) acts on that pinned
-  // inode -- there is no second path lookup that a concurrent rename could
-  // redirect, which is what makes this race-free.
-  const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);
-  const file = await open(path, flags);
   try {
     const openedInfo = await file.stat(); // fstat: describes the open fd itself
     if (!openedInfo.isFile()) {
       throw new Error(`Refusing to audit non-regular file: ${rel}`);
+    }
+
+    const resolved = await realpath(path);
+    if (!isWithinRoot(resolved)) {
+      throw new Error(`Refusing to audit file outside the repository: ${rel}`);
+    }
+
+    const resolvedInfo = await stat(resolved);
+    if (openedInfo.ino && resolvedInfo.ino &&
+        (openedInfo.dev !== resolvedInfo.dev || openedInfo.ino !== resolvedInfo.ino)) {
+      throw new Error(`Tracked file changed while opening: ${rel}`);
+    }
+
+    const currentPath = await realpath(path);
+    if (currentPath !== resolved || !isWithinRoot(currentPath)) {
+      throw new Error(`Tracked file changed while opening: ${rel}`);
     }
     return await file.readFile("utf8");
   } finally {
