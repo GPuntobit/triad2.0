@@ -3,6 +3,8 @@ layout: default
 title: Triad 2.0
 ---
 
+![Triad 2.0 logo]({{ site.baseurl }}/docs/triad-logo.webp)
+
 # Triad 2.0
 
 A minimal, AI-native programming language with a deterministic seed interpreter.

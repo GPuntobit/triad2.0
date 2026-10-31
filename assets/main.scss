@@ -1,0 +1,15 @@
+---
+---
+
+@import "minima";
+
+body {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  color: #ffffff;
+}
+
+.site-header, .site-footer {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+a { color: #ffffff; text-decoration: underline; }
