@@ -32,4 +32,7 @@ python3 scripts/docs/download_chart.py --out "$TMP_OUT" >/dev/null
 head -c 4 "$TMP_OUT" | grep -q "<svg" || { echo "output non-SVG"; exit 1; }
 echo "PASS: download_chart writes valid SVG to --out"
 
+echo "== 6. Sanitization incompleta: payload innestati/entità non riassemblano markup =="
+node --test tests/security/incomplete_sanitization.test.mjs
+
 echo "ALL SECURITY VERIFICATIONS PASSED"

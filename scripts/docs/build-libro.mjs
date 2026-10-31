@@ -9,6 +9,26 @@ mkdirSync(outDir, { recursive: true });
 
 marked.setOptions({ gfm: true, breaks: false });
 
+// Single-pass, linear-time tag stripper. Unlike a repeated replace(/<[^>]+>/g),
+// this removes only one nesting level per pass and never reconstructs a tag
+// from fragments (e.g. "<scr<script>ipt>" -> "<script>", which a single-pass
+// regex would leave behind). Used to sanitize heading text before it is placed
+// into the table of contents / id attributes.
+function stripHtmlTagsSafely(text) {
+  let out = '';
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '<') {
+      const close = text.indexOf('>', i);
+      if (close !== -1) { i = close + 1; continue; }
+      // Unterminated tag: keep the '<' and sanitize the rest to plain text.
+      out += '&lt;'; i++; continue;
+    }
+    out += text[i++];
+  }
+  return out.replace(/\s+/g, ' ').trim();
+}
+
 function slugify(s) {
   return String(s).toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -16,40 +36,44 @@ function slugify(s) {
     .replace(/^-+|-+$/g, '') || 'section';
 }
 
-function stripTags(input) {
-  let result = '';
-  let inTag = false;
-  for (const ch of String(input)) {
-    if (ch === '<') { inTag = true; continue; }
-    if (ch === '>') { inTag = false; continue; }
-    if (!inTag) result += ch;
-  }
-  return result.trim();
-}
-
-function escapeHtml(input) {
-  return String(input)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 function addHeadingIds(html, prefix, toc) {
   const used = new Set();
   let firstH1 = true;
-  return html.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (m, level, text) => {
-    const plain = stripTags(text);
-    if (level === '1' && firstH1) { firstH1 = false; return m; }
+  // ReDoS-safe heading matcher: linear scan instead of the nested-quantifier
+  // regex /<h([1-6])>([\s\S]*?)<\/h\1>/g, which CodeQL flags as polynomial.
+  // Semantics preserved: only bare <hN> tags (no attributes) are processed and
+  // each match consumes up to its closing </hN>, so nested headings are handled
+  // by subsequent iterations exactly like the original global regex did.
+  const headings = [];
+  const openRe = /<h([1-6])>/g;
+  let om;
+  while ((om = openRe.exec(html)) !== null) {
+    const close = html.indexOf('</h' + om[1] + '>', om.index);
+    if (close === -1) continue;
+    headings.push({ start: om.index, end: close + om[0].length + om[1].length, level: om[1], textStart: om.index + om[0].length, textEnd: close });
+    openRe.lastIndex = close;
+  }
+  let cursor = 0;
+  let out = '';
+  for (const h of headings) {
+    if (h.start < cursor) continue;
+    out += html.slice(cursor, h.start);
+    const m = html.slice(h.start, h.end);
+    const level = h.level;
+    const text = html.slice(h.textStart, h.textEnd);
+    const plain = stripHtmlTagsSafely(text);
+    if (level === '1' && firstH1) { firstH1 = false; out += m; cursor = h.end; continue; }
     const base = prefix + '-' + slugify(plain);
     let slug = base;
     let n = 1;
     while (used.has(slug)) { slug = base + '-' + n++; }
     used.add(slug);
     toc.push({ level: +level, text: plain, slug });
-    return '<h' + level + ' id="' + slug + '">' + text + '</h' + level + '>';
-  });
+    out += '<h' + level + ' id="' + slug + '">' + text + '</h' + level + '>';
+    cursor = h.end;
+  }
+  out += html.slice(cursor);
+  return out;
 }
 
 const preface = readFileSync(join(root, 'docs', 'PREFazione.md'), 'utf8');

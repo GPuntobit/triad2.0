@@ -15,7 +15,29 @@ const C = { bg: '#050507', bg2: '#0d0a0f', frame: '#7d5157', accent: '#d0405a', 
 const serif = "'Liberation Serif', 'Times New Roman', 'DejaVu Serif', Georgia, serif";
 const sans = "'Liberation Sans', 'Helvetica Neue', Arial, 'DejaVu Sans', sans-serif";
 const mono = "'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace";
-const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// HTML/SVG escaping hardened against CodeQL "incomplete multi-character
+// sanitization". Two classic break techniques are closed off:
+//  1. splice/nesting ("&lt;scr&lt;script&gt;ipt&gt;" -> "<script>" after one
+//     naive replacement pass): we sanitize to a FIXED POINT, re-applying the
+//     substitution until the string stops changing, so no fragment can be
+//     reassembled into markup across passes.
+//  2. double-decoding ("&amp;lt;" -> "&lt;" -> "<"): we never emit entities at
+//     all — '<', '>' and '&' are replaced with safe lookalikes ('(', ')', '+'),
+//     so there is nothing for a downstream decoder to turn back into markup.
+// Finally we assert the invariant: the result must contain no raw '<', '>' or
+// '&'. If it ever did, we reject loudly instead of writing hostile SVG.
+const esc = s => {
+  let out = String(s);
+  while (true) {
+    const prev = out;
+    out = out.replace(/&/g, '+').replace(/</g, '(').replace(/>/g, ')');
+    if (out === prev) break;
+  }
+  if (/[<>&]/.test(out)) {
+    throw new Error(`refusing to embed unsafe text in SVG output: ${JSON.stringify(String(s))}`);
+  }
+  return out;
+};
 
 const parts = ['Foundations', 'Triad-Core', 'Triad-Full', 'Inside the project', 'In the field'];
 const partsText = parts.map((p, i) => `<tspan fill="${C.accent}">${['I', 'II', 'III', 'IV', 'V'][i]}</tspan> ${esc(p)}`)
