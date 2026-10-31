@@ -18,59 +18,144 @@ const NAV = [
 ];
 
 function renderHeader(active) {
-  const links = NAV.map(n => `<a href="${n.href}" ${n.label===active?'class="active" aria-current="page"':''}>${n.label}</a>`).join('');
-  return `
-<header class="site-header">
-  <div class="container nav">
-    <a class="brand" href="index.html"><span class="logo">T</span> Triad 2.0</a>
-    <button class="nav-toggle">☰</button>
-    <nav class="nav-links">${links}</nav>
-  </div>
-</header>`;
+  const navLinks = document.createElement('nav');
+  navLinks.className = 'nav-links';
+  NAV.forEach(n => {
+    const a = document.createElement('a');
+    a.href = n.href;
+    a.textContent = n.label;
+    if (n.label === active) {
+      a.className = 'active';
+      a.setAttribute('aria-current', 'page');
+    }
+    navLinks.appendChild(a);
+  });
+
+  const header = document.createElement('header');
+  header.className = 'site-header';
+  const container = document.createElement('div');
+  container.className = 'container nav';
+
+  const brand = document.createElement('a');
+  brand.className = 'brand';
+  brand.href = 'index.html';
+  const logo = document.createElement('span');
+  logo.className = 'logo';
+  logo.textContent = 'T';
+  brand.appendChild(logo);
+  brand.appendChild(document.createTextNode(' Triad 2.0'));
+
+  const navToggle = document.createElement('button');
+  navToggle.className = 'nav-toggle';
+  navToggle.textContent = '☰';
+
+  container.appendChild(brand);
+  container.appendChild(navToggle);
+  container.appendChild(navLinks);
+  header.appendChild(container);
+
+  return header;
 }
 
 function renderFooter() {
-  return `
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div>
-        <h4>Triad 2.0</h4>
-        <p>Self-contained programming language: block syntax, declared types, multiple dispatch, integrated logic, code as data.</p>
-      </div>
-      <div>
-        <h4>Documents</h4>
-        <a href="pages/spec.html">SPEC.md</a>
-        <a href="pages/tutorial.html">TUTORIAL.md</a>
-        <a href="pages/bootstrap.html">BOOTSTRAP.md</a>
-        <a href="pages/status.html">STATUS.md</a>
-        <a href="libro/book.html">The book</a>
-        <a href="libro/The-book-of-Triad.epub">EPUB</a>
-      </div>
-      <div>
-        <h4>Resources</h4>
-        <a href="https://github.com/GPuntobit/triad2.0" target="_blank" rel="noopener">Repository</a>
-        <a href="pages/examples.html">Examples</a>
-        <a href="pages/conformance.html">Conformance</a>
-        <a href="pages/editors.html">Editor</a>
-      </div>
-      <div>
-        <h4>Community</h4>
-        <a href="pages/ai.html">AI benchmark</a>
-        <a href="https://github.com/GPuntobit/triad2.0/issues" target="_blank" rel="noopener">Issues</a>
-        <a href="pages/license.html">MIT license</a>
-      </div>
-    </div>
-    <div class="copyright">2026 Triad 2.0 - distributed under the MIT license. Standard 0.2.0.</div>
-  </div>
-</footer>`;
+  const footer = document.createElement('footer');
+  footer.className = 'site-footer';
+  const container = document.createElement('div');
+  container.className = 'container';
+
+  const footerGrid = document.createElement('div');
+  footerGrid.className = 'footer-grid';
+
+  // Triad 2.0 section
+  const section1 = document.createElement('div');
+  const h4_1 = document.createElement('h4');
+  h4_1.textContent = 'Triad 2.0';
+  const p1 = document.createElement('p');
+  p1.textContent = 'Self-contained programming language: block syntax, declared types, multiple dispatch, integrated logic, code as data.';
+  section1.appendChild(h4_1);
+  section1.appendChild(p1);
+
+  // Documents section
+  const section2 = document.createElement('div');
+  const h4_2 = document.createElement('h4');
+  h4_2.textContent = 'Documents';
+  section2.appendChild(h4_2);
+  [
+    { href: 'pages/spec.html', text: 'SPEC.md' },
+    { href: 'pages/tutorial.html', text: 'TUTORIAL.md' },
+    { href: 'pages/bootstrap.html', text: 'BOOTSTRAP.md' },
+    { href: 'pages/status.html', text: 'STATUS.md' },
+    { href: 'libro/book.html', text: 'The book' },
+    { href: 'libro/The-book-of-Triad.epub', text: 'EPUB' }
+  ].forEach(linkData => {
+    const a = document.createElement('a');
+    a.href = linkData.href;
+    a.textContent = linkData.text;
+    section2.appendChild(a);
+  });
+
+  // Resources section
+  const section3 = document.createElement('div');
+  const h4_3 = document.createElement('h4');
+  h4_3.textContent = 'Resources';
+  section3.appendChild(h4_3);
+  [
+    { href: 'https://github.com/GPuntobit/triad2.0', text: 'Repository', external: true },
+    { href: 'pages/examples.html', text: 'Examples' },
+    { href: 'pages/conformance.html', text: 'Conformance' },
+    { href: 'pages/editors.html', text: 'Editor' }
+  ].forEach(linkData => {
+    const a = document.createElement('a');
+    a.href = linkData.href;
+    a.textContent = linkData.text;
+    if (linkData.external) {
+      a.target = '_blank';
+      a.rel = 'noopener';
+    }
+    section3.appendChild(a);
+  });
+
+  // Community section
+  const section4 = document.createElement('div');
+  const h4_4 = document.createElement('h4');
+  h4_4.textContent = 'Community';
+  section4.appendChild(h4_4);
+  [
+    { href: 'pages/ai.html', text: 'AI benchmark' },
+    { href: 'https://github.com/GPuntobit/triad2.0/issues', text: 'Issues', external: true },
+    { href: 'pages/license.html', text: 'MIT license' }
+  ].forEach(linkData => {
+    const a = document.createElement('a');
+    a.href = linkData.href;
+    a.textContent = linkData.text;
+    if (linkData.external) {
+      a.target = '_blank';
+      a.rel = 'noopener';
+    }
+    section4.appendChild(a);
+  });
+
+  footerGrid.appendChild(section1);
+  footerGrid.appendChild(section2);
+  footerGrid.appendChild(section3);
+  footerGrid.appendChild(section4);
+
+  const copyright = document.createElement('div');
+  copyright.className = 'copyright';
+  copyright.textContent = '2026 Triad 2.0 - distributed under the MIT license. Standard 0.2.0.';
+
+  container.appendChild(footerGrid);
+  container.appendChild(copyright);
+  footer.appendChild(container);
+
+  return footer;
 }
 
 function mount(active) {
   const headerSlot = globalThis.document.getElementById('site-header');
   const footerSlot = globalThis.document.getElementById('site-footer');
   if (headerSlot) {
-    headerSlot.replaceChildren(DOMPurify.sanitize(renderHeader(active), { RETURN_DOM_FRAGMENT: true }));
+    headerSlot.replaceChildren(renderHeader(active));
     const navToggle = headerSlot.querySelector('.nav-toggle');
     const navLinks = headerSlot.querySelector('.nav-links');
     if (navToggle && navLinks) {
@@ -87,7 +172,7 @@ function mount(active) {
       });
     }
   }
-  if (footerSlot) footerSlot.replaceChildren(DOMPurify.sanitize(renderFooter(), { RETURN_DOM_FRAGMENT: true }));
+  if (footerSlot) footerSlot.replaceChildren(renderFooter());
   const prefix = /\/pages\/[^/]*$/.test(globalThis.location.pathname) ? '../' : '';
   if (prefix) [headerSlot, footerSlot].forEach(slot => slot && slot.querySelectorAll('a[href]').forEach(a => {
     const href = a.getAttribute('href');
