@@ -17,7 +17,7 @@
 // question -- it is one judgment per file, aggregated in code.
 
 import { constants } from "node:fs";
-import { readFile, writeFile, readdir, stat, lstat, realpath, open } from "node:fs/promises";
+import { readFile, writeFile, readdir, lstat, realpath, open } from "node:fs/promises";
 import { join, relative, extname, dirname, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -374,45 +374,143 @@ async function sweep({ dryRun }) {
   await writeReport(results, files.length);
 }
 
+// ---------------------------------------------------------------------------
+// 5b. Taint boundary for remote responses.
+//
+// Everything below originates in the HTTP response body (CodeQL: "Network data
+// written to file"). It is untrusted: it must never be used as a path
+// component, and it must never reach the report raw -- Markdown cells and
+// console lines are sink-sensitive, so every remote string passes through
+// `sanitizeField` before it is interpolated anywhere.
+// ---------------------------------------------------------------------------
+
+const MAX_FIELD_LEN = 64; // remote strings are labels, never payloads
+
+// Strict allow-lists: only values the question suite itself defines can pass.
+const DEFECT_CLASSES = new Set(Object.keys(QUESTIONS.defect_class.criteria));
+const USAGE_FIELDS = new Set(["input_tokens", "output_tokens"]);
+
+// Coerce a remote value to a finite number, or null. Never Number(str) on
+// arbitrary text, never NaN/Infinity into the aggregates.
+function num(v) {
+  const n = typeof v === "number" ? v : typeof v === "string" && /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : NaN;
+  return Number.isFinite(n) ? n : null;
+}
+
+// Non-negative token counts, unknown -> 0.
+function count(v) {
+  const n = num(v);
+  return n !== null && n >= 0 ? n : 0;
+}
+
+// Validate usage against a fixed schema: whitelisted keys, finite non-negative
+// numbers. Anything else is dropped.
+function sanitizeUsage(u) {
+  if (!u || typeof u !== "object") return {};
+  const out = {};
+  for (const k of USAGE_FIELDS) out[k] = count(u[k]);
+  return out;
+}
+
+// A remote choice is accepted only if it is one of the known classes.
+function sanitizeChoice(v) {
+  return typeof v === "string" && DEFECT_CLASSES.has(v) ? v : "other";
+}
+
+// Last-resort sanitizer for any remote string that survives validation: strip
+// control characters (incl. CR/LF/TAB/NUL/ESC and Unicode line separators),
+// drop angle brackets so no HTML/Markdown tag can be reconstructed, collapse
+// whitespace, and bound the length.
+function sanitizeText(v) {
+  if (typeof v !== "string") return "";
+  const cleaned = v
+    .replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, " ")
+    .replace(/[<>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned.length > MAX_FIELD_LEN ? cleaned.slice(0, MAX_FIELD_LEN) + "…" : cleaned;
+}
+
+// Single choke point for every label taken from the network.
+function sanitizeField(v, fallback = "-") {
+  const s = sanitizeText(v);
+  return s === "" ? fallback : s;
+}
+
+// Escape a local relative git path before embedding it in a Markdown cell.
+// Paths come from `git ls-files`, not the network, but they still need to be
+// inert inside the table.
+function escapePath(p) {
+  return String(p).replace(/\\/g, "\\\\").replace(/[|`\r\n]/g, " ");
+}
+
 // Expected defect count from the Score distribution: level index is the count
 // bucket, weighted by its probability. The model never counts; the code does.
+// The probabilities come from the network, so each one is validated as a
+// finite number in [0,1] before it can influence the aggregate.
 function expectedCount(probs) {
-  if (!probs) return null;
+  if (!probs || typeof probs !== "object") return null;
   const weights = { "0": 0, "1": 1, "2": 2, "3": 3 };
   let total = 0;
-  for (const [k, p] of Object.entries(probs)) total += (weights[k] ?? 0) * p;
+  for (const [k, p] of Object.entries(probs)) {
+    const n = num(p);
+    if (n === null || n < 0 || n > 1) continue; // reject untrusted/non-probability values
+    total += (weights[k] ?? 0) * n;
+  }
   return total;
 }
 
 async function writeReport(results, totalFiles) {
+  // Report path is a fixed constant — no remote data ever reaches join() here.
+  const REPORT_PATH = join(ROOT, "ai", "jev_audit_report.md");
+
   const flagged = results.filter((r) => (r.has_defect ?? 0) >= 0.5);
   const unseen = flagged.filter((r) => r.caught_by_suite === false);
   const byClass = {};
-  for (const r of flagged) byClass[r.defect_class] = (byClass[r.defect_class] ?? 0) + 1;
+  // Defect classes are remote strings: allow-list them before using them as
+  // aggregation keys or writing them into the report.
+  for (const r of flagged) {
+    const cls = sanitizeChoice(r.defect_class);
+    byClass[cls] = (byClass[cls] ?? 0) + 1;
+  }
 
   const totalExpected = results.reduce((s, r) => s + (expectedCount(r.count_probs) ?? 0), 0);
 
   const lines = [];
-  lines.push("# Jev audit report", "");
-  lines.push(`Model: \`${MODEL}\`  |  files audited: ${totalFiles}  |  files flagged: ${flagged.length}`, "");
-  lines.push(`**Estimated defect count (sum of per-file expected counts): ${totalExpected.toFixed(1)}**`, "");
-  lines.push(`Flagged defects the existing test suite would NOT catch: ${unseen.length}`, "");
-  lines.push("## Flagged files", "");
-  lines.push("| file | role | P(defect) | class | severity | expected count | caught by suite |");
-  lines.push("| --- | --- | --- | --- | --- | --- | --- |");
+  // All report content is written through this single append helper: every
+  // line is verified to contain no CR/LF/NUL and no angle brackets, so the
+  // network-sourced data cannot break out of the Markdown structure or the
+  // file's line layout.
+  const push = (...ls) => {
+    for (const l of ls) {
+      if (/[\r\n\u0000<>]/.test(l)) throw new Error("Report line failed containment check");
+      lines.push(l);
+    }
+  };
+
+  push("# Jev audit report", "");
+  push(`Model: \`${MODEL}\`  |  files audited: ${totalFiles}  |  files flagged: ${flagged.length}`, "");
+  push(`**Estimated defect count (sum of per-file expected counts): ${totalExpected.toFixed(1)}**`, "");
+  push(`Flagged defects the existing test suite would NOT catch: ${unseen.length}`, "");
+  push("## Flagged files", "");
+  push("| file | role | P(defect) | class | severity | expected count | caught by suite |");
+  push("| --- | --- | --- | --- | --- | --- | --- |");
   for (const r of flagged.sort((a, b) => (b.has_defect ?? 0) - (a.has_defect ?? 0))) {
-    lines.push(
-      `| \`${r.path}\` | ${r.role} | ${(r.has_defect ?? 0).toFixed(2)} | ${r.defect_class} | ${r.severity ?? "-"} | ${(expectedCount(r.count_probs) ?? 0).toFixed(1)} | ${r.caught_by_suite === false ? "no" : "yes"} |`
+    const sev = num(r.severity);
+    push(
+      `| \`${escapePath(r.path)}\` | ${sanitizeField(roleFor(r.path).role)} | ${(Math.min(Math.max(num(r.has_defect) ?? 0, 0), 1)).toFixed(2)} | ${sanitizeChoice(r.defect_class)} | ${sev === null ? "-" : sev.toFixed(2)} | ${(expectedCount(r.count_probs) ?? 0).toFixed(1)} | ${r.caught_by_suite === false ? "no" : "yes"} |`
     );
   }
-  lines.push("", "## Defects by class", "");
-  for (const [k, v] of Object.entries(byClass).sort((a, b) => b[1] - a[1])) lines.push(`- ${k}: ${v}`);
-  lines.push("", "## Usage", "");
-  const inTok = results.reduce((s, r) => s + (r.usage?.input_tokens ?? 0), 0);
-  const outTok = results.reduce((s, r) => s + (r.usage?.output_tokens ?? 0), 0);
-  lines.push(`input_tokens: ${inTok}  |  output_tokens: ${outTok}`);
+  push("", "## Defects by class", "");
+  for (const [k, v] of Object.entries(byClass).sort((a, b) => b[1] - a[1])) push(`- ${k}: ${v}`);
+  push("", "## Usage", "");
+  // Token usage comes from the response body: validate against a fixed schema
+  // (finite, non-negative numbers only) before summing and writing.
+  const inTok = results.reduce((s, r) => s + sanitizeUsage(r.usage).input_tokens, 0);
+  const outTok = results.reduce((s, r) => s + sanitizeUsage(r.usage).output_tokens, 0);
+  push(`input_tokens: ${inTok}  |  output_tokens: ${outTok}`);
 
-  await writeFile(join(ROOT, "ai", "jev_audit_report.md"), lines.join("\n") + "\n", "utf8");
+  await writeFile(REPORT_PATH, lines.join("\n") + "\n", "utf8");
   console.log(lines.join("\n"));
 }
 

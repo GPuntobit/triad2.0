@@ -11,6 +11,14 @@ from unittest.mock import Mock, call, patch
 sys.path.insert(0, str(pathlib.Path(__file__).parents[1] / "scripts"))
 from tasteforge.media import capcut, stills
 
+# Names imported lazily inside try/except blocks below (to skip tests when
+# optional dependencies are missing). Pre-initializing them to None keeps the
+# bindings defined on every path and silences static-analysis warnings about
+# potentially-uninitialized variables.
+render = None
+transform_stream = None
+glitch = None
+
 
 class MediaUtilitiesTests(unittest.TestCase):
     def test_reject_bad_geometry_before_execution(self):
