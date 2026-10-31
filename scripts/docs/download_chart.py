@@ -58,6 +58,53 @@ def fetch_releases(repo: str, token: str | None) -> list[dict]:
     return releases
 
 
+def resolve_git_path(repo_root=None):
+    """Return a trusted absolute path to the git executable, or None."""
+    if repo_root is None:
+        repo_root = Path(__file__).resolve().parent.parent.parent
+    repo_root = Path(repo_root).resolve()
+
+    candidates = [
+        "/usr/bin/git", "/usr/local/bin/git", "/bin/git",
+        r"C:\Program Files\Git\cmd\git.exe",
+        r"D:\Program Files\Git\cmd\git.exe",
+    ]
+    for cand in candidates:
+        c = Path(cand)
+        try:
+            if c.is_file():
+                resolved = c.resolve()
+                try:
+                    resolved.relative_to(repo_root)
+                    continue
+                except ValueError:
+                    pass
+                if resolved.name.lower() in ("git", "git.exe"):
+                    return str(resolved)
+        except (OSError, ValueError):
+            continue
+    found = shutil.which("git")
+    if not found or not os.path.isabs(found):
+        return None
+    try:
+        real = Path(os.path.realpath(found)).resolve()
+    except (OSError, ValueError):
+        return None
+    if not real.is_file():
+        return None
+    try:
+        real.relative_to(repo_root)
+        return None
+    except ValueError:
+        pass
+    if os.path.basename(real).lower() not in ("git", "git.exe"):
+        return None
+    return str(real)
+
+
+_trusted_git = resolve_git_path
+
+
 def load_releases_from_tags() -> list[dict]:
     """Fallback offline: usa i tag git locali come snapshot (conteggio 0).
 
@@ -73,39 +120,14 @@ def load_releases_from_tags() -> list[dict]:
         # (PATH-hijack guard against a project-controlled ./git).
         repo_root = Path(__file__).resolve().parent.parent.parent
 
-        def _trusted_git() -> str | None:
-            candidates = [
-                "/usr/bin/git", "/usr/local/bin/git", "/bin/git",
-                r"C:\Program Files\Git\cmd\git.exe",
-                r"D:\Program Files\Git\cmd\git.exe",
-            ]
-            for cand in candidates:
-                c = Path(cand)
-                if c.is_file():
-                    return str(c)
-            found = shutil.which("git")
-            if not found or not os.path.isabs(found):
-                return None
-            real = Path(os.path.realpath(found))
-            if not real.is_file():
-                return None
-            try:
-                real.relative_to(repo_root)
-                return None  # inside the repo: untrusted
-            except ValueError:
-                pass
-            if os.path.basename(real).lower() not in ("git", "git.exe"):
-                return None
-            return str(real)
-
-        git_exe = _trusted_git()
+        git_exe = resolve_git_path(repo_root)
         if git_exe is None:
             return []
         out = subprocess.run(
             [git_exe, "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
             capture_output=True, text=True, check=True, shell=False, cwd=repo_root,
         ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
         return []
     releases = []
     for line in out.splitlines():
