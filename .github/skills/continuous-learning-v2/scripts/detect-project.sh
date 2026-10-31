@@ -116,7 +116,7 @@ _clv2_detect_project() {
     # Non-git directory explicitly pointed at by CLAUDE_PROJECT_DIR: honor it as
     # a project root (path-hash identity) rather than collapsing to the shared
     # `global` bucket. Gated on the explicit env var so an arbitrary non-git cwd
-    # never becomes a "project" — priority 2 below stays git-only on purpose.
+    # never becomes a "project" ÔÇö priority 2 below stays git-only on purpose.
     if [ -z "$project_root" ]; then
       project_root=$(cd "$CLAUDE_PROJECT_DIR" 2>/dev/null && pwd -P)
       if [ -n "$project_root" ]; then
@@ -259,7 +259,7 @@ _clv2_update_project_registry() {
     return 0
   fi
 
-  # Pass values via env vars to avoid shell→python injection.
+  # Pass values via env vars to avoid shellÔåÆpython injection.
   # Python reads them with os.environ, which is safe for any string content.
   _CLV2_REG_PID="$pid" \
   _CLV2_REG_PNAME="$pname" \
