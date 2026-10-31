@@ -16,21 +16,31 @@ function slugify(s) {
     .replace(/^-+|-+$/g, '') || 'section';
 }
 
-function stripHtmlTagsSafely(input) {
-  let current = String(input);
-  let previous;
-  do {
-    previous = current;
-    current = current.replace(/<\/?[a-zA-Z][^>]*>?/g, '');
-  } while (current !== previous);
-  return current.replace(/[<>]/g, '').trim();
+function stripTags(input) {
+  let result = '';
+  let inTag = false;
+  for (const ch of String(input)) {
+    if (ch === '<') { inTag = true; continue; }
+    if (ch === '>') { inTag = false; continue; }
+    if (!inTag) result += ch;
+  }
+  return result.trim();
+}
+
+function escapeHtml(input) {
+  return String(input)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function addHeadingIds(html, prefix, toc) {
   const used = new Set();
   let firstH1 = true;
   return html.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (m, level, text) => {
-    const plain = stripHtmlTagsSafely(text);
+    const plain = stripTags(text);
     if (level === '1' && firstH1) { firstH1 = false; return m; }
     const base = prefix + '-' + slugify(plain);
     let slug = base;
@@ -111,7 +121,7 @@ function buildToc(groups) {
   for (const g of groups) {
     html += '<h2>' + g.label + '</h2>\n<ul class="toc-list">\n';
     for (const e of g.entries) {
-      html += '<li class="toc-l' + e.level + '"><a href="#' + e.slug + '">' + e.text + '</a></li>\n';
+      html += '<li class="toc-l' + e.level + '"><a href="#' + e.slug + '">' + escapeHtml(e.text) + '</a></li>\n';
     }
     html += '</ul>\n';
   }
