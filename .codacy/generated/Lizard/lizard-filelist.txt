@@ -1,1 +1,1 @@
-c:\Users\xbos\Documents\progetti\triad2.0\scripts\docs\build-libro.mjs
+c:\Users\xbos\Documents\progetti\triad2.0\scripts\docs\download_chart.py
