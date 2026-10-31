@@ -18,7 +18,7 @@ if not API_KEY:
         "Example: export NVIDIA_API_KEY=nvapi-... (or $env:NVIDIA_API_KEY on PowerShell)"
     )
 invoke_url = "https://integrate.api.nvidia.com/v1/chat/completions"
-stream = True
+stream = os.environ.get("NEMOTRON_STREAM", "1").strip() != "0"
 headers = {
     "Authorization": f"Bearer {API_KEY}",
     "Accept": "text/event-stream" if stream else "application/json",

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -357,8 +358,24 @@ internal sealed class TriadDesktopForm : Form
     private static bool IsProjectRoot(string path)
     {
         return Directory.Exists(path)
-            && File.Exists(Path.Combine(path, "conformance", "run.mjs"))
-            && Directory.Exists(Path.Combine(path, "seed"));
+            && File.Exists(SafeCombine(path, "conformance", "run.mjs"))
+            && Directory.Exists(SafeCombine(path, "seed"));
+    }
+
+    // Path.Combine silently drops earlier segments if a later one is rooted
+    // (e.g. an absolute or drive-relative path). SafeCombine rejects that by
+    // requiring every segment to be a plain relative name without a root.
+    private static string SafeCombine(params string[] parts)
+    {
+        foreach (string part in parts.Skip(1))
+        {
+            if (Path.IsPathRooted(part))
+            {
+                throw new ArgumentException(
+                    "Path segment must not be rooted: " + part, nameof(parts));
+            }
+        }
+        return Path.Combine(parts);
     }
 
     private static string FindCliPath(string root)

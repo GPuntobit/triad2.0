@@ -228,7 +228,10 @@ class _SafeOutput:
         opened: list[int] = []
         try:
             for directory in directories:
-                opened.append(self._open_dir((directory,), create=True))
+                fd = self._open_dir((directory,), create=True)
+                # Close each descriptor as soon as it is validated so a failure
+                # partway through cannot leak the descriptors opened earlier.
+                os.close(fd)
         finally:
             for descriptor in opened:
                 os.close(descriptor)
