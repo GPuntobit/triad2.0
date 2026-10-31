@@ -16,14 +16,21 @@ function slugify(s) {
     .replace(/^-+|-+$/g, '') || 'section';
 }
 
+function stripHtmlTagsSafely(input) {
+  let current = String(input);
+  let previous;
+  do {
+    previous = current;
+    current = current.replace(/<\/?[a-zA-Z][^>]*>?/g, '');
+  } while (current !== previous);
+  return current.replace(/[<>]/g, '').trim();
+}
+
 function addHeadingIds(html, prefix, toc) {
   const used = new Set();
   let firstH1 = true;
   return html.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (m, level, text) => {
-    // Use DOMParser to safely extract text content from HTML
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(`<div>${text}</div>`, 'text/html');
-    const plain = doc.body.textContent.trim();
+    const plain = stripHtmlTagsSafely(text);
     if (level === '1' && firstH1) { firstH1 = false; return m; }
     const base = prefix + '-' + slugify(plain);
     let slug = base;
