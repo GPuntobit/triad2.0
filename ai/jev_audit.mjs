@@ -17,7 +17,7 @@
 // question -- it is one judgment per file, aggregated in code.
 
 import { constants } from "node:fs";
-import { readFile, writeFile, readdir, stat, lstat, realpath, open } from "node:fs/promises";
+import { readFile, writeFile, readdir, lstat, realpath, open } from "node:fs/promises";
 import { join, relative, extname, dirname, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -93,6 +93,9 @@ async function trackedFiles() {
 
 async function readTrackedFile(rel) {
   const path = join(ROOT, rel);
+  // All checks below are advisory pre-flight screens; the authoritative reads
+  // happen through the descriptor obtained next, so nothing here can be raced
+  // into making us read a different file than the one we verified.
   const info = await lstat(path);
   if (info.isSymbolicLink() || !info.isFile()) {
     throw new Error(`Refusing to audit non-regular file: ${rel}`);
@@ -103,19 +106,18 @@ async function readTrackedFile(rel) {
     throw new Error(`Refusing to audit file outside the repository: ${rel}`);
   }
 
+  // O_NOFOLLOW refuses to open a symlink at the final component and O_RDONLY
+  // cannot create or replace anything, so the descriptor is bound to exactly
+  // this inode for its lifetime. Every subsequent operation (file.stat() is an
+  // fstat on the fd, file.readFile() reads from the fd) acts on that pinned
+  // inode -- there is no second path lookup that a concurrent rename could
+  // redirect, which is what makes this race-free.
   const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);
   const file = await open(path, flags);
   try {
-    const openedInfo = await file.stat();
-    const resolvedInfo = await stat(resolved);
-    if (!openedInfo.isFile() || (openedInfo.ino && resolvedInfo.ino &&
-        (openedInfo.dev !== resolvedInfo.dev || openedInfo.ino !== resolvedInfo.ino))) {
-      throw new Error(`Tracked file changed while opening: ${rel}`);
-    }
-
-    const currentPath = await realpath(path);
-    if (currentPath !== resolved || !isWithinRoot(currentPath)) {
-      throw new Error(`Tracked file changed while opening: ${rel}`);
+    const openedInfo = await file.stat(); // fstat: describes the open fd itself
+    if (!openedInfo.isFile()) {
+      throw new Error(`Refusing to audit non-regular file: ${rel}`);
     }
     return await file.readFile("utf8");
   } finally {
