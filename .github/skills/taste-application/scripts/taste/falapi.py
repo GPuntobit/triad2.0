@@ -24,10 +24,7 @@ import hashlib
 import json
 import logging
 import os
-import random
-import shutil
 import threading
-import time
 import urllib.request
 import urllib.parse
 import tempfile

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from scripts.grader import ComplianceResult, StepResult, grade
+from scripts.grader import ComplianceResult, grade
 from scripts.parser import ComplianceSpec, Detector, ObservationEvent, Step, parse_spec, parse_trace
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
