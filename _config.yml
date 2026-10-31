@@ -1,0 +1,47 @@
+title: Triad 2.0
+description: A minimal, AI-native programming language with a deterministic seed interpreter.
+baseurl: "/triad2.0"
+url: "https://gpuntobit.github.io"
+
+theme: minima
+
+# Exclude non-site files from the Jekyll build
+exclude:
+  - .git
+  - .github
+  - .venv
+  - .delta
+  - .kilo
+  - .kiro
+  - .vscode
+  - .webcmd
+  - node_modules
+  - scripts
+  - seed
+  - src
+  - cli
+  - tests
+  - conformance
+  - tools
+  - obsidian-triad
+  - legacy
+  - examples
+  - ai
+  - bin
+  - selfhost
+  - probes
+  - tutorial
+  - "*.py"
+  - "*.sh"
+  - "*.bat"
+  - "*.mjs"
+  - "*.cjs"
+  - "*.js"
+  - "*.json"
+  - "*.yml"
+  - "*.yaml"
+  - "*.toml"
+  - "*.lock"
+  - "*.log"
+  - "*.err"
+  - "*.zip"
