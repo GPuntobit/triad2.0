@@ -93,23 +93,33 @@ async function trackedFiles() {
 
 async function readTrackedFile(rel) {
   const path = join(ROOT, rel);
-  const info = await lstat(path);
-  if (info.isSymbolicLink() || !info.isFile()) {
+
+  // Open FIRST. Once we hold an fd, the inode is pinned: no concurrent
+  // rename/swap of the path can redirect the bytes we read, which is what
+  // makes the rest of this function race-free. Every check below therefore
+  // runs against the fd (fstat) or re-resolves the path only to confirm
+  // containment; the content is read from the fd, never by re-opening path.
+  const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);
+  let file;
+  try {
+    file = await open(path, flags);
+  } catch {
     throw new Error(`Refusing to audit non-regular file: ${rel}`);
   }
-
-  const resolved = await realpath(path);
-  if (!isWithinRoot(resolved)) {
-    throw new Error(`Refusing to audit file outside the repository: ${rel}`);
-  }
-
-  const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);
-  const file = await open(path, flags);
   try {
-    const openedInfo = await file.stat();
+    const openedInfo = await file.stat(); // fstat: describes the open fd itself
+    if (!openedInfo.isFile()) {
+      throw new Error(`Refusing to audit non-regular file: ${rel}`);
+    }
+
+    const resolved = await realpath(path);
+    if (!isWithinRoot(resolved)) {
+      throw new Error(`Refusing to audit file outside the repository: ${rel}`);
+    }
+
     const resolvedInfo = await stat(resolved);
-    if (!openedInfo.isFile() || (openedInfo.ino && resolvedInfo.ino &&
-        (openedInfo.dev !== resolvedInfo.dev || openedInfo.ino !== resolvedInfo.ino))) {
+    if (openedInfo.ino && resolvedInfo.ino &&
+        (openedInfo.dev !== resolvedInfo.dev || openedInfo.ino !== resolvedInfo.ino)) {
       throw new Error(`Tracked file changed while opening: ${rel}`);
     }
 
