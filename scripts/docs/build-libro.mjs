@@ -19,7 +19,7 @@ function stripHtmlTagsSafely(input) {
   let previous;
   do {
     previous = current;
-    current = current.replace(/<[^>]+>/g, '');
+    current = current.replace(/<\/?[a-zA-Z][^>]*>?/g, '');
   } while (current !== previous);
   return current.replace(/[<>]/g, '').trim();
 }
