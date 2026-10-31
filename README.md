@@ -14,6 +14,11 @@ https://github.com/user-attachments/assets/2e01cb37-ea17-44af-a92b-7636bdaee3d5
   <video src="docs/assets/video/anteprima-codice.mp4" controls width="552"></video>
   <br><sub>A typed and executed Triad-Core program (actual output from the JS interpreter, ~35s in a loop). Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
 </p>
+<p align="center">
+  <img src="docs/assets/img/anteprima-hello.svg" alt="Typed Hello World in Triad-Core" width="552">
+  <br><sub>A typed "Hello, World!" in Triad-Core (animated SVG, looping).</sub>
+</p>
+
 
 Syntax and semantics are defined by Triad, not by other languages. Influences are documented as informative notes (Appendix A of SPEC.md):
 

@@ -1,10 +1,12 @@
 # Graphify graph
 ## Snapshots
 - Repository: [GPuntobit/triad2.0](https://github.com/GPuntobit/triad2.0), `main` branch.
-- Indexed commit: `aa1841bf27f50f787964bc8dacb1f4dbec4c4d45`.
-- Generated locally with `graphify update.` (AST extraction, no LLM): October 26, 2026.
-- Statistics: **1245 nodes**, **2272 relationships**, **75 communities**, **101 files** represented.
-- Relationships by type: `calls` 901, `contains` 857, `defines` 252, `references` 105, `imports` 77, `imports_from` 73, `inherits` 4, `dynamic_import` 2, `declares` 1.
+- Current repository commit: `b26ec4e92c191c7d60ad48fa541899f0469cd1d1` (October 30, 2026).
+- Last indexed commit: `729b1e05dc94cfc9784d50256f581b24d21143da` (Graphify remote index).
+- Local snapshot commit: `aa1841bf27f50f787964bc8dacb1f4dbec4c4d45` (October 26, 2026).
+- Local snapshot statistics: **1245 nodes**, **2272 relationships**, **75 communities**, **101 files** represented.
+- Graphify remote index statistics: **5780 nodes** (as of October 30, 2026).
+- Relationships by type (local snapshot): `calls` 901, `contains` 857, `defines` 252, `references` 105, `imports` 77, `imports_from` 73, `inherits` 4, `dynamic_import` 2, `declares` 1.
 Export artifacts, saved in the vault:
 - [[graphify/GRAPH_REPORT|GRAPH_REPORT]] — Graphify report (community, hub, graph freshness).
 - [Interactive graph `graph.html`](<./graphify/graph.html>) — opens in browser.
@@ -119,5 +121,19 @@ Referenced external modules (no files in repository): `node:child_process`, `nod
 - Unlike the previous snapshot (semantic search via MCP, no enumerable list), `graph.json` allows you to list **all** indexed files: the table above is complete.
 - Graphify skipped 226 files without supported extension (mostly `.td`, `.out`, `.code`): Triad `.td` sources are therefore not represented in the graph.
 - Plugin bundles in `.obsidian/plugins/` are not included in the local extraction; the [[File - KarpathyWiki main.js]] and [[File - Templater main.js]] pages remain from the previous snapshot.
+## Significant changes since last local snapshot
+Between commit `aa1841bf` (October 26, 2026) and `b26ec4e` (October 30, 2026), **1005 files** have changed or been added:
+- Added extensive `.github/skills/` collection (200+ ECC skills)
+- Added `.github/agents/` collection (100+ agent definitions)
+- Added new `cli/` folder with standalone CLI implementation
+- Added new `config/` folder for project configuration
+- Added `probes/` folder for test probes
+- Added `tests/` folder with security tests
+- Updated documentation in `docs/` and `tutorial/`
+- Expanded `conformance/core/cases/` with additional test cases
+- Multiple cleanup files removed (output files, test artifacts)
+- Updated `.github/workflows/` with new CI jobs
+
+**Note**: The local graph file list below reflects the snapshot from October 26, 2026 (101 files). The repository now contains significantly more files. A full regeneration of the local graph is recommended to capture the current state.
 ## Previous snapshot
 October 25, 2026 MCP indexing on commit `929a9269ef08d07088d65217f269c5aeafabd62a`: 3,197 nodes, 7,794 relationships, 206 communities. Counts are not comparable with current ones (different extractor, plugin bundle included).

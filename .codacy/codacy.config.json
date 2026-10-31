@@ -6,8 +6,8 @@
     "organization": "GPuntobit",
     "repositoryId": "917582",
     "repositoryName": "triad2.0",
-    "createdAt": "2026-10-30T17:14:37.325Z",
-    "updatedAt": "2026-10-30T17:14:37.325Z",
+    "createdAt": "2026-10-31T11:37:59.928Z",
+    "updatedAt": "2026-10-31T11:37:59.928Z",
     "languages": [
       "CSharp",
       "CSS",
@@ -18,6 +18,7 @@
       "Markdown",
       "Powershell",
       "Python",
+      "SASS",
       "Shell",
       "Swift",
       "TypeScript",
@@ -7559,6 +7560,8 @@
   ],
   "exclude": [
     "docs/releases/RELEASE_NOTES_v0.3.0.md",
-    "docs/releases/RELEASE_NOTES_v0.8.0-beta.3.md"
+    "docs/releases/RELEASE_NOTES_v0.8.0-beta.3.md",
+    "docs/releases/RELEASE_NOTES_v0.8.0-beta.7.it.md",
+    "docs/releases/RELEASE_NOTES_v0.8.0-beta.7.md"
   ]
 }

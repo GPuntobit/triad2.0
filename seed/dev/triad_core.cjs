@@ -963,18 +963,7 @@ function printValue(v, topLevel){
   return '?';
 }
 
-function main(){
-  const args = process.argv.slice(2);
-  if (args.length === 0) { process.stderr.write('usage: triad FILE [ARG...]\n'); process.exit(2); }
-  const file = args[0];
-  const scriptArgs = args.slice(1);
-  let src;
-  if (file === '-') {
-    src = fs.readFileSync(0, 'utf8');
-  } else {
-    try { src = fs.readFileSync(file, 'utf8'); }
-    catch (e) { process.stderr.write('cannot read file: ' + file + '\n'); process.exit(1); }
-  }
+function runTriadSource(src, filename, scriptArgs) {
   const tokens = tokenize(src);
   const parser = new Parser(tokens);
   let ast;
@@ -983,7 +972,7 @@ function main(){
   const globalEnv = makeFrame(null, null, false);
   globalEnv.owner = null;
   globalEnv.isLambda = false;
-  globalEnv.bindings.set('ARGS', L(scriptArgs.map(s => S(s))));
+  globalEnv.bindings.set('ARGS', L((scriptArgs || []).map(s => S(s))));
   try {
     for (const s of ast.stmts) evalStmt(s, globalEnv);
   } catch (e) {
@@ -997,9 +986,44 @@ function main(){
   process.exit(0);
 }
 
+function runTriadFile(file, scriptArgs) {
+  let src;
+  if (file === '-') {
+    src = fs.readFileSync(0, 'utf8');
+  } else {
+    try { src = fs.readFileSync(file, 'utf8'); }
+    catch (e) { process.stderr.write('cannot read file: ' + file + '\n'); process.exit(1); }
+  }
+  runTriadSource(src, file, scriptArgs);
+}
+
+function main() {
+  const args = process.argv.slice(2);
+  if (args.length === 0) { process.stderr.write('usage: triad FILE [ARG...]\n'); process.exit(2); }
+  const file = args[0];
+  const scriptArgs = args.slice(1);
+  runTriadFile(file, scriptArgs);
+}
+
+// Direct execution support for .td / .triad files via Node's module system.
+// Allows: node --require ./seed/dev/triad_core.cjs nome-file.td [arg...]
+function triadModuleLoader(module, filename) {
+  // When loaded as the program entry, the program arguments follow the file
+  // name in process.argv. Normalize them so ARGS is populated correctly.
+  // The program arguments always follow the entry file in process.argv.
+  const scriptArgs = process.argv.slice(2);
+  runTriadFile(filename, scriptArgs);
+  module.exports = {};
+}
+
+
 // Browser support: when loaded in a web page (no Node CLI), expose the
 // interpreter as window.TriadCore so the playground can run programs.
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  if (typeof require === 'function' && require.extensions) {
+    require.extensions['.td'] = triadModuleLoader;
+    require.extensions['.triad'] = triadModuleLoader;
+  }
   module.exports = { tokenize, Parser, evalStmt, makeFrame, L, S, I, B, Y, stringOf };
   if (require.main === module) main();
 } else if (typeof window !== 'undefined') {
