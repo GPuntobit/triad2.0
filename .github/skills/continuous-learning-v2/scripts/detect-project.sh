@@ -90,6 +90,28 @@ _clv2_main_worktree_root() {
   done
 }
 
+# Helper: compute a 12-char SHA256 hash of the given input using Python (locale-independent).
+# Centralized to avoid duplicating the Python hash snippet.
+# Helper: set project context to the shared global bucket.
+_clv2_set_global() {
+  _CLV2_PROJECT_ID="global"
+  _CLV2_PROJECT_NAME="global"
+  _CLV2_PROJECT_ROOT=""
+  _CLV2_PROJECT_DIR="${_CLV2_HOMUNCULUS_DIR}"
+  mkdir -p "$_CLV2_PROJECT_DIR"
+}
+
+_clv2_sha256_12() {
+  if [ -z "$_CLV2_PYTHON_CMD" ]; then
+    return 1
+  fi
+  _CLV2_HASH_INPUT="$1" "$_CLV2_PYTHON_CMD" -I -c '
+import os, hashlib
+s = os.environ["_CLV2_HASH_INPUT"]
+print(hashlib.sha256(s.encode("utf-8")).hexdigest()[:12])
+' 2>/dev/null
+}
+
 _clv2_detect_project() {
   local project_root=""
   local project_name=""
@@ -97,11 +119,7 @@ _clv2_detect_project() {
   local source_hint=""
 
   if [ "${CLV2_NO_PROJECT:-0}" = "1" ]; then
-    _CLV2_PROJECT_ID="global"
-    _CLV2_PROJECT_NAME="global"
-    _CLV2_PROJECT_ROOT=""
-    _CLV2_PROJECT_DIR="${_CLV2_HOMUNCULUS_DIR}"
-    mkdir -p "$_CLV2_PROJECT_DIR"
+    _clv2_set_global
     return 0
   fi
 
@@ -116,7 +134,7 @@ _clv2_detect_project() {
     # Non-git directory explicitly pointed at by CLAUDE_PROJECT_DIR: honor it as
     # a project root (path-hash identity) rather than collapsing to the shared
     # `global` bucket. Gated on the explicit env var so an arbitrary non-git cwd
-    # never becomes a "project" ÔÇö priority 2 below stays git-only on purpose.
+    # never becomes a "project" — priority 2 below stays git-only on purpose.
     if [ -z "$project_root" ]; then
       project_root=$(cd "$CLAUDE_PROJECT_DIR" 2>/dev/null && pwd -P)
       if [ -n "$project_root" ]; then
@@ -135,11 +153,7 @@ _clv2_detect_project() {
 
   # 3. No project detected — fall back to global
   if [ -z "$project_root" ]; then
-    _CLV2_PROJECT_ID="global"
-    _CLV2_PROJECT_NAME="global"
-    _CLV2_PROJECT_ROOT=""
-    _CLV2_PROJECT_DIR="${_CLV2_HOMUNCULUS_DIR}"
-    mkdir -p "$_CLV2_PROJECT_DIR"
+    _clv2_set_global
     return 0
   fi
 
@@ -185,11 +199,7 @@ _clv2_detect_project() {
   # is locale-independent (shells vary between UTF-8 / CP932 / CP1252, which
   # would otherwise produce different hashes for the same non-ASCII path).
   if [ -n "$_CLV2_PYTHON_CMD" ]; then
-    project_id=$(_CLV2_HASH_INPUT="$hash_input" "$_CLV2_PYTHON_CMD" -I -c '
-import os, hashlib
-s = os.environ["_CLV2_HASH_INPUT"]
-print(hashlib.sha256(s.encode("utf-8")).hexdigest()[:12])
-' 2>/dev/null)
+    project_id=$(_clv2_sha256_12 "$hash_input")
   fi
 
   # Fallback if Python is unavailable or hash generation failed.
@@ -211,11 +221,7 @@ print(hashlib.sha256(s.encode("utf-8")).hexdigest()[:12])
 
     local legacy_input legacy_id
     for legacy_input in "${legacy_inputs[@]}"; do
-      legacy_id=$(_CLV2_HASH_INPUT="$legacy_input" "$_CLV2_PYTHON_CMD" -I -c '
-import os, hashlib
-s = os.environ["_CLV2_HASH_INPUT"]
-print(hashlib.sha256(s.encode("utf-8")).hexdigest()[:12])
-' 2>/dev/null)
+      legacy_id=$(_clv2_sha256_12 "$legacy_input")
       if [ -n "$legacy_id" ] && [ "$legacy_id" != "$project_id" ] \
          && [ -d "${_CLV2_PROJECTS_DIR}/${legacy_id}" ]; then
         if mv "${_CLV2_PROJECTS_DIR}/${legacy_id}" "${_CLV2_PROJECTS_DIR}/${project_id}" 2>/dev/null; then
@@ -259,7 +265,7 @@ _clv2_update_project_registry() {
     return 0
   fi
 
-  # Pass values via env vars to avoid shellÔåÆpython injection.
+  # Pass values via env vars to avoid shell→python injection.
   # Python reads them with os.environ, which is safe for any string content.
   _CLV2_REG_PID="$pid" \
   _CLV2_REG_PNAME="$pname" \

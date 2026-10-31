@@ -145,7 +145,7 @@ function buildToc(groups) {
   for (const g of groups) {
     html += '<h2>' + g.label + '</h2>\n<ul class="toc-list">\n';
     for (const e of g.entries) {
-      html += '<li class="toc-l' + e.level + '"><a href="#' + e.slug + '">' + e.text + '</a></li>\n';
+      html += '<li class="toc-l' + e.level + '"><a href="#' + e.slug + '">' + escapeHtml(e.text) + '</a></li>\n';
     }
     html += '</ul>\n';
   }

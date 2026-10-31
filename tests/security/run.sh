@@ -11,6 +11,9 @@ node --test tests/security/windows_where_path.test.js
 echo "== 2. Isolamento Python: json.py/sitecustomize/PYTHONPATH/user-site non influenzano i parser =="
 python3 tests/security/python_isolation.test.py
 
+echo "== 2b. Git path hijack: repository-controlled git never invoked =="
+python3 tests/security/git_path_hijack.test.py
+
 echo "== 3. Workflow: ogni action pinnata a commit SHA completo e immutabile =="
 python3 tests/security/workflows_pinned.test.py
 

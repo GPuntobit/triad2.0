@@ -120,12 +120,13 @@ def load_releases_from_tags() -> list[dict]:
     if git_bin is None:
         return []
     try:
-        out = subprocess.run(
-            [git_bin, "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
+        out = subprocess.run(  # nosec B603 B607
+            ["git", "tag", "--sort=creatordate", "--format=%(refname:short)\t%(creatordate:iso)"],
+            executable=git_bin,
             capture_output=True, text=True, check=True, shell=False,
             cwd=Path(__file__).resolve().parents[2],
         ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
         return []
     releases = []
     for line in out.splitlines():
