@@ -8,10 +8,15 @@ import os
 import sys
 from pathlib import Path
 
+import importlib.util
+
 REPO = Path(__file__).resolve().parents[2]
 SCRIPT = REPO / "scripts" / "docs" / "download_chart.py"
-sys.path.insert(0, str(REPO / "scripts"))
-import docs.download_chart as dc  # noqa: E402
+
+_spec = importlib.util.spec_from_file_location("download_chart", SCRIPT)
+dc = importlib.util.module_from_spec(_spec)
+# load without executing module-level side effects beyond definitions
+_spec.loader.exec_module(dc)
 
 
 def main() -> int:
