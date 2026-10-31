@@ -6,7 +6,7 @@ permissions:
   contents: read
 jobs:
   conformance-core:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -72,7 +72,7 @@ jobs:
           $h = (Get-FileHash seed/windows-x86_64/seed.hex -Algorithm SHA256).Hash
           if ($h -ne '3A75A21E2F47D8DC4C88D4BC2580A85D5349BCDF7550E5FFA16E2C0AC7CA8C11') { throw "hash mismatch: $h" }
   seed-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Decode ELF
@@ -94,7 +94,7 @@ jobs:
     # Verifica che l'intera toolchain POSIX funzioni su Linux: launcher,
     # install.sh (senza root), esecuzione di programmi .td e suite di
     # conformità tramite i launcher installati.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7

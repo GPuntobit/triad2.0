@@ -2,6 +2,88 @@
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
+## 0.8.0-beta.7 — 2026-10-31: security hardening, CI integrity & repository cleanup
+
+### Added
+- Repository structure reorganization released across three passes: probes moved
+  from the root to `probes/`; long-form docs gathered in `docs/` and versioned
+  release notes in `docs/releases/`; webcmd Graphify plugin moved to
+  `tools/webcmd-graphify/`; `scripts/` split by purpose (`scripts/docs/` build
+  helpers, `scripts/seed-runner/` Windows seed wrappers, `scripts/experiments/`
+  one-off dev scripts); tutorial translations consolidated in `tutorial/`
+  (`docs/TUTORIAL-RU.md` → `tutorial/TUTORIAL.ru.md`). CI, install.sh, build
+  scripts, workflows and README references updated accordingly.
+- Repaired tooling regressions found during the moves: `download_chart.py`
+  indentation/typos plus asset download counts and default repo; `build-epub.cjs`
+  and `build-libro.mjs` `continue` typo and variable mismatches.
+- `tests/security/` — repeatable security verification suite (`run.sh`, 5 checks):
+  Windows command detection cannot execute a project-controlled `where.exe`;
+  Python parser isolation against `json.py`/`sitecustomize.py`/`PYTHONPATH`/user
+  site-packages shadowing; every workflow action pinned to a full commit SHA;
+  relocated build scripts and tutorial links resolve from their new directories;
+  download-chart script runs from its new location and writes valid SVG output.
+- `.github/workflows/codeql.yml` + `.github/codeql-config.yml` — CodeQL scanning
+  for C#, JavaScript/TypeScript and Python; the C# job builds on
+  `windows-2022` with `autobuild` so the WinForms CLI analyzer resolves call
+  targets and expression types (fixes "Incomplete database" scanner findings).
+- `cli/windows-gui/TriadDesktop.csproj` — SDK-style project file mirroring the
+  assembly set of `build.ps1`, enabling autobuild/manual-build scans.
+- `wiki/` — 10-page English wiki generated from the project documentation
+  (Home, Getting Started, Language Guide, Syntax Reference, Error Handling &
+  Advanced Features, Logic Programming, Code-as-Data & Macros, Project Status,
+  Repository Architecture, Contributing Guide).
+- Triad-generated website page: `tools/site-gen/generate_site_core.td` emits
+  `docs/pages/generated.html` using only Triad-Core constructs (verified against
+  the reference interpreter); online playground bundle restored via
+  `scripts/docs/sync-playground.cjs`.
+- Site webpages rewritten in Triad: `docs/web/*.td` (index, examples, getting-started,
+  tour, api-reference, community, contributing, download, repl) generate the whole
+  GitHub Pages site with `tools/site-gen/build-site.td`.
+- `.github/config.yml` — versioned CodeRabbit configuration (chill profile,
+  path filters excluding generated artifacts).
+- Release notes: `docs/releases/RELEASE_NOTES_v0.8.0-beta.7.md`.
+
+### Security
+- **HIGH** — `%SystemRoot%` is no longer trusted by default in
+  `.github/ecc/scripts/lib/utils.js`: the system directory is validated as an
+  absolute `<drive>:\windows` path after normalization; UNC, relative, traversal
+  or attacker-controlled values are rejected with a fixed fallback to
+  `C:\WINDOWS\System32`, so the invoked `where.exe` always lives in a trusted
+  system directory.
+- **MEDIUM** — `git` is resolved to a trusted absolute executable before
+  `subprocess.run` in `scripts/docs/download_chart.py`: hardcoded canonical paths
+  first, then `shutil.which` results accepted only if absolute, a real file after
+  `realpath`, executable and outside the repository; argument-list invocation,
+  `shell=False`, repository cwd and the unavailable-git fallback preserved.
+- ReDoS hardening: `_is_safe_tag_line()` linear-time pre-validation of tag lines
+  in `download_chart.py` before regex processing, with worst-case regression tests.
+- Incomplete multi-character sanitization fixed in
+  `.github/skills/continuous-learning-v2/scripts/instinct-cli.py`: escape
+  substitutions iterate to a fixpoint so nested fragments (`<scr<script>ipt>`)
+  cannot reconstruct a `<script>` tag.
+- All GitHub Actions pinned to full immutable commit SHAs (checkout@v7,
+  setup-node@v7, configure-pages@v6, upload-pages-artifact@v5, deploy-pages@v5,
+  codeql-action@v3, setup-dotnet@v4), verified against the GitHub API.
+
+### Changed
+- Root and folders cleanup (third pass, see below) completed and released.
+- All Linux CI jobs pinned to `ubuntu-24.04` ahead of the `ubuntu-latest`
+  migration to Ubuntu 26 (actions/runner-images#14748).
+- `download-chart.yml`: removed deprecated `setup-python@v5` (stdlib-only
+  script) and stale Node-20 warnings; checkout bumped to v7.
+- `install.sh`: usage extraction window fixed after the Termux section shifted
+  the header; final self-check now probes `$ROOT/probes/test_simple.td`.
+- README: Termux (Android) section documenting the Node.js fallback path.
+
+### Fixed
+- `obsidian-triad/github-wiki/` removed from the index: an empty leftover
+  gitlink broke CI submodule sync ("No url found for submodule path … in
+  .gitmodules"), failing every workflow at `actions/checkout`.
+- `scripts/docs/build-libro.mjs` crashed writing to a non-existent
+  `docs/libro/`; now creates the output directory.
+- Removed two empty files accidentally committed in the root (`Developer`,
+  `install-triad-ext.bat`).
+
 ## 0.8.0-beta.6 — 2026-10-30: repository structure reorganization & tooling fixes
 
 - Probe `.td` moved from the root to `probes/` (`test_simple.td`, `test_let.td`,
@@ -9,13 +91,10 @@ behavior, the goldens of `conformance/`.
   and `install.sh`.
 - Long-form documentation gathered in `docs/`: `MANUALE.md`, `PREFazione.md`,
   `TUTORIAL-RU.md`; versioned release notes in `docs/releases/`. Paths updated
-  in `scripts/build-libro.mjs` and `scripts/build-epub.cjs`.
+  in the build scripts.
 - webcmd Graphify plugin moved from `.webcmd/` to `tools/webcmd-graphify/`.
 - Removed two empty files accidentally committed in the root: `Developer` and
   `install-triad-ext.bat` (no active reference in the repository).
-
-## Unreleased — 2026-10-30: deeper folder organization
-
 - `scripts/` split by purpose: build helpers in `scripts/docs/`
   (`build-libro.mjs`, `build-epub.cjs`, `build-docx.cjs`, `frontespizio.mjs`,
   `download_chart.py`), Windows seed wrappers in `scripts/seed-runner/`,
@@ -25,9 +104,26 @@ behavior, the goldens of `conformance/`.
   `docs/TUTORIAL-RU.md` → `tutorial/TUTORIAL.ru.md`, alongside the existing
   `TUTORIAL.md`, `TUTORIAL.it.md`, `TUTORIAL.zh.md`); links in README, manual,
   site pages and build scripts updated.
-- `README.md`: "Project Structure" section updated to the new layout.
-- `scripts/download_chart.py`: repaired indentation/typos and use asset download counts; default repo fixed.
-- `scripts/build-epub.cjs`, `scripts/build-libro.mjs`: repaired `continue` typo and variable mismatches.
+- PR descriptions moved out of the root into a dedicated worklog folder:
+  `PULL_REQUEST.md` → `docs/worklog/PULL_REQUEST-current.md` (active draft),
+  `docs/PULL_REQUEST.md` → `docs/worklog/PULL_REQUEST-pr30.md` (archived).
+- Push helper relocated to the tools area: `scripts/git-push-with-token.ps1`
+  → `tools/git-push-with-token.ps1`.
+- `obsidian-triad/github-wiki/` removed from the index: it was an empty
+  leftover directory that broke CI submodule sync ("No url found for submodule
+  path 'obsidian-triad/github-wiki' in .gitmodules").
+- CI runner stability: all Linux jobs pinned from `ubuntu-latest` to the
+  explicit image `ubuntu-24.04` (`ci.yml`, `download-chart.yml`, `pages.yml`,
+  `static.yml`) ahead of the `ubuntu-latest` → Ubuntu 26 migration scheduled
+  for 2026-10-19 (actions/runner-images#14748), keeping toolchain-dependent
+  steps stable (`xxd` install, ELF seed execution, Node conformance runner).
+  `node-version: '20'` kept as-is: setup-node downloads the runtime itself,
+  so it is unaffected by the runner-image change.
+- `README.md` "Project Structure": stale `docs/TUTORIAL-RU.md` entry replaced
+  with the `tutorial/` translations line; added `tests/security/`,
+  `docs/worklog/`, `scripts/*` subfolders; documented contract paths unchanged
+  (`bin/`, `seed/<platform>/`, `conformance/`, `selfhost/`, `examples/`,
+  `probes/`, `cli/`, `editors/`, `VERSION`, `LICENSE`, `install.sh`).
 
 - `seed/dev/triad_core.cjs`: added direct execution support for `.td`/`.triad` files via Node module system (`require.extensions`), enabling `node --require ./seed/dev/triad_core.cjs nome-file.td [arg...]`; program arguments are normalized into `ARGS`. The simpler launcher form `triad nomefile.td` / `triad nome-file.triad` remains supported.
 

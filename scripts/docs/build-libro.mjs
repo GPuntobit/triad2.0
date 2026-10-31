@@ -2,9 +2,11 @@ import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const outDir = join(root, 'docs', 'libro');
 mkdirSync(outDir, { recursive: true });
+
 marked.setOptions({ gfm: true, breaks: false });
 
 function slugify(s) {
@@ -14,21 +16,31 @@ function slugify(s) {
     .replace(/^-+|-+$/g, '') || 'section';
 }
 
-function stripHtmlTagsSafely(input) {
-  let current = String(input);
-  let previous;
-  do {
-    previous = current;
-    current = current.replace(/<\/?[a-zA-Z][^>]*>?/g, '');
-  } while (current !== previous);
-  return current.replace(/[<>]/g, '').trim();
+function stripTags(input) {
+  let result = '';
+  let inTag = false;
+  for (const ch of String(input)) {
+    if (ch === '<') { inTag = true; continue; }
+    if (ch === '>') { inTag = false; continue; }
+    if (!inTag) result += ch;
+  }
+  return result.trim();
+}
+
+function escapeHtml(input) {
+  return String(input)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function addHeadingIds(html, prefix, toc) {
   const used = new Set();
   let firstH1 = true;
   return html.replace(/<h([1-6])>([\s\S]*?)<\/h\1>/g, (m, level, text) => {
-    const plain = stripHtmlTagsSafely(text);
+    const plain = stripTags(text);
     if (level === '1' && firstH1) { firstH1 = false; return m; }
     const base = prefix + '-' + slugify(plain);
     let slug = base;
@@ -42,9 +54,10 @@ function addHeadingIds(html, prefix, toc) {
 
 const preface = readFileSync(join(root, 'docs', 'PREFazione.md'), 'utf8');
 const prefaceHtml = rewriteRepositoryLinks(marked.parse(preface));
-const manualRaw = readFileSync(join(root, 'docs', 'MANUALE.md'), 'utf8');
+const manualeRaw = readFileSync(join(root, 'docs', 'MANUALE.md'), 'utf8');
 const tutorialRaw = readFileSync(join(root, 'tutorial', 'TUTORIAL.md'), 'utf8');
-function stripIndex(md, heading, endMarker) {
+
+function stripIndice(md, heading, endMarker) {
   const start = md.indexOf(heading);
   if (start === -1) return md;
   const end = md.indexOf(endMarker, start);
@@ -72,12 +85,12 @@ function rewriteRepositoryLinks(html) {
   });
 }
 
-const manual = namespaceAnchors(
-  stripIndex(manualRaw, ['### Index', '### Indice'], '\n<a id="parte-1">'),
+const manuale = namespaceAnchors(
+  stripIndice(manualeRaw, '### Indice', '\n<a id="parte-1">'),
   'man'
 );
 const tutorial = namespaceAnchors(
-  stripIndex(tutorialRaw, ['## Index', '## Indice'], '\n<a id="parte-1">'),
+  stripIndice(tutorialRaw, '## Indice', '\n<a id="parte-1">'),
   'tut'
 );
 
@@ -98,17 +111,17 @@ function extractHeadings(md, maxLevel) {
   return out;
 }
 
-const manualToc = [];
+const manualeToc = [];
 const tutorialToc = [];
-const manualHtml = rewriteRepositoryLinks(addHeadingIds(marked.parse(manual), 'man', manualToc));
+const manualeHtml = rewriteRepositoryLinks(addHeadingIds(marked.parse(manuale), 'man', manualeToc));
 const tutorialHtml = rewriteRepositoryLinks(addHeadingIds(marked.parse(tutorial), 'tut', tutorialToc));
 
 function buildToc(groups) {
-  let html = '<h1>Index</h1>\n';
+  let html = '<h1>Indice</h1>\n';
   for (const g of groups) {
     html += '<h2>' + g.label + '</h2>\n<ul class="toc-list">\n';
     for (const e of g.entries) {
-      html += '<li class="toc-l' + e.level + '"><a href="#' + e.slug + '">' + e.text + '</a></li>\n';
+      html += '<li class="toc-l' + e.level + '"><a href="#' + e.slug + '">' + escapeHtml(e.text) + '</a></li>\n';
     }
     html += '</ul>\n';
   }
@@ -116,73 +129,71 @@ function buildToc(groups) {
 }
 
 const tocHtml = buildToc([
-  { label: 'The Triad 2.0 Handbook', entries: manualToc },
-  { label: 'The Triad 2.0 Tutorial', entries: tutorialToc }
+  { label: 'Manuale di Triad 2.0', entries: manualeToc },
+  { label: 'Tutorial di Triad 2.0', entries: tutorialToc }
 ]);
 
 const backCoverHtml = `<div class="backcover">
-  <h1>The Book of Triad</h1>
-  <p>Triad 2.0 is a standalone programming language, defined by a normative specification
-  independent of any implementation. It is not a dialect of Julia, Prolog or Lisp, even though it
-  has taken fundamental ideas from each of them: <code>function … end</code> blocks and types with
-  <code>::</code> from Julia, unification with occurs-check, backtracking and <code>solve</code> with
-  logic variables <code>?x</code> from Prolog, code as data and macros from Lisp. What belongs to
-  Triad alone, and is not on loan, is the integration of the three models — imperative, logical,
-  metaprogramming — into a single block syntax, together with errors as data
-  (<code>Err</code>), contracts (<code>requires</code>/<code>ensures</code>), budgets
-  (<code>with budget</code>), tracks (<code>with trace</code>) and declared effects
-  (<code>!io</code>, <code>!state</code>) as part of the language and not of a library.</p>
-  <p>The language comes in two conformance profiles. Triad-Core is the bootstrap
-  subset: values, functions, closures, flow control, lists, strings, I/O. Triad-Full is
-  the complete standard: declared types, multiple dispatch, integrated logic, macros, contracts,
-  budgets, tracks, effects. Every Core program is also a valid Full program and must behave
-  in the same way. The JavaScript reference interpreter runs Triad-Core; the Windows S0 seed
-  is a separate and more limited x86-64 machine-code interpreter. The current Linux seed is
-  still an E0 startup test, not an interpreter. The bootstrap plan provides for S1 (a Triad
-  interpreter written in Triad-Core), S2
-  (native compiler), S3 (self-hosting) and S4 (cross-platform parity).</p>
-  <p>This book is the study path of the language as the standard defines it. The
-  Handbook and the Tutorial alternate conceptual explanations, technical semantics, annotated
-  examples, exercises and references to the specification. Each text introduces the concepts
-  where they are needed and distinguishes the constructs that run today from those the standard
-  defines but that are not supported yet.
-  The Tutorial first walks the reader through the Core constructs that run today, then
-  presents Triad-Full as a standard to study and finally shows how to read the implementations,
-  the bootstrap and the conformance suite in the repository. The block labels distinguish the
-  runnable code from the code the standard defines but that the runtime does not support yet.</p>
-  <p>The project is released under the MIT license. The normative specification is in SPEC.md (standard
-  0.2.0), the bootstrap subset in SPEC-CORE.md, the conformance suite in
-  conformance/ with verifiable goldens. The repository also includes a benchmark for generating
-  Triad code with an LLM (ai/), grammars for VS Code and Vim, and a website with the learning
-  curve. The goal is a standalone and recognised language: its own standard,
-  executable conformance, the .triad extension, editor tooling, bootstrap without host languages
-  and, finally, self-hosting.</p>
-  <p>The conformance suite is the executable contract of the language. The JavaScript reference
-  interpreter passes all 37 Core cases; the Windows seed passes the supported cases and leaves out
-  by default the <code>liste</code> case, which requires standard indexing. The Linux seed is
-  still at the E0 stage and only prints a startup message. The Full profile is defined by the
-  standard, but the current runtime does not implement the complete language yet; the outputs
-  labelled golden are expected results kept in the suite files. Every Core case declares
-  output and exit code, so that an implementation can be compared against a reproducible
-  contract, not against a single isolated example.</p>
-  <p>The editor tools include grammars for VS Code and Vim/Neovim and an entry for
-  GitHub Linguist, so that <code>.triad</code> (canonical) and <code>.td</code> (historic alias)
-  files are recognised everywhere. The project website exposes the learning curve, the charts of the
-  phases and an animated demo of typing a Triad-Core program executed by the interpreter. The
-  repository is organised to be explored: progressive examples in <code>examples/</code>,
-  guided tasks in <code>ai/tasks/</code>, the LLM benchmark in <code>ai/</code>. Every change is
-  accompanied by tests and by updates to STATUS.md, BOOTSTRAP.md and CHANGELOG.md.</p>
-  <p>This book is written for the 0.2.0 standard. In case of divergence between the handbook and the
-  specification, the specification prevails: SPEC.md and SPEC-CORE.md are the normative source of
-  truth, and this volume is the study path through them, with explanations, examples and
-  exercises.</p>
+  <h1>Il libro di Triad</h1>
+  <p>Triad 2.0 è un linguaggio di programmazione autonomo, definito da una specifica normativa
+  indipendente da qualsiasi implementazione. Non è un dialetto di Julia, Prolog o Lisp, pur avendo
+  preso da ciascuno di essi idee fondamentali: blocchi <code>function … end</code> e tipi con
+  <code>::</code> da Julia, unificazione con occurs-check, backtracking e <code>solve</code> con
+  variabili logiche <code>?x</code> da Prolog, codice come dato e macro da Lisp. Ciò che è proprio
+  di Triad, e non in prestito, è l'integrazione dei tre modelli — imperativo, logico,
+  metaprogrammatorio — in una sola sintassi a blocchi, accompagnata da errori come dati
+  (<code>Err</code>), contratti (<code>requires</code>/<code>ensures</code>), budget
+  (<code>with budget</code>), tracce (<code>with trace</code>) ed effetti dichiarati
+  (<code>!io</code>, <code>!state</code>) come parte del linguaggio e non di una libreria.</p>
+  <p>Il linguaggio si presenta in due profili di conformità. Triad-Core è il sottoinsieme di
+  bootstrap: valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è
+  lo standard completo: tipi dichiarati, multiple dispatch, logica integrata, macro, contratti,
+  budget, tracce, effetti. Ogni programma Core è anche un programma Full valido e deve comportarsi
+  allo stesso modo. L'interprete di riferimento JavaScript esegue Triad-Core; il seed S0 Windows
+  è un interprete in codice macchina x86-64 distinto e più limitato. Il seed Linux attuale è
+  ancora un test di avvio E0, non un interprete. Il piano di bootstrap prevede S1 (un interprete
+  Triad scritto in Triad-Core), S2
+  (compilatore nativo), S3 (self-hosting) e S4 (parità cross-platform).</p>
+  <p>Questo libro è il percorso di studio del linguaggio per come è definito dallo standard. Il
+  Manuale e il Tutorial alternano spiegazioni concettuali, semantica tecnica, esempi annotati,
+  esercizi e riferimenti alla specifica. Ciascun testo presenta i concetti nel punto in cui servono
+  e distingue i costrutti eseguibili oggi da quelli definiti dallo standard ma non ancora supportati.
+  Il Tutorial accompagna prima il lettore nei costrutti Core eseguibili oggi, poi
+  presenta Triad-Full come standard da studiare e infine mostra come leggere le implementazioni,
+  il bootstrap e la suite di conformance nel repository. Le etichette dei blocchi distinguono il
+  codice eseguibile dal codice definito dallo standard ma non ancora supportato dal runtime.</p>
+  <p>Il progetto è rilasciato sotto licenza MIT. La specifica normativa è in SPEC.md (standard
+  0.2.0), il sottoinsieme di bootstrap in SPEC-CORE.md, la suite di conformance in
+  conformance/ con golden verificabili. Il repository include anche un benchmark per la generazione
+  di codice Triad da LLM (ai/), grammatiche per VS Code e Vim, e un sito con la curva di
+  apprendimento. L'obiettivo è un linguaggio autonomo e riconosciuto: standard proprio,
+  conformance eseguibile, estensione .triad, tooling editor, bootstrap senza linguaggi ospiti e,
+  infine, self-hosting.</p>
+  <p>La suite di conformance è il contratto eseguibile del linguaggio. L'interprete di riferimento
+  JavaScript passa tutti i 37 casi Core; il seed Windows passa i casi supportati e lascia fuori
+  per default il caso <code>liste</code>, che richiede l'indicizzazione standard. Il seed Linux è
+  ancora allo stadio E0 e stampa solo un messaggio di avvio. Il profilo Full è definito dallo
+  standard, ma il runtime corrente non implementa ancora il linguaggio completo; gli output
+  etichettati golden sono risultati attesi conservati nei file della suite. Ogni caso Core dichiara
+  output e codice di uscita, così che un'implementazione possa essere confrontata con un contratto
+  riproducibile, non con un esempio isolato.</p>
+  <p>Gli strumenti per gli editor includono grammatiche per VS Code e Vim/Neovim e una voce per
+  GitHub Linguist, così che i file <code>.triad</code> (canonica) e <code>.td</code> (alias storico)
+  siano riconosciuti ovunque. Il sito del progetto espone la curva di apprendimento, i grafici delle
+  fasi e una demo animata della battitura di un programma Triad-Core eseguito dall'interprete. Il
+  repository è organizzato per essere esplorato: esempi progressivi in <code>examples/</code>,
+  task guidati in <code>ai/tasks/</code>, benchmark LLM in <code>ai/</code>. Ogni modifica è
+  accompagnata da test e da aggiornamenti a STATUS.md, BOOTSTRAP.md e CHANGELOG.md.</p>
+  <p>Questo libro è scritto per lo standard 0.2.0. In caso di divergenza tra manuale e specifica,
+  prevale la specifica: SPEC.md e SPEC-CORE.md sono la fonte di verità normativa, e questo volume
+  ne è il percorso di studio, con spiegazioni, esempi ed esercizi.</p>
 </div>`;
 
 const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
 <meta charset="utf-8">
-<title>The Book of Triad</title>
+<title>Il libro di Triad</title>
 <style>
   @page { size: 152.4mm 228.6mm; margin: 15mm 12mm; @bottom-center { content: counter(page); font-size: 9pt; color: #666; } }
   @page :first { margin: 0; }
@@ -207,10 +218,10 @@ const html = `<!DOCTYPE html>
   .cover { page-break-after: always; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; text-align: center; }
   .cover img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; margin: auto; }
   .index-page { page-break-after: always; }
-  .contents-list { list-style: none; padding-left: 0; }
-  .contents-list .sl1 { font-weight: bold; margin-top: 8pt; }
-  .contents-list .sl2 { padding-left: 14pt; font-size: 10pt; }
-  .contents-list .sl3 { padding-left: 28pt; font-size: 9pt; }
+  .sommario-list { list-style: none; padding-left: 0; }
+  .sommario-list .sl1 { font-weight: bold; margin-top: 8pt; }
+  .sommario-list .sl2 { padding-left: 14pt; font-size: 10pt; }
+  .sommario-list .sl3 { padding-left: 28pt; font-size: 9pt; }
   .sommario-intro { font-style: italic; color: #555; font-size: 10pt; }
   .preface-page { page-break-after: always; }
   .backcover-page { page-break-before: always; }
@@ -231,11 +242,7 @@ const html = `<!DOCTYPE html>
 </style>
 </head>
 <body>
-  <div class="cover" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;background:#0d0a0f;color:#f5f5f4">
-    <img src="triad-logo.webp" alt="Triad logo" style="max-width:38%;margin-bottom:18pt" />
-    <h1 style="border:none;font-size:20pt;margin:0 0 6pt 0">The Book of Triad</h1>
-    <p style="text-align:center;font-style:italic;color:#a8a29e;margin:0">Learn the language and the code of the triad2.0 project,<br />from the first programs to the machine-code seed</p>
-  </div>
+  <div class="cover" style="text-align:center"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
   <div class="preface-page">
     ${prefaceHtml}
   </div>
@@ -243,7 +250,7 @@ const html = `<!DOCTYPE html>
     ${tocHtml}
   </div>
   <div class="part">
-    ${manualHtml}
+    ${manualeHtml}
   </div>
   <div class="part">
     ${tutorialHtml}
@@ -256,4 +263,4 @@ const html = `<!DOCTYPE html>
 
 writeFileSync(join(outDir, 'libro.html'), html, 'utf8');
 copyFileSync(join(root, 'docs', 'triad-logo.webp'), join(outDir, 'triad-logo.webp'));
-console.log('wrote', join(outDir, 'libro.html'));
+console.log('scritto', join(outDir, 'libro.html'));

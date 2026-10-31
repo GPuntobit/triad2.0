@@ -520,13 +520,9 @@ function commandExists(cmd) {
       // with the operator's permissions, and trusting %SystemRoot% blindly
       // would let an attacker-controlled value redirect that lookup — hence
       // getWindowsSystemDir() validates and falls back instead of accepting
-      // any environment value. The existence check + plain-name fallback
-      // mirrors upstream hardening so non-standard installs still probe via
-      // PATH only when no trusted where.exe is present.
+      // any environment value.
       const whereExe = path.win32.join(getWindowsSystemDir(), 'where.exe');
-      const result = fs.existsSync(whereExe)
-        ? spawnSync(whereExe, [cmd], { stdio: 'pipe' })
-        : spawnSync('where', [cmd], { stdio: 'pipe' });
+      const result = spawnSync(whereExe, [cmd], { stdio: 'pipe' });
       return result.status === 0;
     } else {
       const result = spawnSync('which', [cmd], { stdio: 'pipe' });

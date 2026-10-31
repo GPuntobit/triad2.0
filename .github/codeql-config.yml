@@ -1,0 +1,15 @@
+# CodeQL analysis configuration.
+# The C# scan previously ran in no-build mode, which left database quality
+# metrics below threshold (calls with resolved target ~53%, expressions with
+# known type ~63%; thresholds are 85%). With cli/windows-gui/TriadDesktop.csproj
+# present, the autobuild engine can resolve the WinForms references and lift
+# those metrics above threshold.
+name: Triad security analysis
+
+queries:
+  - uses: security-and-quality
+
+paths-ignore:
+  - node_modules
+  - obsidian-triad
+  - tools/webcmd-graphify

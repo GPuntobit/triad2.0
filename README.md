@@ -179,26 +179,29 @@ seed/windows-x86_64/        seed.hex (source) and seed.exe: Triad-Core interpret
 seed/linux-x86_64/          first Linux ELF (E0): write/exit syscalls, "Triad seed Linux OK"
 seed/dev/                   seed generators and triad_core.cjs reference interpreter
 selfhost/                   S1: Triad interpreter written in Triad-Core (in progress)
-scripts/                    build helpers (book/EPUB/DOCX, charts, Windows seed runners)
-tools/webcmd-graphify/      Graphify webcmd plugin (code-graph tools for agents)
+scripts/docs/               book/EPUB/DOCX builders, download chart, Triad-generated site
+scripts/seed-runner/        Windows batch harnesses for seed experiments
+scripts/experiments/        LLM streaming/translation experiment scripts
+tools/                      developer utilities (webcmd-graphify plugin, push helper)
 editors/                    VS Code, Vim/Neovim, and Linguist entry
 examples/*.triad, *.td      Triad examples (.triad canonical, .td historical alias)
+tests/security/             repeatable security tests (where.exe trust, git path, ReDoS, pin SHA)
 ai/                         LLM generation benchmark + verifier (development tool)
 docs/                       GitHub Pages site and long-form documentation
 docs/MANUALE.md             full manual (Core + Full presented together)
-docs/TUTORIAL-RU.md         Russian translation of TUTORIAL.md
 docs/releases/              per-version release notes
+docs/worklog/               PR descriptions (current draft + archived)
+tutorial/                   complete usage tutorial + translations (.md, .it, .ru, .zh, .ja)
 obsidian-triad/             Obsidian vault with index and Graphify graph of the repository
 .github/workflows/          CI (ci.yml) and Pages publishing (pages.yml, static.yml)
 BOOTSTRAP.md                plan for independence from Julia and any other language
 SPEC.md                     Triad standard: normative specification (0.2.0)
 SPEC-CORE.md                Triad-Core profile (normative, for self-hosted bootstrap)
-STATUS.md                   bootstrap progress status and roadmap
-TASK.md / PULL_REQUEST.md   task log and PR description template
+STATUS.md / TASK.md         bootstrap progress status, roadmap, task log
 SECURITY.md                 vulnerability reporting policy
 plan.md                     work plan (checklist)
 VERSION / CHANGELOG.md      standard version and history
-tutorial/TUTORIAL.md        complete usage tutorial
+README.md / tutorial/TUTORIAL.md  introduction and complete usage tutorial
 LICENSE                     MIT license (open source)
 ```
 

@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    MSBuild project for TriadDesktop.cs.
+
+    Purpose: give C# source scanners (CodeQL, Sonar, Codacy) a buildable
+    project so the scan runs in autobuild/manual-build mode instead of
+    no-build mode. In no-build mode the analyzer cannot resolve .NET
+    Framework references or NuGet dependencies, which is why quality
+    metrics fall below threshold (e.g. "percentage of calls with call
+    target", "percentage of expressions with known type").
+
+    This file is NOT required by the shipped production build path:
+    cli/windows-gui/build.ps1 compiles directly with csc.exe from the
+    .NET Framework (no SDK needed on end-user machines). The two paths
+    must stay in sync — if you add a source file or reference here,
+    update build.ps1's /reference list accordingly.
+
+    Build locally (requires .NET SDK):
+      dotnet build cli/windows-gui/TriadDesktop.csproj -c Release
+  -->
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>TriadDesktop</AssemblyName>
+    <RootNamespace>TriadDesktop</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <!-- Single legacy source file; keep explicit to avoid globbing other .cs files. -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- Deterministic output helps scanners map findings to exact sources. -->
+    <Deterministic>true</Deterministic>
+    <DebugType>portable</DebugType>
+    <!-- Legacy source predates nullable reference types; keep analyzer quiet. -->
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="TriadDesktop.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Mirrors build.ps1: System, System.Drawing, System.Windows.Forms, System.Core are
+         implicit via UseWindowsForms + net48, listed explicitly only where needed. -->
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+</Project>

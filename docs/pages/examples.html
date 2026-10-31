@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Examples — Triad 2.0</title>
+<meta name="description" content="Runnable Triad examples: .triad sources with the canonical .td alias, and how to run them." />
+<link rel="stylesheet" href="../assets/css/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js" integrity="sha384-JEyTNhjM6R1ElGoJns4U2Ln4ofPcqzSsynQkmEc/KGy6336qAZl70tDLufbkla+3" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+</head>
+<body>
+<div id="site-header"></div>
+<main class="container">
+  <div class="doc-layout">
+    <aside class="doc-sidebar">
+      <h4>Documentation</h4>
+      <ul>
+        <li><a href="getting-started.html">Get started</a></li>
+        <li><a href="language-tour.html">Tour</a></li>
+        <li><a href="spec.html">Spec</a></li>
+        <li><a href="tutorial.html">Tutorial</a></li>
+        <li><a href="apprendimento.html">Learning</a></li>
+        <li><a href="examples.html" class="active">Examples</a></li>
+        <li><a href="conformance.html">Conformance</a></li>
+        <li><a href="bootstrap.html">Bootstrap</a></li>
+        <li><a href="editors.html">Editor</a></li>
+        <li><a href="ai.html">AI</a></li>
+        <li><a href="status.html">Status</a></li>
+        <li><a href="license.html">License</a></li>
+      </ul>
+    </aside>
+    <article class="doc-content">
+      <h1>Examples</h1>
+      <p>The example sources live in <a href="https://github.com/GPuntobit/triad2.0/tree/main/examples" target="_blank" rel="noopener">examples/</a>. Canonical extension <code>.triad</code>, historical alias <code>.td</code>.</p>
+      <div class="grid grid-2">
+        <div class="card"><h3>benvenuto.triad</h3><p>Welcome to Triad — runs today with the reference interpreter.</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/benvenuto.triad" target="_blank" rel="noopener">Open</a></div>
+        <div class="card"><h3>famiglia.td</h3><p>Family relations and solve (Triad-Full).</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/famiglia.td" target="_blank" rel="noopener">Open</a></div>
+        <div class="card"><h3>garanzie.td</h3><p>requires/ensures contracts (Triad-Full).</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/garanzie.td" target="_blank" rel="noopener">Open</a></div>
+        <div class="card"><h3>hello_shebang.td</h3><p>Executable script with a shebang line (Triad-Full).</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/hello_shebang.td" target="_blank" rel="noopener">Open</a></div>
+        <div class="card"><h3>macro.td</h3><p>Macros and code as data (Triad-Full).</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/macro.td" target="_blank" rel="noopener">Open</a></div>
+        <div class="card"><h3>tour.td</h3><p>Full tour of the features (Triad-Full).</p><a href="https://github.com/GPuntobit/triad2.0/blob/main/examples/tour.td" target="_blank" rel="noopener">Open</a></div>
+      </div>
+      <h2>Running</h2>
+      <div class="code-card"># via launcher (bin/ in PATH)
+triad examples/benvenuto.triad
+# or directly: the native seed on Linux/macOS,
+# the Node fallback everywhere else (Termux included)</div>
+    </article>
+  </div>
+</main>
+<div id="site-footer"></div>
+<script src="../assets/js/app.js"></script>
+<script>
+TriadSite.mount('Examples');
+</script>
+</body>
+</html>

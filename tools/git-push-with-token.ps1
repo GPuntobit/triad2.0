@@ -1,9 +1,9 @@
-# scripts/git-push-with-token.ps1
+# tools/git-push-with-token.ps1
 # Automatizza git add/commit/push usando un token GitHub presente in .git-credentials
 # (o nella variabile d'ambiente GITHUB_TOKEN).
 #
 # Uso:
-#   .\scripts\git-push-with-token.ps1 -Message "feat: ..." [-Branch main]
+#   .\tools\git-push-with-token.ps1 -Message "feat: ..." [-Branch main]
 #
 # Prerequisiti:
 #   - Copia .git-credentials.example in .git-credentials e inserisci il token.

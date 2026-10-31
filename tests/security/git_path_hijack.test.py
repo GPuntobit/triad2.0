@@ -8,10 +8,15 @@ import os
 import sys
 from pathlib import Path
 
+import importlib.util
+
 REPO = Path(__file__).resolve().parents[2]
 SCRIPT = REPO / "scripts" / "docs" / "download_chart.py"
-sys.path.insert(0, str(REPO / "scripts"))
-import docs.download_chart as dc  # noqa: E402
+
+_spec = importlib.util.spec_from_file_location("download_chart", SCRIPT)
+dc = importlib.util.module_from_spec(_spec)
+# load without executing module-level side effects beyond definitions
+_spec.loader.exec_module(dc)
 
 
 def main() -> int:
@@ -22,12 +27,12 @@ def main() -> int:
         "shell=False explicit": "shell=False" in src,
         "OSError handled": "OSError" in src,
         "FileNotFoundError handled": "FileNotFoundError" in src,
-        "cwd pinned to repo root": "cwd=repo_root" in src,
+        "cwd pinned to repo root": ("cwd=repo_root" in src or "cwd=Path(__file__).resolve().parents[2]" in src),
     }.items():
         if not cond:
             failures.append(label)
 
-    resolved = dc.resolve_git_path(REPO)
+    resolved = dc.resolve_git_path()
     if resolved is not None:
         try:
             Path(resolved).resolve().relative_to(REPO.resolve())
@@ -40,7 +45,7 @@ def main() -> int:
     old_path = os.environ.get("PATH")
     os.environ["PATH"] = str(REPO)
     try:
-        resolved2 = dc.resolve_git_path(REPO)
+        resolved2 = dc.resolve_git_path()
         if resolved2 is not None:
             try:
                 Path(resolved2).resolve().relative_to(REPO.resolve())
@@ -59,4 +64,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-PY
