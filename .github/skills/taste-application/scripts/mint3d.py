@@ -37,7 +37,6 @@ import argparse
 import json
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
 from taste import falapi
 from taste import pack as pack_mod

@@ -30,7 +30,7 @@ import urllib.request
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from collections import defaultdict
 from typing import Optional
 

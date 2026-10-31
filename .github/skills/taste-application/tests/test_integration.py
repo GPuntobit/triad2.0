@@ -7,8 +7,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
-from unittest import mock
 
 from tasteforge.integration import build_application_bundle, validate_application_bundle
 
@@ -109,13 +109,14 @@ class ApplicationBundleTests(unittest.TestCase):
                          {"video1", "video2", "video3", "audio1"})
         disabled = next(c for c in bundle["protected_stack"] if c["track"] == "video3")
         self.assertEqual(disabled["clip"], self.snapshot["timeline_readback"]["video3"][0])
-        self.assertEqual(validate_application_bundle(bundle), None)
+        # validate_application_bundle returns None when the bundle is valid.
+        self.assertIsNone(validate_application_bundle(bundle))
         bundle["audio"][0]["timeline_range"][1] = 116
         self.assertEqual(self.config, before)
 
     def test_deterministic_bundle_and_no_provider_calls(self):
-        with mock.patch("socket.socket", side_effect=AssertionError("network forbidden")), \
-             mock.patch("subprocess.run", side_effect=AssertionError("process forbidden")):
+        with unittest.mock.patch("socket.socket", side_effect=AssertionError("network forbidden")), \
+             unittest.mock.patch("subprocess.run", side_effect=AssertionError("process forbidden")):
             self.assertEqual(build_application_bundle(self.config, PAYLOAD),
                              build_application_bundle(self.config, PAYLOAD))
 
@@ -293,11 +294,11 @@ class ApplicationBundleTests(unittest.TestCase):
         def cloud_stat(target, *args, **kwargs):
             info = actual_stat(target, *args, **kwargs)
             if target == path.name:
-                return mock.Mock(st_mode=info.st_mode, st_flags=0x40000000)
+                return unittest.mock.Mock(st_mode=info.st_mode, st_flags=0x40000000)
             return info
 
-        with mock.patch("tasteforge.integration.os.stat", side_effect=cloud_stat), \
-             mock.patch("tasteforge.integration.os.read", wraps=os.read) as read:
+        with unittest.mock.patch("tasteforge.integration.os.stat", side_effect=cloud_stat), \
+             unittest.mock.patch("tasteforge.integration.os.read", wraps=os.read) as read:
             with self.assertRaisesRegex(ValueError, "resident"):
                 build_application_bundle(self.config, PAYLOAD)
             # Only baseline project/snapshot were read; the placeholder never opened.
@@ -340,7 +341,7 @@ class ApplicationBundleTests(unittest.TestCase):
     def test_exponent_fps_is_rejected_before_fraction_allocation(self):
         self.snapshot["settings"]["timelineFrameRate"] = "1e1000000000"
         self.config["baseline"]["snapshot_file"] = self.artifact("snapshot.json", self.snapshot)
-        with mock.patch("tasteforge.integration.Fraction", side_effect=AssertionError("unsafe allocation")):
+        with unittest.mock.patch("tasteforge.integration.Fraction", side_effect=AssertionError("unsafe allocation")):
             with self.assertRaisesRegex(ValueError, "fps"):
                 build_application_bundle(self.config, PAYLOAD)
 
@@ -374,7 +375,7 @@ class ApplicationBundleTests(unittest.TestCase):
                 (parent / "source.mov").write_bytes(b"different bytes")
             return data
 
-        with mock.patch("tasteforge.integration.os.read", side_effect=replace_parent):
+        with unittest.mock.patch("tasteforge.integration.os.read", side_effect=replace_parent):
             with self.assertRaisesRegex(ValueError, "changed"):
                 integration._artifact(record)
 
@@ -415,7 +416,7 @@ class ApplicationBundleTests(unittest.TestCase):
     def test_growing_artifact_is_rejected_before_accumulating_unbounded_data(self):
         from tasteforge import integration
         record = self.config["baseline"]["project_file"]
-        with mock.patch("tasteforge.integration.os.read", side_effect=[b"x" * (record["bytes"] + 1), b""]):
+        with unittest.mock.patch("tasteforge.integration.os.read", side_effect=[b"x" * (record["bytes"] + 1), b""]):
             with self.assertRaisesRegex(ValueError, "byte count exceeded"):
                 integration._artifact(record)
 

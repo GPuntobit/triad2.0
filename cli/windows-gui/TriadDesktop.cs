@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -315,7 +316,7 @@ internal sealed class TriadDesktopForm : Form
         {
             Environment.GetEnvironmentVariable("TRIAD_HOME"),
             applicationDirectory,
-            Path.GetFullPath(Path.Combine(applicationDirectory, "..", "..")),
+            SafeCombine(applicationDirectory, "..", ".."),
             Environment.CurrentDirectory
         };
 
@@ -357,45 +358,94 @@ internal sealed class TriadDesktopForm : Form
     private static bool IsProjectRoot(string path)
     {
         return Directory.Exists(path)
-            && File.Exists(Path.Combine(path, "conformance", "run.mjs"))
-            && Directory.Exists(Path.Combine(path, "seed"));
+            && FileExistsSafe(path, "conformance", "run.mjs")
+            && DirectoryExistsSafe(path, "seed");
+    }
+
+    // Path.Combine silently drops earlier segments if a later one is rooted
+    // (e.g. an absolute or drive-relative path). SafeCombine rejects that by
+    // requiring every segment to be a plain relative name without a root.
+    private static string SafeCombine(params string[] parts)
+    {
+        foreach (string part in parts.Skip(1))
+        {
+            if (Path.IsPathRooted(part))
+            {
+                throw new ArgumentException(
+                    "Path segment must not be rooted: " + part, nameof(parts));
+            }
+        }
+        return Path.Combine(parts);
+    }
+
+    // Returns null instead of throwing when a later segment is rooted; callers
+    // that probe candidate paths treat null as "this candidate does not exist".
+    private static string TrySafeCombine(params string[] parts)
+    {
+        try
+        {
+            return SafeCombine(parts);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    private static bool FileExistsSafe(params string[] parts)
+    {
+        string path = TrySafeCombine(parts);
+        return path != null && File.Exists(path);
+    }
+
+    private static bool DirectoryExistsSafe(params string[] parts)
+    {
+        string path = TrySafeCombine(parts);
+        return path != null && Directory.Exists(path);
     }
 
     private static string FindCliPath(string root)
     {
         if (root == null)
         {
-            string[] standaloneCandidates =
+            // Probe candidates in place; a rooted later segment would make
+            // Path.Combine silently drop the base, so use the safe helpers.
+            if (FileExistsSafe(GetApplicationDirectory(), "triad-cli.exe"))
             {
-                Path.Combine(GetApplicationDirectory(), "triad-cli.exe"),
-                Path.Combine(Environment.CurrentDirectory, "cli", "dist", "triad-cli.exe"),
-                Path.Combine(Environment.CurrentDirectory, "bin", "triad-cli.exe"),
-                Path.Combine(Environment.CurrentDirectory, "triad-cli.exe")
-            };
-            foreach (string candidate in standaloneCandidates)
+                return Path.GetFullPath(
+                    SafeCombine(GetApplicationDirectory(), "triad-cli.exe"));
+            }
+            if (FileExistsSafe(Environment.CurrentDirectory, "cli", "dist", "triad-cli.exe"))
             {
-                if (File.Exists(candidate))
-                {
-                    return Path.GetFullPath(candidate);
-                }
+                return Path.GetFullPath(
+                    SafeCombine(Environment.CurrentDirectory, "cli", "dist", "triad-cli.exe"));
+            }
+            if (FileExistsSafe(Environment.CurrentDirectory, "bin", "triad-cli.exe"))
+            {
+                return Path.GetFullPath(
+                    SafeCombine(Environment.CurrentDirectory, "bin", "triad-cli.exe"));
+            }
+            if (FileExistsSafe(Environment.CurrentDirectory, "triad-cli.exe"))
+            {
+                return Path.GetFullPath(
+                    SafeCombine(Environment.CurrentDirectory, "triad-cli.exe"));
             }
 
             return null;
         }
 
-        string[] candidates =
+        // Same probing as above but relative to the discovered project root.
+        if (FileExistsSafe(root, "cli", "dist", "triad-cli.exe"))
         {
-            Path.Combine(root, "cli", "dist", "triad-cli.exe"),
-            Path.Combine(root, "bin", "triad-cli.exe"),
-            Path.Combine(root, "triad-cli.exe")
-        };
-
-        foreach (string candidate in candidates)
+            return Path.GetFullPath(SafeCombine(root, "cli", "dist", "triad-cli.exe"));
+        }
+        if (FileExistsSafe(root, "bin", "triad-cli.exe"))
         {
-            if (File.Exists(candidate))
-            {
-                return Path.GetFullPath(candidate);
-            }
+            return Path.GetFullPath(SafeCombine(root, "bin", "triad-cli.exe"));
+        }
+        if (FileExistsSafe(root, "triad-cli.exe"))
+        {
+            return Path.GetFullPath(SafeCombine(root, "triad-cli.exe"));
         }
 
         return null;

@@ -43,7 +43,8 @@ def translate_text(text):
     return '\n'.join(res)
 
 def translate_markdown(path_in, path_out):
-    lines = open(path_in, encoding='utf-8').read().split('\n')
+    with open(path_in, encoding='utf-8') as f:
+        lines = f.read().split('\n')
     out = []
     in_code = False
     buffer = []
