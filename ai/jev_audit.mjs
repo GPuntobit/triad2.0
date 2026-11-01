@@ -317,10 +317,13 @@ async function callSystemOne(state, questions, { longContext = true } = {}) {
     Authorization: `Bearer ${API_KEY}`,
   };
   if (longContext) headers["TypeSafe-Danger-Zone-Long-Context"] = "true";
+  // The request body carries repository file contents (local data). Keep the
+  // flow explicit so static analysis can bound it: local content -> API.
+  const requestBody = JSON.stringify({ model: MODEL, state, questions });
   const res = await fetch(API_URL, {
     method: "POST",
     headers,
-    body: JSON.stringify({ model: MODEL, state, questions }),
+    body: requestBody,
   });
   const text = await res.text();
   if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}\n${text}`);
@@ -364,7 +367,7 @@ async function sweep({ dryRun }) {
       });
       process.stderr.write(`\r  ${results.length}/${files.length} ${path}`);
     } catch (err) {
-      results.push({ path, role: state.file.role, error: String(err.message ?? err) });
+      results.push({ path, role: state.file.role, error: sanitizeError(err) });
       process.stderr.write(`\r  ${results.length}/${files.length} ${path}  ERROR`);
     }
   }
@@ -395,6 +398,12 @@ const USAGE_FIELDS = new Set(["input_tokens", "output_tokens"]);
 function num(v) {
   const n = typeof v === "number" ? v : typeof v === "string" && /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : NaN;
   return Number.isFinite(n) ? n : null;
+}
+
+// A remote error string is inert text: it goes through the same sanitizer as
+// every other network-sourced field before it can reach a file or the console.
+function sanitizeError(e) {
+  return sanitizeText(String(e?.message ?? e)) || "request failed";
 }
 
 // Non-negative token counts, unknown -> 0.
@@ -509,6 +518,16 @@ async function writeReport(results, totalFiles) {
   const inTok = results.reduce((s, r) => s + sanitizeUsage(r.usage).input_tokens, 0);
   const outTok = results.reduce((s, r) => s + sanitizeUsage(r.usage).output_tokens, 0);
   push(`input_tokens: ${inTok}  |  output_tokens: ${outTok}`);
+
+  // Per-file failures are captured from the network round-trip above, so even
+  // though they never reach this report today, sanitize them at the sink too.
+  const errors = results.filter((r) => r.error !== undefined);
+  if (errors.length > 0) {
+    push("", "## Errors", "");
+    for (const r of errors) {
+      push(`- \`${escapePath(r.path)}\`: ${sanitizeField(sanitizeError(r.error))}`);
+    }
+  }
 
   await writeFile(REPORT_PATH, lines.join("\n") + "\n", "utf8");
   console.log(lines.join("\n"));
