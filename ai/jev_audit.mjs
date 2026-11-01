@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// jev_audit.mjs — TypeSafe / Jev audit runner for the Triad repository.
+// jev_audit.mjs ÔÇö TypeSafe / Jev audit runner for the Triad repository.
 //
 // Zero dependencies (Node >= 18 for global fetch). Reads the repo, builds one
 // System One state per file, asks Jev a typed question suite, and aggregates the
@@ -17,7 +17,7 @@
 // question -- it is one judgment per file, aggregated in code.
 
 import { constants } from "node:fs";
-import { readFile, writeFile, lstat, stat, realpath, open } from "node:fs/promises";
+import { readFile, writeFile, readdir, lstat, stat, realpath, open } from "node:fs/promises";
 import { join, relative, extname, dirname, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -83,10 +83,33 @@ async function trackedFiles() {
     if (SKIP_NAMES.has(base)) continue;
     if (!TEXT_EXT.has(extname(rel))) continue;
     const path = join(ROOT, rel);
-    const info = await lstat(path);
-    if (info.isSymbolicLink() || !info.isFile()) continue;
-    if (!isWithinRoot(await realpath(path))) continue;
-    out.push(rel);
+    const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);
+    let file;
+    try {
+      file = await open(path, flags);
+    } catch {
+      continue;
+    }
+    try {
+      const openedInfo = await file.stat();
+      if (!openedInfo.isFile()) continue;
+
+      const resolved = await realpath(path);
+      if (!isWithinRoot(resolved)) continue;
+
+      const resolvedInfo = await stat(resolved);
+      if (openedInfo.ino && resolvedInfo.ino &&
+          (openedInfo.dev !== resolvedInfo.dev || openedInfo.ino !== resolvedInfo.ino)) continue;
+
+      const currentPath = await realpath(path);
+      if (currentPath !== resolved || !isWithinRoot(currentPath)) continue;
+
+      out.push(rel);
+    } catch {
+      continue;
+    } finally {
+      await file.close();
+    }
   }
   return out;
 }
@@ -141,7 +164,7 @@ async function readTrackedFile(rel) {
 // ---------------------------------------------------------------------------
 
 async function readIfExists(path) {
-  try { return await readFile(join(ROOT, path), "utf8"); } catch { return ""; }
+  try { return await readTrackedFile(path); } catch { return ""; }
 }
 
 // Flags that belong to other tools and must not be mistaken for Triad CLI flags.
@@ -464,10 +487,10 @@ function sanitizeText(v) {
   if (typeof v !== "string") return "";
   const cleaned = v
     .replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, " ")
-    .replace(/[<>]/g, "")
+    .replace(/[<>`|]/g, "")
     .replace(/\s+/g, " ")
     .trim();
-  return cleaned.length > MAX_FIELD_LEN ? cleaned.slice(0, MAX_FIELD_LEN) + "…" : cleaned;
+  return cleaned.length > MAX_FIELD_LEN ? cleaned.slice(0, MAX_FIELD_LEN) + "..." : cleaned;
 }
 
 // Single choke point for every label taken from the network.
@@ -480,7 +503,7 @@ function sanitizeField(v, fallback = "-") {
 // Paths come from `git ls-files`, not the network, but they still need to be
 // inert inside the table.
 function escapePath(p) {
-  return String(p).replace(/\\/g, "\\\\").replace(/[|`\r\n]/g, " ");
+  return String(p).replace(/\\/g, "\\\\").replace(/[|`\r\n<>]/g, " ");
 }
 
 // Expected defect count from the Score distribution: level index is the count
@@ -500,7 +523,7 @@ function expectedCount(probs) {
 }
 
 async function writeReport(results, totalFiles) {
-  // Report path is a fixed constant — no remote data ever reaches join() here.
+  // Report path is a fixed constant ÔÇö no remote data ever reaches join() here.
   const REPORT_PATH = join(ROOT, "ai", "jev_audit_report.md");
 
   const flagged = results.filter((r) => (r.has_defect ?? 0) >= 0.5);
@@ -571,7 +594,13 @@ async function writeReport(results, totalFiles) {
 const WINDOW_LINES = 40;
 
 async function locate(path, { dryRun }) {
-  const content = await readFile(join(ROOT, path), "utf8");
+  let content;
+  try {
+    content = await readTrackedFile(path);
+  } catch (err) {
+    console.error(`Refusing to audit file: ${err.message}`);
+    process.exit(2);
+  }
   const facts = await knownFacts();
   const all = content.split("\n");
   const { role, contract } = roleFor(path);
