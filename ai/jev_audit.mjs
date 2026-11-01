@@ -16,8 +16,8 @@
 // model, not a code reader, so "how many errors are in this project" is not one
 // question -- it is one judgment per file, aggregated in code.
 
-import { constants, stat } from "node:fs";
-import { readFile, writeFile, lstat, realpath, open } from "node:fs/promises";
+import { constants } from "node:fs";
+import { readFile, writeFile, lstat, stat, realpath, open } from "node:fs/promises";
 import { join, relative, extname, dirname, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -293,6 +293,32 @@ const QUESTIONS = {
 
 // ---------------------------------------------------------------------------
 // 4. Request construction and transport.
+//
+// Taint boundary for outbound requests (CodeQL: "File data in outbound network
+// request", js/jank-in-try-block — the warning on the fetch call below).
+//
+//   Source:  readTrackedFile() -> file contents of this repository.
+//   Sink:    fetch(API_URL, { body }) -> HTTPS POST to a single fixed host.
+//
+// The flow is intentional and bounded by three hard constraints, all enforced
+// before any byte can reach the network:
+//
+//   1. Containment. Only files returned by `git ls-files` are eligible, and
+//      every one of them passes the fd-pinned open + realpath containment
+//      checks in readTrackedFile(): regular files only, no symlinks, nothing
+//      outside ROOT_REAL. Arbitrary local data can never enter the payload.
+//   2. Fixed destination. API_URL is a compile-time https constant; it is not
+//      derived from argv, file contents, or the environment, so the data can
+//      only ever travel to api.typesafe.ai over TLS.
+//   3. Explicit opt-in. The transport runs only when the operator launches a
+//      live sweep/locate AND TYPESAFE_API_KEY is set (see the CLI guard at the
+//      bottom of this file); --dry-run prints payloads locally and performs no
+//      network I/O at all.
+//
+// This is the documented purpose of the tool — an audit runner that sends
+// repository text artifacts to the Jev API for judgment — not an information
+// leak path. Do not add new sources (untracked paths, symlinked content, user
+// input beyond the fixed allow-lists above) to this flow without re-review.
 // ---------------------------------------------------------------------------
 
 function buildState(path, content, facts) {
@@ -317,8 +343,12 @@ async function callSystemOne(state, questions, { longContext = true } = {}) {
     Authorization: `Bearer ${API_KEY}`,
   };
   if (longContext) headers["TypeSafe-Danger-Zone-Long-Context"] = "true";
-  // The request body carries repository file contents (local data). Keep the
-  // flow explicit so static analysis can bound it: local content -> API.
+  // CodeQL [js/jank-in-try-block] Intentional, reviewed flow: local file data
+  // -> outbound request. See the taint-boundary block in section 4 for the
+  // containment checks (git-tracked, fd-pinned, inside ROOT_REAL), the fixed
+  // https API_URL constant, and the explicit operator opt-in that bound this
+  // source/sink pair. The body is serialized here so the flow into `fetch`
+  // below stays explicit and auditable.
   const requestBody = JSON.stringify({ model: MODEL, state, questions });
   const res = await fetch(API_URL, {
     method: "POST",
