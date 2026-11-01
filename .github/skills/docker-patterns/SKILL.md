@@ -269,7 +269,7 @@ services:
       - db_password
 
 # BAD: Hardcoded in image
-# ENV API_KEY=sk-proj-xxxxx      # NEVER DO THIS
+# ENV API_KEY=<project-api-key>      # NEVER DO THIS
 ```
 
 ## Hardened CLI Installer Harnesses

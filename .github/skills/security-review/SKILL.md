@@ -25,7 +25,7 @@ This skill ensures all code follows security best practices and identifies poten
 
 #### FAIL: NEVER Do This
 ```typescript
-const apiKey = "sk-proj-xxxxx"  // Hardcoded secret
+const apiKey = "<project-api-key>"  // Hardcoded secret
 const dbPassword = "password123" // In source code
 ```
 

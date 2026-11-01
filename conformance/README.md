@@ -1,4 +1,4 @@
-﻿# Conformance suite — the executable contract of Triad
+# Conformance suite — the executable contract of Triad
 
 This directory is the **executable specification** used to verify any
 implementation of Triad: the machine-code seed, the Triad-Core implementation

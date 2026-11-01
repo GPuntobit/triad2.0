@@ -1,4 +1,4 @@
-﻿# Plan to complete Triad 2.0 - Updated status
+# Plan to complete Triad 2.0 - Updated status
 
 Runtime note: the machine-code seed is the default runtime for `.triad` (launcher `bin/triad`/`bin/triad.cmd` and CLI); Julia remains a development tool (tests, conformance, packaging).
 

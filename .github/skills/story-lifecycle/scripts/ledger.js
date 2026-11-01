@@ -269,8 +269,12 @@ function recover(dir) {
   return rolledBack;
 }
 
+// Literal-text safety for values interpolated into RegExp sources (ReDoS /
+// pattern-injection guard): escape every regex metacharacter.
+const escapeRegExp = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 function field(md, name) {
-  const m = md.match(new RegExp(`^\\*\\*${name}:\\*\\*[ \\t]*(.+)$`, 'm'));
+  const m = md.match(new RegExp(`^\\*\\*${escapeRegExp(name)}:\\*\\*[ \\t]*(.+)$`, 'm'));
   return m ? m[1].trim() : null;
 }
 

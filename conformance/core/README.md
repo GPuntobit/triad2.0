@@ -1,4 +1,4 @@
-﻿# Triad-Core profile
+# Triad-Core profile
 
 Conformance cases for the **Triad-Core** subset (normative in
 [`../../SPEC-CORE.md`](../../SPEC-CORE.md), profile section 16.1 of [`../../SPEC.md`](../../SPEC.md)).

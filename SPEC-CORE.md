@@ -30,7 +30,7 @@ Included:
 Excluded: `Float` literals, `?x` logical variables, characters (Triad has none),
 macro `@name`, the shebang is still ignored by the seed.
 ## 3. Types and values
-| type | values ​​|
+| type | values |
 |---|---|
 | `Int` | 64-bit signed integers, wrapped arithmetic (two's complement) |
 | `Bool` | `true`, `false` |

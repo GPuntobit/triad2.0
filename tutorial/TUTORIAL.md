@@ -555,7 +555,7 @@ robust you have to think about the types who may arrive, not just the ones you i
 
 The table lists the types that a Core program may encounter:
 
-| type | values ​​| `typeof(v)` |
+| type | values | `typeof(v)` |
 |---|---|---|
 | `Int` | 64-bit signed integers, wrapped arithmetic (two's complement) | `Int` |
 | `Bool` | `true`, `false` | `Bool` |
@@ -2124,7 +2124,7 @@ binary operator or a `rule` comma.
 
 **Full Types** (in addition to Core types):
 
-| type | values ​​|
+| type | values |
 |---|---|
 | `Int`, `Float` (subtypes of `Number`) | `42`, `3.5` |
 | `Expr` | quoted code (`Node`) |
@@ -3058,7 +3058,7 @@ of separate prototypes, each with a small test at the bottom of the file:
 | files | what he feels |
 |---|---|
 | `main.td` | inline environment as flat list `[key, value]`; smoke test in CI (expected `Value: 10`) |
-| `value.td` | 2-bit tagged values ​​simulated with integers (`make_int`, `make_bool`, `as_int`) |
+| `value.td` | 2-bit tagged values simulated with integers (`make_int`, `make_bool`, `as_int`) |
 | `tokenizer.td` | `next_token(chars, pos)` on a source encoded as a list `[length, byte…]`; token `[type, value, pos]` |
 | `parser.td` | recognition of `if`/`end` keywords from ASCII codes |
 | `eval.td`, `program.td` | evaluating numeric tokens, identifiers, assignments, and `println` |

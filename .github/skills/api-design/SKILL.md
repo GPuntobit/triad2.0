@@ -300,11 +300,11 @@ GET /api/v1/orders?fields=id,total,status&include=customer.name
 ```
 # Bearer token in Authorization header
 GET /api/v1/users
-Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+Authorization: Bearer <jwt-access-token>
 
 # API key (for server-to-server)
 GET /api/v1/data
-X-API-Key: sk_live_...
+X-API-Key: <live-api-key>
 ```
 
 ### Authorization Patterns

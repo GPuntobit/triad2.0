@@ -1,4 +1,4 @@
-﻿# Triad and S0 bootstrap status
+# Triad and S0 bootstrap status
 
 Updated after the A03 verification and conformance runner cleanup.
 

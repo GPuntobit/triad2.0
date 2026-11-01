@@ -1,4 +1,4 @@
-﻿/* Learning curve and threshold of Triad 2.0.
+/* Learning curve and threshold of Triad 2.0.
    Stages derived from TUTORIAL.md (chapter order) and MANUALE.md (corresponding chapters).
    Browser: TriadLearningCurve.render(id, opts). Node: node docs/assets/js/learning-curve.js > svg */
 (function (root) {
@@ -170,18 +170,53 @@
   function render(id, kind, opts) {
     const node = document.getElementById(id);
     if (!node) return;
-    node.innerHTML = kind === 'stages' ? stagesSVG() : curveSVG(opts);
-    const svg = node.querySelector('svg');
+    // Parse the generated SVG as XML and move the node in with replaceChildren:
+    // no innerHTML, so no part of the string can ever be interpreted as HTML.
+    const svgString = kind === 'stages' ? stagesSVG() : curveSVG(opts);
+    const parsed = new DOMParser().parseFromString(svgString, 'image/svg+xml');
+    const svg = parsed.documentElement;
+    if (parsed.getElementsByTagName('parsererror').length > 0 || svg.namespaceURI !== 'http://www.w3.org/2000/svg') return;
     svg.removeAttribute('width'); svg.removeAttribute('height');
     svg.style.width = '100%'; svg.style.height = 'auto'; svg.style.display = 'block';
+    node.replaceChildren(document.importNode(svg, true));
   }
 
   function renderTable(id) {
     const node = document.getElementById(id);
     if (!node) return;
-    const rows = STAGES.map(s => `<tr><td><b>${s.id}</b> ${esc(s.name)}</td><td>${s.tut}</td><td>${s.man}</td>` +
-      `<td>${s.diff}</td><td>${s.prac}%</td><td>${s.group === 'core' ? 'Core' : s.group === 'full' ? 'Full' : 'Project'}</td><td>${esc(s.note)}</td></tr>`).join('');
-    node.innerHTML = `<table><thead><tr><th>Stage</th><th>Tutorial</th><th>Manual</th><th>Difficulty</th><th>Exercisable</th><th>Profile</th><th>Note</th></tr></thead><tbody>${rows}</tbody></table>`;
+    // Build the table with DOM nodes and textContent only: values are inserted
+    // as text, never as markup, so no escaping is needed and no XSS is possible.
+    const cell = (value, tag) => {
+      const c = document.createElement(tag || 'td');
+      c.textContent = String(value);
+      return c;
+    };
+    const table = document.createElement('table');
+    const hr = document.createElement('tr');
+    ['Stage', 'Tutorial', 'Manual', 'Difficulty', 'Exercisable', 'Profile', 'Note']
+      .forEach(h => hr.appendChild(cell(h, 'th')));
+    const thead = document.createElement('thead');
+    thead.appendChild(hr);
+    const tbody = document.createElement('tbody');
+    STAGES.forEach(s => {
+      const tr = document.createElement('tr');
+      const stageCell = document.createElement('td');
+      const b = document.createElement('b');
+      b.textContent = s.id;
+      stageCell.appendChild(b);
+      stageCell.appendChild(document.createTextNode(' ' + s.name));
+      tr.appendChild(stageCell);
+      tr.appendChild(cell(s.tut));
+      tr.appendChild(cell(s.man));
+      tr.appendChild(cell(s.diff));
+      tr.appendChild(cell(s.prac + '%'));
+      tr.appendChild(cell(s.group === 'core' ? 'Core' : s.group === 'full' ? 'Full' : 'Project'));
+      tr.appendChild(cell(s.note));
+      tbody.appendChild(tr);
+    });
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    node.replaceChildren(table);
   }
 
   const api = { STAGES, model, curveSVG, stagesSVG, render, renderTable };

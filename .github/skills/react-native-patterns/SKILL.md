@@ -302,7 +302,7 @@ const { id } = useLocalSearchParams(); fetchUser(id)
 // RIGHT: StyleSheet.create at module scope, or NativeWind className
 
 // WRONG: real secret shipped in the bundle
-const STRIPE_SECRET = 'sk_live_...'
+const STRIPE_SECRET = '<stripe-live-key>'
 // RIGHT: keep privileged calls server-side; ship only public keys protected by backend rules
 ```
 

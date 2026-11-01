@@ -11,7 +11,7 @@ Extends the VS Code Triad CLI with two new capabilities, integrating support for
 - `-n/--native` flag to force native seed; arguments after `--` are passed to the program.
 - Exit code fixed: `1` on non-existent file or parse error, `0` on successful execution.
 #### `triad-cli ext check` and `triad-cli ext package [-o FILE]` (`cli/lib/commands/ext.mjs`, new)
-- **check**: valid `package.json`, `tmLanguage.xml` grammar and `language-configuration.json`; all JSON is parsed and verified; reports name, version, languages ​​and declared extensions.
+- **check**: valid `package.json`, `tmLanguage.xml` grammar and `language-configuration.json`; all JSON is parsed and verified; reports name, version, languages and declared extensions.
 - **package**: Package the `.vsix` using global `vsce` if available, otherwise `npx --yes @vscode/vsce`.
 ### Files touched
 | Files | Change |
