@@ -33,6 +33,7 @@ What the automated path does when Resolve *is* reachable:
 
 from __future__ import annotations
 
+import contextlib
 import argparse
 import os
 import platform
@@ -380,13 +381,12 @@ def run_resolve(
         applied = 0
         for track in range(1, (timeline.GetTrackCount("video") or 1) + 1):
             for item in timeline.GetItemListInTrack("video", track) or []:
-                try:
+                # Best-effort: one clip refusing the LUT must not abort the rest.
+                with contextlib.suppress(Exception):
                     # Node 1 = first node of the clip's grade, which is where a
                     # look LUT belongs so downstream nodes can trim it.
                     if item.SetLUT(1, lut_rel):
                         applied += 1
-                except Exception:
-                    pass
         print(f"  applied {lut_rel} to node 1 of {applied} clip(s)")
 
     resolve.OpenPage("edit")

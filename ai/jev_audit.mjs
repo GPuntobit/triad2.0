@@ -17,7 +17,7 @@
 // question -- it is one judgment per file, aggregated in code.
 
 import { constants } from "node:fs";
-import { readFile, writeFile, readdir, lstat, stat, realpath, open } from "node:fs/promises";
+import { writeFile, stat, realpath, open } from "node:fs/promises";
 import { join, relative, extname, dirname, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 

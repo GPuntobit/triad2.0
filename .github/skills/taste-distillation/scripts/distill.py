@@ -22,6 +22,7 @@ with stub responses and no API key.
 
 from __future__ import annotations
 
+import contextlib
 import argparse
 import json
 import logging
@@ -94,12 +95,10 @@ def extract_json(text: str) -> dict:
 
     for chunk in candidates:
         chunk = chunk.strip()
-        try:
+        with contextlib.suppress(json.JSONDecodeError):
             obj = json.loads(chunk)
             if isinstance(obj, dict):
                 return obj
-        except json.JSONDecodeError:
-            pass
         span = _balanced_object(chunk)
         if span:
             try:

@@ -15,6 +15,7 @@ The output drives two things:
 
 from __future__ import annotations
 
+import contextlib
 import json
 from dataclasses import dataclass, asdict, field
 from pathlib import Path
@@ -118,10 +119,9 @@ def _sweep_detector(path: str | Path, thresholds, min_len_frames: int) -> dict:
         video = open_video(str(path))
         # Cap the long edge around 480px for the detector; large frames cost
         # decode time without improving boundary detection.
-        try:
+        # Best-effort: older SceneDetect builds lack the auto downscale API.
+        with contextlib.suppress(Exception):
             video.set_downscale_factor()  # auto
-        except Exception:
-            pass
         sm = SceneManager(stats_manager=stats)
         sm.auto_downscale = True
         sm.add_detector(

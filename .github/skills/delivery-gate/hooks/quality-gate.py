@@ -144,7 +144,8 @@ def main() -> None:
             else:
                 log.warning('transcript_path %s not found, falling back to raw stdin', tp)
     except (json.JSONDecodeError, TypeError, OSError):
-        pass
+        # Malformed payload or unreadable transcript: keep the raw-stdin fallback.
+        transcript = raw
 
     # 1. Disk check — three-level: remind / warn / block
     disk_free = check_disk()

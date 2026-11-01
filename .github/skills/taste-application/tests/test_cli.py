@@ -11,7 +11,6 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
-from unittest import mock
 
 from tasteforge import cli
 
@@ -109,7 +108,7 @@ class CliTests(unittest.TestCase):
             stderr="provider response secret-value",
         )
         stderr = io.StringIO()
-        with mock.patch(
+        with unittest.mock.patch(
             "tasteforge.cli.workflow_mod.run_workflow", side_effect=failure
         ), redirect_stderr(stderr):
             status = cli.main([
@@ -128,9 +127,9 @@ class CliTests(unittest.TestCase):
             config.write_text("{}", encoding="utf-8")
             out = Path(td) / "out"
             expected = {"provider_calls": 0, "provider_execution": False}
-            with mock.patch(
+            with unittest.mock.patch(
                 "tasteforge.cli.workflow_mod.run_workflow", return_value=expected
-            ) as run, mock.patch("tasteforge.cli.contract_mod.validate_bundle") as validate:
+            ) as run, unittest.mock.patch("tasteforge.cli.contract_mod.validate_bundle") as validate:
                 status = cli.main([
                     "multimodal", "--config", str(config), "--out-dir", str(out)
                 ])

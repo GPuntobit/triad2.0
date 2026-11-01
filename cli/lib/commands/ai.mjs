@@ -1,10 +1,9 @@
-import { runNode, projectPath, fileExists } from '../utils.mjs';
+import { projectPath } from '../utils.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
 export async function verifyAISolutions(options = {}) {
   const tasksDir = options.tasks || projectPath('ai', 'tasks');
-  const runner = projectPath('conformance', 'run.mjs'); // not used; we run seed directly
   // find runtime
   const isWin = process.platform === 'win32';
   const runtimeCandidates = isWin

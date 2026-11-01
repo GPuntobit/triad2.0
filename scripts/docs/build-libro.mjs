@@ -118,23 +118,6 @@ const tutorial = namespaceAnchors(
   'tut'
 );
 
-function extractHeadings(md, maxLevel) {
-  const lines = md.split(/\r?\n/);
-  const out = [];
-  let inFence = false;
-  for (const line of lines) {
-    if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
-    if (inFence) continue;
-    const m = line.match(/^(#{1,6})\s+(.+)$/);
-    if (!m || m[1].length > maxLevel) continue;
-    const text = m[2].trim();
-    if (/[.](triad|td)\b/.test(text)) continue;
-    if (/^[a-zàèéìòù]/.test(text)) continue;
-    out.push({ level: m[1].length, text });
-  }
-  return out;
-}
-
 const manualeToc = [];
 const tutorialToc = [];
 const manualeHtml = rewriteRepositoryLinks(addHeadingIds(marked.parse(manuale), 'man', manualeToc));

@@ -4,6 +4,7 @@ must never be invoked by load_releases_from_tags()/resolve_git_path().
 
 Run with: python3 tests/security/git_path_hijack.test.py
 """
+import contextlib
 import os
 import sys
 from pathlib import Path
@@ -34,11 +35,11 @@ def main() -> int:
 
     resolved = dc.resolve_git_path()
     if resolved is not None:
-        try:
+        # relative_to raises ValueError when the path is outside the repo:
+        # that is the expected (safe) outcome and must not add a failure.
+        with contextlib.suppress(ValueError):
             Path(resolved).resolve().relative_to(REPO.resolve())
             failures.append("resolve_git_path returned a path inside the repository")
-        except ValueError:
-            pass
         if not os.path.isabs(resolved):
             failures.append("resolve_git_path returned a non-absolute path")
 
@@ -47,11 +48,9 @@ def main() -> int:
     try:
         resolved2 = dc.resolve_git_path()
         if resolved2 is not None:
-            try:
+            with contextlib.suppress(ValueError):
                 Path(resolved2).resolve().relative_to(REPO.resolve())
                 failures.append("PATH hijack via repository root succeeded")
-            except ValueError:
-                pass
     finally:
         if old_path is None:
             os.environ.pop("PATH", None)

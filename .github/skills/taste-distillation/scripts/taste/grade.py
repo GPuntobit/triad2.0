@@ -27,6 +27,7 @@ Two artifacts come out of this module:
 
 from __future__ import annotations
 
+import contextlib
 import json
 import subprocess
 from dataclasses import dataclass, asdict, field
@@ -719,10 +720,8 @@ def grade_clip_adaptive(
 
     out = grade_clip(src, dst, lut_path, strength=1.0)
     if keep_lut is None:
-        try:
+        with contextlib.suppress(OSError):
             lut_path.unlink()
-        except OSError:
-            pass
     return out
 
 
