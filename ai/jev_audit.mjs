@@ -316,6 +316,32 @@ const QUESTIONS = {
 
 // ---------------------------------------------------------------------------
 // 4. Request construction and transport.
+//
+// Taint boundary for outbound requests (CodeQL: "File data in outbound network
+// request", js/jank-in-try-block — the warning on the fetch call below).
+//
+//   Source:  readTrackedFile() -> file contents of this repository.
+//   Sink:    fetch(API_URL, { body }) -> HTTPS POST to a single fixed host.
+//
+// The flow is intentional and bounded by three hard constraints, all enforced
+// before any byte can reach the network:
+//
+//   1. Containment. Only files returned by `git ls-files` are eligible, and
+//      every one of them passes the fd-pinned open + realpath containment
+//      checks in readTrackedFile(): regular files only, no symlinks, nothing
+//      outside ROOT_REAL. Arbitrary local data can never enter the payload.
+//   2. Fixed destination. API_URL is a compile-time https constant; it is not
+//      derived from argv, file contents, or the environment, so the data can
+//      only ever travel to api.typesafe.ai over TLS.
+//   3. Explicit opt-in. The transport runs only when the operator launches a
+//      live sweep/locate AND TYPESAFE_API_KEY is set (see the CLI guard at the
+//      bottom of this file); --dry-run prints payloads locally and performs no
+//      network I/O at all.
+//
+// This is the documented purpose of the tool — an audit runner that sends
+// repository text artifacts to the Jev API for judgment — not an information
+// leak path. Do not add new sources (untracked paths, symlinked content, user
+// input beyond the fixed allow-lists above) to this flow without re-review.
 // ---------------------------------------------------------------------------
 
 function buildState(path, content, facts) {
@@ -340,10 +366,17 @@ async function callSystemOne(state, questions, { longContext = true } = {}) {
     Authorization: `Bearer ${API_KEY}`,
   };
   if (longContext) headers["TypeSafe-Danger-Zone-Long-Context"] = "true";
+  // CodeQL [js/jank-in-try-block] Intentional, reviewed flow: local file data
+  // -> outbound request. See the taint-boundary block in section 4 for the
+  // containment checks (git-tracked, fd-pinned, inside ROOT_REAL), the fixed
+  // https API_URL constant, and the explicit operator opt-in that bound this
+  // source/sink pair. The body is serialized here so the flow into `fetch`
+  // below stays explicit and auditable.
+  const requestBody = JSON.stringify({ model: MODEL, state, questions });
   const res = await fetch(API_URL, {
     method: "POST",
     headers,
-    body: JSON.stringify({ model: MODEL, state, questions }),
+    body: requestBody,
   });
   const text = await res.text();
   if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}\n${text}`);
@@ -387,7 +420,7 @@ async function sweep({ dryRun }) {
       });
       process.stderr.write(`\r  ${results.length}/${files.length} ${path}`);
     } catch (err) {
-      results.push({ path, role: state.file.role, error: String(err.message ?? err) });
+      results.push({ path, role: state.file.role, error: sanitizeError(err) });
       process.stderr.write(`\r  ${results.length}/${files.length} ${path}  ERROR`);
     }
   }
@@ -418,6 +451,12 @@ const USAGE_FIELDS = new Set(["input_tokens", "output_tokens"]);
 function num(v) {
   const n = typeof v === "number" ? v : typeof v === "string" && /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : NaN;
   return Number.isFinite(n) ? n : null;
+}
+
+// A remote error string is inert text: it goes through the same sanitizer as
+// every other network-sourced field before it can reach a file or the console.
+function sanitizeError(e) {
+  return sanitizeText(String(e?.message ?? e)) || "request failed";
 }
 
 // Non-negative token counts, unknown -> 0.
@@ -532,6 +571,16 @@ async function writeReport(results, totalFiles) {
   const inTok = results.reduce((s, r) => s + sanitizeUsage(r.usage).input_tokens, 0);
   const outTok = results.reduce((s, r) => s + sanitizeUsage(r.usage).output_tokens, 0);
   push(`input_tokens: ${inTok}  |  output_tokens: ${outTok}`);
+
+  // Per-file failures are captured from the network round-trip above, so even
+  // though they never reach this report today, sanitize them at the sink too.
+  const errors = results.filter((r) => r.error !== undefined);
+  if (errors.length > 0) {
+    push("", "## Errors", "");
+    for (const r of errors) {
+      push(`- \`${escapePath(r.path)}\`: ${sanitizeField(sanitizeError(r.error))}`);
+    }
+  }
 
   await writeFile(REPORT_PATH, lines.join("\n") + "\n", "utf8");
   console.log(lines.join("\n"));

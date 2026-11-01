@@ -123,7 +123,13 @@ def main():
     parser.add_argument('--config', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
+    # Every branch variable is bound up front so no code path can read a value
+    # that the try block below did not assign.
     local_only = False
+    config = None
+    payload = None
+    build_application_bundle = None
+    compile_input = None
     try:
         if args.kind == 'apply-bundle':
             from tasteforge.integration import build_application_bundle, load_application_request
@@ -146,6 +152,8 @@ def main():
             payload = compile_input(config)
             if args.kind == 'apply-bundle':
                 payload = build_application_bundle(config.get('integration'), payload)
+        if payload is None:
+            raise ValueError('no payload was compiled for the selected workflow kind')
         with args.out.open('x') as output:
             output.write(json.dumps(payload, indent=2) + '\n')
     except (OSError, ValueError, KeyError) as error:
