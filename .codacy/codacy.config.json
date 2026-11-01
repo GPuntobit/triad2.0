@@ -4767,5 +4767,8 @@
       ]
     }
   ],
-  "exclude": []
+  "exclude": [
+    "obsidian-triad/.obsidian/plugins/**",
+    ".github/skills/**"
+  ]
 }

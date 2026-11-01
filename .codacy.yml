@@ -1,0 +1,14 @@
+---
+# Codacy analysis exclusions.
+#
+# Rationale (full triage in TRIAGE-SEVERITY.md):
+#   obsidian-triad/.obsidian/plugins/  third-party minified plugin bundles
+#                                      (karpathywiki, templater-obsidian).
+#                                      Not first-party code: linting them
+#                                      produced 310 of 451 Critical findings.
+#   .github/skills/                    agent tooling and its tests, not part
+#                                      of the shipped product (121 Criticals,
+#                                      mostly environment import-errors).
+exclude_paths:
+  - "obsidian-triad/.obsidian/plugins/**"
+  - ".github/skills/**"
