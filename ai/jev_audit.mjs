@@ -6,7 +6,7 @@
 // answers into an error count.
 //
 //   node ai/jev_audit.mjs sweep --dry-run     # emit the exact JSON payloads, no API calls
-//   node ai/jev_audit.mjs sweep                # call the API and write ai/jev_audit_report.md
+//   node ai/jev_audit.mjs sweep                # call the API and print the report to stdout
 //   node ai/jev_audit.mjs locate ai/SYSTEM_PROMPT.md   # locate defects by line window
 //
 // Auth:   Authorization: Bearer $TYPESAFE_API_KEY
@@ -17,7 +17,7 @@
 // question -- it is one judgment per file, aggregated in code.
 
 import { constants } from "node:fs";
-import { readFile, writeFile, readdir, stat, lstat, realpath, open } from "node:fs/promises";
+import { stat, realpath, open } from "node:fs/promises";
 import { join, relative, extname, dirname, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -83,10 +83,33 @@ async function trackedFiles() {
     if (SKIP_NAMES.has(base)) continue;
     if (!TEXT_EXT.has(extname(rel))) continue;
     const path = join(ROOT, rel);
-    const info = await lstat(path);
-    if (info.isSymbolicLink() || !info.isFile()) continue;
-    if (!isWithinRoot(await realpath(path))) continue;
-    out.push(rel);
+    const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);
+    let file;
+    try {
+      file = await open(path, flags);
+    } catch {
+      continue;
+    }
+    try {
+      const openedInfo = await file.stat();
+      if (!openedInfo.isFile()) continue;
+
+      const resolved = await realpath(path);
+      if (!isWithinRoot(resolved)) continue;
+
+      const resolvedInfo = await stat(resolved);
+      if (openedInfo.ino && resolvedInfo.ino &&
+          (openedInfo.dev !== resolvedInfo.dev || openedInfo.ino !== resolvedInfo.ino)) continue;
+
+      const currentPath = await realpath(path);
+      if (currentPath !== resolved || !isWithinRoot(currentPath)) continue;
+
+      out.push(rel);
+    } catch {
+      continue;
+    } finally {
+      await file.close();
+    }
   }
   return out;
 }
@@ -141,7 +164,7 @@ async function readTrackedFile(rel) {
 // ---------------------------------------------------------------------------
 
 async function readIfExists(path) {
-  try { return await readFile(join(ROOT, path), "utf8"); } catch { return ""; }
+  try { return await readTrackedFile(path); } catch { return ""; }
 }
 
 // Flags that belong to other tools and must not be mistaken for Triad CLI flags.
@@ -412,7 +435,6 @@ async function writeReport(results, totalFiles) {
   const outTok = results.reduce((s, r) => s + (r.usage?.output_tokens ?? 0), 0);
   lines.push(`input_tokens: ${inTok}  |  output_tokens: ${outTok}`);
 
-  await writeFile(join(ROOT, "ai", "jev_audit_report.md"), lines.join("\n") + "\n", "utf8");
   console.log(lines.join("\n"));
 }
 
@@ -424,7 +446,13 @@ async function writeReport(results, totalFiles) {
 const WINDOW_LINES = 40;
 
 async function locate(path, { dryRun }) {
-  const content = await readFile(join(ROOT, path), "utf8");
+  let content;
+  try {
+    content = await readTrackedFile(path);
+  } catch (err) {
+    console.error(`Refusing to audit file: ${err.message}`);
+    process.exit(2);
+  }
   const facts = await knownFacts();
   const all = content.split("\n");
   const { role, contract } = roleFor(path);
