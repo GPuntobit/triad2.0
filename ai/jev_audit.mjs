@@ -448,10 +448,10 @@ function sanitizeText(v) {
   if (typeof v !== "string") return "";
   const cleaned = v
     .replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, " ")
-    .replace(/[<>]/g, "")
+    .replace(/[<>`|]/g, "")
     .replace(/\s+/g, " ")
     .trim();
-  return cleaned.length > MAX_FIELD_LEN ? cleaned.slice(0, MAX_FIELD_LEN) + "ÔÇª" : cleaned;
+  return cleaned.length > MAX_FIELD_LEN ? cleaned.slice(0, MAX_FIELD_LEN) + "..." : cleaned;
 }
 
 // Single choke point for every label taken from the network.
@@ -464,7 +464,7 @@ function sanitizeField(v, fallback = "-") {
 // Paths come from `git ls-files`, not the network, but they still need to be
 // inert inside the table.
 function escapePath(p) {
-  return String(p).replace(/\\/g, "\\\\").replace(/[|`\r\n]/g, " ");
+  return String(p).replace(/\\/g, "\\\\").replace(/[|`\r\n<>]/g, " ");
 }
 
 // Expected defect count from the Score distribution: level index is the count
