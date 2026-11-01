@@ -28,15 +28,42 @@ half the job — after the merge, the homepage was silently broken. Key assets
 (`style.css` and `learning-curve.js`) had been dropped somewhere along the way,
 so we restored them and verified the site renders exactly as intended again.
 
-**Closing the security gaps.** Our scanners flagged two real problems, and we
-fixed both properly rather than suppressing them. The site builder
-(`build-libro.mjs`) relied on `DOMParser`, which doesn't exist in Node.js —
-ironic for a build script — so we replaced it with an explicit, character-by-character
-sanitization plus HTML escaping that satisfies CodeQL's incomplete-sanitization
-check. The download-chart tool was invoking `git` in a way Bandit flagged
-(B603); it now uses a static command list with a validated executable path. We
-also disabled the conflicting CodeQL default setup so the advanced workflow runs
-cleanly from now on.
+**Closing the security gaps.** Our scanners flagged several real problems, and
+we fixed every one of them properly rather than suppressing them. The site
+builder (`build-libro.mjs`) relied on `DOMParser`, which doesn't exist in
+Node.js — ironic for a build script — so we replaced it with an explicit,
+character-by-character sanitization plus HTML escaping that satisfies CodeQL's
+incomplete-sanitization check. The download-chart tool was invoking `git` in a
+way Bandit flagged (B603); it now uses a static command list with a validated
+executable path. We also disabled the conflicting CodeQL default setup so the
+advanced workflow runs cleanly from now on.
+
+**Hardening the AI audit tooling through the night.** Work continued from
+midnight to noon, and the `ai/jev_audit.mjs` auditor got the most attention.
+Its file reads now go through a tracked-files-only helper that validates each
+opened file against its realpath and inode, closing off symlink traversal and
+TOCTOU attacks; remote audit data is now explicitly sanitized before it touches
+any report; and the audit report is printed to stdout instead of silently
+writing `ai/jev_audit_report.md` into the repository (PRs #48 and #49).
+
+**Quality gates, told honestly.** By dawn we turned to the linters. Vendored
+and third-party paths — the Obsidian plugin folder and `.github/skills`
+tooling code responsible for most Critical findings — are now excluded from
+Codacy via `.codacy.yml`, and a new `TRIAGE-SEVERITY.md` documents exactly
+where each finding comes from, so severity triage is reproducible instead of
+guesswork (PR #52 follow-up). Later in the morning we completed the same
+cleanup across the skill scripts: bare `except` handlers were replaced with
+`contextlib.suppress` or explicit fallbacks, and the delivery quality gate now
+falls back to raw stdin when its payload arrives malformed or unreadable, so a
+bad parse can never mask a real build result (PR #53).
+
+**Project identity, codified.** This release also marks the first time Triad
+ships instructions for *machines that work on it*: a root `AGENTS.md` — the
+standard read by every coding agent (Codex, Copilot, Cursor, Claude Code…) —
+now encodes the seven operative rules of the project (spec-first, no host
+language, 37/37 Core conformance, Core ⊂ Full, determinism, controlled
+lexicon, benchmark output format), alongside `PROJECT_PROMPT.md` for the
+owner's own AI. The download chart on the website was refreshed along the way.
 
 **Small hygiene, big payoff.** We extracted duplicated logic in
 `detect-project.sh` into shared helper functions, cleaned the working tree, and
@@ -66,8 +93,11 @@ and prebuilt runtime seeds are available for Linux and Windows.
 A language that bootstraps itself — no host language required.
 
 This release merged our Termux branch into main, restored the broken homepage
-assets, closed two security alerts (CodeQL + Bandit), and finished green:
-conformance 37/37 Core ✅
+assets, hardened the AI audit tooling against symlink traversal/TOCTOU, cleaned
+up Codacy triage and quality gates — and finished green: conformance 37/37
+Core ✅
+
+AGENTS.md is now in the repo: every coding agent reads it. 🤖
 
 📦 github.com/GPuntobit/triad2.0/releases/tag/v0.8.0-beta.8
 
