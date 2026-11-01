@@ -27,7 +27,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-DEFAULT_REPO = "GPuntobit/triad"
+DEFAULT_REPO = "GPuntobit/triad2.0"
 OUT_PATH = Path(__file__).resolve().parents[2] / "docs" / "assets" / "img" / "downloads.svg"
 
 # Dimensioni del grafico
@@ -39,16 +39,21 @@ _REPO_SLUG = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
 
 def fetch_releases(repo: str, token: str | None) -> list[dict]:
-    """Scarica tutte le release del repository dalla GitHub API."""
+    """Scarica TUTTE le release del repository dalla GitHub API.
+
+    Include anche prerelease e bozze con asset: il grafico deve mostrare i
+    download di tutte le release. La conta dei download per ogni release e'
+    la somma dei `download_count` dei suoi asset (il campo top-level
+    `download_count`, quando presente, non e' affidabile: nelle risposte
+    attuali dell'API risulta null).
+    """
     # Validate the slug before it is interpolated into the request URL: this
     # keeps the urllib request on the fixed https://api.github.com origin and
     # blocks scheme/path injection (e.g. file:// or a different host).
     if not _REPO_SLUG.match(repo):
         raise SystemExit(f"invalid repository slug: {repo!r} (expected OWNER/REPO)")
-    releases: list[dict] = []
-    page = 1
-    while True:
-        url = f"https://api.github.com/repos/{repo}/releases?per_page=100&page={page}"
+
+    def api_get(url: str) -> list[dict]:
         req = urllib.request.Request(url, headers={
             "Accept": "application/vnd.github+json",
             "User-Agent": "triad-download-chart",
@@ -56,13 +61,33 @@ def fetch_releases(repo: str, token: str | None) -> list[dict]:
         if token:
             req.add_header("Authorization", f"Bearer {token}")
         with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+            return json.loads(resp.read().decode("utf-8"))
+
+    releases: list[dict] = []
+    page = 1
+    while True:
+        data = api_get(f"https://api.github.com/repos/{repo}/releases?per_page=100&page={page}")
         if not data:
             break
         releases.extend(data)
         if len(data) < 100:
             break
         page += 1
+
+    # Per ogni release conta i download reali degli asset; usa il campo
+    # top-level solo se gli asset non sono raggiungibili (fallback).
+    for rel in releases:
+        total = None
+        assets_url = rel.get("assets_url")
+        if assets_url:
+            try:
+                assets = api_get(assets_url)
+                total = sum(int(a.get("download_count", 0)) for a in assets)
+            except Exception:
+                total = None
+        if total is None:
+            total = int(rel.get("download_count") or 0)
+        rel["download_count"] = total
     return releases
 
 

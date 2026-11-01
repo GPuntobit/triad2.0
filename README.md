@@ -111,50 +111,6 @@ println("first: ", result[1].who) # :dave
 The executable specification is `conformance/`: golden cases (`expected.out` + `expected.code`) verifiable by any implementation (machine code seed, Triad-Core implementation, native compiler). See [conformance/README.md](conformance/README.md) and [BOOTSTRAP.md](BOOTSTRAP.md) for the plan to make Triad independent of other languages.
 
 ```sh
-node triad-cli.mjs status          # project status
-node triad-cli.mjs seed generate windows  # generates seed
-node triad-cli.mjs ai verify        # verifies AI solutions
-node triad-cli.mjs test conformance # runs conformance
-```
-
-Launchers ready in `bin/` (they install dependencies on first run):
-
-```sh
-bin/triad-cli status            # POSIX
-bin\triad-cli.cmd status        # Windows
-```
-
-Standalone executable (no need to install `cli/`): download `triad-cli.exe` (Windows) or `triad-cli` (Linux) from the [beta release](https://github.com/GPuntobit/triad2.0/releases) and copy it to the repository root or `bin/`; to rebuild it: `cd cli && npm run build:exe`.
-
-See [cli/README.md](cli/README.md) for the complete development CLI documentation.
-
-## Quick Example (`examples/assaggio.td`)
-
-```julia
-struct Point
-    x::Float
-    y::Float
-end
-
-function dist(a::Point, b::Point)::Float
-    requires a.x != b.x || a.y != b.y
-    sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
-end
-
-fact parent(:alice, :bob)
-fact parent(:bob, :dave)
-rule grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)
-
-result = solve grandparent(:alice, ?who) limit 5
-println("grandchildren: ", result)     # [{who = :dave}]
-println("first: ", result[1].who) # :dave
-```
-
-## Testing and Conformance
-
-The executable specification is `conformance/`: golden cases (`expected.out` + `expected.code`) verifiable by any implementation (machine code seed, Triad-Core implementation, native compiler). See [conformance/README.md](conformance/README.md) and [BOOTSTRAP.md](BOOTSTRAP.md) for the plan to make Triad independent of other languages.
-
-```sh
 node conformance/run.mjs                                   # Core profile (default, 37 cases)
 node conformance/run.mjs --cases conformance/core/cases --skip lists   # as in CI
 node conformance/run.mjs --cases conformance/cases         # Full profile (12 cases)
@@ -249,5 +205,4 @@ Trend of total downloads of Triad releases on GitHub (automatically updated dail
 
 ![Triad download chart](docs/assets/img/downloads.svg)
 
-<sub>Current data: ![total downloads badge](https://img.shields.io/github/downloads/GPuntobit/triad/total?label=total%20downloads&style=for-the-badge)</sub>
-```
+<sub>Current data: ![total downloads badge](https://img.shields.io/github/downloads/GPuntobit/triad2.0/total?label=total%20downloads&style=for-the-badge)</sub>
