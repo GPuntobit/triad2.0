@@ -137,7 +137,7 @@ updates from v0.2.0 to today (also contained in v0.3.0, superseded).
   Exit code propagated, file/parse errors handled with exit 1.
 - **`ext`** commands for the VS Code extension:
   - `ext check`: valid `package.json`, tmLanguage grammar and language-configuration
-    (all JSON checked); reports name, version, languages ​​and extensions.
+    (all JSON checked); reports name, version, languages and extensions.
   - `ext package`: package the `.vsix` with global `vsce` or `npx --yes @vscode/vsce`;
     supports `-o/--out`.
 - **Modularity**: new modules `cli/lib/commands/run.mjs` and `cli/lib/commands/ext.mjs`;
@@ -170,7 +170,7 @@ updates from v0.2.0 to today (also contained in v0.3.0, superseded).
   Exit code propagated, file/parse errors handled with exit 1.
 - **`ext`** commands for the VS Code extension:
   - `ext check`: valid `package.json`, tmLanguage grammar and language-configuration
-    (all JSON checked); reports name, version, languages ​​and extensions.
+    (all JSON checked); reports name, version, languages and extensions.
   - `ext package`: package the `.vsix` with global `vsce` or `npx --yes @vscode/vsce`;
     supports `-o/--out`.
 - **Modularity**: new modules `cli/lib/commands/run.mjs` and `cli/lib/commands/ext.mjs`;
@@ -204,7 +204,7 @@ updates from v0.2.0 to today (also contained in v0.3.0, superseded).
   `Triad seed Linux OK`; dump `seed/linux-x86_64/seed.hex`, generator `seed/dev/gen_seed_linux.js`
   and CI Linux jobs.
 - **Canonical extension**: `.triad`; `.td` remains supported as a historical alias.
-- **Independence**: Bootstrap plan without guest languages ​​in `BOOTSTRAP.md`.
+- **Independence**: Bootstrap plan without guest languages in `BOOTSTRAP.md`.
 - **Tooling editor**: syntax grammars for VS Code and Vim/Neovim (`editors/`) and
   preparing the Linguist entry for recognition on GitHub
   (`editors/linguist/`).

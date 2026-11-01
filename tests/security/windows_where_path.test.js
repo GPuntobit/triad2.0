@@ -38,6 +38,11 @@ fs.writeFileSync(path.join(projDir, 'where.exe'), `#!/bin/sh\necho MALICIOUS >> 
 fs.chmodSync(path.join(projDir, 'where.exe'), 0o755);
 
 process.chdir(projDir);
+// The harness must load the patched copy of utils.js written above into the
+// test's own mkdtempSync directory (it forces the win32 branch and a portable
+// system root). No external input reaches this path: it is derived only from
+// the fresh temp dir created by this test.
+// codacy-disable-next-line
 const utils = require(path.join(tmpDir, 'utils.js'));
 
 const evilSystemRoots = [

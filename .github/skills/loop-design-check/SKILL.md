@@ -85,7 +85,7 @@ You want a loop that runs every night and fixes whatever tests are failing.
 Now run the **review checklist**, and it catches what the naive version would have missed:
 - **#3 hit** → the naive "all tests pass" lets the agent delete a failing test to "win." Fixed by the boundary "no test file deleted/weakened."
 - **#2 hit** → if the fixing agent also judged its own fix, it would pass itself. Fixed by "judge = independent CI, deterministic."
-- **#4 hit** → if a fix is ​​ambiguous, the agent won't stop to ask at 2 a.m.; it'll commit a guess. Fixed by front-loading: ambiguous fixes are left for the human, not guessed.
+- **#4 hit** → if a fix is ambiguous, the agent won't stop to ask at 2 a.m.; it'll commit a guess. Fixed by front-loading: ambiguous fixes are left for the human, not guessed.
 - **Red line** → the loop opens a PR but **does not auto-merge**; the human flips the last switch (responsibility doesn't transfer).
 The naive loop and the reviewed loop differ by four lines of constraint — and that's the difference between "wakes you to a deleted test suite" and "wakes you to a clean PR."
 ---

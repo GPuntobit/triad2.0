@@ -3,8 +3,8 @@
 - **Drawing date:** 2026-10-22
 - **Note:** the E0 README has been updated after this extraction (the seed binaries are now publishable, see `.gitignore`); the table reflects the original text.
 - **Method:** ANCHOR / PENALTY / RADAR / MIRROR kit
-- **Result:** basis confirmed by the user (document and fields); values ​​extracted from the document, no data added.
-Rule applied: extract only values ​​explicitly declared in the document; If a value is ambiguous or absent, leave the field blank and indicate why.
+- **Result:** basis confirmed by the user (document and fields); values extracted from the document, no data added.
+Rule applied: extract only values explicitly declared in the document; If a value is ambiguous or absent, leave the field blank and indicate why.
 ## 1. Basis of extraction
 - **Document:** chosen by the agent with explicit authorization ("Document: you choose") and confirmed by the user ("I confirm!"). The choice itself is not in the document: Source **Inferred**.
 - **Fields:** 21 lines, of which 19 are filled in and 2 are left blank (License, Release Date) because they are absent in the document. The list of fields was not provided by the user: proposed by the agent by reading the sections of the document (Source **Inferred**) and confirmed.
@@ -41,7 +41,7 @@ All fields in the table have Source **Extract**. The only **Inferred** items are
 | Draw date | Inferred | Taken from the system clock, not from the document. |
 ## 4. MIRROR — quality control
 1. **Non-explicit assumptions:** the document was chosen by the agent (Inferred, then confirmed) and the list of fields was proposed by the agent (Inferred, then confirmed).
-2. **Values ​​​​​​that can be interpreted differently:** `173 bytes` of file versus `33 + 20` bytes of code and message may seem inconsistent (the rest is header/padding, but the document doesn't explain it: it wasn't added); «E0» can be read as a complete state or as the start of the port; `exit 0` is declared, not checked by running the ELF.
+2. **Values that can be interpreted differently:** `173 bytes` of file versus `33 + 20` bytes of code and message may seem inconsistent (the rest is header/padding, but the document doesn't explain it: it wasn't added); «E0» can be read as a complete state or as the start of the port; `exit 0` is declared, not checked by running the ELF.
 3. **Calculations between different sections:** none; no sum, no recalculated hash, no combined value.
 4. **Reliability per line:** see §4.2.
 ### 4.2 Problem fields

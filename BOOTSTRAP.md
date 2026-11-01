@@ -1,4 +1,4 @@
-# Triad without guest languages ​​— bootstrap plan
+# Triad without guest languages — bootstrap plan
 Status: **phase 0** (compliance contract + plan). Objective: Triad that does not depend on
 Julia nor by any other programming language, at any stage (runtime,
 bootstrap, build).

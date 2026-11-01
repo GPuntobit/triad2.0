@@ -32,8 +32,12 @@ function readFile(filename) {
   try { return readFileSync(p, 'utf8'); } catch { return null; }
 }
 
+// Literal-text safety for values interpolated into RegExp sources (ReDoS /
+// pattern-injection guard): escape every regex metacharacter.
+const escapeRegExp = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 function extractSection(md, heading) {
-  const re = new RegExp(`## ${heading}\\n([\\s\\S]*?)(?=\\n## |$)`);
+  const re = new RegExp(`## ${escapeRegExp(heading)}\\n([\\s\\S]*?)(?=\\n## |$)`);
   const m = md.match(re);
   return m ? m[1].trim() : null;
 }

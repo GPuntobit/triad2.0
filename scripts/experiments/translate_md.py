@@ -5,6 +5,10 @@ def translate_chunk(text):
         return text
     q = urllib.parse.quote(text)
     url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl=it&tl=en&dt=t&q={q}"
+    # Scheme allowlist: urllib also accepts file:// and other dangerous
+    # schemes, so assert https before every request.
+    if urllib.parse.urlparse(url).scheme != "https":
+        raise ValueError(f"refusing non-https URL: {url!r}")
     for attempt in range(3):
         try:
             with urllib.request.urlopen(url, timeout=20) as r:

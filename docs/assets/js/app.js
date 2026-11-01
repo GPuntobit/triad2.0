@@ -183,7 +183,10 @@ function mount(active) {
 async function loadMarkdown(targetId, file) {
   const el = globalThis.document.getElementById(targetId);
   if (!el) return;
-  el.innerHTML = '<div class="doc-loading">Loading…</div>';
+  const loading = globalThis.document.createElement('div');
+  loading.className = 'doc-loading';
+  loading.textContent = 'Loading…';
+  el.replaceChildren(loading);
   try {
     const res = await globalThis.fetch(RAW_BASE + file);
     if (!res.ok) throw new Error('HTTP ' + res.status);

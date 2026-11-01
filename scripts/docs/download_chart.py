@@ -35,8 +35,16 @@ W, H = 720, 360
 M_L, M_R, M_T, M_B = 70, 24, 44, 56
 
 
+_REPO_SLUG = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+
+
 def fetch_releases(repo: str, token: str | None) -> list[dict]:
     """Scarica tutte le release del repository dalla GitHub API."""
+    # Validate the slug before it is interpolated into the request URL: this
+    # keeps the urllib request on the fixed https://api.github.com origin and
+    # blocks scheme/path injection (e.g. file:// or a different host).
+    if not _REPO_SLUG.match(repo):
+        raise SystemExit(f"invalid repository slug: {repo!r} (expected OWNER/REPO)")
     releases: list[dict] = []
     page = 1
     while True:

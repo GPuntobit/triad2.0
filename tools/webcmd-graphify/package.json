@@ -4,6 +4,6 @@
   "type": "module",
   "description": "Graphify code-graph access for agents: find, query, trace, impact, test coverage and workspace memory",
   "peerDependencies": {
-    "@agentrhq/webcmd": ">=0.8.4"
+    "@agentrhq/webcmd": "^0.8.4"
   }
 }

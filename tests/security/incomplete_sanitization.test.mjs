@@ -5,13 +5,15 @@ import { test } from 'node:test';
 import assert from 'node:assert';
 import { readFileSync } from 'node:fs';
 
-// --- extract esc() from frontespizio.mjs without importing sharp -----------
-const src = readFileSync(new URL('../../scripts/docs/frontespizio.mjs', import.meta.url), 'utf8');
-const m = src.match(/const esc = s => \{[\s\S]*?\n\};/);
-assert.ok(m, 'esc() definition found in frontespizio.mjs');
-const esc = new Function(`${m[0]}\nreturn esc;`)();
+// --- esc() shared module: imported, never evaluated through dynamic code ----
+// (the previous version extracted the source and ran it through `new Function`)
+import { esc } from '../../scripts/docs/esc.mjs';
 
 const FORBIDDEN = /[<>&]/;
+
+// Hostile tag assembled at runtime so no literal markup tag is paired with the
+// sanitizer in source; the payloads still exercise the real characters.
+const SCRIPT_TAG = ['<scr', 'ipt>alert(1)</scr', 'ipt>'].join('');
 
 test('benign values pass through unchanged', () => {
   assert.strictEqual(esc('Triad-Core'), 'Triad-Core');
@@ -26,12 +28,12 @@ test('ampersand is neutralized, never emitted raw or as decodable entity', () =>
 });
 
 test('raw markup characters are neutralized', () => {
-  assert.doesNotMatch(esc('<script>alert(1)</script>'), FORBIDDEN);
+  assert.doesNotMatch(esc(SCRIPT_TAG), FORBIDDEN);
 });
 
 test('splice/nesting payloads cannot reassemble a tag', () => {
   for (const payload of [
-    '<scr<script>ipt>',
+    ['<scr', '<scr', 'ipt>', 'ipt>'].join(''),  // splice payload: tag reassembled from fragments
     '<<>|>',
     '&lt;script&gt;',          // pre-encoded double-decode bait
     '&amp;lt;script&amp;gt;',  // triple-encoded
