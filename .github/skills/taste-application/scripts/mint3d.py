@@ -250,7 +250,7 @@ def main() -> None:
             try:
                 print(f"  {slot} -> {falapi.use_tier(slot, a.tier)}")
             except falapi.FalError:
-                pass
+                continue  # this tier has no such slot; try the next one
     if not a.prompt and not a.from_stills:
         a.from_stills = 3
 

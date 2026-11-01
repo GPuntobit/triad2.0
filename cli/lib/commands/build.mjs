@@ -1,5 +1,3 @@
-import { projectPath, fileExists } from '../utils.mjs';
-
 /**
  * Build standalone: non piu' supportato (nessuna dipendenza Julia).
  * Il runtime predefinito e' il seed in codice macchina.

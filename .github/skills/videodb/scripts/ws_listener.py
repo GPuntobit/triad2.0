@@ -68,10 +68,9 @@ def default_output_dir() -> Path:
 def ensure_private_dir(path: Path) -> Path:
     """Create the listener state directory with private permissions."""
     path.mkdir(parents=True, exist_ok=True, mode=0o700)
-    try:
+    # Best-effort: not every platform implements POSIX permission bits.
+    with contextlib.suppress(OSError):
         path.chmod(0o700)
-    except OSError:
-        pass
     return path
 
 
@@ -253,15 +252,15 @@ async def main_async():
     )
 
     if listen_task.done():
-        await listen_task
+        # Re-raise a listener failure instead of exiting with it swallowed.
+        listen_task.result()
     
     # Cancel remaining tasks
     for task in pending:
         task.cancel()
-        try:
+        # Cancellation is the expected outcome for tasks cancelled above.
+        with contextlib.suppress(asyncio.CancelledError):
             await task
-        except asyncio.CancelledError:
-            pass
 
     for sig in (signal.SIGINT, signal.SIGTERM):
         with contextlib.suppress(NotImplementedError):

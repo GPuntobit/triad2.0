@@ -11,14 +11,6 @@ from unittest.mock import Mock, call, patch
 sys.path.insert(0, str(pathlib.Path(__file__).parents[1] / "scripts"))
 from tasteforge.media import capcut, stills
 
-# Names imported lazily inside try/except blocks below (to skip tests when
-# optional dependencies are missing). Pre-initializing them to None keeps the
-# bindings defined on every path and silences static-analysis warnings about
-# potentially-uninitialized variables.
-render = None
-transform_stream = None
-glitch = None
-
 
 class MediaUtilitiesTests(unittest.TestCase):
     def test_reject_bad_geometry_before_execution(self):
@@ -92,8 +84,8 @@ class MediaUtilitiesTests(unittest.TestCase):
         try:
             import PIL  # noqa: F401
             from tasteforge.media.glitch import render
-        except ImportError:
-            self.skipTest("numpy and Pillow required for effect smoke")
+        except ImportError as error:
+            raise unittest.SkipTest("numpy and Pillow required for effect smoke") from error
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
             image = root / "source.ppm"
@@ -128,8 +120,8 @@ class MediaUtilitiesTests(unittest.TestCase):
     def test_empty_decoder_fails(self):
         try:
             from tasteforge.media.glitch import transform_stream
-        except ImportError:
-            self.skipTest("numpy required")
+        except ImportError as error:
+            raise unittest.SkipTest("numpy required") from error
         with self.assertRaises(RuntimeError):
             transform_stream(
                 Mock(stdout=io.BytesIO()),
@@ -145,8 +137,8 @@ class MediaUtilitiesTests(unittest.TestCase):
     def test_seeded_effect_is_repeatable(self):
         try:
             from tasteforge.media.glitch import transform_stream
-        except ImportError:
-            self.skipTest("numpy required")
+        except ImportError as error:
+            raise unittest.SkipTest("numpy required") from error
         frame = bytes(range(256)) * (32 * 18 * 3 // 256) + bytes(range(192))
         results = []
         for _ in range(2):
@@ -309,8 +301,8 @@ class MediaUtilitiesTests(unittest.TestCase):
     def test_glitch_validation_and_cli(self):
         try:
             from tasteforge.media import glitch
-        except ImportError:
-            self.skipTest("numpy required")
+        except ImportError as error:
+            raise unittest.SkipTest("numpy required") from error
         with tempfile.TemporaryDirectory() as directory:
             source = pathlib.Path(directory) / "source.mp4"
             source.touch()
@@ -336,8 +328,8 @@ class MediaUtilitiesTests(unittest.TestCase):
     def test_glitch_truncated_frame_and_mosh_are_explicit(self):
         try:
             from tasteforge.media.glitch import transform_stream
-        except ImportError:
-            self.skipTest("numpy required")
+        except ImportError as error:
+            raise unittest.SkipTest("numpy required") from error
         with self.assertRaisesRegex(RuntimeError, "truncated"):
             transform_stream(
                 Mock(stdout=io.BytesIO(b"truncated")),
@@ -370,8 +362,8 @@ class MediaUtilitiesTests(unittest.TestCase):
     def test_encoder_launch_failure_reaps_decoder(self):
         try:
             from tasteforge.media import glitch
-        except ImportError:
-            self.skipTest("numpy required")
+        except ImportError as error:
+            raise unittest.SkipTest("numpy required") from error
         decoder = Mock(stdin=None, stdout=io.BytesIO(), poll=Mock(return_value=None))
         with tempfile.TemporaryDirectory() as directory:
             source = pathlib.Path(directory) / "source.mp4"
@@ -406,8 +398,8 @@ class MediaUtilitiesTests(unittest.TestCase):
     def test_glitch_cannot_replace_source_through_same_path_or_symlink(self):
         try:
             from tasteforge.media import glitch
-        except ImportError:
-            self.skipTest("numpy required")
+        except ImportError as error:
+            raise unittest.SkipTest("numpy required") from error
         with tempfile.TemporaryDirectory() as directory:
             source = pathlib.Path(directory) / "source.mp4"
             source.write_bytes(b"original")

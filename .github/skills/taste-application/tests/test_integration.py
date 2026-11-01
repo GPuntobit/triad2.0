@@ -109,8 +109,9 @@ class ApplicationBundleTests(unittest.TestCase):
                          {"video1", "video2", "video3", "audio1"})
         disabled = next(c for c in bundle["protected_stack"] if c["track"] == "video3")
         self.assertEqual(disabled["clip"], self.snapshot["timeline_readback"]["video3"][0])
-        # validate_application_bundle returns None when the bundle is valid.
-        self.assertIsNone(validate_application_bundle(bundle))
+        # validate_application_bundle returns None and raises on an invalid
+        # bundle (procedure): a valid bundle must simply not raise.
+        validate_application_bundle(bundle)
         bundle["audio"][0]["timeline_range"][1] = 116
         self.assertEqual(self.config, before)
 
