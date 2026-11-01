@@ -239,8 +239,10 @@ async def main_async():
     
     # Register signal handlers
     for sig in (signal.SIGINT, signal.SIGTERM):
-        with contextlib.suppress(NotImplementedError):
+        try:
             loop.add_signal_handler(sig, handle_signal)
+        except NotImplementedError:
+            pass  # Event loop does not support signal handlers on this platform.
     
     # Run listener with cancellation support
     listen_task = asyncio.create_task(listen_with_retry())
@@ -265,8 +267,10 @@ async def main_async():
             raise result  # a real failure must not be swallowed at shutdown
 
     for sig in (signal.SIGINT, signal.SIGTERM):
-        with contextlib.suppress(NotImplementedError):
+        try:
             loop.remove_signal_handler(sig)
+        except NotImplementedError:
+            pass  # Event loop does not support signal handlers on this platform.
     
     log("Shutdown complete")
 
