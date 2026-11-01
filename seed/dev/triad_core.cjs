@@ -351,7 +351,6 @@ Parser.prototype.parsePrimary = function(){
     if (this.peek().type === 'IDENT') {
       const saved = this.pos;
       const params = [];
-      let ok = true;
       try {
         params.push(this.expect('IDENT').value);
         while (this.match('COMMA')) params.push(this.expect('IDENT').value);
@@ -361,7 +360,7 @@ Parser.prototype.parsePrimary = function(){
           const body = this.parseExpr();
           return {kind:'lambda', params, body: body};
         }
-      } catch(e) { ok = false; }
+      } catch(e) { /* not a lambda: fall through to ordinary parenthesized expression */ }
       this.pos = saved;
     }
     const e = this.parseExpr();

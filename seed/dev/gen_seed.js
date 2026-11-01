@@ -1376,7 +1376,7 @@ movRdiMemRspRbp();
 
 movRcxMemRdi16(); andRcxImmFF(); cmpRcxRbp(); jne('fail');
 xorR8dBits(); movR9ImmMinus1(); xorEax(); callL('env_store');
-movRcxMemRdiDisp(0x60); testRcx; jz('pf_call_nocap');
+movRcxMemRdiDisp(0x60); testRcx(); jz('pf_call_nocap');
 movR8MemRdiDisp(0x68); movR9MemRdiDisp(0x70); movRaxMemRdiDisp(0x78);
 callL('env_store');
 L('pf_call_nocap');

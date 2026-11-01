@@ -123,6 +123,7 @@ def main():
     parser.add_argument('--config', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
+    local_only = False
     try:
         if args.kind == 'apply-bundle':
             from tasteforge.integration import build_application_bundle, load_application_request
@@ -131,7 +132,6 @@ def main():
             config = json.loads(args.config.read_text())
         if not isinstance(config, dict):
             raise ValueError('config must be a JSON object')
-        local_only = False
         if args.kind == 'apply-bundle':
             local_only = config.get('local_only', False)
             if type(local_only) is not bool:

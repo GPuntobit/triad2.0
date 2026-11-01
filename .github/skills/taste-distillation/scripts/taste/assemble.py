@@ -21,7 +21,6 @@ import json
 import subprocess
 from pathlib import Path
 
-from . import cadence as cad_mod
 from . import frames as frame_mod
 
 

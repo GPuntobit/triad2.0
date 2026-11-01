@@ -23,7 +23,7 @@ export async function runProgram(file, programArgs = [], options = {}) {
     console.error(chalk.red(`X File not found: ${file}`));
     return false;
   }
-letresult;
+  let result;
   const seed = findSeed();
   const jsInterp = projectPath('seed', 'dev', 'triad_core.cjs');
 // Use the native seed only if it exists and is not a stub (Linux E0). Consistent
