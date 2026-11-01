@@ -255,12 +255,14 @@ async def main_async():
         # Re-raise a listener failure instead of exiting with it swallowed.
         listen_task.result()
     
-    # Cancel remaining tasks
+    # Cancel remaining tasks and wait for the cancellations to complete.
     for task in pending:
         task.cancel()
-        # Cancellation is the expected outcome for tasks cancelled above.
-        with contextlib.suppress(asyncio.CancelledError):
-            await task
+    for result in await asyncio.gather(*pending, return_exceptions=True):
+        if isinstance(result, asyncio.CancelledError):
+            continue  # expected: the task was cancelled above
+        if isinstance(result, BaseException):
+            raise result  # a real failure must not be swallowed at shutdown
 
     for sig in (signal.SIGINT, signal.SIGTERM):
         with contextlib.suppress(NotImplementedError):
