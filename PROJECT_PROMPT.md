@@ -1,8 +1,13 @@
 # Prompt di progetto — Triad 2.0
 
-> Questo file contiene un prompt riutilizzabile per far lavorare un LLM (o un agente di coding)
-> sul repository **Triad 2.0**. Copia-incolla il "Prompt principale" nel modello, oppure usa la
-> versione breve per task mirati.
+> ⚠️ **Questo è il prompt dell'AI *proprietaria* (quella che usi tu direttamente).**
+> Il prompt letto automaticamente da **tutte le altre AI/agenti** che operano sul repo è
+> **`AGENTS.md`** alla radice del repository (standard aperto riconosciuto da Codex, Copilot,
+> Cursor, Claude Code, Devin, ecc.). Le regole dei due file devono restare allineate:
+> se cambi una regola operativa, aggiorna entrambi.
+>
+> Questo file resta utile come prompt manuale: copia-incolla il "Prompt principale" nel modello,
+> oppure usa la versione breve per task mirati.
 
 ---
 
