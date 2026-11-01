@@ -123,9 +123,13 @@ def main():
     parser.add_argument('--config', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
+    # Every branch variable is bound up front so no code path can read a value
+    # that the try block below did not assign.
     local_only = False
     config = None
     payload = None
+    build_application_bundle = None
+    compile_input = None
     try:
         if args.kind == 'apply-bundle':
             from tasteforge.integration import build_application_bundle, load_application_request
