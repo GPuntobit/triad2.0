@@ -16,8 +16,8 @@
 // model, not a code reader, so "how many errors are in this project" is not one
 // question -- it is one judgment per file, aggregated in code.
 
-import { constants } from "node:fs";
-import { readFile, writeFile, readdir, lstat, realpath, open } from "node:fs/promises";
+import { constants, stat } from "node:fs";
+import { readFile, writeFile, lstat, realpath, open } from "node:fs/promises";
 import { join, relative, extname, dirname, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
