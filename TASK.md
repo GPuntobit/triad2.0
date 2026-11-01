@@ -236,10 +236,15 @@ and returns the expected output, and the hash of the dump matches. The
 expected by the builder. Updated README to declare prototype unavailable;
   getting the build working and trying to launch it remains open.
 ### Editors, tools and documentation
+- [ ] **EPUB book metadata** — `epub-gen`'s `content.opf.ejs` template does not emit
+  `dc:description`, so the `description` option in `scripts/docs/build-epub.cjs` has no
+  effect: the book description lives only in the *Quarta di copertina* chapter (verified in
+  the generated EPUB). To put it in the metadata, pass `customOpfTemplatePath` with a
+  template kept in the repository (and cover the same gap in the MOBI/DOCX builds).
 - [ ] **Editor integrations** — Check grammar, highlighting and recognition
   of the canonical `.triad` extension and the `.td` alias in `editors/`.
-- [ ] **AI Tools** — Check CLI options, dependencies, error handling and reproducibility
-  of `ai/jev_audit.mjs` and `ai/verify.jl`, without including output generated in the repository.
+- [x] **AI Tools** — Checked CLI options, dependencies, error handling and reproducibility
+  of `ai/jev_audit.mjs` and `ai/verify.jl`. Cleanup completed: seed-runner batch files consolidated, debug output removed, probe files confirmed untracked.
 - [ ] **Consistent documentation** — Compare examples and commands in `README.md`,
   `TUTORIAL.md`, `SPEC.md`, `SPEC-CORE.md`, `BOOTSTRAP.md` and `STATUS.md` with the
   actual behavior and with tests. All `examples/*.td` and `*.triad` files are
@@ -616,6 +621,43 @@ code, specification, and results reproduced here.
     as sources and check their hashes.
   - **Acceptance:** clean checkout without personal caches; no regression lost during
     displacement; CI ensures that generated binaries and reports are not pushed back into Git.
+## Libro — Fondamenta per principianti (2026-11-01)
+- [x] **Fondamenta: programmare da zero** (`docs/FONDAMENTA.it.md`): parte del libro per chi non
+  ha mai programmato, inclusa nel volume (`build-libro.mjs`, `build-epub.cjs`); esempi Core
+  verificati con `seed/dev/triad_core.cjs`; PDF/EPUB/MOBI/DOCX/DOC rigenerati in `docs/libro/`
+  (`Il-libro-di-triad.doc` Word 97 via LibreOffice). Comprende: cap. 13 «Pensare da
+  programmatore», cap. 17 «Domande da neofita», Appendice A (installazione guidata),
+  Appendice B (scheda rapida della sintassi).
+- [x] **Pipeline PDF** (`scripts/docs/build-pdf.mjs`): sostituisce `ebook-convert` per il PDF
+  (il writer calibre corrompe i glifi composti → tofu sulle accentate).
+- [ ] **Rigenerare il libro inglese** (`docs/libro/Il-libro-di-triad.en.*`): la traduzione non
+  include ancora le Fondamenta; aggiornare `_translation_progress.json` e ripartire dal nuovo
+  testo.
+- [ ] **Traduzione delle Fondamenta** in inglese (`docs/FONDAMENTA.md`) per il libro EN e il sito.
+
+## Sito generato da Triad (2026-11-01)
+- [x] **Generatore del sito in Triad** (`tools/site-gen/`): `site_pages.td` (8 pagine di
+  documentazione), `site_playground.td` (playground), `site_style.td` (foglio di stile);
+  `build.mjs` esegue ogni generatore sul seed PE nativo e sull'interprete di riferimento JS e
+  pretende stdout identico byte per byte; `lint.mjs` blocca i costrutti che il seed non
+  esegue; CI `site-gen` (Ubuntu + Windows) verifica lint e sincronia. Sottoinsieme
+  certificato e limiti misurati del seed: `tests/probes/README.md`.
+- [ ] **Chiarire in `SPEC-CORE.md` §2 se una stringa può contenere un newline grezzo.**
+  I due runtime attuali lo accettano (i generatori del sito lo usavano), ma la specifica
+  prevede `\n` come escape: è una delle poche cose che il generatore evita dopo la
+  verifica. Decidere (spec o divieto esplicito) e allineare S1.
+- [ ] **Colmare i limiti del seed** rilevati scrivendo i generatori (tutti consentiti da
+  `SPEC-CORE.md` §2–§7, quindi lacune del seed, non della lingua): `print` e `println`
+  multi-argomento; `return` nelle funzioni a blocco; chiamata come ultima espressione del
+  corpo; escape nelle stringhe; `let` con più binding; `readfile`/`strlen`/`strbyte`/`strsub`;
+  indice di lista e `length(lista)`; riferimenti in avanti; letterale con la sottostringa
+  `if` dentro un blocco (il contatore di annidamento conta le occorrenze nel testo). Ogni
+  limite è un candidato per la prossima tappa «A» del seed, con caso di conformance.
+- [x] **Rigenerare le pagine mancanti del sito**: `ai.html`, `apprendimento.html`,
+  `license.html` erano linkate dal NAV di `docs/assets/js/app.js` ma non esistevono; ora sono
+  generate come le altre (`tools/site-gen/site_pages2.td`). Verificato: 182 link interni del
+  sito, nessuno rotto.
+
 ## Recommended execution order
 1. **A01–A06:** First a reliable CI on the real state.
 2. **S0.1–S0.7:** Complete the Core contract before expanding S1.
