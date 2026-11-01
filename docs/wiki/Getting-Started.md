@@ -22,7 +22,7 @@ cd triad2.0
 
 ### Termux (Android)
 
-The S0 seeds are **x86-64 only** and do not run on Android ARM64; there is no ARM64 seed yet (see [`STATUS.md`](../STATUS.md)). On Termux, Triad runs through the **Node.js fallback** with the reference interpreter `seed/dev/triad_core.cjs` — the same mechanism used by the conformance runner:
+The S0 seeds are **x86-64 only** and do not run on Android ARM64; there is no ARM64 seed yet (see [`STATUS.md`](../../STATUS.md)). On Termux, Triad runs through the **Node.js fallback** with the reference interpreter `seed/dev/triad_core.cjs` — the same mechanism used by the conformance runner:
 
 ```bash
 pkg install nodejs git
@@ -33,7 +33,7 @@ triad demo.td              # prints 42
 node conformance/run.mjs   # conformance: OK (37/37)
 ```
 
-This fallback also works on any architecture without a precompiled seed (ARM64 Linux, etc.). The `#!/usr/bin/env triad` shebang works as soon as `bin/` is on the PATH. Limitation: the fallback covers **Triad-Core**; Triad-Full awaits the self-hosted runtime ([`BOOTSTRAP.md`](../BOOTSTRAP.md)).
+This fallback also works on any architecture without a precompiled seed (ARM64 Linux, etc.). The `#!/usr/bin/env triad` shebang works as soon as `bin/` is on the PATH. Limitation: the fallback covers **Triad-Core**; Triad-Full awaits the self-hosted runtime ([`BOOTSTRAP.md`](../../BOOTSTRAP.md)).
 
 ## Your first program
 

@@ -63,4 +63,4 @@ For ergonomics, `try { … } catch e { … }` exists as *syntactic sugar over va
 
 - [Syntax Reference](Syntax-Reference.md) — grammar positions of these constructs
 - [Logic Programming](Logic-Programming.md) — where `Err(:budget)` meets backtracking
-- [`SPEC.md`](../SPEC.md) §errors/contracts/budgets/traces/effects — normative text
+- [`SPEC.md`](../../SPEC.md) §errors/contracts/budgets/traces/effects — normative text

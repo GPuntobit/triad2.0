@@ -2,6 +2,27 @@
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
+## Not released — 2026-11-01: folder reorganization
+
+### Changed
+- Repository tree tidied without touching the contractual paths (`SPEC*.md`, `BOOTSTRAP.md`,
+  `conformance/`, `ai/`, `bin/`, `cli/`, `editors/`, `seed/`, `selfhost/`, `VERSION`, `install.sh`):
+  - `probes/` → `tests/probes/` (probe programs next to `tests/security/`);
+  - `tutorial/` → `docs/tutorial/` and `wiki/` → `docs/wiki/`: all long-form documentation now
+    lives under `docs/`;
+  - `SECURITY-REVIEW.md`, `SECURITY-BACKLOG-TRIAGE.md`, `TRIAGE-SEVERITY.md` → `docs/security/`
+    (`SECURITY.md` stays at the root, GitHub convention);
+  - `PULL_REQUEST.md` → `docs/worklog/PULL_REQUEST-current.md`; the previous draft is archived as
+    `docs/worklog/PULL_REQUEST-reorg-struttura.md`;
+  - legacy Jekyll scaffold (`_config.yml`, `index.md`, `_includes/`, `assets/`) →
+    `tools/site-jekyll/` (the Pages site is deployed as the static `docs/` artifact);
+  - `served.svg` / `served_raw.svg` (drafts of the typing-preview animation) → `docs/assets/img/`;
+    stray `server.err` log removed.
+- References updated in `.github/workflows/ci.yml`, `install.sh`, `scripts/docs/build-libro.mjs`,
+  `scripts/docs/build-epub.cjs`, `tests/security/run.sh`, `README.md`, `docs/MANUALE*.md`,
+  `.codacy.yml`, `.stylelintignore`; relative links in `docs/wiki/` rewritten and verified
+  (90/90 resolve).
+
 ## 0.8.0-beta.7 — 2026-10-31: security hardening, CI integrity & repository cleanup
 
 ### Added

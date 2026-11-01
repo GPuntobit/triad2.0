@@ -15,7 +15,7 @@ Quote / unquote / eval are described in §17.1: `` :(...) `` builds a node value
 
 ## Macros (manual §18)
 
-A macro is a function **on code**: it receives node values and returns a node value that replaces the call site (§18.1, "code that generates code"). Lisp-style hygiene concerns and expansion semantics are defined normatively in [`SPEC.md`](../SPEC.md).
+A macro is a function **on code**: it receives node values and returns a node value that replaces the call site (§18.1, "code that generates code"). Lisp-style hygiene concerns and expansion semantics are defined normatively in [`SPEC.md`](../../SPEC.md).
 
 Practical consequences:
 
@@ -25,11 +25,11 @@ Practical consequences:
 
 ## Why this matters for bootstrap
 
-The self-hosting compiler ([`BOOTSTRAP.md`](../BOOTSTRAP.md)) relies on this property: if the language can represent its own syntax as native data, the compiler written in Triad manipulates the same node values the runtime evaluates. Code-as-data is not a gimmick here; it's the load-bearing wall of the roadmap.
+The self-hosting compiler ([`BOOTSTRAP.md`](../../BOOTSTRAP.md)) relies on this property: if the language can represent its own syntax as native data, the compiler written in Triad manipulates the same node values the runtime evaluates. Code-as-data is not a gimmick here; it's the load-bearing wall of the roadmap.
 
 ## Conformance status
 
-Macro and quote/eval cases are Triad-Full golden expectations today ([`conformance/`](../conformance/README.md)); Core programs run without them.
+Macro and quote/eval cases are Triad-Full golden expectations today ([`conformance/`](../../conformance/README.md)); Core programs run without them.
 
 ## See also
 

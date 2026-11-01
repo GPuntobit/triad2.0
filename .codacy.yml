@@ -1,7 +1,7 @@
 ---
 # Codacy analysis exclusions.
 #
-# Rationale (full triage in TRIAGE-SEVERITY.md):
+# Rationale (full triage in docs/security/TRIAGE-SEVERITY.md):
 #   obsidian-triad/.obsidian/plugins/  third-party minified plugin bundles
 #                                      (karpathywiki, templater-obsidian).
 #                                      Not first-party code: linting them

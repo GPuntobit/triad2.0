@@ -36,7 +36,7 @@ They are part of the language, not a library: errors as data (Err), contracts (r
   <img src="docs/assets/img/learning-curve.svg" alt="Learning curve and learning threshold for Triad 2.0" width="900">
 </p>
 
-Derived from the chapters in [tutorial/TUTORIAL.md](tutorial/TUTORIAL.md) and [docs/MANUALE.md](docs/MANUALE.md): Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
+Derived from the chapters in [docs/tutorial/TUTORIAL.md](docs/tutorial/TUTORIAL.md) and [docs/MANUALE.md](docs/MANUALE.md): Triad-Core is learned by doing (37/37 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
 
 https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
 <p align="center">
@@ -173,7 +173,6 @@ bin/                        POSIX and Windows launchers (triad, triad-cli)
 cli/                        development CLI (triad-cli, Node.js)
 conformance/                golden suite: executable contract for implementations
 conformance/run.mjs         conformance runner (Node, without Julia)
-probes/                     small Core probe programs used by CI and install.sh
 seed/                       S0 machine code seed (Windows PE + Linux ELF E0)
 seed/windows-x86_64/        seed.hex (source) and seed.exe: Triad-Core interpreter
 seed/linux-x86_64/          first Linux ELF (E0): write/exit syscalls, "Triad seed Linux OK"
@@ -183,15 +182,19 @@ scripts/docs/               book/EPUB/DOCX builders, download chart, Triad-gener
 scripts/seed-runner/        Windows batch harnesses for seed experiments
 scripts/experiments/        LLM streaming/translation experiment scripts
 tools/                      developer utilities (webcmd-graphify plugin, push helper)
+tools/site-jekyll/          legacy Jekyll scaffold (the Pages site is deployed from docs/)
 editors/                    VS Code, Vim/Neovim, and Linguist entry
 examples/*.triad, *.td      Triad examples (.triad canonical, .td historical alias)
+tests/probes/               small Core probe programs used by CI and install.sh
 tests/security/             repeatable security tests (where.exe trust, git path, ReDoS, pin SHA)
 ai/                         LLM generation benchmark + verifier (development tool)
 docs/                       GitHub Pages site and long-form documentation
 docs/MANUALE.md             full manual (Core + Full presented together)
+docs/tutorial/              complete usage tutorial + translations (.md, .it, .ru, .zh, .ja)
+docs/wiki/                  English project wiki (Home, Getting Started, Language Guide, ...)
+docs/security/              security review, backlog triage and severity triage records
 docs/releases/              per-version release notes
 docs/worklog/               PR descriptions (current draft + archived)
-tutorial/                   complete usage tutorial + translations (.md, .it, .ru, .zh, .ja)
 obsidian-triad/             Obsidian vault with index and Graphify graph of the repository
 .github/workflows/          CI (ci.yml) and Pages publishing (pages.yml, static.yml)
 BOOTSTRAP.md                plan for independence from Julia and any other language
@@ -201,7 +204,7 @@ STATUS.md / TASK.md         bootstrap progress status, roadmap, task log
 SECURITY.md                 vulnerability reporting policy
 plan.md                     work plan (checklist)
 VERSION / CHANGELOG.md      standard version and history
-README.md / tutorial/TUTORIAL.md  introduction and complete usage tutorial
+README.md / docs/tutorial/TUTORIAL.md  introduction and complete usage tutorial
 LICENSE                     MIT license (open source)
 ```
 

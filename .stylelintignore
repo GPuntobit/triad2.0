@@ -1,2 +1,2 @@
 # Jekyll front matter is not valid SCSS/CSS for linters
-assets/main.scss
+tools/site-jekyll/assets/main.scss
