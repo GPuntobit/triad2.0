@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>Tour — Triad 2.0</title>
+<meta name='description' content='A tour of Triad: block syntax, declared types, multiple dispatch, integrated logic, code as data, errors, contracts and effects.' />
+<link rel='stylesheet' href='../assets/css/style.css' />
+<link rel='stylesheet' href='../assets/css/triad-generated.css' />
+</head>
+<body>
+<div id='site-header'></div>
+<main class='container'>
+<div class='doc-layout'>
+<aside class='doc-sidebar'>
+<h4>Documentation</h4>
+<ul>
+<li><a href='getting-started.html'>Get started</a></li>
+<li><a href='language-tour.html'>Tour</a></li>
+<li><a href='spec.html'>Spec</a></li>
+<li><a href='tutorial.html'>Tutorial</a></li>
+<li><a href='apprendimento.html'>Learning</a></li>
+<li><a href='examples.html'>Examples</a></li>
+<li><a href='playground.html'>Playground</a></li>
+<li><a href='conformance.html'>Conformance</a></li>
+<li><a href='bootstrap.html'>Bootstrap</a></li>
+<li><a href='editors.html'>Editor</a></li>
+<li><a href='status.html'>Status</a></li>
+<li><a href='ai.html'>AI</a></li>
+<li><a href='license.html'>License</a></li>
+</ul>
+</aside>
+<div class='doc-content'>
+<h1>Language tour</h1>
+<p class='section-sub'>Triad has two profiles. Triad-Core is the subset the machine code seed runs today; Triad-Full is the complete standard. Every example below says which profile it belongs to, so you always know what can be executed now.</p>
+<h2>1. Blocks, values and functions</h2>
+<p>Triad-Core has block syntax, functions in two forms, lexical scope, closures and recursion. The value of a block is the value of its last expression, and conditions are <code>Bool</code>: there is no truthiness and no implicit conversion. The arithmetic is on 64 bit integers with wrapped arithmetic, and the remainder keeps the sign of the dividend.</p>
+<div class='code-card'>
+function area(base, height)
+    base * height
+end
+
+square(x) = x * x
+fib(n) = n &lt; 2 ? n : fib(n - 1) + fib(n - 2)
+
+let n = 10
+    println(fib(n))
+end
+</div>
+<h3>Core values</h3>
+<p>The Core types are <code>Int</code>, <code>Bool</code>, <code>String</code>, <code>Symbol</code>, <code>List</code>, <code>Function</code> and <code>Nothing</code>. There is no float literal: a float of the full language is represented with Core values by the self-hosted implementation. Lists are mutable and their indexes start at 1, symbols are written <code>:name</code>, and the conversions <code>Int</code>, <code>string</code> and <code>Symbol</code> are part of the language.</p>
+<h2>2. Declared types and multiple dispatch</h2>
+<p>Triad-Full adds declared types and multiple dispatch: a generic function is a set of methods, and the most specific applicable method wins. Operators extend like ordinary functions, and functions are first class values.</p>
+<div class='code-card'>
+area(n::Number) = :number
+area(n::Int)    = :int
+area(p::Point)  = :point
+
+function +(a::Point, b::Point)
+    Point(a.x + b.x, a.y + b.y)
+end
+</div>
+<h2>3. Logic inside the language</h2>
+<p><strong>Triad-Full.</strong> Facts, rules, unification with occurs-check, backtracking and <code>solve</code> are language features, not a library. A goal on a knowledge base predicate is already a query, and the engine is iterative, so a runaway resolution ends with a budget error instead of a stack overflow. They are not in Triad-Core: the seed has no Prolog, the logic engine arrives with the self-hosted implementation (S1).</p>
+<div class='code-card'>
+fact parent(:tom, :bob)
+rule ancestor(?a, ?d) :- parent(?a, ?d)
+rule ancestor(?a, ?d) :- parent(?a, ?x), ancestor(?x, ?d)
+
+sols = solve ancestor(:tom, ?d) limit 10 depth 50
+</div>
+<h2>4. Code as data</h2>
+<p><strong>Triad-Full.</strong> Quote returns code, a macro receives code and returns code. Expansion is pure and it is not hygienic, so <code>gensym</code> is used for temporary names. The tree of the program is uniform, which is what makes this possible. Quote and macros are not in Triad-Core: they arrive with the self-hosted implementation (S1).</p>
+<div class='code-card'>
+macro swap(a, b)
+    t = gensym(:tmp)
+    quote
+        $t = $a
+        $a = $b
+        $b = $t
+    end
+end
+</div>
+<h2>5. Errors, contracts, budgets, traces and effects</h2>
+<p>These are part of the language and not of a library. The list marks the Triad-Full features: Triad-Core has no error value, no macro and no quote, and an execution error simply ends the program with the exit code 1.</p>
+<ul class='feature-list'>
+<li><code>Err</code> is a value with a kind, a message and data; <code>try</code> makes the error the value of the expression (Full).</li>
+<li><code>requires</code> and <code>ensures</code> declare pre and post conditions, checked at runtime (Full).</li>
+<li><code>with budget(steps = 10_000)</code> bounds the body and yields <code>Err(:budget)</code> when it is exhausted (Full).</li>
+<li><code>with trace</code> returns the trace as a value, not as printed output (Full).</li>
+<li>Effects are declared in the signature: <code>!io</code>, <code>!state</code> (Full).</li>
+</ul>
+<p class='section-sub'>Source: SPEC.md §5-§12, SPEC-CORE.md §3-§7, README.md.</p>
+</div>
+</div>
+</main>
+<div id='site-footer'></div>
+<script src='../assets/js/app.js'></script>
+<script>TriadSite.mount('Tour')</script>
+</body>
+</html>

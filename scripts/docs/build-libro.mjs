@@ -37,6 +37,18 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
+// Decodifica le entità di base lasciate da marked nei titoli (es. `&#39;` negli apostrofi),
+// altrimenti escapeHtml le raddoppierebbe in `&amp;#39;` e comparirebbero letterali nel TOC
+// e nel documento Word generato.
+function decodeBasicEntities(s) {
+  return String(s)
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
 function slugify(s) {
   return String(s).toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -69,7 +81,7 @@ function addHeadingIds(html, prefix, toc) {
     const m = html.slice(h.start, h.end);
     const level = h.level;
     const text = html.slice(h.textStart, h.textEnd);
-    const plain = stripHtmlTagsSafely(text);
+    const plain = decodeBasicEntities(stripHtmlTagsSafely(text));
     if (level === '1' && firstH1) { firstH1 = false; out += m; cursor = h.end; continue; }
     const base = prefix + '-' + slugify(plain);
     let slug = base;
@@ -84,10 +96,14 @@ function addHeadingIds(html, prefix, toc) {
   return out;
 }
 
-const preface = readFileSync(join(root, 'docs', 'PREFazione.md'), 'utf8');
+// Il libro italiano si costruisce dalle fonti italiane: PREFazione.it.md, FONDAMENTA.it.md,
+// MANUALE.it.md e tutorial/TUTORIAL.it.md. I file senza suffisso sono le traduzioni in corso
+// in inglese e non vanno usati per questo volume.
+const preface = readFileSync(join(root, 'docs', 'PREFazione.it.md'), 'utf8');
 const prefaceHtml = rewriteRepositoryLinks(marked.parse(preface));
-const manualeRaw = readFileSync(join(root, 'docs', 'MANUALE.md'), 'utf8');
-const tutorialRaw = readFileSync(join(root, 'docs', 'tutorial', 'TUTORIAL.md'), 'utf8');
+const fondamentaRaw = readFileSync(join(root, 'docs', 'FONDAMENTA.it.md'), 'utf8');
+const manualeRaw = readFileSync(join(root, 'docs', 'MANUALE.it.md'), 'utf8');
+const tutorialRaw = readFileSync(join(root, 'docs', 'tutorial', 'TUTORIAL.it.md'), 'utf8');
 
 function stripIndice(md, heading, endMarker) {
   const start = md.indexOf(heading);
@@ -126,8 +142,10 @@ const tutorial = namespaceAnchors(
   'tut'
 );
 
+const fondamentaToc = [];
 const manualeToc = [];
 const tutorialToc = [];
+const fondamentaHtml = rewriteRepositoryLinks(addHeadingIds(marked.parse(fondamentaRaw), 'fond', fondamentaToc));
 const manualeHtml = rewriteRepositoryLinks(addHeadingIds(marked.parse(manuale), 'man', manualeToc));
 const tutorialHtml = rewriteRepositoryLinks(addHeadingIds(marked.parse(tutorial), 'tut', tutorialToc));
 
@@ -144,6 +162,7 @@ function buildToc(groups) {
 }
 
 const tocHtml = buildToc([
+  { label: 'Fondamenta: programmare da zero', entries: fondamentaToc },
   { label: 'Manuale di Triad 2.0', entries: manualeToc },
   { label: 'Tutorial di Triad 2.0', entries: tutorialToc }
 ]);
@@ -169,8 +188,9 @@ const backCoverHtml = `<div class="backcover">
   ancora un test di avvio E0, non un interprete. Il piano di bootstrap prevede S1 (un interprete
   Triad scritto in Triad-Core), S2
   (compilatore nativo), S3 (self-hosting) e S4 (parità cross-platform).</p>
-  <p>Questo libro è il percorso di studio del linguaggio per come è definito dallo standard. Il
-  Manuale e il Tutorial alternano spiegazioni concettuali, semantica tecnica, esempi annotati,
+  <p>Questo libro è il percorso di studio del linguaggio per come è definito dallo standard. Le
+  Fondamenta insegnano la programmazione da zero usando Triad, per chi non ha mai scritto un
+  programma. Il Manuale e il Tutorial alternano spiegazioni concettuali, semantica tecnica, esempi annotati,
   esercizi e riferimenti alla specifica. Ciascun testo presenta i concetti nel punto in cui servono
   e distingue i costrutti eseguibili oggi da quelli definiti dallo standard ma non ancora supportati.
   Il Tutorial accompagna prima il lettore nei costrutti Core eseguibili oggi, poi
@@ -210,8 +230,16 @@ const html = `<!DOCTYPE html>
 <meta charset="utf-8">
 <title>Il libro di Triad</title>
 <style>
-  @page { size: 152.4mm 228.6mm; margin: 15mm 12mm; @bottom-center { content: counter(page); font-size: 9pt; color: #666; } }
-  @page :first { margin: 0; }
+  /* Margini KDP (taglio 152.4mm x 228.6mm = 6"x9"): margini uguali su tutti i lati
+     (19.05mm = 0.75") e geometria identica su ogni pagina, senza alternanza
+     recto/verso: il blocco del testo e il numero di pagina stanno nella stessa
+     posizione su tutte le pagine. 0.75" copre il gutter minimo KDP anche per
+     401-500 pagine (0.75"); esterno/sopra/sotto superano il minimo di 0.25"
+     (6.35mm). Il padding-bottom della margin box tiene il numero >= 6.35mm dal
+     bordo di taglio. */
+  @page { size: 152.4mm 228.6mm; margin: 19.05mm; @bottom-center { content: counter(page); font-family: 'Liberation Serif', 'Times New Roman', Georgia, serif; font-size: 9pt; color: #666; padding-bottom: 4mm; } }
+  /* Nessun numero di pagina sulla copertina: la margin box non ha spazio (margin 0). */
+  @page :first { margin: 0; @bottom-center { content: none; } }
   html, body { font-family: 'Liberation Serif', 'Times New Roman', 'DejaVu Serif', Georgia, serif; font-size: 10.5pt; line-height: 1.6; color: #1a1a1a; }
   h1, h2, h3, h4 { font-family: 'Liberation Sans', 'Helvetica Neue', Arial, sans-serif; color: #0d0a0f; page-break-after: avoid; margin-top: 18pt; margin-bottom: 6pt; }
   h1 { font-size: 18pt; margin-top: 24pt; border-bottom: 1.2pt solid #7d5157; padding-bottom: 4pt; }
@@ -220,18 +248,23 @@ const html = `<!DOCTYPE html>
   p { margin: 6pt 0 8pt 0; text-align: justify; orphans: 3; widows: 3; text-indent: 0; }
   p + p { text-indent: 1.2em; margin-top: 0; }
   a { color: #d0405a; text-decoration: none; }
-  code { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace; font-size: 9pt; background: #f3f1f4; padding: 1pt 3pt; border-radius: 2pt; }
-  pre { background: #f3f1f4; color: #1a1a1a; padding: 10pt 12pt; border-radius: 4pt; overflow-x: auto; margin: 8pt 0; border-left: 3pt solid #d0405a; }
+  code { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace; font-size: 9pt; background: #f3f1f4; padding: 1pt 3pt; border-radius: 2pt; overflow-wrap: anywhere; }
+  /* I token lunghi (path, hash) devono poter andare a capo: se una tabella o un codice
+     sfora la colonna, Chrome riduce l'intero documento per "adattare" (font e copertina
+     verrebbero rimpiccioliti). overflow-wrap: anywhere abbassa anche la min-content. */
+  pre { background: #f3f1f4; color: #1a1a1a; padding: 10pt 12pt; border-radius: 4pt; white-space: pre-wrap; overflow-wrap: break-word; margin: 8pt 0; border-left: 3pt solid #d0405a; }
   pre code { background: none; color: inherit; padding: 0; font-size: 8.5pt; line-height: 1.4; }
   table { border-collapse: collapse; width: 100%; margin: 10pt 0; font-size: 9.5pt; }
-  th, td { border: 0.5pt solid #b8b0aa; padding: 4pt 6pt; }
+  th, td { border: 0.5pt solid #b8b0aa; padding: 4pt 6pt; overflow-wrap: anywhere; }
   th { background: #ece8e4; font-weight: bold; }
   tr:nth-child(even) td { background: #f7f5f3; }
   img { max-width: 100%; }
   blockquote { border-left: 2pt solid #7d5157; margin: 8pt 0; padding: 4pt 10pt; color: #444; font-style: italic; background: #f9f7f5; }
   hr { border: none; border-top: 0.5pt solid #7d5157; margin: 14pt 0; }
-  .cover { page-break-after: always; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; text-align: center; }
-  .cover img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; margin: auto; }
+  /* Copertina a tutta pagina: -8px annulla il margin predefinito del body (8px) sulla pagina
+     :first, che ha margini nulli; l'immagine 2:3 copre esattamente i 432x648pt della pagina. */
+  .cover { page-break-after: always; margin: -8px; padding: 0; text-align: center; }
+  .cover img { width: 432pt; height: 648pt; max-width: none; display: block; }
   .index-page { page-break-after: always; }
   .sommario-list { list-style: none; padding-left: 0; }
   .sommario-list .sl1 { font-weight: bold; margin-top: 8pt; }
@@ -245,11 +278,15 @@ const html = `<!DOCTYPE html>
   .backcover p { text-align: justify; font-size: 10.5pt; line-height: 1.6; }
   .backcover code { background: #1a1520; color: #f5f5f4; }
   .toc { page-break-after: always; }
+  /* Indice con la stessa identica impaginazione tipografica del resto del volume: voci scure
+     sulla rampa di colori dei titoli (h1 #0d0a0f / h2 #2a1a1f / h3 #3a2a2f) invece dei link
+     rossi in stile web. Le voci restano collegamenti cliccabili nel PDF (color: inherit). */
   .toc-list { list-style: none; padding-left: 0; }
-  .toc-list li { margin: 2pt 0; font-size: 10pt; }
-  .toc-list .toc-l1 { font-weight: bold; margin-top: 8pt; }
-  .toc-list .toc-l2 { padding-left: 14pt; }
-  .toc-list .toc-l3 { padding-left: 28pt; font-size: 9pt; }
+  .toc-list li { margin: 2pt 0; }
+  .toc-list a { color: inherit; }
+  .toc-list .toc-l1 { font-weight: bold; color: #0d0a0f; font-size: 10.5pt; margin-top: 8pt; }
+  .toc-list .toc-l2 { color: #2a1a1f; font-size: 10pt; padding-left: 14pt; }
+  .toc-list .toc-l3 { color: #3a2a2f; font-size: 9pt; padding-left: 28pt; }
   .part { page-break-before: always; }
   ul, ol { margin: 6pt 0 8pt 18pt; }
   li { margin: 3pt 0; }
@@ -263,6 +300,9 @@ const html = `<!DOCTYPE html>
   </div>
   <div class="index-page">
     ${tocHtml}
+  </div>
+  <div class="part">
+    ${fondamentaHtml}
   </div>
   <div class="part">
     ${manualeHtml}

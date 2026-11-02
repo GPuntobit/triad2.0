@@ -2,7 +2,6 @@
 const RAW_BASE = 'https://raw.githubusercontent.com/GPuntobit/triad2.0/main/';
 
 const NAV = [
-  { href: 'index.html', label: 'Home' },
   { href: 'pages/getting-started.html', label: 'Get started' },
   { href: 'pages/language-tour.html', label: 'Tour' },
   { href: 'pages/spec.html', label: 'Spec' },
@@ -15,6 +14,7 @@ const NAV = [
   { href: 'pages/editors.html', label: 'Editor' },
   { href: 'pages/ai.html', label: 'AI' },
   { href: 'pages/status.html', label: 'Status' },
+  { href: 'pages/license.html', label: 'License' },
 ];
 
 function renderHeader(active) {
@@ -85,7 +85,7 @@ function renderFooter() {
     { href: 'pages/tutorial.html', text: 'TUTORIAL.md' },
     { href: 'pages/bootstrap.html', text: 'BOOTSTRAP.md' },
     { href: 'pages/status.html', text: 'STATUS.md' },
-    { href: 'libro/book.html', text: 'The book' },
+    { href: 'libro/libro.html', text: 'The book' },
     { href: 'libro/The-book-of-Triad.epub', text: 'EPUB' }
   ].forEach(linkData => {
     const a = document.createElement('a');
@@ -178,6 +178,22 @@ function mount(active) {
     const href = a.getAttribute('href');
     if (!/^([a-z]+:|#|\/)/i.test(href)) a.setAttribute('href', prefix + href);
   }));
+  markSidebar();
+}
+
+/* Evidenzia nella sidebar della documentazione la pagina corrente: il
+   markup è generato da Triad (tools/site-gen) e non porta la classe
+   'active', che qui viene aggiunta al link che punta alla pagina aperta. */
+function markSidebar() {
+  const here = globalThis.location.pathname.split('/').pop();
+  if (!here) return;
+  globalThis.document.querySelectorAll('.doc-sidebar a').forEach(a => {
+    const href = (a.getAttribute('href') || '').split('#')[0];
+    if (href && href.split('/').pop() === here) {
+      a.classList.add('active');
+      a.setAttribute('aria-current', 'page');
+    }
+  });
 }
 
 async function loadMarkdown(targetId, file) {

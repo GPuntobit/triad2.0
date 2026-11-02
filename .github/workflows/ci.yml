@@ -19,6 +19,27 @@ jobs:
       - name: Conformance Core (Node runner)
         run: node conformance/run.mjs --cases conformance/core/cases --skip liste
 
+  site-gen:
+    # Il sito statico in docs/ è generato da programmi Triad (tools/site-gen).
+    # La CI verifica due cose: che i sorgenti dei generatori restino nel
+    # sottoinsieme Triad-Core portabile, e che i file pubblicati coincidano
+    # con il generato. Su Windows il confronto avviene anche fra i due
+    # runtime (seed in codice macchina e interprete di riferimento JS).
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '20'
+      - name: Lint dei generatori Triad
+        run: node tools/site-gen/lint.mjs
+      - name: Sito generato in sync con i sorgenti
+        run: node tools/site-gen/build.mjs --check
+
   seed-windows:
     runs-on: windows-latest
     steps:
@@ -35,7 +56,7 @@ jobs:
       - name: Seed conformance cases
         shell: pwsh
         run: |
-          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','if_elseif','if_nested','if_no_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni_io','funzioni','aritmetica','begin_block','formula','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if','liste_base','liste_push')
+          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','if_elseif','if_nested','if_no_else','while_loop','while_annidati','while_sentinella','lambda','closure','chiusure','scope','funzioni_blocco','funzioni_io','funzioni','aritmetica','begin_block','formula','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if','liste_base','liste_push')
           foreach ($c in $cases) {
             $out = Join-Path $env:TEMP "$c.out"
             Remove-Item $out -ErrorAction SilentlyContinue

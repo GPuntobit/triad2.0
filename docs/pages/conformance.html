@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>Conformance — Triad 2.0</title>
+<meta name='description' content='The conformance suite of Triad: golden cases with expected output and exit code, the two profiles, and how to run and extend them.' />
+<link rel='stylesheet' href='../assets/css/style.css' />
+<link rel='stylesheet' href='../assets/css/triad-generated.css' />
+</head>
+<body>
+<div id='site-header'></div>
+<main class='container'>
+<div class='doc-layout'>
+<aside class='doc-sidebar'>
+<h4>Documentation</h4>
+<ul>
+<li><a href='getting-started.html'>Get started</a></li>
+<li><a href='language-tour.html'>Tour</a></li>
+<li><a href='spec.html'>Spec</a></li>
+<li><a href='tutorial.html'>Tutorial</a></li>
+<li><a href='apprendimento.html'>Learning</a></li>
+<li><a href='examples.html'>Examples</a></li>
+<li><a href='playground.html'>Playground</a></li>
+<li><a href='conformance.html'>Conformance</a></li>
+<li><a href='bootstrap.html'>Bootstrap</a></li>
+<li><a href='editors.html'>Editor</a></li>
+<li><a href='status.html'>Status</a></li>
+<li><a href='ai.html'>AI</a></li>
+<li><a href='license.html'>License</a></li>
+</ul>
+</aside>
+<div class='doc-content'>
+<h1>Conformance</h1>
+<p class='section-sub'>The conformance suite is the executable contract of Triad: golden cases that every implementation must reproduce byte for byte. The Triad-Core profile is green at 37 of 37 cases; in the Triad-Full profile only the error case passes today, because the rest of the full language is not implemented yet.</p>
+<h2>1. The format of a case</h2>
+<p>Each case is a directory with the program, the optional arguments and the golden outputs. The case passes when the standard output is byte for byte equal to the golden file and the exit code is the expected one. Standard error is not compared: it carries diagnostics only, and no case reads from the standard input, so the suite is deterministic.</p>
+<div class='code-card'>
+cases/&lt;name&gt;/
+  program.td      # the Triad program, run as a script
+  args.txt        # optional: one argument per line, becomes ARGS
+  expected.out    # expected stdout, exact bytes, LF line endings
+  expected.code   # expected exit code
+</div>
+<h2>2. The two profiles</h2>
+<p>The Core profile lives in <code>conformance/core/cases</code> and uses only the subset of SPEC-CORE.md, so those cases are normative for both profiles. The Full profile lives in <code>conformance/cases</code> and covers the whole language: struct and dispatch, facts and rules, macros, deconstruction, contracts, budgets and traces. The Full goldens were generated once and are frozen: from that moment they are the contract.</p>
+<h3>Missing goldens</h3>
+<p>The runner reads <code>expected.out</code> and, when it is absent, the identical copy <code>expected.golden</code>. When neither is there the case fails with the message <code>golden mancante</code>: it usually means that the checkout is incomplete, because the repository ignores the files that end with <code>.out</code> except the expected ones. A case can never pass without its golden.</p>
+<h2>3. Running the suite</h2>
+<p>The runner is a Node.js script with no Julia dependency. It uses the runtime given by <code>TRIAD_SEED</code>, otherwise the reference interpreter on Linux and macOS, otherwise the Windows seed executable.</p>
+<div class='code-card'>
+node conformance/run.mjs                                  # Core profile, 37 cases
+node conformance/run.mjs --cases conformance/cases       # Full profile, 12 cases
+node conformance/run.mjs --skip liste                     # skip some cases
+node conformance/run.mjs --update                         # regenerate the goldens
+</div>
+<p>Continuous integration runs the suite on every change: a job on Ubuntu with the reference interpreter, a job on the Windows PE seed with the subset of Core cases that the seed supports, and a job for the Linux ELF seed with its hash. The seed hash is checked, so a change in the machine code is always visible in the diff.</p>
+<h2>4. Adding a case</h2>
+<p>Create the directory, write a deterministic program with no input, then generate the goldens with the update option and read them before committing. The goldens are versioned together with the specification, and a missing golden makes the case fail instead of passing silently.</p>
+<p class='section-sub'>Source: conformance/README.md, SPEC.md §16.2, STATUS.md, .github/workflows/ci.yml.</p>
+</div>
+</div>
+</main>
+<div id='site-footer'></div>
+<script src='../assets/js/app.js'></script>
+<script>TriadSite.mount('Conformance')</script>
+</body>
+</html>

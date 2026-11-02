@@ -1,0 +1,3 @@
+xs = [1, 2, 3]
+println(xs[1])
+println(length(xs))

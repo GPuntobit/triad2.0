@@ -245,6 +245,26 @@ Gli strumenti in Node.js (`seed/dev/*.js`, `conformance/run.mjs`, `cli/`) sono *
 sviluppo**: aiutano a generare e verificare, ma non fanno parte della catena S0→S4. La Parte IV
 del libro li presenta uno per uno, spiegando che cosa fanno e perché sono esterni al bootstrap.
 
+### Esercizi
+
+1. **Core o Full?** Classifica: `while`, `fact`, `struct`, `lambda`, `for`, `macro`, `push!`,
+   `solve`, `try`, `println`.
+2. **Perché due profili.** Spiega con le tue parole perché il linguaggio ha un profilo Core
+   «di bootstrap» e uno Full «standard».
+3. **La catena di bootstrap.** Ordina e descrivi le tappe S0–S4: quale è realizzata oggi?
+4. **Cosa gira oggi.** Che cosa può fare il seed Linux attuale? E il seed Windows?
+5. **Core dentro Full.** Scrivi un programma Core e spiega perché è anche un programma Full
+   valido, e che cosa gli sarebbe richiesto in più.
+6. **Le fonti normative.** Quali file del repository definiscono il linguaggio? Trovali e apri
+   la sezione sugli operatori.
+7. **I runtime.** Individua nel repository l'interprete JS di riferimento e il generatore del
+   seed Windows: in quali file stanno?
+8. **Golden e verifiche.** Perché per gli esempi Full si parla di output golden? Che cosa
+   distingue un output verificato da uno atteso?
+9. **Tre cose proprie.** Elenca tre aspetti di Triad che non vengono da Julia, Prolog o Lisp.
+10. **Il tuo primo Core.** Scrivi un programma che usi variabile, `if` e `while`, eseguilo con
+    l'interprete JS e conferma che sia Core puro.
+
 ---
 
 <a id="cap-2"></a>
@@ -374,6 +394,23 @@ usa l'eseguibile standalone `triad-cli.exe` / `triad-cli` allegato alla
 [capitolo 39](#cap-39). Per seguire la Parte II la CLI non serve: gli esempi si eseguono
 direttamente con `node`.
 
+### Esercizi
+
+1. **Requisiti.** Verifica `node --version` e la presenza del repository: quale versione serve?
+2. **Eseguire un file.** Esegui un programma con `node seed/dev/triad_core.cjs file.triad` e con
+   l'estensione `.td`: entrambe funzionano?
+3. **Materializzare il seed.** Segui la procedura del paragrafo 2.3 e verifica il seed ottenuto.
+4. **Il launcher.** Prova `bin/triad` (e `bin/triad.cmd` su Windows): quale runtime usano?
+5. **Codici di uscita.** Produci programmi con codice `0`, `1` e `2` e verificali dal terminale.
+6. **La CLI di sviluppo.** Esegui `node cli/triad-cli.mjs test conformance` e leggi il riepilogo.
+7. **File mancante.** Esegui un programma inesistente: quale errore e quale codice di uscita?
+8. **Percorsi.** Scrivi lo stesso comando di esecuzione nella forma Windows e nella forma
+   Linux/macOS: che cosa cambia?
+9. **Due runtime, un programma.** Esegui lo stesso programma con `bin/triad` e con l'interprete
+   JS: gli output coincidono?
+10. **Dalla cartella giusta.** Esegui un programma da un'altra cartella usando percorsi relativi
+    e assoluti: che cosa insegna sui percorsi?
+
 ---
 
 <a id="cap-3"></a>
@@ -454,6 +491,27 @@ node seed/dev/triad_core.cjs args.triad uno due      # [uno, due]  poi  2
 
 Lo stesso ciclo vale per gli esercizi del capitolo 17: prima si scrive il programma, poi si
 confronta l'output con quello atteso, e solo alla fine, se serve, si guarda la soluzione.
+
+### Esercizi
+
+1. **`ARGS`.** Scrivi un programma che stampi i suoi argomenti e provalo con zero, uno e tre
+   argomenti.
+2. **Senza argomenti.** Che cosa vede `ARGS` quando il programma non riceve nulla? Verifica
+   stampandolo.
+3. **Ciclo di lavoro.** Applica il ciclo consigliato del paragrafo 3.2 a un programma nuovo di
+   tua invenzione.
+4. **Una modifica alla volta.** Applica tre modifiche successive a un programma, rieseguendo
+   dopo ciascuna: quale modifica ha introdotto l'errore?
+5. **Commentare.** Commenta riga per riga un tuo programma: quale riga era la meno chiara?
+6. **Output di tre righe.** Produci un output di tre righe esatte con `println` e verificalo
+   carattere per carattere.
+7. **Il nome conta.** Che cosa succede con un file `prova.triad.txt`? E con `prova.td`?
+8. **Errore volontario.** Introduci un errore di sintassi, leggi il messaggio e correggilo in
+   meno di un minuto.
+9. **Mini-conformance.** Scrivi il tuo output atteso su un foglio prima di eseguire, poi
+   confronta: hai previsto tutto?
+10. **`ARGS` utile.** Scrivi un programma che, dato un numero `n` come argomento, stampi i numeri
+    da 1 a `n`.
 
 ---
 <a id="parte-2"></a>
@@ -543,6 +601,28 @@ non va interpretato con le abitudini di un altro linguaggio: se un escape o un s
 compare nella tabella, il runtime non lo riconosce.
 
 Riferimento: `conformance/core/cases/aritmetica`, `simboli_base`, `stringhe_base`.
+
+### Esercizi
+
+1. **Identificatori.** Quali nomi sono validi? `_x`, `x!`, `push!`, `2x`, `x2`, `x-y`, `x_y`.
+   Provali come nomi di variabili.
+2. **Numeri.** Scrivi un milione in tre forme ammesse (`1000000`, `1_000_000`…) e un intero
+   negativo: come vengono stampati?
+3. **Stringhe ed escape.** Stampa una stringa con `\n`, `\t`, `\"`, `\\`: ricrea a mano l'output
+   atteso prima di eseguire.
+4. **Simboli.** Scrivi `:ok`, `:nome` e il simbolo `:+`: che cosa cambia rispetto alle stringhe
+   con lo stesso testo?
+5. **Commenti.** Scrivi un programma con `#` e `#= ... =#` in tre posizioni diverse: il
+   comportamento cambia mai?
+6. **Separatori.** Due istruzioni su una riga con `;`, poi la stessa coppia su due righe: è lo
+   stesso programma per il parser?
+7. **Operatori Core.** Elenca tutti gli operatori Core e scrivi un esempio per ciascun gruppo
+   (aritmetica, confronto, logica, assegnamento, scelta).
+8. **Lettura del codice.** Dividi in token questa riga: `x = n + 1  # avanzamento` e spiega
+   quale pezzo il parser ignora.
+9. **Refusi.** Scrivi apposta `printn`, `elsa`, `whlie`: quale errore produce ciascuno?
+10. **Con la grammatica.** Confronta la sintassi di questo capitolo con la grammatica del
+    [capitolo 44](#cap-44): quale regola produce i numeri con `_`?
 
 ---
 
@@ -642,6 +722,23 @@ lettura e analisi del sorgente.
 
 Riferimento: `conformance/core/cases/valori`, `nothing_base`, `confronti`.
 
+### Esercizi
+
+1. **`print` o `println`?** Stampa tre parole su una sola riga con `print` e chiudi con
+   `println()`: quale differenza con tre `println`?
+2. **Argomenti multipli.** `println("a", 1, true)`: come vengono concatenati? Prevedi e verifica.
+3. **Simboli in due modi.** Spiega perché `println(:a)` stampa `a` e `println([:a])` stampa `[:a]`.
+4. **Uguaglianza di liste.** Valuta `[1, [2, [3]]] == [1, [2, [3]]]` e `[1, 2] == [2, 1]`:
+   quale regola si applica?
+5. **Funzioni uguali.** Con `f(x) = x` e `g(x) = x`, che cosa valgono `f == f` e `f == g`? Perché?
+6. **`typeof` completo.** Stampa `typeof` per `42`, `"s"`, `true`, `:a`, `[1]`, `nothing`.
+7. **`42` e `"42"`.** Perché `42 + 1` funziona e `"42" + 1` no? Quale regola di `+` si applica?
+8. **Stampare `nothing`.** Che cosa produce `println(nothing)`? E `println(typeof(nothing))`?
+9. **Formattazione esatta.** Producì l'output `a b c` (una riga, spazi esatti) usando almeno due
+   tecniche diverse.
+10. **Il caso di conformance.** Esegui il caso di conformance da cui deriva questo capitolo e
+    confronta byte per byte il tuo output con il golden.
+
 ---
 
 <a id="cap-6"></a>
@@ -714,6 +811,26 @@ condiviso, non solo su una singola associazione nome-valore. Il capitolo 11 most
 questa differenza nel codice.
 
 Riferimento: `conformance/core/cases/variabili`.
+
+### Esercizi
+
+1. **L'assegnamento produce un valore.** Che cosa stampa `println(x = 7)`? Perché?
+2. **Le scorciatoie.** Riscrivi `n += 3`, `n -= 2`, `n *= 4` in forma esplicita: il risultato
+   cambia? Su quale runtime delle due le scorciatoie complete non sono disponibili?
+3. **Nome indefinito.** `println(k)` senza assegnamento: quale errore? E quale su un programma
+   dove `k` è assegnato solo in un ramo di un `if`?
+4. **Tabella dei valori.** Traccia `a = 1`, `b = a + 1`, `a = a * 10`, `c = a + b` e conferma
+   l'output con `println(a, " ", b, " ", c)`.
+5. **Riassegnare o mutare.** Con `xs = [1, 2]` e `alias = xs`: che cosa vede `alias` dopo
+   `xs[1] = 9`? E dopo `xs = [5]`?
+6. **Nomi.** Perché `eta` e `Eta` sono diverse? Quale convenzione di nomenclatura usa il libro?
+7. **Cambio di tipo.** `x = 1` poi `x = "ciao"`: permesso, ma saggio? Scrivi la variante con due
+   nomi diversi.
+8. **`xs[i] += 1`.** Perché il lato sinistro viene valutato una volta sola? Costruisci un caso
+   in cui una doppia valutazione darebbe un risultato diverso.
+9. **Contatore.** Senza guardare, scrivi il ciclo che conta da 1 a 5 con `+=` e un `while`.
+10. **Il caso di conformance.** Esegui il caso del capitolo e spiega perché usa solo assegnamenti
+    su nomi preesistenti.
 
 ---
 
@@ -828,6 +945,27 @@ usa parentesi: rendono esplicita la struttura che vuoi e aiutano a distinguere u
 raggruppamento da un errore nel valore degli operandi.
 
 Riferimento: `conformance/core/cases/aritmetica`, `operatori`, `interi`, `confronti`.
+
+### Esercizi
+
+1. **Precedenza.** Calcola a mano `2 + 3 * 4`, `(2 + 3) * 4`, `2 ^ 3 ^ 2`, `1 + 2 == 3` e
+   verifica con un programma.
+2. **`^` associativo a destra.** Scrivi con le parentesi il raggruppamento di `2 ^ 3 ^ 2` e
+   spiega il risultato (`512`).
+3. **Resto.** Valuta `7 % 3`, `10 % 5`, `-7 % 3`: quale definizione di `%` usa Triad?
+4. **A 64 bit, con wrap.** Che cosa stampa `println(9_223_372_036_854_775_807 + 1)`? Verifica e
+   spiega con l'aritmetica in complemento a due del volume.
+5. **Cortocircuito.** Dimostra che in `false && <secondo>` il secondo operando non viene
+   valutato (per esempio con una chiamata che stamperebbe qualcosa).
+6. **Ternario.** Riscrivi un `if`/`else` come `cond ? a : b` e viceversa: quando conviene quale?
+7. **`=` e `==`.** Che cosa produce `if x = 0`? Perché il linguaggio segnala l'errore invece di
+   comportarsi in modo misterioso?
+8. **Confronti combinati.** Scrivi un'espressione che sia vera solo per i numeri fra 10 e 20
+   inclusi, e provala con quattro valori.
+9. **Solo `Bool`.** Perché `if 1` e `while "s"` sono errori? Quale regola del volume difende
+   questa scelta?
+10. **Il caso di conformance.** Esegui il caso del capitolo, prevedi ogni riga dell'output e poi
+    confronta.
 
 ---
 
@@ -957,6 +1095,26 @@ quando vuoi solo tenere insieme istruzioni, `let` quando un nome locale deve res
 Riferimento: `conformance/core/cases/controllo`, `if_else`, `if_elseif`, `if_nested`,
 `if_no_else`, `while_loop`, `let_annidato`, `begin_block`.
 
+### Esercizi
+
+1. **Classificare.** Con `if`/`elseif`/`else` classifica un intero in `negativo`, `zero`,
+   `piccolo` (1–9), `grande` (≥ 10).
+2. **Contatore.** Scrivi un `while` che stampi i numeri pari da 2 a 20.
+3. **`break`.** Trova il primo numero la cui somma con 10 supera 50, interrompendo il ciclo.
+4. **`continue` e la sua variante.** Stampa i dispari da 1 a 9 con `continue`; poi riscrivilo
+   senza `continue` perché giri anche sul seed Windows.
+5. **Due cicli.** Con una variabile di stato, interrompi due `while` annidati appena `i * j`
+   supera 12.
+6. **`let` e visibilità.** Che cosa succede a una variabile nata dentro un `let` dopo il blocco?
+   Verifica con un accesso dall'esterno.
+7. **`begin`.** Costruisci un esempio in cui `begin … end` serve per raggruppare più istruzioni
+   dove ci vuole un'espressione.
+8. **`while` come espressione.** `x = while … end`: gira sull'interprete JS? E sul seed?
+   Confronta con il capitolo 15.
+9. **Condizione non `Bool`.** Un `while` con condizione intera: che cosa fanno i due runtime?
+   Scrivi il programma che lo dimostra e annota la divergenza.
+10. **Il caso di conformance.** Esegui il caso del capitolo e spiega ogni istruzione del golden.
+
 ---
 
 <a id="cap-9"></a>
@@ -1069,6 +1227,25 @@ sarà valido quando passerà a Full e perché documenta l'intenzione di chi l'ha
 
 Riferimento: `conformance/core/cases/funzioni`, `funzioni_semplici`, `funzioni_blocco`,
 `funzioni_io`, `ricorsione`, `gcd`, `formula`.
+
+### Esercizi
+
+1. **Tre forme.** Scrivi `quadrato` in forma breve, blocco e anonima: quale usi e quando?
+2. **L'ultima espressione.** Cosa restituisce una funzione il cui corpo termina con
+   `println(x)`? Verifica usando il risultato.
+3. **`return`.** Scrivi `descrizione(n)` con due `return` anticipati e l'ultima espressione.
+4. **Arity.** Quali errori ottieni chiamando `f()`, `f(1, 2)` per `f(x)`? E per `f(x, y)`?
+5. **Ricorsione.** Scrivi `conta(n)` che stampa da `n` a 1 e poi `via!`; individua caso base e
+   passo ricorsivo.
+6. **`!io`.** A cosa serve l'annotazione `!io` in una firma? Scrivi una funzione `!io` che
+   stampi e una pura che non può.
+7. **Funzione come valore.** Assegna una funzione a una variabile e usala dove servirebbe una
+   lambda.
+8. **Ordine di definizione.** Cosa succede a chiamare una funzione prima di definirla? Verifica
+   e spiega.
+9. **Comporre.** Scrivi `fattoriale` che usi `prodotto(a, b)`: quante funzioni ci sono e chi chiama
+   chi?
+10. **Il caso di conformance.** Esegui il caso del capitolo e confronta con il tuo programma.
 
 ---
 
@@ -1192,6 +1369,26 @@ anche da una funzione nominata ([capitolo 11](#cap-11)).
 Riferimento: `conformance/core/cases/lambda`, `closure`, `chiusure`, `chiusure_local`,
 `chiusura_in_if`, `let_chiusura`, `scope`.
 
+### Esercizi
+
+1. **Lambda.** Scrivi `x -> x * 2`, assegnala a un nome e chiamala.
+2. **Quanti parametri?** Una lambda con due parametri: gira sull'interprete JS? E sul seed
+   Windows (cap. 15)? Provala.
+3. **Chiusure diverse.** Scrivi un contatore con una chiusura e osserva la differenza fra
+   cattura per valore (seed) e condivisa (interprete JS) descritta nel capitolo 15.
+4. **Cosa vede una funzione.** Una funzione legge le variabili del programma che la contiene?
+   E il programma quelle della funzione? Verifica entrambe.
+5. **Shadowing.** Con `x = 1` esterno e `let x = 2` interno, che cosa stampa dentro e fuori il
+   blocco?
+6. **Cattura e mutazione.** Una chiusura che cattura una lista vede le modifiche fatte con
+   `push!`? Verifica.
+7. **Lambda come argomento.** Passa una lambda a una funzione di ordine superiore scritta in
+   Core (cap. 16.1).
+8. **Anonima o lambda.** Riscrivi `function (x) x + 1 end` in forma lambda e viceversa.
+9. **Parametri locali.** Modificare un parametro dentro la funzione cambia l'argomento del
+   chiamante? Prova con un `Int` e con una lista.
+10. **Il caso di conformance.** Esegui il caso del capitolo e spiega l'output atteso.
+
 ---
 
 <a id="cap-11"></a>
@@ -1261,6 +1458,26 @@ un indice fuori limite è un errore, non un elemento `nothing`. Il caso di confo
 verifica proprio le operazioni standard, mentre l'helper `get` del seed ha indici 0-based e non
 deve essere confuso con `xs[i]`.
 
+### Esercizi
+
+1. **Costruire e leggere.** Crea `[7, 2, 9]`, stampa primo e ultimo elemento e la lunghezza.
+2. **Indici da 1.** Che cosa producono `xs[0]` e `xs[length(xs) + 1]`? Quale errore?
+3. **`push!` sul seed.** Perché sul seed si usa la forma `xs = push!(xs, v)`? Verifica la
+   differenza con `push!(xs, v)` da solo.
+4. **Giro completo.** Stampa tutti gli elementi con un `while` e un contatore, senza guardare
+   l'esempio.
+5. **Somma e massimo.** Scrivi `somma(xs)` e `massimo(xs)` e provalle su una lista vuota: che
+   cosa devono restituire?
+6. **Alias.** Dimostra che `alias = xs` non crea una copia e che `xs[1] = 9` è visibile ad
+   `alias`.
+7. **Copia manuale.** Crea una copia vera di una lista con un ciclo e prova a dimostrare che è
+   indipendente.
+8. **Annidate.** Costruisci `[[1, 2], [3, 4]]` e stampa il primo elemento interno.
+9. **Interi soltanto.** Perché sul seed le liste sono solo di interi? Che cosa succede con
+   `[1, "due"]`?
+10. **Il caso `liste`.** Esegui il caso di conformance `liste` con l'interprete JS e con il seed:
+    perché sul seed è escluso di default?
+
 ---
 
 <a id="cap-12"></a>
@@ -1329,6 +1546,22 @@ simbolo: `:ok == "ok"` è `false`, e il confronto corretto è con `:ok` oppure c
 
 Riferimento: `conformance/core/cases/stringhe`, `stringhe_concat`, `stringhe_multi`,
 `simboli_base`.
+
+### Esercizi
+
+1. **Concatenare.** Costruisci `ciao, Ada!` con `*` e almeno tre pezzi.
+2. **Byte.** Verifica `length("ciao")` e `length("è")`: su quale runtime il secondo caso cambia
+   comportamento e perché?
+3. **Convertire.** Con `string()` e `Int()` trasforma `42` in testo, `"42"` in numero e ritorno.
+4. **Escape.** Stampa `prima\ndopo` con una sola `println`: che cosa succede sul seed (cap. 15)?
+5. **Simboli.** Confronta `:ok` con `"ok"`: uguaglianza, stampa e uso come etichette.
+6. **Conversioni impermesse.** `Int("ciao")` e `"42" + 1`: quale errore per ciascuno?
+7. **Frasi composte.** Dati `nome = "Ada"` e `anni = 36`, costruisci e stampa la frase completa.
+8. **Immutabili.** Dimostra che ogni concatenazione produce una stringa nuova.
+9. **Primi `n` byte.** Scrivi una funzione che stampi i primi `n` byte di una stringa (servono le
+   primitive del capitolo 13).
+10. **Il caso `stringhe`.** Esegui il caso di conformance `stringhe`: quali parti funzionano sul
+    seed e quali no?
 
 ---
 
@@ -1402,6 +1635,26 @@ il confine: un programma che usa `readfile`, `strlen`, `strbyte`, `strsub` o `ex
 programma Triad-Full valido. È una delle poche eccezioni alla regola «Core è un sottoinsieme di
 Full», ed è il motivo per cui questi primitivi compaiono in un capitolo a parte invece che tra le
 operazioni normali sulle stringhe.
+
+### Esercizi
+
+1. **Le cinque primitive.** Scrivi un programma minimo per ciascuna: `readfile`, `strlen`,
+   `strbyte`, `strsub`, `exit`.
+2. **Byte e caratteri.** Verifica `strlen("è") == 2` e spiega perché una `String` è una sequenza
+   di byte.
+3. **Codici ASCII.** Conta le cifre di una stringa confrontando i byte con 48–57, come
+   nell'esempio.
+4. **La prima parola.** Trova il primo spazio e estrai la prima parola con `strsub`: gestisci il
+   caso in cui lo spazio non c'è.
+5. **Maiuscole.** Conta i byte nell'intervallo 65–90 di una frase.
+6. **`exit(n)`.** Termina un programma con codice 3 e verificalo dal terminale.
+7. **Leggere sé stessi.** Con `readfile(ARGS[1])` fai stampare a un programma il proprio
+   sorgente: perché è il primo passo di un interprete self-hosted?
+8. **Solo cifre.** Scrivi un programma che dica se una stringa è un intero scritto in decimale.
+9. **Perché «primitive».** Perché queste cinque non fanno parte di Triad-Full e non vanno usate
+   nei programmi applicativi?
+10. **Analizzatore.** Costruisci un piccolo programma che, data una stringa, ne stampi il numero
+    di parole (parole = gruppi separati da spazi, byte 32).
 
 ---
 <a id="cap-14"></a>
@@ -1510,6 +1763,28 @@ convivere «errore come dato» con un runtime che non lo prevede.
 
 Nota: `&&` cortocircuita, quindi `v[1]` è valutato solo se `v` è una lista di 3 elementi.
 
+### Esercizi
+
+1. **Errori classici.** Produci volontariamente: `undefined variable`, `+ type error`,
+   `index out of range`, `arity mismatch`, `if cond`, `not a function`.
+2. **`parse error` o `error`?** Classifica ciascuno dei casi dell'esercizio 1 nelle due famiglie
+   del capitolo 14.
+3. **Codice di uscita.** Verifica che ogni programma sbagliato termini con codice `1` e che il
+   messaggio finisca su stderr.
+4. **Errori come liste taggate.** Scrivi `err(kind, msg) = [:Err, kind, msg]` e `iserr(x)` e
+   usali per restituire un errore da una funzione.
+5. **Gestire l'errore.** Con `iserr` trasforma il risultato di una funzione in un messaggio
+   leggibile.
+6. **Categorie tue.** Inventati tre categorie di errore per un programma che lavori su liste e
+   usale nel codice.
+7. **Diagnosi.** Un programma stampa `0` invece della somma: applica il metodo del capitolo 12
+   delle Fondamenta e trova il bug.
+8. **Errori del seed.** Perché sul seed Windows non vedi il messaggio ma solo il codice di
+   uscita? Come diagnostichi in quel caso?
+9. **Errori e output.** Un programma che stampa l'output giusto ma fallisce alla fine: quale
+   codice di uscita? Perché è corretto così?
+10. **Il caso `errore`.** Esegui il caso di conformance `errore` e spiega golden e codice atteso.
+
 ---
 
 <a id="cap-15"></a>
@@ -1556,6 +1831,28 @@ che viene eseguito non è detto che dia lo stesso risultato.
 Regola pratica: **scrivi codice che rispetta SPEC-CORE e verificalo con l'interprete JS**; se
 deve girare sul seed (come `selfhost/`), restringiti alla colonna di destra e verificalo su
 Windows.
+
+### Esercizi
+
+1. **Le differenze che contano.** Elenca a memoria le prime tre righe della tabella delle
+   differenze fra i due runtime.
+2. **Lambda a un parametro.** Scrivi una lambda con due parametri e verifica dove non gira:
+   quale alternativa usi?
+3. **Chiusure.** Costruisci un esempio in cui la cattura per valore del seed e quella condivisa
+   dell'interprete JS danno risultati diversi.
+4. **`string(x)` limitato.** `string(true)` e `string(:a)`: su quale runtime falliscono?
+5. **Liste del seed.** Scrivi un programma sulle liste che giri su entrambi i runtime: cosa devi
+   evitare?
+6. **`get` non standard.** Perché non si usa nei programmi portabili? Riscrivi un programma che
+   lo usi con `xs[i]`.
+7. **`return`, `break`, `continue`.** Quali di questi sono rischiosi per la portabilità? Scrivi
+   la variante sicura.
+8. **Programma portabile.** Scrivi un programma Core che giri identico su entrambi i runtime e
+   verificalo davvero su entrambi.
+9. **Semantica giusta.** Quale delle due colonne della tabella descrive la semantica corretta?
+   Perché?
+10. **La tua checklist.** Scrivi la checklist di controllo che userai prima di dichiarare un
+    programma «portabile».
 
 ---
 
@@ -1775,6 +2072,26 @@ passare a Triad-Full e che il repository è scritto in italiano.
 Sono convenzioni, non regole del linguaggio: il runtime non le controlla. Ma un programma che le
 rispetta resta valido sia in Core sia in Full, e questa è la qualità che rende il codice del
 progetto riutilizzabile negli stadi successivi del bootstrap.
+
+### Esercizi
+
+1. **HOF in Core.** Scrivi `mappa(f, xs)`, `filtra(f, xs)` e `riduci(f, acc, xs)` con un ciclo.
+2. **Record taggato.** Rappresenta `(:persona, "Ada", 36)` come lista taggata e scrivi le
+   funzioni di accesso.
+3. **Ambiente.** Riscrivi `env_get`, `env_set` e `env_rimuovi` e provali con quattro coppie.
+4. **Stato condiviso.** Scrivi un contatore basato su una lista mutabile e spiega perché
+   funziona senza assegnamenti condivisi.
+5. **Costruire stringhe.** Stampa una lista di interi nel formato `[1, 2, 3]` costruendo la
+   stringa pezzo per pezzo.
+6. **Stile.** Riscrivi un tuo programma applicando le regole di stile del capitolo 16.6.
+7. **Predicati come funzioni.** Scrivi `tutti(f, xs)` e `qualcuno(f, xs)` con i pattern del
+   capitolo.
+8. **Una funzione, un compito.** Dividi una funzione da venti righe in tre funzioni piccole e
+   verifica che l'output non cambi.
+9. **Nomi con `!`.** Perché `push!` ha il punto esclamativo? Scrivi una tua funzione mutante e
+   nominala secondo la convenzione.
+10. **Sottoinsieme comune.** Riscrivi un programma del capitolo perché giri anche sul seed
+    Windows, mantenendo lo stesso output.
 
 ---
 
@@ -2094,6 +2411,20 @@ Output:
 
 </details>
 
+### Esercizi supplementari
+
+1. **Contatore di vocali.** Conta le vocali di una stringa usando i byte (`strbyte`) o i
+   confronti sui caratteri.
+2. **Massimo comune divisore.** Implementa l'algoritmo di Euclide con il solo operatore `%`.
+3. **Divisori.** Stampa tutti i divisori propri di un intero e la loro somma.
+4. **Crivello.** Trova i primi numeri primi fino a 50 con un crivello su lista booleana.
+5. **Merge.** Unisci due liste ordinate in una terza lista ordinata, senza `sort`.
+6. **Torre di Hanoi.** Stampa le mosse per spostare `n` dischi: ricorsione pura.
+7. **Cifrario di Cesare.** Sposta di 3 posizioni i byte alfabetici di una stringa (attenzione a
+   restare nell'intervallo delle lettere).
+8. **Gioco del numero.** Simula «indovina il numero» con una sequenza fissa di tentativi in una
+   lista, stampando `troppo alto`/`troppo basso`.
+
 ---
 <a id="parte-3"></a>
 
@@ -2160,6 +2491,29 @@ y = 2          # 2.0: conversione Int → Float
 
 Il vincolo nasce con la dichiarazione e vive nell'ambiente in cui il nome è stato creato.
 
+### Esercizi
+
+1. **Novità di lessico.** Quali forme introduce Triad-Full rispetto al Core (float,
+   interpolazione, tipi dichiarati)? Scrivi un esempio per ciascuna.
+2. **Interpolazione.** **[Full]** Riscrivi con `"ciao $nome"` e `"$(x + 1)"` un saluto che in
+   Core richiedeva `*` e `string()`.
+3. **Tipi dichiarati.** **[Full]** Scrivi `x :: Int = 5` e prova assegnamenti successivi di
+   tipi diversi: quando scatta l'errore?
+4. **Gerarchia.** **[Full]** Disegna la gerarchia fra `Any`, `Number`, `Int`, `Float` e spiega
+   cosa significa per il dispatch del [capitolo 19](#cap-19).
+5. **Conversioni.** **[Full]** Con `Int(x)`, `Float(x)`, `String(x)`, `Symbol(x)` converti un
+   valore per ciascun tipo.
+6. **`isa` e `typeof`.** **[Full]** Confronta i due operatori con esempi e spiega quando
+   usare l'uno o l'altro.
+7. **Escape Full.** Quali escape sono ammessi in Full (`\n \t \" \\ \$`)? Che cosa succede con
+   uno sconosciuto?
+8. **Float.** **[Full]** Scrivi un programma con `1.5` e `3.0`: come si comportano `+` e la
+   stampa rispetto agli `Int`?
+9. **Core dentro Full.** Prendi un programma Core del [capitolo 7](#cap-7) e verifica che sia
+   valido anche come programma Full.
+10. **Golden.** Verifica gli output del capitolo confrontandoli con i golden della conformance:
+    quali sono verificati e quali attesi?
+
 ---
 
 <a id="cap-19"></a>
@@ -2202,6 +2556,29 @@ argomenti in anticipo e non garantisce che ogni operazione intermedia sia valida
 valore prodotto alla fine sia convertibile o compatibile con il tipo dichiarato. Le annotazioni
 di parametro e di ritorno sono quindi parti distinte del contratto del metodo.
 
+### Esercizi
+
+1. **Firme tipate.** **[Full]** Definisci `area(x::Int)` e `area(x::Float)` e verifica
+   `area(1) == :int` e `area(1.5) == :number` come nell'esempio del capitolo.
+2. **Più specifico vince.** **[Full]** Aggiungi un metodo su `Number`: quale viene scelto per
+   `1.5` e perché?
+3. **Confronto per tupla.** **[Full]** Con `f(a::Int, b::Number)` e `f(a::Number, b::Int)`,
+   costruisci una chiamata ambigua e una univoca.
+4. **Nessun metodo.** **[Full]** Chiama una funzione con un tipo senza metodi: quale errore e
+   quali informazioni contiene?
+5. **Tipo di ritorno.** **[Full]** In `f(x)::Int` il risultato viene convertito: scrivi un caso
+   in cui la conversione è silenziosa e uno in cui fallisce.
+6. **Dispatch e gerarchia.** **[Full]** Disegna l'albero dei metodi di una funzione con tre
+   firme e indica quale scatta per quattro argomenti diversi.
+7. **Operatori-funzione.** **[Full]** Aggiungi un metodo `+` a una struct e prova la somma di
+   due istanze.
+8. **Funzione generica.** **[Full]** Scrivi una funzione generica con tre metodi e spiega che
+   cosa succede quando ne ridefinisci uno.
+9. **Parametri e ritorno.** Perché il tipo di ritorno non partecipa alla scelta del metodo?
+   Costruisci un esempio che lo dimostri.
+10. **Golden.** Verifica l'output golden dell'esempio `area` e spiega perché è «atteso» e non
+    «eseguito».
+
 ---
 
 <a id="cap-20"></a>
@@ -2230,6 +2607,29 @@ controlla i valori rispetto ai tipi dei campi; l'accesso `p.x` risolve il campo 
 struttura è immutabile nello standard, quindi i campi descrivono lo stato dell'istanza creata e
 non si aggiornano con un'assegnazione successiva. La lista taggata Core è più flessibile, ma
 sposta queste garanzie sul codice che costruisce, legge e modifica il record.
+
+### Esercizi
+
+1. **Definire una struct.** **[Full]** Definisci `Punto` con campi `x::Int` e `y::Int` e
+   costruisci un'istanza.
+2. **Campi.** **[Full]** Accedi e modifica un campo; poi prova a leggere un campo inesistente:
+   quale errore?
+3. **Costruttore.** Perché il nome della struct usato come funzione costruisce un valore? Prova
+   con argomenti di tipo sbagliato.
+4. **Struct e logica.** **[Full]** Usa `Point(?x, ?y)` come termine in un `fact` e unificalo con
+   un'istanza.
+5. **Struct e dispatch.** **[Full]** Definisci due struct con un metodo comune e chiama la
+   funzione su entrambe.
+6. **Stampa.** Come viene stampata una struct? Confronta con la stampa di una lista taggata
+   (Manuale, cap. 22.2).
+7. **Annidate.** **[Full]** Costruisci una struct che contiene un'altra struct e accedi ai campi
+   interni.
+8. **Confronto.** **[Full]** Che cosa valgono `p1 == p2` per due istanze con gli stessi campi?
+   Verifica.
+9. **Struct o lista taggata?** Quando conviene una struct e quando una lista taggata? Scrivi la
+   stessa entità in entrambi i modi.
+10. **Golden.** Verifica l'output golden dell'esempio sulle struct e annota le differenze con il
+    comportamento attuale dei runtime.
 
 ---
 
@@ -2283,6 +2683,24 @@ espressione", non una valutazione simultanea.
 `catch`, l'espressione restituisce direttamente l'`Err`; con `catch err`, il nome locale `err`
 identifica l'errore e il valore finale è quello del blocco di recupero. Questo rende possibile
 gestire un caso senza confondere un errore con un valore di successo dello stesso tipo.
+
+### Esercizi
+
+1. **`for` e range.** **[Full]** Riscrivi un `while` che somma 1..10 con `for i in 1:10`.
+2. **Range.** **[Full]** Scrivi `a:b` con `a > b`: che cosa produce? E con `a == b`?
+3. **Comprehension.** **[Full]** Costruisci la lista dei quadrati da 1 a 5 e poi quella dei soli
+   dispari con un filtro.
+4. **Comprehensione annidata.** **[Full]** Genera le coppie `(i, j)` di una matrice 3×3.
+5. **`try`/`catch`.** **[Full]** Cattura `Int("ciao")` e gestisci l'errore per categoria.
+6. **`try` come valore.** **[Full]** `e = try f(x) end`: che cosa contiene `e` quando tutto va
+   bene e quando c'è un errore?
+7. **`x in xs`.** **[Full]** Usa `in` come filtro di una comprehension.
+8. **Da Full a Core.** Riscrivi un `for` con comprehension in un `while` Core equivalente e
+   confronta gli output.
+9. **Ordine di valutazione.** In una comprehension con più generatori, in quale ordine vengono
+   prodotte le coppie? Verifica.
+10. **Golden.** Verifica gli output golden degli esempi del capitolo su `for`, comprehension e
+    `try`.
 
 ---
 
@@ -2352,6 +2770,27 @@ persone = [:tom, :bob]
 foglie = filter(p -> !parent(p, ?_), persone)   # [:bob]
 ```
 
+### Esercizi
+
+1. **Fatti e regole.** **[Full]** Costruisci una knowledge base familiare con `fact` e la regola
+   `ancestor` del capitolo.
+2. **`solve` è un valore.** **[Full]** Raccogli le soluzioni in una variabile, contale e leggi un
+   legame.
+3. **Percorso con costo.** **[Full]** Riscrivi `path`/`edge` e spiega perché serve `is`.
+4. **`app`.** **[Full]** Riscrivi le regole di append con `[?h | ?t]` e spiega le quattro
+   soluzioni di `solve app(?a, ?b, [1, 2, 3])`.
+5. **Negazione per fallimento.** **[Full]** Con `!parent(p, ?_)` seleziona le foglie di una
+   knowledge base.
+6. **Occurs-check.** **[Full]** `solve ?x = f(?x)`: quante soluzioni e perché?
+7. **Le opzioni.** **[Full]** Applica `limit`, `depth` e `steps` alla stessa query e confronta i
+   tre risultati.
+8. **Predicato come funzione.** **[Full]** Usa un predicato come condizione di un `if` e spiega
+   che valore produce.
+9. **Variabile anonima.** **[Full]** Usa `?_` dove non ti interessa il legame e spiega la regola
+   delle occorrenze.
+10. **Golden.** Verifica l'output golden degli esempi logici del capitolo e annota la differenza
+    tra «atteso» e «eseguito oggi».
+
 ---
 
 <a id="cap-23"></a>
@@ -2375,6 +2814,26 @@ end                             # xs == [3, 7]
 - `function f((a, b))` definisce **due parametri** `a` e `b` (i parametri sono appiattiti):
   `f(10, 20) == 30`. Per destrutturare un singolo argomento lista usa `(a, b) = pair` nel corpo.
 - I pattern annidati ricorsivi non sono ancora previsti.
+
+### Esercizi
+
+1. **Coppie.** **[Full]** Con `[a, b] = [1, 2]` assegna due nomi in una riga e usali.
+2. **Testa e coda.** **[Full]** Con `[h | t] = [1, 2, 3]` che cosa leggono `h` e `t`? E con la
+   lista vuota?
+3. **In una regola.** **[Full]** Riscrivi `app` con i pattern `[?h | ?t]` e confronta con la
+   versione senza destrutturazione.
+4. **Scambio.** **[Full]** Scambia due variabili con `[a, b] = [b, a]`: funziona? Perché?
+5. **Lunghezze diverse.** **[Full]** Che cosa succede destrutturando `[a, b]` su una lista di
+   tre elementi? E su una lista vuota?
+6. **Pattern annidati.** **[Full]** Destruttura `[[1, 2], [3, 4]]` per estrarre il secondo
+   elemento della seconda coppia.
+7. **Parametri.** **[Full]** Una funzione può ricevere una lista e destrutturarla nel corpo?
+   Scrivi un esempio.
+8. **`unparse`.** **[Full]** Osserva con `unparse` la forma `:destructure` di una
+   destrutturazione: che cosa mostra il round-trip?
+9. **Riscrivere senza pattern.** Riscrivi un esercizio di destrutturazione usando solo
+   indicizzazione e `length`, e confronta la leggibilità.
+10. **Golden.** Verifica l'output golden degli esempi di destrutturazione del capitolo.
 
 ---
 
@@ -2415,6 +2874,28 @@ runtime lo segnala al livello superiore e il processo termina con codice non riu
 modo la gestione è esplicita, ma un errore non diventa un successo solo perché è rappresentato da
 un valore.
 
+### Esercizi
+
+1. **La forma `Err`.** **[Full]** Costruisci un `Err` con categoria e messaggio e ispeziona
+   `kind` e `data`.
+2. **Produrre o propagare.** **[Full]** Scrivi una funzione che restituisce un `Err` e una che lo
+   lancia con `throw`: quando usare l'una o l'altra?
+3. **Catturare.** **[Full]** Con `try`/`catch` gestisci un errore e stampa la sua categoria.
+4. **Le categorie.** Associa a ciascuna categoria (`:type`, `:method`, `:bounds`, `:contract`,
+   `:budget`, `:effect`) un programma che la produce.
+5. **I dati dell'errore.** **[Full]** Per un `Err(:contract)` leggi `data.clause` e `data.fn`:
+   che cosa ti dicono?
+6. **Core e Full a confronto.** Riscrivi la convenzione `[:Err, kind, msg]` del Core con il tipo
+   `Err` di Full e confronta i due programmi.
+7. **Non gestito.** **[Full]** Lascia un errore non gestito al top level: codice di uscita,
+   messaggio e riga segnalata.
+8. **Un messaggio per ogni categoria.** **[Full]** Scrivi una funzione che traduca gli errori in
+   messaggi italiani a seconda della categoria.
+9. **Errori e contratti.** Perché la violazione di un contratto è un `Err` e non un arresto del
+   programma? Scrivi un programma che continua dopo un errore.
+10. **Il caso `errore`.** Esegui il caso di conformance `errore` e spiega perché è l'unico caso
+    Full verde oggi.
+
 ---
 
 <a id="cap-25"></a>
@@ -2450,6 +2931,27 @@ violare comunque una precondizione di dominio, oppure restituire un valore tipat
 postcondizione. Poiché i contratti sono puri, la loro valutazione non può stampare o modificare la
 base di conoscenza: il controllo non deve cambiare il programma che sta verificando.
 
+### Esercizi
+
+1. **Precondizione.** **[Full]** Aggiungi `requires` a una funzione che divida per un intero e
+   provala con input validi e non validi.
+2. **Postcondizione.** **[Full]** Aggiungi `ensures` con `result` a una funzione che calcoli una
+   media.
+3. **Leggere la violazione.** **[Full]** Stampa `e.kind`, `e.data.clause`, `e.data.fn` dopo una
+   violazione: che cosa ti dicono?
+4. **Ordine dei controlli.** Perché il tipo di ritorno viene controllato prima di `ensures`?
+   Costruisci un caso in cui la differenza si vede.
+5. **Condizioni pure.** **[Full]** Metti un `println` dentro un contratto: quale errore?
+6. **Al top level.** **[Full]** `requires` fuori da una funzione: che ruolo ha? Usalo come
+   asserzione.
+7. **Contratto su una ricorsione.** **[Full]** Aggiungi contratti a `fattoriale` e verifica che
+   valgano a ogni livello di ricorsione.
+8. **Controllo o prova?** Scrivi un contratto che non basti a garantire la correttezza e spiega
+   il confine fra controllo e dimostrazione.
+9. **Effetti vietati.** Perché le condizioni dei contratti sono pure? Che cosa succede se
+   violi questa regola?
+10. **Golden.** Verifica l'output golden dell'esempio `safe_div` del capitolo.
+
 ---
 
 <a id="cap-26"></a>
@@ -2475,6 +2977,28 @@ timeout generale del sistema operativo. Usalo per rendere limitate le computazio
 lunghe, in particolare la risoluzione logica o un ciclo che potrebbe non terminare. Il risultato
 `Err(:budget)` è distinto dal risultato valido del corpo e può essere gestito con `try` o con il
 controllo del valore restituito dal `with`.
+
+### Esercizi
+
+1. **Budget minimo.** **[Full]** Avvolgi un `while true` in `with budget(steps = 10_000)` e
+   verifica `Err(:budget)`.
+2. **Che cos'è un passo.** Elenca tre costrutti che consumano passi e spiega perché il budget
+   misura lavoro e non tempo.
+3. **Annidati.** **[Full]** Un budget di 100 dentro uno di 1000: quale scatta e che cosa restituisce
+   il blocco interno?
+4. **`solve … steps`.** **[Full]** Confronta `steps` di `solve` con `with budget`: quale vince
+   quando valgono entrambi?
+5. **Ricorsione sinistra.** **[Full]** `f(n) = f(n + 1)` con budget: quale errore invece dello
+   stack overflow?
+6. **Riproducibilità.** Perché due esecuzioni con lo stesso budget consumano gli stessi passi?
+   Che cosa renderebbe instabile un timeout sull'orologio?
+7. **Gestire l'esaurimento.** **[Full]** Scrivi un programma che, ricevuto `Err(:budget)`, stampi
+   una diagnosi e riprovi con un budget maggiore.
+8. **Vuoto o esaurito.** **[Full]** Distingui una query senza soluzioni da una terminata per
+   budget con due esempi.
+9. **`limit`, `depth`, `steps`.** Riassumi in tabella le tre opzioni e il tipo di risultato che
+   producono.
+10. **Golden.** Verifica l'output golden dell'esempio del capitolo.
 
 ---
 
@@ -2504,6 +3028,25 @@ La traccia registra la storia del calcolo, non solo il suo risultato. In una tra
 perché la ricerca può provare più alternative. Il valore `result` resta disponibile accanto agli
 eventi: puoi confrontare il risultato finale con il percorso seguito. La traccia non è un log
 stampato automaticamente; decide il programma quali eventi filtrare, contare o presentare.
+
+### Esercizi
+
+1. **Prima traccia.** **[Full]** Avvolgi un piccolo `solve … trace` o `with trace` e leggi gli
+   eventi prodotti.
+2. **Le porte di Byrd.** Spiega `:call`, `:redo`, `:exit`, `:fail` con un esempio per ciascuna.
+3. **Contare i fallimenti.** Riscrivi l'esempio che conta i fallimenti di una ricerca e
+   provalo su una knowledge base tua.
+4. **Eventi come dati.** **[Full]** Filtra gli eventi di traccia per categoria e contali.
+5. **Ordine atteso.** Dato un goal con due soluzioni, scrivi a mano la sequenza attesa degli
+   eventi e verifica.
+6. **Debug di un goal.** Un goal non trova risposte: come usi la traccia per localizzare il
+   fallimento?
+7. **Traccia o `println`.** Perché per la logica una traccia è meglio di `println` di debug?
+   Rispondi con un esempio.
+8. **Trace e limit.** **[Full]** Unisci `trace` e `limit` e osserva dove la ricerca si ferma.
+9. **Trace e budget.** **[Full]** Con `trace` e `steps` insieme, come si riconosce negli eventi
+   l'esaurimento del budget?
+10. **Golden.** Verifica l'output golden dell'esempio tracciato del capitolo.
 
 ---
 
@@ -2535,6 +3078,22 @@ un'operazione con effetto: una funzione `!io` può stampare solo se il contesto 
 consente. Il top level è il contesto più permissivo; una funzione pura chiamata da lì non diventa
 per questo autorizzata a stampare. Elencare `!io` nella firma documenta il requisito per i
 chiamanti e permette al runtime di rifiutare l'effetto nel punto in cui violerebbe la dichiarazione.
+
+### Esercizi
+
+1. **Pura di default.** **[Full]** Scrivi una funzione che stampi senza `!io`: quale errore?
+2. **Dichiarare `!io`.** Correggi la firma dell'esercizio 1 e verifica che ora funziona.
+3. **`!state`.** **[Full]** Scrivi una funzione che aggiunga un fatto alla knowledge base:
+   quale effetto richiede?
+4. **Chiamate indirette.** **[Full]** Costruisci una catena di tre funzioni in cui l'effetto è
+   tentato alla terza: chi riceve l'errore?
+5. **`fn`, `caller`, `missing`.** **[Full]** Ispeziona i tre campi di `data` in un `Err(:effect)`
+   e spiega come guidano la correzione.
+6. **Top level.** Perché al top level si può stampare senza dichiarazioni?
+7. **Lambda.** Da dove una lambda eredita gli effetti? Scrivi un esempio.
+8. **Puro e impuro.** Perché `solve` è puro mentre `fact` eseguito in una funzione no?
+9. **Mutazione locale.** Perché `push!` e gli assegnamenti locali non sono effetti dichiarati?
+10. **Golden.** Verifica l'output golden dell'esempio del capitolo (`effect`).
 
 ---
 
@@ -2654,6 +3213,22 @@ x = 2
 eval(p)        # 17
 ```
 
+### Esercizi
+
+1. **Albero uniforme.** **[Full]** Scrivi head e args di `Node` per `1`, `:x`, `[1, 2]` e
+   `:(f(1))`.
+2. **Quote e unquote.** **[Full]** Costruisci `:(x + $n)` con `n` calcolato: che cosa ottieni?
+3. **`eval`.** **[Full]** Valuta una quote con `eval` e confronta con la forma non quotata.
+4. **Round-trip.** **[Full]** `unparse(parse("1 + 2"))` (o l'equivalente): il testo è lo stesso?
+5. **`triad --tree`.** Stampa l'albero uniforme di un programma piccolo e riconosci i nodi.
+6. **Una macro.** **[Full]** Scrivi `@due_volte(e)` che esegua due volte la sua espressione.
+7. **Igiene.** **[Full]** Costruisci un conflitto di nomi in una macro e correggilo con `gensym`.
+8. **Codice che genera codice.** **[Full]** Scrivi una macro che definisca una funzione, come
+   nell'esempio 29.4.
+9. **Macro o funzione.** Spiega con un esempio quando serve una macro (codice non valutato
+   subito) e quando basta una funzione.
+10. **Golden.** Verifica l'output golden dell'esempio sulle macro del capitolo.
+
 ---
 
 <a id="cap-30"></a>
@@ -2673,6 +3248,26 @@ eval(p)        # 17
 
 Di questi, Core fornisce solo `+ - * % ^`, confronti, `&& || !`, `length`, `push!`, indicizzazione,
 `*` su stringhe, `Int`, `string`, `Symbol`, `print`, `println`, `typeof` (SPEC-CORE §7).
+
+### Esercizi
+
+1. **Aritmetica completa.** **[Full]** Prova `abs sqrt floor ceil round exp log sin cos div mod
+   min max`: quali convertono il risultato e in quale tipo?
+2. **Liste.** **[Full]** Usa `isempty first last rest reverse sort sum pop! append! vcat collect`
+   su una lista di cinque elementi.
+3. **Ordine superiore.** **[Full]** Con `map filter reduce any all count` risolvi tre piccoli
+   problemi (quadrati, maggiori di 3, somma).
+4. **`x in xs` e `a:b`.** **[Full]** Usa `in` e il range in un programma solo e spiega il tipo
+   dei risultati.
+5. **Stringhe.** **[Full]** Confronta `string` e `repr` su un intero, una stringa e un simbolo.
+6. **Errori.** **[Full]** Fai un esempio per ciascuno: `err`, `iserr`, `throw`, `error`.
+7. **Codice.** **[Full]** Fai un esempio per ciascuno: `eval`, `parse`, `unparse`, `sexpr`,
+   `gensym`.
+8. **Tipi.** **[Full]** Con `typeof`, `isa` e i costruttori `Int Float String Symbol` converti
+   un valore per tipo.
+9. **`vars(sol)`.** **[Full]** Dopo una `solve`, elenca i nomi legati con `vars`.
+10. **Core e Full.** Riscrivi un programma Full del capitolo usando solo i builtin Core e
+    confronta la lunghezza dei due sorgenti.
 
 ---
 
@@ -2717,6 +3312,21 @@ false.
   `;`/`n`/spazio = successiva, `a` = tutte, invio/`.` = stop.
 - Comandi: `:load FILE…` (`:l`), `:reload` (`:r`, `make`), `:listing [nome|nome/arità]`
   (`:ls`), `:tree CODICE`, `:reset`, `:help` (`:h`), `:quit` (`:q`, `halt`, Ctrl-D).
+
+### Esercizi
+
+1. **Eseguire con argomenti.** `triad FILE a b`: come li vede il programma? Verifica con `ARGS`.
+2. **`-e` e `-E`.** Confronta le due forme con un frammento il cui valore non sia `nothing`.
+3. **`-l` e `-i`.** Prepara un file di definizioni e provalo con entrambe le opzioni: quale
+   differenza?
+4. **`--tree`.** Stampa l'albero uniforme di un espressione complessa e leggilo.
+5. **Dalla pipeline.** Usa `triad -` per leggere uno script da stdin.
+6. **Query al REPL.** Esegui `?- goal` con `limit` e con `trace` e leggi le risposte.
+7. **I comandi del REPL.** Prova `:load`, `:reload`, `:listing`, `:tree`, `:reset`, `:quit`.
+8. **Codici di uscita.** Produci `0`, `1`, `2` con tre programmi diversi e verificali.
+9. **Estensioni e shebang.** `triad file` senza estensione e un file con `#!`: che cosa succede?
+10. **Oggi, in pratica.** Quale di queste opzioni supporta il seed Windows? Con quale comando
+    esegui oggi questi esempi?
 
 ---
 
@@ -2852,6 +3462,28 @@ end
 r.kind          # :budget
 ```
 
+### Esercizi
+
+1. **`assaggio.td`.** Leggi l'esempio 32.1 e annota i costrutti Full che usa; confronta l'output
+   con il golden.
+2. **`famiglia.td`.** Nell'esempio 32.2 individua i metodi e spiega quale scatta per ogni
+   chiamata.
+3. **`garanzie.td`.** Nell'esempio 32.3 quali garanzie sono contratti e quali budget? Spiega
+   l'ordine dei controlli.
+4. **`macro.td`.** Espandi a mano la macro dell'esempio 32.4 e confronta con il golden.
+5. **Contratti e budget insieme.** Nell'esempio 32.5 quale dei due interviene per primo e
+   perché?
+6. **Golden o verificati?** Perché questi output si chiamano golden? Che cosa si può dire e che
+   cosa no del programma che li produce?
+7. **Dove stanno i golden.** Individua nella suite di conformance i file di output atteso di
+   questi esempi.
+8. **Tradurre in Core.** Riscrivi un esempio Full in un programma Core equivalente e confronta
+   le due versioni.
+9. **Un esempio tuo.** Scrivi un programma che usi tre costrutti Full insieme e redigine l'output
+   atteso come se fosse un golden.
+10. **Dal golden al test.** Spiega come si potrebbe verificare automaticamente il tuo esempio
+    quando il runtime Full sarà disponibile.
+
 ---
 <a id="parte-4"></a>
 
@@ -2887,6 +3519,22 @@ Convenzioni comuni:
 - documentazione, commenti e messaggi sono in **italiano**;
 - fine riga **LF** ovunque, tranne `*.cmd` (CRLF), imposto da `.gitattributes`;
 - `.gitignore` esclude `*.out` con l'eccezione `!conformance/**/expected.out`.
+
+### Esercizi
+
+1. **I luoghi del progetto.** Dove si trovano: lo standard, l'interprete JS, il seed, la suite
+   di conformance? Apri ciascun percorso.
+2. **Gli esempi.** Scegli tre file da `examples/` e prevedi l'output prima di eseguirli.
+3. **Il benchmark.** Individua `ai/` e apri un task: in quale file sta il problema?
+4. **Gli editor.** Quali file definiscono il riconoscimento di `.triad` per VS Code, Vim e
+   GitHub Linguist?
+5. **Il self-hosting.** Dove sta il codice S1 e quale file lo mette alla prova?
+6. **Gli strumenti.** Distingui gli strumenti di sviluppo (`seed/dev/`, `cli/`, `conformance/`)
+   dalla catena di bootstrap.
+7. **La documentazione.** In quale cartella stanno il Tutorial, il Manuale e questo volume?
+8. **I test.** Dove stanno i programmi di prova (`tests/`)? Ne esegui uno a scelta.
+9. **Il sito.** Quale cartella genera il sito del progetto e quale file lo costruisce?
+10. **Mappa tua.** Disegna la mappa del repository a memoria e poi verificala con `ls`.
 
 ---
 
@@ -2969,6 +3617,28 @@ helper (`I`, `B`, `S`, `Y`, `L`, `NOTHING`).
 Regola: l'interprete JS deve restare **fedele a SPEC-CORE**; non aggiungere estensioni che il
 seed e S1 non dovrebbero avere.
 
+### Esercizi
+
+1. **Architettura.** Leggi il paragrafo 34.1 e indica dove si collocano lexer, parser e
+   valutatore.
+2. **Un builtin in più.** Segui il paragrafo 34.2 e aggiungi un builtin (per esempio `doppio`):
+   provalo e poi rimuovilo.
+3. **Nuova sintassi.** Segui il paragrafo 34.3 per aggiungere una piccola forma sintattica e
+   verifica che il parser la accetti.
+4. **La conformance dopo la modifica.** Esegui la suite dopo ogni modifica: quali casi proteggono
+   il tuo cambiamento?
+5. **Trovare il codice.** Dove sono implementati `push!`, `length` e `println`? Individua le
+   funzioni.
+6. **`ARGS`.** Come arriva `ARGS` al programma? Traccia il percorso nel codice.
+7. **Un errore da vicino.** Individua dove viene prodotto `error: index out of range` e cosa
+   contiene il messaggio.
+8. **Debug dell'interprete.** Inserisci una stampa di debug nel valutatore e osserva l'ordine di
+   valutazione di un'espressione; poi rimuovila.
+9. **Perché è fuori dal bootstrap.** Spiega perché l'interprete JS è uno strumento di sviluppo e
+   non parte della catena S0→S4.
+10. **Refactor sicuro.** Scegli una piccola funzione dell'interprete, rinominala ovunque e
+    verifica la suite: perché i test sono il tuo contratto?
+
 ---
 
 <a id="cap-35"></a>
@@ -3044,6 +3714,28 @@ partono da RVA `0x5000`); registri usati prima di essere inizializzati (bug `pbs
 ordine degli argomenti sullo stack nelle chiamate builtin (`get`). Defender può segnalare il
 PE come falso positivo (la CI aggiunge un'esclusione).
 
+### Esercizi
+
+1. **Che cos'è il seed.** Spiega con le tue parole che cos'è S0 e perché è scritto in codice
+   macchina.
+2. **Dump esadecimale.** Perché il seed è versionato come `seed.hex` e non come binario? Quale
+   comando lo materializza?
+3. **Convenzioni interne.** Leggi il paragrafo 35.2 e annota tre convenzioni del generatore.
+4. **`gen_seed.js`.** Rigenera il seed con il generatore e verifica che l'hash corrisponda a
+   quello documentato.
+5. **Il flusso di modifica.** Descrivi i passi del paragrafo 35.4 per modificare il seed senza
+   romperlo.
+6. **Verificare sul codice macchina.** Esegui tre casi Core sul seed Windows e confronta con
+   l'interprete JS.
+7. **Limiti misurati.** Scegli tre limiti del seed (lambda, `string`, liste…) e scrivi un
+   programma per ciascuno che li incontri.
+8. **`continue` mancante.** Riscrivi un programma con `continue` nella forma equivalente con
+   `break` e verifica che giri sul seed.
+9. **`-=` e `*=`.** Perché conviene usare solo `+=` nel codice destinato al seed? Riscrivi un
+   esempio.
+10. **Hash e CI.** Perché la CI controlla l'hash del seed? Che cosa garantirebbe un hash
+    diverso?
+
 ---
 
 <a id="cap-36"></a>
@@ -3061,6 +3753,25 @@ node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex   # verifica magic, e
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed
 ./seed/linux-x86_64/seed                                     # Triad seed Linux OK
 ```
+
+### Esercizi
+
+1. **Che fa oggi.** Esegui il seed Linux e descrivi esattamente il suo comportamento.
+2. **Materializzare l'ELF.** Genera il binario Linux a partire dal dump e verificane l'hash.
+3. **Confronto fra seed.** Metti a confronto seed Windows e seed Linux: quali funzionalità ha
+   ciascuno?
+4. **Perché E0 non basta.** Che cosa manca al seed Linux per essere un interprete? Elabora una
+   lista di requisiti.
+5. **Il prossimo passo.** Quale sarebbe il primo costrutto da implementare per un E1 utile?
+   Giustifica.
+6. **Su Linux oggi.** Perché su Linux si usa l'interprete JS? Scrivi i comandi di esecuzione.
+7. **Hash e verifica.** Verifica l'hash del seed Linux come fa la CI e spiega cosa protegge.
+8. **Programmi portabili.** Scrivi un programma che un futuro seed Linux dovrà eseguire:
+   quale sottoinsieme usi?
+9. **Stato del bootstrap.** Dove si documenta lo stato del seed (`STATUS.md`, `TASK.md`)? Che
+   cosa dicono oggi?
+10. **Pianifica una milestone.** Scrivi cosa dovrebbe contenere una milestone «seed Linux
+    esegue il primo caso Core».
 
 ---
 
@@ -3113,6 +3824,22 @@ Le task S1.3–S1.15 sono in [`TASK.md`](TASK.md): valori taggati, tokenizer e p
 eval di espressioni, `let`, programmi completi, funzioni e chiamate, chiusure, e infine far
 girare la conformance sopra seed+S1. Gli esercizi 6 e 7 del [capitolo 17](#cap-17) sono una
 versione in Core standard degli stessi passi.
+
+### Esercizi
+
+1. **Che cos'è S1.** Definisci S1 con le tue parole: linguaggio, forma e ruolo nel bootstrap.
+2. **Lo stile S1.** Perché `selfhost/` usa `get(xs, i)` con indici da 0? Dove si trova questo
+   helper?
+3. **Smoke test.** Esegui `selfhost/main.td` con il runtime indicato dal capitolo e leggi
+   l'output.
+4. **Primitive di bootstrap.** Quali primitive del capitolo 13 servono a S1 e perché?
+5. **Leggere un pezzo.** Scegli una funzione di `selfhost/` e spiegala riga per riga.
+6. **Cosa manca.** Quanto dista S1 dalla conformance? Elenca i passi rimanenti.
+7. **Verso S2.** Descrivi cosa farà S2 e che cosa deve avere S1 per produrlo.
+8. **Portabilità di S1.** Su quale runtime gira oggi S1 e perché non gira sull'interprete JS?
+9. **Verifica in CI.** Quale comando della CI mette alla prova S1? Eseguilo in locale.
+10. **Perché self-hosting.** Scrivi un paragrafo sul perché il self-hosting è la prova definitiva
+    di un linguaggio autonomo.
 
 ---
 
@@ -3201,6 +3928,24 @@ node conformance/run.mjs | grep somma_lista          # PASS  somma_lista
 I golden Full (`conformance/cases/`) sono **congelati**: non vanno rigenerati finché non esiste
 un'implementazione Full.
 
+### Esercizi
+
+1. **Il formato.** Quali file compongono un caso di conformance e che cosa dichiara ciascuno?
+2. **Il runner.** Esegui `node conformance/run.mjs` (o il comando della CLI) e leggi il
+   riepilogo.
+3. **Un caso alla volta.** Esegui un singolo caso Core e confronta output e codice con i golden.
+4. **Aggiungi un caso.** Segui il paragrafo 38.3 e crea un caso Core tuo (programma, output
+   atteso, codice atteso).
+5. **Golden mancante.** Cosa succede quando manca un `expected.out`? Provocalo e osserva.
+6. **Casi che falliscono.** Aggiungi un caso il cui programma termini con codice 1: come si
+   esprime il codice atteso?
+7. **Core e Full.** Quali sono le due suite e perché solo pochi casi Full sono verdi?
+8. **Portabilità.** Esegui la suite con il seed Windows: quali casi escono e perché?
+9. **Un golden è un contratto.** Spiega perché i golden vanno versionati e non rigenerati alla
+   leggera.
+10. **La tua routine.** Scrivi la sequenza di comandi che eseguirai prima di ogni cambiamento al
+    linguaggio.
+
 ---
 
 <a id="cap-39"></a>
@@ -3272,6 +4017,22 @@ node build-exe.mjs path/to/win/node.exe   # dist/triad-cli.exe per Windows, anch
 Il binario Node passato determina la piattaforma; deve avere la stessa versione del Node che
 esegue la build.
 
+### Esercizi
+
+1. **I comandi.** Esegui `node cli/triad-cli.mjs --help` (o il paragrafo 39.1) e l'elenco dei
+   comandi disponibili.
+2. **Test di conformance.** Lancia la suite dalla CLI e interpreta il riepilogo.
+3. **Verifica AI.** Usa il comando `ai verify` su una soluzione corretta e su una sbagliata.
+4. **Codici di uscita.** Che codice restituisce la CLI quando un test fallisce? Verifica.
+5. **CLI o launcher?** Spiega la differenza fra `triad-cli` (strumento di sviluppo) e `bin/triad`
+   (launcher del runtime).
+6. **Un comando tuo.** Scrivi uno script di shell che esegua un caso, il runner e la stampa del
+   risultato in una riga.
+7. **Errori di uso.** Invoca la CLI con argomenti sbagliati: che messaggi ottieni?
+8. **Automatizzare.** Come faresti a eseguire solo i casi il cui nome contiene `list`?
+9. **Dentro la CLI.** Apri il sorgente della CLI e indica dove vengono lanciati i runner.
+10. **Documentazione.** Scrivi la riga di aiuto che vorresti trovare per un comando che manca.
+
 ---
 
 <a id="cap-40"></a>
@@ -3291,6 +4052,25 @@ Misura quanto bene un LLM scrive Triad-Core.
 Aggiungere un task: crea `ai/tasks/06_nome/` con `task.md` (output atteso descritto con
 precisione), `expected.out` e una `solution.triad` di riferimento che passa. Esegui il codice
 generato da un modello solo in un ambiente isolato.
+
+### Esercizi
+
+1. **Leggere un task.** Apri `ai/tasks/01_sum`: quali parti compongono un task e dove sta
+   l'output atteso?
+2. **Risolvere un task.** Scrivi la soluzione di un task e verificala con il comando della CLI.
+3. **PASS e FAIL.** Perché il verdetto è il confronto con l'output atteso? Costruisci una
+   soluzione che stampi il risultato giusto ma in un formato sbagliato.
+4. **pass@1 e pass@k.** Con tre tentativi di cui il secondo giusto: pass@1 e pass@3 che valore
+   hanno?
+5. **Lo `SYSTEM_PROMPT`.** Che cosa richiede `ai/SYSTEM_PROMPT.md` al modello? Perché «solo un
+   blocco di codice»?
+6. **Tentativi.** Simula cinque tentativi di uno stesso task e calcola pass@1 e pass@5.
+7. **Conformance e benchmark.** Spiega la differenza fra un caso di conformance e un task del
+   benchmark.
+8. **Un task tuo.** Scrivi un task nuovo (problema + output atteso) con la struttura di
+   `ai/tasks/`.
+9. **Perché misurare.** Che cosa misura il benchmark e che cosa non misura? Scrivi due righe.
+10. **Senza guardare.** Risolvi un task senza leggere la soluzione, poi confronta i due programmi.
 
 ---
 
@@ -3312,6 +4092,23 @@ generato da un modello solo in un ambiente isolato.
   Markdown del repository con `marked` (es. `docs/pages/tutorial.html` carica questo file).
   Le ancore dell'indice usano `<a id="…">` espliciti perché funzionino anche lì.
 
+### Esercizi
+
+1. **L'editor.** Apri un file `.triad` in VS Code (o Vim) e verifica l'evidenziazione della
+   sintassi.
+2. **Le grammatiche.** Individua i file della grammatica per VS Code e Vim: quale regola colora
+   le parole chiave?
+3. **GitHub Linguist.** Che cosa serve perché GitHub riconosca `.triad` e `.td`? Trova la voce.
+4. **Il launcher.** Esegui un programma con `bin/triad` e con `bin/triad.cmd`: quale runtime
+   scelgono?
+5. **Il sito generato.** Esplora `tools/site-gen/`: perché i generatori sono scritti in Triad?
+6. **Due runtime, un output.** Che cosa controlla `build.mjs` quando genera il sito? Perché
+   richiede output identici?
+7. **Il lint.** Che proibisce `lint.mjs` e perché? Prova a violare una regola e osserva l'errore.
+8. **Le pagine.** Quale file del sito carica questo Tutorial? Come funzionano le ancore?
+9. **Aggiungere una pagina.** Descrivi i passi per aggiungere una pagina al sito generato.
+10. **La demo.** Spiega come funziona la demo di battitura del sito e da quale interprete gira.
+
 ---
 
 <a id="cap-42"></a>
@@ -3329,6 +4126,22 @@ generato da un modello solo in un ambiente isolato.
 `pages.yml` e `static.yml` pubblicano `docs/` su GitHub Pages a ogni push su `main`.
 
 Il profilo Full **non è in CI** perché non è implementato: non presentarlo come verde.
+
+### Esercizi
+
+1. **I job.** Leggi `.github/workflows/ci.yml` e l'elenco dei job: cosa verifica ciascuno?
+2. **`conformance-core`.** Perché su Ubuntu il job salta alcuni casi? Quali?
+3. **`seed-windows`.** Che cosa controlla il job Windows e perché confronta l'hash di `seed.hex`?
+4. **`seed-linux`.** Che cosa fa il job Linux oggi? Perché non può ancora eseguire la suite?
+5. **Site-gen.** Perché la generazione del sito è in CI e cosa richiede ai due runtime?
+6. **Smoke test.** Che cosa verifica lo smoke test di `selfhost/main.td` e perché è in CI?
+7. **Locale e CI.** Esegui in locale gli stessi comandi della CI: quali risultati ottieni?
+8. **Un fallimento.** Immagina un cambiamento che rompa un caso: quale job fallisce per primo e
+   come diagnostichi?
+9. **Hash e riproducibilità.** Spiega il rapporto fra hash del seed, golden e riproducibilità
+   delle build.
+10. **Prima di una PR.** Scrivi la checklist di ciò che deve essere verde prima di aprire una
+    modifica.
 
 ---
 
@@ -3350,6 +4163,26 @@ Checklist per tipo di modifica:
 
 Regole generali: non dichiarare funzionante ciò che non è verificato; i golden si scrivono
 ragionando sulla specifica; i nuovi strumenti di sviluppo non devono entrare nella catena S0→S4.
+
+### Esercizi
+
+1. **Cosa aggiornare.** Quali documenti vanno aggiornati quando il lavoro cambia lo stato del
+   progetto?
+2. **Conformance prima di tutto.** Scrivi la frase che riassume la regola operativa 3 e
+   applicala a un caso concreto.
+3. **Modifiche al linguaggio.** Quali passi servono per proporre una modifica allo standard?
+   Elencali in ordine.
+4. **Niente linguaggi host.** Perché il percorso di bootstrap non può dipendere da runtime
+   esterni? Dove si applica la regola?
+5. **Output deterministico.** Perché i golden includono newline finali e codici di uscita?
+   Costruisci un caso che lo dimostri.
+6. **Test con il cambiamento.** Immagina una modifica al parser: quali test aggiungeresti?
+7. **Documentare.** Scrivi la voce di CHANGELOG che descriverebbe l'aggiunta degli esercizi a
+   un capitolo del libro.
+8. **Review.** Elabora la checklist per revisionare una patch di un altro agente/autore.
+9. **Il benchmark.** Quale regola vale quando si generano soluzioni per `ai/`?
+10. **Contributo end-to-end.** Simula un contributo completo: modifica, test, documentazione,
+    descrizione del cambiamento.
 
 ---
 
@@ -3392,6 +4225,28 @@ block    = { stmt sep { sep } } ;                   (* fino a end/else/elseif *)
 ```
 
 La grammatica Full (Pratt, 12 livelli) è in [`SPEC.md`](SPEC.md) §2.
+
+### Esercizi
+
+1. **Si legge o no?** Con la grammatica EBNF decidi quali righe sono programmi Core validi:
+   `x = 1`, `x =`, `f(1, 2)`, `f(1,,2)`.
+2. **Derivazione.** Scrivi la derivazione di `x = 1 + 2 * 3` a partire dalla regola delle
+   espressioni.
+3. **Terminali e non terminali.** Nel frammento EBNF del capitolo, elenca tre terminali e tre
+   non terminali e spiega la differenza.
+4. **Separatori.** Perché newline e `;` sono separatori? Costruisci un caso in cui un a capo in
+   più cambia il programma.
+5. **Blocchi ed `end`.** Quali regole della grammatica aprono un blocco? Scrivi un programma
+   con tre livelli di annidamento.
+6. **Stringhe e escape.** Dalla grammatica, elenca gli escape ammessi e scrivi una stringa per
+   ciascuno.
+7. **Operatori.** Come descrive la grammatica la precedenza? Confronta con la tabella del
+   capitolo 7.
+8. **Tokenizzare.** Scrivi la sequenza dei token di `xs[i] += 1` e commentala.
+9. **EBNF a mano.** Scrivi in EBNF una piccola sotto-grammatica (per esempio i commenti) e
+   verificala su tre esempi.
+10. **Grammatica e parser.** Spiega perché una grammatica EBNF da sola non basta a descrivere la
+    precedenza e come il parser Pratt la risolve.
 
 ---
 
@@ -3437,6 +4292,24 @@ quote:       :(espr) / quote ... end / $espr
 eval:        eval(codice)
 ```
 
+### Esercizi
+
+1. **Scheda valori.** Con la sola scheda 45 scrivi un programma con tutti i tipi Core.
+2. **Scheda controllo.** Scrivi un `while` con `break` e un `if`/`elseif`/`else` senza guardare
+   i capitoli.
+3. **Scheda funzioni.** Scrivi una funzione breve, una blocco e una lambda.
+4. **Scheda liste.** Costruisci, indicizza, aggiungi e attraversa una lista.
+5. **Scheda stringhe.** Concatena, converti con `string()` e `Int()`, misura con `length`.
+6. **Core o Full.** Dalla scheda, decidi per `for`, `solve`, `map`, `try`, `/` se sono Core o
+   Full.
+7. **Sfida a tempo.** In cinque minuti scrivi un programma che usi almeno cinque voci della
+   scheda.
+8. **Dalla scheda al codice.** Scegli cinque righe della scheda e trasformale in un programma
+   funzionante.
+9. **Errori rapidi.** Produci tre errori della scheda errori e riconoscili senza guardare il
+   capitolo 46.
+10. **La tua scheda.** Scrivi la scheda rapida «dei tuoi errori più comuni» con la correzione.
+
 ---
 
 <a id="cap-46"></a>
@@ -3471,6 +4344,26 @@ eval:        eval(codice)
 Strumenti Full previsti: `triad --tree file`, `sexpr(codice)`, `parse`/`unparse`,
 `with trace … end`, `solve … trace`, `try … end` con `.kind`/`.msg`/`.data`.
 
+### Esercizi
+
+1. **Diagnosi guidata.** Dato un programma che non parte, applica la sequenza: nome file,
+   cartella, comando, Node.js.
+2. **`parse error`.** Scrivi tre programmi con errori di sintassi diversi e riconosci la causa
+   dal messaggio.
+3. **`error:` di esecuzione.** Produci `undefined variable`, `type error`, `index out of range`
+   e spiega ciascuno.
+4. **Ciclo infinito.** Scrivi un ciclo che gira all'infinito, interrompilo e correggilo.
+5. **Due runtime.** Un programma gira sull'interprete JS e no sul seed: individua la causa nella
+   tabella delle differenze.
+6. **UTF-8 e nomi.** Verifica la codifica di un file e l'estensione `.triad`/`.td` in un caso
+   problematico.
+7. **Messaggi del runtime.** Traduci in italiano tre messaggi d'errore del runtime.
+8. **Debug con `println`.** Trova il bug di un programma dato usando solo stampe di controllo.
+9. **Problemi comuni.** Prendi i problemi elencati nel capitolo e scrivi per ciascuno un
+   programma che li riproduca.
+10. **La tua casella degli attrezzi.** Scrivi la checklist di debug che userai prima di chiedere
+    aiuto.
+
 ---
 
 <a id="cap-47"></a>
@@ -3496,6 +4389,25 @@ Strumenti Full previsti: `triad --tree file`, `sexpr(codice)`, `parse`/`unparse`
 - **Contratti**: `requires` (pre) / `ensures` (post, con `result`).
 - **Budget**: `with budget(steps = N)`; l'esaurimento è `Err(:budget)`.
 - **Destrutturazione**: `(a, b) = lista`, `for (k, v) in lista_di_liste`.
+
+### Esercizi
+
+1. **Definizioni.** Definisci con le tue parole: *unificazione*, *backtracking*, *dispatch*,
+   *chiusura*, *albero uniforme*.
+2. **Coppie che confondono.** Distingui con un esempio: budget/limit, effetto/contratto,
+   simbolo/variabile logica, parametro/argomento.
+3. **Parlare di logica.** Scrivi una frase che usi: goal, soluzione, knowledge base, occurs-check.
+4. **Parlare di macro.** Scrivi una frase che usi: quote, unquote, espansione, igiene.
+5. **Vero o falso.** Valuta cinque affermazioni tratte dal glossario e correggi quelle false.
+6. **Dalle lingue madri.** Quali parole arrivano da Julia, Prolog e Lisp? Collega ciascuna alla
+   sua origine.
+7. **Tradurre.** Scegli cinque voci in inglese e scrivi la spiegazione che daresti a un
+   principiante italiano.
+8. **Il glossario di un programma.** Annota un tuo programma con almeno sei termini del
+   glossario.
+9. **Domande di ripasso.** Scrivi cinque domande sul glossario e rispondi senza guardare.
+10. **Una voce nuova.** Aggiungi al glossario un termine che manca, nello stile delle voci
+    esistenti.
 
 ---
 
@@ -3526,6 +4438,26 @@ richiesto da SPEC.md per ogni implementazione:
 | 5 | commenti `#=` annidati | la profondità è contata; `#=` non chiuso → errore `incomplete` |
 | 6 | lambda con parametri tipati | `function (x::Int) x end` controlla i tipi: `f(2.0)` → `Err(:type)` |
 
+### Esercizi
+
+1. **Verificare un fix.** Scegli uno dei fix storici della tabella (per esempio `xs[end] = v`)
+   e scrivi il programma che lo mette alla prova.
+2. **Round-trip.** Verifica `unparse(1:n)` produce `"1:n"` e spiega perché contano i dettagli di
+   forma.
+3. **Escape sconosciuti.** Prova `"\q"` e verifica che l'errore riporti riga e colonna.
+4. **Commenti annidati.** Prova `#=` annidati e un `#=` non chiuso: quali comportamenti?
+5. **Lambda tipata.** Verifica che `function (x::Int) x end` controlli il tipo degli argomenti.
+6. **Limiti noti.** Scrivi un programma per ciascuno dei limiti noti del capitolo e annota la
+   divergenza fra i runtime.
+7. **Documentare una divergenza.** Trova un comportamento diverso fra i due runtime e scrivi la
+   voce che aggiungeresti allo stato del progetto.
+8. **Prima e dopo.** Immagina il comportamento di un programma prima di un fix e dopo: scrivi
+   entrambi gli output attesi.
+9. **Lo stato del progetto.** Dove si tengono aggiornati limiti e fix (`STATUS.md`, `TASK.md`,
+   `CHANGELOG.md`)? Che cosa va scritto in ciascuno?
+10. **Regressioni.** Perché ogni fix storico merita un caso di conformance? Scrivi il caso per un
+    fix a scelta.
+
 ---
 
 <a id="cap-49"></a>
@@ -3550,6 +4482,36 @@ standard del seed Windows; vanno eseguiti con `seed.exe`.
 
 **Dove propongo una modifica al linguaggio?** Nello standard (`SPEC.md`/`SPEC-CORE.md`) con
 voce in `CHANGELOG.md` e casi di conformance; poi nelle implementazioni.
+
+**Cosa sono i «tentativi» di successo e fallimento (PASS/FAIL, `pass@k`) del benchmark `ai/`?**
+Un task è un piccolo esercizio (somma, fattoriale, stringhe…) con un output atteso; la soluzione
+si verifica eseguendola e confrontando l'output: **PASS** se coincide, **FAIL** altrimenti. Un
+*tentativo* è una generazione della soluzione: `pass@1` conta solo il primo tentativo riuscito,
+`pass@k` accetta che basti uno dei k tentativi per task («il primo che riesce conta»). Il
+riferimento di successo/fallimento è dunque l'output atteso del task, non il linguaggio. Le
+stesse parole nella programmazione logica (SPEC §6, [capitolo 22](#cap-22)) indicano invece
+l'esito di un goal: `:call`/`:redo`/`:exit`/`:fail` sono i tentativi del motore registrati da
+`solve … trace`. Vedasi anche le Fondamenta del volume, capitolo 16.
+
+### Esercizi
+
+1. **No Julia.** Perché il programma non ha più bisogno di Julia? Quale runtime esegue oggi
+   Triad?
+2. **Perché non gira.** Prendi un esempio con `struct` o `fact` e spiega perché non viene
+   eseguito oggi.
+3. **`.td` o `.triad`.** Qual è l'estensione canonica? Prova a eseguire un file con ciascuna.
+4. **Codice Core puro.** Verifica con l'interprete JS che un tuo programma sia Core «puro»: su
+   cosa ti fidi?
+5. **`get` in `selfhost/`.** Perché `selfhost/*.td` gira con `seed.exe` e non con l'interprete
+   JS? Verifica.
+6. **Proporre una modifica.** Descrivi i passi per proporre una modifica al linguaggio secondo
+   la FAQ.
+7. **PASS, FAIL e pass@k.** Spiega a voce il significato delle tre espressioni con un esempio.
+8. **Successo e fallimento in logica.** Spiega la seconda faccia di `success`/`fail` con le
+   porte di Byrd.
+9. **Le tue FAQ.** Scrivi tre domande che avresti voluto trovare nella FAQ con la risposta.
+10. **Domande senza risposta.** Scegli una domanda aperta sul progetto e scrivi come la
+    investigheresti.
 
 ---
 

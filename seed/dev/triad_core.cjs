@@ -4,7 +4,7 @@
 const fs = (typeof require === 'function') ? require('fs') : { readFileSync() { throw new Error('fs not available'); } };
 // ---------- Value helpers ----------
 const NOTHING = {t:'nothing'};
-const BUILTIN_NAMES = new Set(['print','println','length','push!','Int','string','Symbol','typeof','readfile','strlen','strbyte','strsub','exit']);
+const BUILTIN_NAMES = new Set(['print','println','length','get','push!','Int','string','Symbol','typeof','readfile','strlen','strbyte','strsub','exit']);
 function I(v){return {t:'int',v:BigInt(v)};}
 function B(v){return {t:'bool',v:!!v};}
 function S(v){return {t:'str',v:String(v)};}
@@ -874,6 +874,19 @@ function callBuiltin(name, args, env){
     if (xs.t !== 'list') throw new Error('push! type');
     xs.v.push(args[1]);
     return xs;
+  }
+  // get(xs, i): indice 0-based su lista, come il primitivo del seed in codice
+  // macchina (pf_builtin_get in seed/dev/gen_seed.js). Il riferimento JS lo
+  // allinea al seed: limite di errore e bounds check identici.
+  if (name === 'get') {
+    if (args.length !== 2) throw new Error('get arity');
+    const xs = args[0];
+    const i = args[1];
+    if (xs.t !== 'list') throw new Error('get type');
+    if (i.t !== 'int') throw new Error('get index type');
+    const idx = Number(i.v);
+    if (idx < 0 || idx >= xs.v.length) throw new Error('get index out of range');
+    return xs.v[idx];
   }
   if (name === 'Int') {
     if (args.length !== 1) throw new Error('Int arity');
