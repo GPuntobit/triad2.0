@@ -90,5 +90,7 @@ docs/pages/triad-core.js
 docs/assets/js/triad-core.js
 
 # Libro: tutti i file di produzione del libro (pdf/epub/mobi/docx/html, script e temp)
+# libro/ contiene i sorgenti e gli strumenti locali del libro
+/libro/
 # docs/libro è un repo separato (ha il proprio .git) per la pubblicazione del libro
 /docs/libro/
