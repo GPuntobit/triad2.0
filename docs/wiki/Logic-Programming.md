@@ -1,6 +1,6 @@
 # Logic Programming
 
-[⬅ Home](Home.md) · profile: **[Full]** (specified in [`SPEC.md`](../SPEC.md); not yet executed end-to-end by a runtime — see [Project Status](Project-Status.md))
+[⬅ Home](Home.md) · profile: **[Full]** (specified in [`SPEC.md`](../../SPEC.md); not yet executed end-to-end by a runtime — see [Project Status](Project-Status.md))
 
 Triad integrates logic programming as **top-level constructs**, not an embedded DSL or a foreign query engine. Facts, rules and queries share the grammar, the value model and the error discipline of the rest of the language.
 
@@ -45,7 +45,7 @@ Because logic execution is evaluation like any other, `with budget(steps = N)` b
 
 ## Conformance status
 
-Logic cases belong to Triad-Full conformance ([`conformance/`](../conformance/README.md)); they are currently golden expectations, executable once the self-hosted runtime lands ([`BOOTSTRAP.md`](../BOOTSTRAP.md)).
+Logic cases belong to Triad-Full conformance ([`conformance/`](../../conformance/README.md)); they are currently golden expectations, executable once the self-hosted runtime lands ([`BOOTSTRAP.md`](../../BOOTSTRAP.md)).
 
 ## See also
 

@@ -185,7 +185,7 @@ else
     echo "    (avviso) Node.js non trovato: triad-cli non potrà eseguire i test" >&2
     echo "    finché non installi Node.js >= 18 (consigliato)." >&2
 fi
-"$PREFIX/triad" "$ROOT/probes/test_simple.td" >/dev/null 2>&1 \
+"$PREFIX/triad" "$ROOT/tests/probes/test_simple.td" >/dev/null 2>&1 \
     && echo "    triad: OK (test_simple.td eseguito)" \
     || echo "    (avviso) 'triad' non ha completato il test — vedi README sezione Linux" >&2
 

@@ -3743,7 +3743,7 @@ codice sono un complemento, non un prerequisito.
 |---|---|
 | la definizione normativa completa | [`SPEC.md`](SPEC.md) |
 | il sottoinsieme di bootstrap | [`SPEC-CORE.md`](SPEC-CORE.md) |
-| il percorso di studio per capitoli e il codice del progetto | [`TUTORIAL.md`](../tutorial/TUTORIAL.md) |
+| il percorso di studio per capitoli e il codice del progetto | [`TUTORIAL.md`](tutorial/TUTORIAL.md) |
 | gli esempi completi con output | `examples/` |
 | il contratto eseguibile, con i golden | [`conformance/`](conformance/README.md) |
 | lo stato del bootstrap | [`STATUS.md`](STATUS.md) · [`BOOTSTRAP.md`](BOOTSTRAP.md) |

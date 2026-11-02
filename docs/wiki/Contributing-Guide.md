@@ -1,10 +1,10 @@
 # Contributing Guide
 
-[⬅ Home](Home.md) · policies: [`SECURITY.md`](../SECURITY.md), license MIT ([`LICENSE`](../LICENSE))
+[⬅ Home](Home.md) · policies: [`SECURITY.md`](../../SECURITY.md), license MIT ([`LICENSE`](../../LICENSE))
 
 ## Ground rules
 
-1. **The spec is law.** Behavior changes go through [`SPEC.md`](../SPEC.md) / [`SPEC-CORE.md`](../SPEC-CORE.md) first; implementations follow. A language is the contract between its possible interpreters, not one interpreter's quirks.
+1. **The spec is law.** Behavior changes go through [`SPEC.md`](../../SPEC.md) / [`SPEC-CORE.md`](../../SPEC-CORE.md) first; implementations follow. A language is the contract between its possible interpreters, not one interpreter's quirks.
 2. **Conformance gates everything.** Before opening a PR:
 
    ```bash
@@ -25,7 +25,7 @@
 
 ## Reporting vulnerabilities
 
-Use the process in [`SECURITY.md`](../SECURITY.md) (private disclosure). Include reproduction steps and the affected runtime path (seed vs. fallback).
+Use the process in [`SECURITY.md`](../../SECURITY.md) (private disclosure). Include reproduction steps and the affected runtime path (seed vs. fallback).
 
 ## Good first contributions
 
@@ -38,4 +38,4 @@ Use the process in [`SECURITY.md`](../SECURITY.md) (private disclosure). Include
 
 - Repo: https://github.com/GPuntobit/triad2.0
 - Site: https://gpuntobit.github.io/triad2.0
-- Status/roadmap discussions: open an issue referencing [`STATUS.md`](../STATUS.md) / [`TASK.md`](../TASK.md).
+- Status/roadmap discussions: open an issue referencing [`STATUS.md`](../../STATUS.md) / [`TASK.md`](../../TASK.md).

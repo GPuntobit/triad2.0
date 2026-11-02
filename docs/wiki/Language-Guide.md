@@ -2,7 +2,7 @@
 
 [⬅ Home](Home.md) · [Syntax Reference ➡](Syntax-Reference.md)
 
-This page distills the manual ([`docs/MANUALE.md`](../docs/MANUALE.md), Italian) into an English overview. For the normative text use [`SPEC-CORE.md`](../SPEC-CORE.md) and [`SPEC.md`](../SPEC.md); for exercises and solutions use the [Tutorial](../tutorial/TUTORIAL.md).
+This page distills the manual ([`docs/MANUALE.md`](../MANUALE.md), Italian) into an English overview. For the normative text use [`SPEC-CORE.md`](../../SPEC-CORE.md) and [`SPEC.md`](../../SPEC.md); for exercises and solutions use the [Tutorial](../tutorial/TUTORIAL.md).
 
 ## Design principles
 

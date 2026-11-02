@@ -29,6 +29,14 @@ function stripHtmlTagsSafely(text) {
   return out.replace(/\s+/g, ' ').trim();
 }
 
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function slugify(s) {
   return String(s).toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -79,7 +87,7 @@ function addHeadingIds(html, prefix, toc) {
 const preface = readFileSync(join(root, 'docs', 'PREFazione.md'), 'utf8');
 const prefaceHtml = rewriteRepositoryLinks(marked.parse(preface));
 const manualeRaw = readFileSync(join(root, 'docs', 'MANUALE.md'), 'utf8');
-const tutorialRaw = readFileSync(join(root, 'tutorial', 'TUTORIAL.md'), 'utf8');
+const tutorialRaw = readFileSync(join(root, 'docs', 'tutorial', 'TUTORIAL.md'), 'utf8');
 
 function stripIndice(md, heading, endMarker) {
   const start = md.indexOf(heading);

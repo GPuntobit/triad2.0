@@ -14,6 +14,9 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
   only `errore` passes. Golden `expected.out`/`expected.code` versioned; a missing golden
   fails the case with `golden mancante`. See `conformance/README.md`.
 - **Canonical extension**: `.triad` (`.td` historical alias), VS Code/Vim grammars and Linguist entry prepared.
+- **Repository layout** (2026-11-01): documentation consolidated under `docs/` (`tutorial/`, `wiki/`,
+  `security/`), probe programs in `tests/probes/`, legacy Jekyll scaffold in `tools/site-jekyll/`;
+  contractual paths unchanged (see CHANGELOG, "Not released — 2026-11-01").
 - **Seed S0** (Windows PE, no runtime/compiler): Triad-Core interpreter with
   support for integers, variables, functions (short form and multi-statement `function ... end`),
   recursion, Bool, operators (`% ^ ! && || +=`), `if`/`elseif`/`else`, `while`, `let`, `begin`,

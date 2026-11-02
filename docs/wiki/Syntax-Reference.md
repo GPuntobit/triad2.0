@@ -2,7 +2,7 @@
 
 [⬅ Home](Home.md) · [⬅ Language Guide](Language-Guide.md)
 
-Quick lookup tables distilled from the manual ([`docs/MANUALE.md`](../docs/MANUALE.md), §25–§27) and the normative grammars in [`SPEC-CORE.md`](../SPEC-CORE.md) (EBNF, Core) and [`SPEC.md`](../SPEC.md) (EBNF, Full). The parser is a Pratt parser with twelve precedence levels.
+Quick lookup tables distilled from the manual ([`docs/MANUALE.md`](../MANUALE.md), §25–§27) and the normative grammars in [`SPEC-CORE.md`](../../SPEC-CORE.md) (EBNF, Core) and [`SPEC.md`](../../SPEC.md) (EBNF, Full). The parser is a Pratt parser with twelve precedence levels.
 
 ## Operators and precedence (manual §4)
 
