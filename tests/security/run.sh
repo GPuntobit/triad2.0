@@ -35,4 +35,7 @@ echo "PASS: download_chart writes valid SVG to --out"
 echo "== 6. Sanitization incompleta: payload innestati/entità non riassemblano markup =="
 node --test tests/security/incomplete_sanitization.test.mjs
 
+echo "== 7. Nessun token reale nel working tree, nessun token negli URL di git =="
+python3 tests/security/no_live_tokens.test.py
+
 echo "ALL SECURITY VERIFICATIONS PASSED"

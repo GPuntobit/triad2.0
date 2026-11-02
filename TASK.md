@@ -635,6 +635,47 @@ code, specification, and results reproduced here.
   testo.
 - [ ] **Traduzione delle Fondamenta** in inglese (`docs/FONDAMENTA.md`) per il libro EN e il sito.
 
+## Libro — dati aggiuntivi estratti dal codice per Sessione 1 / mimo (2026-11-01)
+- [x] **`docs/libro/_dati_dal_codice.md`**: scheda di dati per la scrittura del libro ottenuta
+  **solo da lettura del codice** (`seed/dev/gen_seed.js`, `seed/dev/triad_core.cjs`,
+  `selfhost/value.td`, `conformance/run.mjs`) ed esecuzione misurata dei due runtime — nessun
+  dato preso da SPEC/MANUALE. Contiene: schema tag dei valori del seed (Int = n<<2, ecc.),
+  limiti strutturali (sorgente ≤ 61440 byte, liste ≤ 64 elementi, funzioni ≤ 512, parametri ≤ 64,
+  heap ~64 KiB), fatti di lexer, precedenza operatori, matrice built-in e **27 divergenze misurate
+  seed ↔ interprete JS** con output ed exit code.
+- [x] **`docs/libro/_sonde/`** (27 sonde `.td`): riproducono ogni divergenza; eseguibili con
+  `./seed/windows-x86_64/seed.exe <sonda>` e `node seed/dev/triad_core.cjs <sonda>`.
+- [x] **Dati nuovi emersi e da presidiare**: il caso `liste` della conformance è **saltato di
+  default** (`conformance/run.mjs:34`, `skip = ['liste']`); `get(xs,i)` è 0-based sul seed e
+  assente dal JS, `xs[i]` è 1-based sul JS e assente dal seed; `string(true)` → `1` sul seed;
+  `1 % 0` → exit 127 (crash) sul seed; letterali interi nel seed limitati a 2^61-1;
+  funzione a blocco che termina con `println` restituisce `0` (seed) / `nothing` (JS).
+
+- [x] **Dati portati nel libro e PDF rigenerato (2026-11-01)**: aggiunte 10 «Nota di
+  implementazione» in `docs/MANUALE.it.md` (§1.2 numeri/underscore/2^61-1, §1.10 escape,
+  §2.7 condizioni non-Bool, §2.8 stampa, §4.1 wrap e `% 0`, §9 indici e `push!`, §10 conversioni,
+  §27.1 exit code del seed) e 2 in `docs/FONDAMENTA.it.md` (cap. 6 escape, cap. 9 liste);
+  rigenerati `docs/libro/libro.html` e `docs/libro/Il-libro-di-triad.pdf` (305 pagine, note
+  verificate estraendo il testo dal PDF). Restano da rigenerare gli altri formati
+  (`docx/epub/mobi`) se servono allineati.
+
+## Libro — cap. 8 «Ripetizioni» riscritto con verifica su entrambi i runtime (2026-11-01)
+- [x] **Esercizi del cap. 8 divisi per sottogenere** (`docs/FONDAMENTA.it.md`): contatore,
+  accumulatore, ricerca/decisione, cicli annidati, sentinella — 10 task con soluzioni, ogni
+  esempio eseguito sul seed PE **e** sull'interprete JS con output identico byte per byte.
+- [x] **Nuovi casi di conformance** `while_annidati` (break sul ciclo più interno, uscita con
+  variabile di stato) e `while_sentinella` (`while true` + `break`), verdi su entrambi i
+  runtime; aggiunti alla lista della CI `seed-windows`. Core: 39/39.
+- [x] **Gap del seed scoperti scrivendo gli esempi** (tutti già in «Colmare i limiti del
+  seed», qui è il riscontro misurato): `continue` → exit 1 sul PE; `-=`/`*=` → exit 1;
+  `while` come espressione → exit 1; `voti[i]` non seleziona l'elemento (il libro lo segnala
+  con una nota di implementazione e rimanda a TASK.md S0.2); condizione `while` non-`Bool`:
+  il PE salta il corpo silenziosamente, il JS reference segnala errore (divergenza da chiudere
+  con un caso negativo di conformance).
+- [ ] **Caso negativo di conformance per la condizione non-`Bool`** e per lo scope del corpo
+  `while`: i due runtime si comportano in modo diverso e nessuno dei due è allineato a
+  `SPEC.md` §4/§5. Servono decisioni normative prima di fissare i golden.
+
 ## Sito generato da Triad (2026-11-01)
 - [x] **Generatore del sito in Triad** (`tools/site-gen/`): `site_pages.td` (8 pagine di
   documentazione), `site_playground.td` (playground), `site_style.td` (foglio di stile);
@@ -658,9 +699,101 @@ code, specification, and results reproduced here.
   generate come le altre (`tools/site-gen/site_pages2.td`). Verificato: 182 link interni del
   sito, nessuno rotto.
 
+## Libro — margini KDP conformi per la stampa (2026-11-01)
+- [x] **Gutter KDP nel PDF del libro**: KDP aveva rifiutato l'interno del volume (305 pagine →
+  gutter minimo 0.625"/15.875mm per la fascia 301–400, margini esterno/superiore/inferiore
+  ≥ 0.25"/6.35mm) perché `scripts/docs/build-libro.mjs` usava `margin: 15mm 12mm` uniformi,
+  senza gutter specchiato. Ora `@page` usa margini specchiati (gutter 19.05mm = 0.75"
+  all'interno, 10mm all'esterno, 15mm sopra/sotto; `@page :left` sposta il gutter a destra
+  nelle pagine pari) — verificato sperimentalmente che Chrome 156 rispetta `:left`/`:right`.
+  Rimosso anche l'header/footer template di puppeteer: riservava fascia ai margini e
+  duplicava i numeri di pagina (stampando anche "1" sulla copertina). I numeri arrivano ora
+  solo dalla margin box CSS `@bottom-center` (nessuno sulla copertina via `@page :first`),
+  con `padding-bottom: 4mm` che li tiene a ≥ 6.35mm dal taglio. Volume risultante:
+  293 pagine. Misurato sul PDF con PyMuPDF: gutter reale min 20.94mm, esterno 9.79mm,
+  sopra 15.67mm, sotto 7.78mm — tutti ≥ i minimi KDP, con slack anche per la fascia
+  401–500 pagine (0.75").
+- [x] **Verifica margini KDP automatica in `scripts/docs/build-pdf.mjs`**: dopo la generazione
+  conta le pagine del PDF e confronta i margini `@page` dell'HTML con la tabella KDP
+  (24–150: 0.375", 151–300: 0.5", 301–400: 0.625", 401–500: 0.75", 501–700: 0.875",
+  701–828: 1"; esterno/sopra/sotto ≥ 0.25"); esce con codice 3 se non conformi.
+  Accetta argomenti opzionali input/output (`node scripts/docs/build-pdf.mjs in.html out.pdf`)
+  per rigenerare anche il PDF inglese.
+- [x] **DOCX e inglese allineati**: `scripts/docs/build-docx.cjs` con margini laterali simmetrici
+  da 19.05mm (1080 twips; html-to-docx non scrive `w:mirrorMargins`, quindi il gutter non puo'
+  essere specchiato) e attributi header/footer/gutter espliciti (prima venivano scritti
+  `w:header="undefined"`, OOXML invalido). Stesso blocco `@page` aggiornato in
+  `docs/libro/Il-libro-di-triad.en.html` e `docs/libro/chunk1.html`. Rigenerati
+  `docs/libro/libro.html`, `Il-libro-di-triad.pdf` (293 pagine), `Il-libro-di-triad.en.pdf`,
+  `libro.docx`. Da rigenerare via LibreOffice `Il-libro-di-triad.doc` (Word 97) se serve.
+
+## Libro — allineamento uniforme di tutte le pagine (2026-11-01)
+- [x] **Margini equi e geometria identica su ogni pagina**: con i margini specchiati il blocco
+  del testo e i numeri di pagina si alternavano recto/verso (testo a L12.09/R20.95mm sulle
+  pari e L21.08/R11.96mm sulle dispari; numeri che oscillavano di ~9mm tra x=71.81 e x=80.83,
+  mai centrati sulla pagina). Ora `@page` ha margini uguali su tutti i lati
+  (`margin: 19.05mm`, 0.75") senza `@page :left`: ogni pagina ha la stessa identica
+  impaginatura. Verificato sul PDF con PyMuPDF: numeri di pagina centrati a 76.20mm su
+  tutte le 282 pagine (varianza 0), margini di contenuto minimi 20.93mm (sin), 19.05mm
+  (des), 19.59mm (sup), 20.12mm (inf) — tutti ≥ i minimi KDP (gutter 12.7mm per 282 pagine,
+  19.05mm copre anche la fascia 401–500). 0.75" su tutti i lati mantiene il volume conforme
+  anche se cresce oltre 400 pagine. Allineati anche `Il-libro-di-triad.en.html`,
+  `chunk1.html` e `build-docx.cjs` (1080 twips = 19.05mm su tutti i lati); rigenerati
+  `libro.html`, i due PDF e `libro.docx`. Nota: la riflessione Chrome passa da 293 a 282
+  pagine con la nuova scatola di testo (contenuto verificato identico: 58.548 parole,
+  nessun clipping); la copertina resta a vivo (`@page :first`), unica eccezione voluta.
+
+## Libro — copertina centrata e scala di stampa 1:1 (2026-11-01)
+- [x] **Copertina impaginata al centro**: la prima pagina mostrava l'immagine rimpicciolita
+  (135.31x202.97mm) e spinta in alto a sinistra con ~17mm di bianco a destra e ~26mm in basso.
+  Causa reale NON centratura: Chrome riduceva l'**intero documento** a scala 0.88789
+  (misurato: font di corpo a 9.32pt invece di 10.5pt) perché una tabella del Tutorial
+  (§15, confronto interprete JS / seed Windows) sforava la colonna (min-content 475px vs
+  432px disponibili): i token lunghi (`seed/windows-x86_64/README.md`, hash) non andavano a
+  capo. Aggiunto `overflow-wrap: anywhere` a `code` e `th, td` in `build-libro.mjs`,
+  `Il-libro-di-triad.en.html`, `chunk1.html` (anche `anywhere` e non `break-word` perche'
+  abbassa la min-content). Verificato sul PDF rigenerato: copertina a vivo esatta
+  152.40x228.60mm a (0,0) — centrata per costruzione, font 10.5pt/9pt, numeri di pagina
+  centrati a 76.20mm su tutte le pagine. Il volume torna a scala reale: **378 pagine**
+  (prima 282 "zoomate"; il PDF caricato su KDP con 305 pagine era pure scalato 0.88789).
+  Margini KDP: 378 pagine → fascia 301-400 → gutter min 15.875mm, misurati 19.05mm;
+  residuo sforo di 1.4mm su p.356 dovuto a spazi finali invisibili di un `pre` (17.65mm,
+  comunque oltre il minimo KDP). Rigenerati anche `Il-libro-di-triad.en.pdf` e `libro.docx`.
+
 ## Recommended execution order
 1. **A01–A06:** First a reliable CI on the real state.
 2. **S0.1–S0.7:** Complete the Core contract before expanding S1.
 3. **S1.0–S1.7:** a single end-to-end verified self-hosted interpreter.
 4. **S2.1–S4.1:** Linux compilation, fixed point and parity.
 5. **Q01–Q06:** transversal activities, anticipated when they unlock checks or releases.
+# Problemi aperti per complessità (2026-11-02)
+
+Problemi emersi dalla sessione sul front-end S1 (`selfhost/source.td`) e dai
+limiti misurati sul seed, **ordinati per complessità crescente** (sforzo di
+implementazione + rischio: si passa da azioni minuti a settimane con processo
+normativo). Ogni voce riporta l'evidenza (probe) e dove si interviene.
+
+**Scala:** C0 = azione/documento (minuti) · C1 = codice di supporto — JS/tests/CI
+(ore) · C2 = generatore del seed + rebuild PE/ELF + hash CI (mezza giornata) ·
+C3 = memoria/stringhe del seed in assembly (giornate) · C4 = semantica SPEC +
+allineamento runtime + tappa S1 (settimane).
+
+| # | C | Problema | Evidenza | Intervento |
+|---|---|---|---|---|
+| 1 | C0 | Il PAT rimosso da `.git-credentials` va **ruotato** su GitHub: va considerato esposto | `docs/security/SECURITY-REVIEW.md` #5 | azione umana (GitHub → revoca/rotazione) |
+| 2 | C0 | `get(xs, i)` è nel codice macchina e nel riferimento JS ma **non in `SPEC-CORE.md` §8**: ambiguità reale da chiudere (aggiungerlo a §8 o dichiararlo non standard) | `tests/probes/test_get.td` | chiarimento normativo (una riga in §8 + nota §11) |
+| 3 | C1 | Letterali di lista su più righe: il parser JS li rifiuta (`parse error: SEP`), il seed li accetta | `tests/probes/bad_lista_multiriga.td` | `seed/dev/triad_core.cjs`: saltare i separatori dentro `[ ... ]` + ribaltare il probe in `ok_` |
+| 4 | C1 | `a ? b :c` (due punti attaccato al ramo): il lexer di `selfhost/source.td` legge `:c` come simbolo; il codice macchina risolve dal contesto | `selfhost/source.td` (divergenze, header) | opzionale: reinterpretare il token SYM come `:` nel ramo ternario (parser) |
+| 5 | C1 | Simboli operatore del lessico Core (`:+`) non nel dominio del codice macchina | header `selfhost/source.td` | supersett nello scanner di `selfhost/source.td` (l'esecuzione resta ai punti 7/11) |
+| 6 | C1 | Verifiche non agganciate alla CI: golden del front-end S1 e suite `tests/security` | `conformance/OK` locale | `.github/workflows/ci.yml`: `run_probes.mjs selfhost/source.td` + diff golden nello smoke `seed-windows`; `tests/security/run.sh` in una lane |
+| 7 | C2 | `-=` e `*=`: previsti dal lessico Core e accettati dal parser S1, il seed valuta solo `+=` | `STATUS.md` (limiti), probe `p6` della sessione | `seed/dev/gen_seed.js`: `st_sub_check`/`st_mul_check` simmetriche a `st_add_check`; rebuild PE/ELF, hash CI, conformance |
+| 8 | C2 | Massimo **4 parametri** per funzione nel seed (record da 64 byte, 16 per parametro) | `tests/probes/bad_parametri_5.td` | `gen_seed.js`: allargare gli slot del record (o più record); rebuild + hash CI |
+| 9 | C2 | Junk a destra del corpo di funzione breve: il seed ignora il resto riga, il parser S1 produce `ERR` | header `selfhost/source.td` | tracciare i separatori nello scanner S1 (token SEP o contatore riga) e consumare fino a fine riga |
+| 10 | C3 | **Heap liste**: 528 byte irrecuperabili per ogni valutazione di letterale (64 KB totali; ~60/run ok, 150 = crash) | `tests/probes/bad_lista_alloc.td` | allocator con riuso o slab in `gen_seed.js`; sblocca AST come dato e vettori di token in S1 |
+| 11 | C3 | Stringhe del seed: escape `\n \t \" \` assenti, `==` sempre `false`, `+=` corrompe | `bad_escape_stringa.td`, `bad_confronto_stringa.td`, `bad_stringa_plus_equals.td` | valutatore stringhe in `gen_seed.js` (escape in `pf_string`, confronto per contenuto, concat in `+=`) |
+| 12 | C4 | **Scope dei nomi**: il seed è dinamico (il callee vede i locali del chiamante), il JS è lessicale, `SPEC-CORE.md` §4 non decide | `tests/probes/bad_scope_dinamico.td` | 1) decisione normativa in §4; 2) allineamento di un runtime (cambia la semantica dei programmi con omonimi nei frame) |
+| 13 | C4 | S1.5 (eval) e AST come dato: richiedono §8 (`strlen`/`strbyte`/`strsub`/`readfile`) nel seed e/o il punto 10 | `BOOTSTRAP.md` S1, `SPEC-CORE.md` §8 | tappa S1 successiva: valutatore in Triad-Core sui token dell'algoritmo attuale |
+
+Residui di sessioni precedenti (non del front-end, non bloccanti): Critical di
+complessità/lint (`docs/security/TRIAGE-SEVERITY.md` rec. 3–5), CodeQL #128 da
+chiudere al push del commit `0f4d106`.

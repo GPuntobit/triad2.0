@@ -24,7 +24,9 @@ linguaggio un pezzo alla volta.
 ### A chi è indirizzato
 
 Sai programmare, in qualunque linguaggio: sai cosa sono una variabile, una funzione, un ciclo, una
-ricorsione. Questo manuale non spiega la programmazione in generale, spiega **Triad**.
+ricorsione. Questo manuale non spiega la programmazione in generale, spiega **Triad**. Se non hai
+mai programmato, parti dalle *Fondamenta: programmare da zero con Triad*, la parte del volume che
+insegna la programmazione da capo e costruisce i concetti che qui si danno per noti.
 
 Il manuale non presume che tu abbia letto nient'altro: ogni concetto è spiegato dove serve. I
 documenti normativi del progetto — `SPEC.md`, `SPEC-CORE.md` — e la suite di conformità in

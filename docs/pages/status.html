@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>Status — Triad 2.0</title>
+<meta name='description' content='Status of Triad 2.0: what is ready today, what is missing, and the distance from the goal of a self-hosted language.' />
+<link rel='stylesheet' href='../assets/css/style.css' />
+<link rel='stylesheet' href='../assets/css/triad-generated.css' />
+</head>
+<body>
+<div id='site-header'></div>
+<main class='container'>
+<div class='doc-layout'>
+<aside class='doc-sidebar'>
+<h4>Documentation</h4>
+<ul>
+<li><a href='getting-started.html'>Get started</a></li>
+<li><a href='language-tour.html'>Tour</a></li>
+<li><a href='spec.html'>Spec</a></li>
+<li><a href='tutorial.html'>Tutorial</a></li>
+<li><a href='apprendimento.html'>Learning</a></li>
+<li><a href='examples.html'>Examples</a></li>
+<li><a href='playground.html'>Playground</a></li>
+<li><a href='conformance.html'>Conformance</a></li>
+<li><a href='bootstrap.html'>Bootstrap</a></li>
+<li><a href='editors.html'>Editor</a></li>
+<li><a href='status.html'>Status</a></li>
+<li><a href='ai.html'>AI</a></li>
+<li><a href='license.html'>License</a></li>
+</ul>
+</aside>
+<div class='doc-content'>
+<h1>Status</h1>
+<p class='section-sub'>STATUS.md tracks what works today and what is missing. The short version: the standard, the conformance suite and the Windows seed are real, and the self-hosted implementation is the next milestone.</p>
+<h2>1. Ready today</h2>
+<ul class='feature-list'>
+<li><strong>Standard</strong> - SPEC.md version 0.2.0, SPEC-CORE.md, VERSION and CHANGELOG.md.</li>
+<li><strong>Conformance</strong> - the Node runner, Triad-Core 37 of 37 green, with the goldens versioned as text.</li>
+<li><strong>Seed S0</strong> - a Windows PE interpreter with integers, variables, functions in both forms, recursion, Bool, operators, conditionals, loops, blocks, lambdas, closures, strings and concatenation.</li>
+<li><strong>Launcher and CLI</strong> - the launcher locates the runtime for you; the Julia implementation has been removed.</li>
+<li><strong>Continuous integration</strong> - the conformance job on Ubuntu, the Windows job on the PE seed and the Linux ELF job.</li>
+<li><strong>Documentation and book</strong> - the long manual, the tutorial with its translations, and the book in PDF, EPUB, MOBI and DOCX.</li>
+<li><strong>Tooling</strong> - the editor support, the AI generation benchmark with its automatic verifier, and the small probe programs used by CI and by the install script.</li>
+</ul>
+<h2>2. What is missing</h2>
+<p>The seed does not implement list indexing, length and iteration, and the conversion of a value to a string covers integers and strings only. The self-hosted implementation in <code>selfhost/</code> is in progress. The CLI runs files only: the REPL and the remaining options of section 14 of the standard are still to do. The native compiler, self-hosting and the parity work on Linux have not started.</p>
+<h2>3. The distance from the goal</h2>
+<p>The goal is not complete. S0 is a machine code interpreter, but S1, the interpreter written in Triad-Core, has not finished, so there is no self-hosting yet. S2 and S3, the native compiler and its fixed point, have not started, and the Linux ELF port is at its first stage. External recognition, the Linguist pull request and the publication of the extensions still depend on the maintainer: the MIT license is in place since October 2026, the rest is a step outside the repository.</p>
+<h2>4. Verification</h2>
+<div class='code-card'>
+node conformance/run.mjs                                 # Core, 37 cases
+node conformance/run.mjs --cases conformance/cases       # Full, 12 cases
+</div>
+<p>Every change to the lexicon, to the parser, to the types, to the evaluation or to the input and output has to come with a case in <code>conformance/</code> and must keep the Core cases green.</p>
+<p>The documentation was consolidated under <code>docs/</code>, with the tutorial, the wiki and the security records beside the site; the small probe programs live in <code>tests/probes/</code> and the legacy scaffold of the old site is still in <code>tools/site-jekyll/</code>. The paths that other tools depend on did not change.</p>
+<p class='section-sub'>Source: STATUS.md, README.md, CHANGELOG.md, AGENTS.md.</p>
+</div>
+</div>
+</main>
+<div id='site-footer'></div>
+<script src='../assets/js/app.js'></script>
+<script>TriadSite.mount('Status')</script>
+</body>
+</html>

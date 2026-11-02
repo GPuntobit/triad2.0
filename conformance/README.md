@@ -26,7 +26,7 @@ verified.
 ## Profiles
 
 - **Triad-Full** — `cases/` (12 cases; today only `errore` passes, the rest of Triad-Full is not implemented): the whole language of `SPEC.md`.
-- **Triad-Core** — `core/cases/` (37 cases, all green): only the normative subset of
+- **Triad-Core** — `core/cases/` (39 cases, all green): only the normative subset of
 [`SPEC-CORE.md`](../SPEC-CORE.md), shared with Triad-Full; bootstrap primitives are
 not covered by this suite.
 

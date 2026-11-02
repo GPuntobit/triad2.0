@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>Bootstrap — Triad 2.0</title>
+<meta name='description' content='How Triad boots without any host language: the S0 seed in machine code, the S1 interpreter in Triad-Core, and the chain up to S4.' />
+<link rel='stylesheet' href='../assets/css/style.css' />
+<link rel='stylesheet' href='../assets/css/triad-generated.css' />
+</head>
+<body>
+<div id='site-header'></div>
+<main class='container'>
+<div class='doc-layout'>
+<aside class='doc-sidebar'>
+<h4>Documentation</h4>
+<ul>
+<li><a href='getting-started.html'>Get started</a></li>
+<li><a href='language-tour.html'>Tour</a></li>
+<li><a href='spec.html'>Spec</a></li>
+<li><a href='tutorial.html'>Tutorial</a></li>
+<li><a href='apprendimento.html'>Learning</a></li>
+<li><a href='examples.html'>Examples</a></li>
+<li><a href='playground.html'>Playground</a></li>
+<li><a href='conformance.html'>Conformance</a></li>
+<li><a href='bootstrap.html'>Bootstrap</a></li>
+<li><a href='editors.html'>Editor</a></li>
+<li><a href='status.html'>Status</a></li>
+<li><a href='ai.html'>AI</a></li>
+<li><a href='license.html'>License</a></li>
+</ul>
+</aside>
+<div class='doc-content'>
+<h1>Bootstrap</h1>
+<p class='section-sub'>Triad must run without Julia, or any other language, at any stage: runtime, bootstrap or build. BOOTSTRAP.md states the requirement, the chain and the milestones that make it verifiable.</p>
+<h2>1. Why the obvious shortcuts are excluded</h2>
+<p>The requirement rules out three shortcuts. Rewriting the kernel in another language would add a dependency. Keeping a foreign runtime inside a packaged binary is still that runtime executing Triad. Committing a binary seed produced elsewhere hides the same dependency. The only coherent chain starts from an interpreter handwritten in machine code.</p>
+<h2>2. The chain from S0 to S4</h2>
+<div class='code-card'>
+S0  seed: Triad-Core interpreter in machine code (handwritten, x86-64)
+     |  executes
+S1  complete implementation of Triad written in Triad-Core
+     |  includes
+S2  native compiler written in Triad
+     |  compiles
+S3  self-hosted native compiler, no seed and no other language
+     |  compiles
+S4  complete Triad: REPL, CLI, examples, conformance
+</div>
+<h3>What the seed must do</h3>
+<p>The seed interprets Triad-Core and not the whole language: it reads a file and parses the lexicon, evaluates with environments and closures, carries the dynamic values, offers the arithmetic primitives and the output to the standard streams, allocates with a bump arena and exposes the entry point <code>seed program.td</code>. Triad-Core is chosen because it is small enough to be written by hand and expressive enough to implement the whole language on top of it.</p>
+<h2>3. S0, the seed</h2>
+<p>The seed is a PE executable for Windows x86-64 of 25088 bytes, without a runtime and without libc: it imports only a few kernel32 functions and reads the program from the first argument. Its source is an annotated hexadecimal dump kept in the repository, so the executable is materialised with a system decoder and never compiled. The Linux port exists at its E0 stage, a minimal ELF that prints its banner and exits.</p>
+<div class='code-card'>
+certutil -decodehex seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
+seed/windows-x86_64/seed.exe conformance/core/cases/ricorsione/program.td
+</div>
+<h2>4. S1 and beyond</h2>
+<p>The self-hosted implementation lives in <code>selfhost/</code> and is in progress: it is the interpreter of Triad-Core written in Triad-Core, with a smoke test in CI but not yet a conformance run. The native compiler and the self-hosting fixed point have not started, and the parity with the Windows seed, the REPL and the Linux ELF port are the last milestones.</p>
+<h2>5. Fixed points and development tools</h2>
+<p>The seed never contains Julia and is not produced by Julia. S1 and S2 are Triad sources versioned as text. The repository does not require Julia, Rust or C to build or use Triad. The seed generator is a maintenance tool that produces the dump: it is not part of the chain, and the goldens are committed text files, so no test needs another language.</p>
+<p class='section-sub'>Source: BOOTSTRAP.md §1-§8, STATUS.md, seed/windows-x86_64/README.md.</p>
+</div>
+</div>
+</main>
+<div id='site-footer'></div>
+<script src='../assets/js/app.js'></script>
+<script>TriadSite.mount('Bootstrap')</script>
+</body>
+</html>

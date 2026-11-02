@@ -6,6 +6,11 @@ const root = path.join(__dirname, '..', '..');
 const libroDir = path.join(root, 'docs', 'libro');
 let html = fs.readFileSync(path.join(libroDir, 'libro.html'), 'utf8');
 
+// html-to-docx non decodifica l'entità numerica &#39; (apostrofo) generata dal TOC:
+// la sostituzione con il carattere reale è sicura anche dentro gli attributi,
+// che sono delimitati da virgolette doppie.
+html = html.replace(/&#39;/g, "'");
+
 // Remove webp images (not supported by every version of Word)
 html = html.replace(/<img[^>]*webp[^>]*>/gi, '');
 
@@ -37,7 +42,13 @@ html = html.replace(/<img\b([^>]*?)\bsrc="([^"]+)"([^>]*)>/gi, (match, before, s
     fontSize: 22,
     complexScriptFontSize: 22,
     pageSize: { width: 8640, height: 12960 },
-    margins: { top: 850, right: 680, bottom: 850, left: 680 },
+    // Margini KDP: gutter interno >= 0.625" (15.875mm) per 301-400 pagine.
+    // html-to-docx non scrive w:mirrorMargins, ma il layout del PDF e' comunque
+    // a margini equi: 1080 twips = 19.05mm (0.75") su tutti i lati, stessa
+    // geometria su ogni pagina, come Il-libro-di-triad.pdf.
+    // header/footer/gutter vanno passati espliciti: altrimenti html-to-docx scrive
+    // "undefined" (OOXML invalido) negli attributi w:header/w:footer/w:gutter.
+    margins: { top: 1080, right: 1080, bottom: 1080, left: 1080, header: 720, footer: 720, gutter: 0 },
     pageNumber: true,
     footer: true,
     skipFirstHeaderFooter: true

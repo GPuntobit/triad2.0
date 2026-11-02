@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>Get started — Triad 2.0</title>
+<meta name='description' content='Install Triad 2.0, run your first program and use the command line interface.' />
+<link rel='stylesheet' href='../assets/css/style.css' />
+<link rel='stylesheet' href='../assets/css/triad-generated.css' />
+</head>
+<body>
+<div id='site-header'></div>
+<main class='container'>
+<div class='doc-layout'>
+<aside class='doc-sidebar'>
+<h4>Documentation</h4>
+<ul>
+<li><a href='getting-started.html'>Get started</a></li>
+<li><a href='language-tour.html'>Tour</a></li>
+<li><a href='spec.html'>Spec</a></li>
+<li><a href='tutorial.html'>Tutorial</a></li>
+<li><a href='apprendimento.html'>Learning</a></li>
+<li><a href='examples.html'>Examples</a></li>
+<li><a href='playground.html'>Playground</a></li>
+<li><a href='conformance.html'>Conformance</a></li>
+<li><a href='bootstrap.html'>Bootstrap</a></li>
+<li><a href='editors.html'>Editor</a></li>
+<li><a href='status.html'>Status</a></li>
+<li><a href='ai.html'>AI</a></li>
+<li><a href='license.html'>License</a></li>
+</ul>
+</aside>
+<div class='doc-content'>
+<h1>Get started</h1>
+<p class='section-sub'>Triad 2.0 is a standalone language with a normative specification, an executable conformance suite and no dependency on other languages. This page takes you from an empty folder to a running program.</p>
+<h2>1. Requirements</h2>
+<p>There is no package to install and no compiler to set up: cloning the repository is enough to start. You need <strong>Node.js 20 or newer</strong> for the reference interpreter, the conformance runner and the development CLI, and <strong>Git</strong> to fetch the project. That is the whole list on purpose, because a language that wants to be independent from other languages cannot ask for a toolchain before it can run.</p>
+<div class='code-card'>
+# clone the project
+git clone https://github.com/GPuntobit/triad2.0.git
+cd triad2.0
+
+# Linux, macOS or WSL: decode the seed and install the launchers
+curl -fsSL https://raw.githubusercontent.com/GPuntobit/triad2.0/main/install.sh | sh
+export PATH=$HOME/.local/bin:$PATH
+</div>
+<p>The install script decodes the Linux seed from its hexadecimal dump, checks that it runs and installs the launchers in the local binary directory (<code>~/.local/bin</code>); it prints the <code>export PATH</code> line to add. On Windows nothing has to be decoded to begin with: the launcher falls back to the Node.js interpreter, and the seed can be materialised later with a system decoder.</p>
+<h2>2. Run a file</h2>
+<p>The launcher finds a runtime for you: the machine code seed when it is usable, the Node.js interpreter otherwise. Both run the same Triad-Core programs; the differences between them are listed in chapter 15 of the tutorial.</p>
+<div class='code-card'>
+triad examples/benvenuto.triad              # launcher
+bin/triad.cmd examples/benvenuto.triad     # Windows wrapper
+node seed/dev/triad_core.cjs hello.triad   # reference interpreter
+echo 'println(7 * 6)' | node seed/dev/triad_core.cjs -
+</div>
+<p>The hyphen in place of the file name tells the interpreter to read the program from the standard input. The arguments of the script are available in <code>ARGS</code>, a list of strings, and a file can start with a shebang line so that it is executed directly.</p>
+<h2>3. Your first program</h2>
+<p>A Triad program is a text file that the runtime reads, parses and executes. It prints with <code>println</code>, and the value of a block is the value of its last expression.</p>
+<div class='code-card'>
+function area(base, height)
+    base * height
+end
+
+square(x) = x * x
+
+println(area(7, 6))
+println(square(4))
+</div>
+<p>The program prints <code>42</code> and <code>16</code>. On Windows the seed is materialised from its own hexadecimal dump, so the language runs without any guest runtime:</p>
+<div class='code-card'>
+certutil -decodehex seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
+seed/windows-x86_64/seed.exe conformance/core/cases/ricorsione/program.td
+</div>
+<h3>The examples folder</h3>
+<p>The <code>examples/</code> folder holds ready programs: <code>benvenuto.triad</code> is the welcome program that runs today, while <code>famiglia.td</code>, <code>garanzie.td</code>, <code>macro.td</code> and <code>tour.td</code> show the Triad-Full features. The playground of this site runs the same interpreter in the browser, so a program can be tried without installing anything.</p>
+<h2>4. The development CLI and the conformance suite</h2>
+<p>The CLI wraps the development tasks and the conformance runner checks an implementation against the golden cases. The REPL belongs to Triad-Full: the Core profile defines script execution only, and section 10 of SPEC-CORE.md says so explicitly.</p>
+<div class='code-card'>
+node conformance/run.mjs                          # 37 Core cases
+node conformance/run.mjs --cases conformance/cases # 12 Full cases
+bin/triad-cli status
+bin/triad-cli help
+</div>
+<p class='section-sub'>Source: README.md, docs/tutorial/TUTORIAL.md (chapter 2), docs/index.html, SPEC-CORE.md §10.</p>
+</div>
+</div>
+</main>
+<div id='site-footer'></div>
+<script src='../assets/js/app.js'></script>
+<script>TriadSite.mount('Get started')</script>
+</body>
+</html>

@@ -2,6 +2,193 @@
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
+## Not released — 2026-11-02: nuovo algoritmo per il codice sorgente (front-end S1)
+
+### Added
+- `selfhost/source.td` — nuovo algoritmo per il codice sorgente, derivato dal
+  codice macchina del seed (`seed/dev/gen_seed.js`) e non dalla vecchia
+  implementazione Julia: scanner a token con cursore esplicito
+  (`next_tok(srcs, pos, campo)`), root-scan dell'espressione corrente con le
+  regole del codice macchina (radice = operatore di precedenza minima,
+  ultima delle catene left-assoc, `?`/`->` right-assoc; parentesi/ternario/
+  virgole come in `scan_end`/`pt_scan`) e discesa ricorsiva che stampa l'AST
+  in pre-ordine con la profondita' come prefisso. Copre l'intero dominio del
+  codice macchina: `println`, `break`, `=`/`+=`/`-=`/`*=` , funzione breve e a
+  blocco con parametri ed effetti `!io`, `let`, `begin`, `if`/`elseif`/`else`,
+  `while`, lambda `x -> expr`, chiamate, liste, stringhe con escape, simboli,
+  letterali `true`/`false`/`nothing`, ternario, tutti gli operatori e i due
+  commenti `#` / `#= =#`. Esegui**to** e verificato identico byte per byte su
+  seed PE in codice macchina e sull'interprete JS di riferimento
+  (`node tests/probes/run_probes.mjs selfhost/source.td` → `[same]`); golden
+  in `selfhost/source.expected.out`.
+- `tests/probes/bad_lista_alloc.td`, `bad_lista_multiriga.td`,
+  `bad_scope_dinamico.td`, `bad_parametri_5.td` — quattro nuovi limiti del
+  seed misurati e certificati: ~60 valutazioni di letterali di lista per
+  esecuzione (528 byte fissi per valutazione in un heap di 64 KB; ~150 fanno
+  terminare il processo per access violation), letterali di lista su piu'
+  righe (accettati dal seed, `parse error` sul JS), scope DINAMICO dei nomi
+  nelle funzioni (il callee vede i locali del chiamante; il JS e' lessicale),
+  massimo 4 parametri per funzione.
+
+### Changed
+- `seed/dev/triad_core.cjs` — aggiunto il builtin `get(xs, i)` (indice 0-based
+  su lista, con gli stessi controlli del primitivo `pf_builtin_get` del codice
+  macchina): il riferimento JS allineato al seed rimuove la divergenza misurata
+  da `tests/probes/test_get.td` (ora `[same]`). Conformance Core invariata.
+- `tests/probes/README.md` — tabella aggiornata con le misure vere di
+  `get`/`length`/`xs[i]` (la vecchia tabella li dava invertiti) e con i quattro
+  nuovi limiti.
+
+## Not released — 2026-11-02: credential-storage hardening (security)
+
+### Security
+- `.git-credentials` (working tree) — a live GitHub PAT stored in plaintext in the repository
+  root has been removed and the placeholder restored; the token never entered git history
+  (verified over all 832 commits) but must be rotated (see `docs/security/SECURITY-REVIEW.md`
+  findings #5–#7).
+- `tools/git-push-with-token.ps1` — the PAT is no longer embedded in the origin remote URL
+  (it used to land in `.git/config` and in git error output). Authentication now uses a
+  throwaway `credential.helper` that reads the token from the process environment only;
+  `git add -A` explicitly excludes `.git-credentials`.
+- `.git-credentials.example` — the template now points to the standard git credential store
+  outside the repository (`%USERPROFILE%\.git-credentials` / `~/.git-credentials`) and
+  recommends the `GITHUB_TOKEN` environment variable and fine-grained, minimal-scope PATs.
+- `tests/security/no_live_tokens.test.py` — new regression test (registered in
+  `tests/security/run.sh` as check 7): no live GitHub token in the working tree (text and
+  binaries), no token in git URLs/remotes in the push tooling, `.gitignore` covers
+  `.git-credentials`, and the template keeps the credential store out of the repository.
+
+## Not released — 2026-11-02: per-chapter exercises in the book
+
+### Added
+- `docs/FONDAMENTA.it.md`, `docs/MANUALE.it.md`, `docs/tutorial/TUTORIAL.it.md` — every
+  concluded chapter now ends with an **Esercizi** section with at least 10 exercises
+  (~900 new exercises overall). The exercises are grounded in the chapter content and respect
+  the Core/Full labelling: Core exercises are runnable on the reference interpreter (and, where
+  the book says so, on the seed), Full exercises are marked **[Full]** and are study material
+  until the runtime implements the standard. The pre-existing exercise material was kept and
+  topped up to the same minimum (Fondamenta 8 and 14 already had 10 and 12 exercises; Manuale
+  1.11 grew from 5 to 12 items, Manuale 23 and 24 and Tutorial 17 gained supplementary lists).
+- `docs/libro/Il-libro-di-triad.pdf` (424 pages, was 378), `libro.html`, `Il-libro-di-Triad.epub`,
+  `libro.docx` regenerated from the updated sources; KDP margin check passes (gutter 19.05mm,
+  minimum 19.05mm for 401–500 pages).
+
+## Not released — 2026-11-01: the site rebuilt from Triad sources
+
+### Added
+- `tools/site-gen/site_pages.td`, `tools/site-gen/site_playground.td`,
+  `tools/site-gen/site_style.td` — the site generators: Triad programs that emit the static
+  site of `docs/` (documentation pages, playground page, stylesheet) as a text bundle of
+  `=== FILE: <path> ===` markers.
+- `tools/site-gen/build.mjs` — the driver: it runs every generator on the machine-code seed
+  **and** on the JavaScript reference interpreter, requires byte-identical stdout from the two,
+  splits the bundle and writes the files. `--check` verifies that the published files match
+  the generated ones, `--dry` runs everything without writing.
+- `tools/site-gen/lint.mjs` — lint of the Triad sources: it blocks the constructs the seed
+  cannot execute (`return` inside a block function, `print`, multi-argument `println`, string
+  escapes, multi-binding `let`, `readfile`, a literal containing `if` inside a block, a call
+  as last expression of a body, `+=` on strings).
+- `tests/probes/` — the portability matrix: every probe is executed on the two runtimes and
+  compared byte for byte. `tests/probes/README.md` documents the certified Triad-Core subset
+  and the measured limits of the seed (they are limits of the seed, not of the specification:
+  `SPEC-CORE.md` §2–§7 allows all of them).
+- Generated pages: `docs/pages/getting-started.html`, `language-tour.html`, `spec.html`,
+  `tutorial.html`, `conformance.html`, `bootstrap.html`, `editors.html`, `status.html`,
+  `playground.html`, `apprendimento.html`, `ai.html`, `license.html`, plus the stylesheet
+  `docs/assets/css/triad-generated.css` (documentation layout, playground, tables, code
+  cards). The pages that `docs/index.html` and `docs/assets/js/app.js` linked but that did not
+  exist are now generated by Triad: the site has no broken internal link.
+- CI job `site-gen` (Ubuntu and Windows): it lints the generators and checks that the
+  published files match the generated ones. On Windows the check also compares the two
+  runtimes, byte for byte.
+
+### Changed
+- `docs/index.html` and `docs/assets/js/app.js` link pages that did not exist: the pages
+  listed above are now generated by Triad and published with the site.
+- `tools/site-gen/README.md` — documentation of the generator: bundle protocol, commands,
+  certified subset, the three practical consequences for anyone writing a generator.
+
+### Fixed
+- The site generators now compare the two runtimes on **raw bytes** (`Buffer.equals` in
+  `tools/site-gen/build.mjs`), not on decoded strings.
+- `docs/assets/js/learning-curve.js`: 38 corrupted sequences (UTF-8 bytes mapped through CP437)
+  are repaired — `–` (en dash), `·` (middle dot), `Σ` (sigma), `—` (em dash). The learning curve
+  chart no longer shows wrong characters.
+- `docs/assets/js/app.js`: the navigation has a `License` entry and no longer duplicates `Home`
+  (the brand already links to the home page); `markSidebar()` marks the current page in the
+  documentation sidebar, which is generated by Triad and therefore cannot carry the `active`
+  class itself; the footer link to the book points to `libro/libro.html`, the file that exists.
+- `docs/assets/css/triad-generated.css` (generated by Triad): the navigation links are compacted
+  above 1100px, so all thirteen entries fit without horizontal scrolling.
+- The generated pages no longer state that the tutorial has four parts (it has five, with
+  chapters 44-49 as the reference), no longer point at a non-existent `recursion` conformance
+  case (it is `ricorsione`), no longer show the wrong `export PATH` line for `install.sh`, and
+  mark the logic and code-as-data sections as Triad-Full.
+
+### Known limits of the seed (measured, not regressions)
+The site generators stay inside a narrow subset because the seed in machine code is still
+partial: no `print`, no multi-argument `println`, no `return` in a block function, no escape
+inside a string, no `let` with more than one binding, no `readfile`, no list indexing, no
+forward reference, and a literal containing the substring `if` inside a block breaks the
+block nesting counter. The reference interpreter implements the whole Triad-Core, so a
+divergence between the two runtimes is a defect of the program, not of the seed.
+
+## Not released — 2026-11-01: libro — Fondamenta per principianti, PDF rigenerato
+
+### Added
+- `docs/FONDAMENTA.it.md` — nuova parte del *Libro di Triad*, "Fondamenta: programmare da zero
+  con Triad", per chi non ha mai programmato: programma/interprete, terminale, valori e tipi,
+  variabili, espressioni, stringhe, `if`/`while`, liste, funzioni, ricorsione, errori e debug,
+  pensare da programmatore (scomporre un problema), esercizi con soluzioni, glossario dei
+  termini informatici, domande da neofita, percorsi di lettura, Appendice A (installazione
+  guidata passo passo con tabella dei guasti) e Appendice B (scheda rapida della sintassi
+  Core). Tutti gli esempi sono Triad-Core e sono stati verificati uno per uno con
+  `node seed/dev/triad_core.cjs` (34 esempi completi, output identici a quelli riportati;
+  1 con output abbreviato verificato per prefisso/suffisso).
+  Include il capitolo 15 "Una domanda che capita spesso: cosa sono «success» e «fail»?":
+  spiega task e verifica automatica del benchmark `ai/` (PASS/FAIL rispetto all'output atteso,
+  metriche `pass@1`/`pass@k`, «il primo che riesce conta»), i codici di uscita e l'esito dei
+  goal nella programmazione logica (`:call`/`:redo`/`:exit`/`:fail` di `solve … trace`); la
+  stessa risposta è riassunta nelle FAQ del Tutorial (`docs/tutorial/TUTORIAL.it.md` cap. 49,
+  con versione inglese in `TUTORIAL.md`).
+- `docs/PREFazione.it.md` — prefazione italiana del volume (aggiornata ai tre testi e al lettore
+  principiante); `docs/PREFazione.md` resta la fonte inglese, allineata.
+- `scripts/docs/build-pdf.mjs` — generazione del PDF del libro con il motore di stampa di
+  Chrome/Edge (headless, puppeteer-core): formato e margini dalle regole `@page` di
+  `libro.html`, numeri di pagina da footer template, segnalibri PDF dai titoli.
+
+### Changed
+- `scripts/docs/build-libro.mjs`, `scripts/docs/build-epub.cjs`: il libro italiano si costruisce
+  dalle fonti italiane (`PREFazione.it.md`, `FONDAMENTA.it.md`, `MANUALE.it.md`,
+  `docs/tutorial/TUTORIAL.it.md`); indice e sommario ricevono il gruppo "Fondamenta";
+  quarta di copertina menziona la parte per principianti.
+- `docs/MANUALE.it.md`, `docs/MANUALE.md`: "A chi è indirizzato" rimanda alle Fondamenta per
+  chi non ha mai programmato.
+- Artefatti di `docs/libro/` rigenerati: `libro.html`, `Il-libro-di-Triad.epub`,
+  `Il-libro-di-Triad.mobi`, `libro.docx`, `Il-libro-di-triad.docx`, `Il-libro-di-triad.doc`
+  (Word 97, generato con LibreOffice) e `Il-libro-di-triad.pdf` (273 pagine, formato
+  152,4×228,6 mm, 295 segnalibri, numeri di pagina).
+
+### Fixed
+- `Il-libro-di-triad.pdf`: generato con il motore di stampa di Chrome invece di
+  `ebook-convert` (calibre), il cui writer PDF (9.17) corrompe i glifi composti durante il
+  subsetting dei font: tutte le lettere accentate (è, à, ù, …) e gli em-dash risultavano
+  riquadri vuoti (tofu) in ogni viewer. Il bug affliggeva anche i PDF generati in precedenza.
+- Indice del libro e documento Word: le voci di titolo con apostrofi comparivano con
+  l'entità letterale `&#39;` (doppio escape `&amp;#39;` generato da `escapeHtml` su testi già
+  entità di `marked`). `build-libro.mjs` decodifica ora le entità di base nei titoli prima
+  del TOC (slug più leggibili); `build-docx.cjs` normalizza `&#39;` nell'input di html-to-docx,
+  che non decodifica quell'entità numerica.
+- Verifica PDF ↔ DOC (confronto automatico del testo estratto, entrambe le direzioni):
+  il documento Word contiene tutto il contenuto del PDF. La verifica ha però scoperto e
+  corretto due difetti del PDF, che perdeva contenuto rispetto alle fonti:
+  - le righe di codice più lunghe della colonna venivano **tagliate** (`overflow-x` in
+    stampa): il CSS di `build-libro.mjs`/`build-epub.cjs` usa ora `white-space: pre-wrap`;
+  - i blocchi `<details>` (le soluzioni degli esercizi, 19 nel Manuale/Tutorial) erano
+    **collassati e non stampati** da Chrome: `build-pdf.mjs` li apre tutti prima della stampa.
+  Restano come differenze volute le intestazioni di tabella ripetute a fine pagina nel PDF
+  (comportamento di stampa) e i puntini elenco aggiunti dal Word nella conversione in testo.
+
 ## Not released — 2026-11-01: folder reorganization
 
 ### Changed

@@ -3533,6 +3533,16 @@ Windows seed standard; they must be executed with `seed.exe`.
 **Where do I propose a change to the language?** In the standard (`SPEC.md`/`SPEC-CORE.md`) with
 entry in `CHANGELOG.md` and conformance cases; then in the implementations.
 
+**What are the "success and fail" attempts (PASS/FAIL, `pass@k`) in the `ai/` benchmark?**
+A task is a small exercise (sum, factorial, strings…) with an expected output; a solution is
+verified by running it and comparing the output: **PASS** if it matches, **FAIL** otherwise. An
+*attempt* is one generation of the solution: `pass@1` counts only a first-attempt success,
+`pass@k` accepts that one of the k attempts per task succeeds ("the first success counts"). So
+success/failure refers to the task's expected output, not to the language. In logic programming
+(SPEC §6, [chapter 22](#cap-22)) the same words instead denote the outcome of a goal:
+`:call`/`:redo`/`:exit`/`:fail` are the engine's attempts recorded by `solve … trace`. See also
+the Fundamentals part of the book, chapter 16.
+
 ---
 
 Core examples marked **Output:** are verified by running them with

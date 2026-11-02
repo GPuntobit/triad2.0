@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>Editor — Triad 2.0</title>
+<meta name='description' content='Editor support for Triad: the VS Code extension, the Vim and Neovim grammar, and the GitHub Linguist entry.' />
+<link rel='stylesheet' href='../assets/css/style.css' />
+<link rel='stylesheet' href='../assets/css/triad-generated.css' />
+</head>
+<body>
+<div id='site-header'></div>
+<main class='container'>
+<div class='doc-layout'>
+<aside class='doc-sidebar'>
+<h4>Documentation</h4>
+<ul>
+<li><a href='getting-started.html'>Get started</a></li>
+<li><a href='language-tour.html'>Tour</a></li>
+<li><a href='spec.html'>Spec</a></li>
+<li><a href='tutorial.html'>Tutorial</a></li>
+<li><a href='apprendimento.html'>Learning</a></li>
+<li><a href='examples.html'>Examples</a></li>
+<li><a href='playground.html'>Playground</a></li>
+<li><a href='conformance.html'>Conformance</a></li>
+<li><a href='bootstrap.html'>Bootstrap</a></li>
+<li><a href='editors.html'>Editor</a></li>
+<li><a href='status.html'>Status</a></li>
+<li><a href='ai.html'>AI</a></li>
+<li><a href='license.html'>License</a></li>
+</ul>
+</aside>
+<div class='doc-content'>
+<h1>Editor support</h1>
+<p class='section-sub'>The <code>editors/</code> folder contains the tools that make Triad readable as a language. They are implementation independent: they describe the syntax defined by SPEC.md, not the behaviour of a particular runtime.</p>
+<h2>1. What is in the folder</h2>
+<ul class='feature-list'>
+<li><code>vscode/</code> - the extension: the language identifier, the TextMate grammar for source.triad, and the configuration of brackets, comments and indentation.</li>
+<li><code>vim/</code> - the ftdetect and the syntax files for Vim and Neovim.</li>
+<li><code>linguist/</code> - the ready entry for github-linguist, with the instructions to request the recognition on GitHub.</li>
+</ul>
+<h3>What the grammar covers</h3>
+<p>The TextMate grammar highlights both extensions, the line comment and the block comment, the shebang, the escaped strings and the interpolation, the logical variables, the symbols, the macros, the keywords with the options of <code>solve</code>, the builtin types and the type names, the calls and the definitions, the operators, the <code>:-</code> of a rule and the indentation on <code>end</code>. The language configuration takes care of the brackets, the comments and the indentation of the blocks.</p>
+<h2>2. VS Code</h2>
+<p>The extension is a plain folder: it declares the language <code>triad</code> with the two extensions and the grammar <code>source.triad</code>. Package it with the official tool and install the result, or copy the folder into the extensions directory of your profile and restart the editor.</p>
+<div class='code-card'>
+cd editors/vscode
+npx @vscode/vsce package
+code --install-extension triad-0.2.0.vsix
+
+# or copy the folder into the extensions directory
+cp -r editors/vscode ~/.vscode/extensions/triad
+</div>
+<p>If another extension claims the <code>.td</code> extension, because it is also used by LLVM TableGen, choose Triad explicitly for the new files, or keep using the canonical <code>.triad</code> extension.</p>
+<p>The support is syntax only: no extension runs the language, it only describes it. That is why the same files are read the same way in every editor, and why a change to the standard is a change to the grammars.</p>
+<h2>3. Vim and Neovim</h2>
+<p>The filetype detection sets the <code>triad</code> filetype for both extensions; the syntax file highlights the keywords, the types, the operators and the comments of the language.</p>
+<div class='code-card'>
+mkdir -p ~/.vim
+cp -r editors/vim/syntax editors/vim/ftdetect ~/.vim/
+
+# Neovim
+cp -r editors/vim/* ~/.config/nvim/
+</div>
+<h2>4. Recognition as a language</h2>
+<p>On GitHub the external step is a pull request to github-linguist/linguist. The prepared entry in <code>editors/linguist/languages.yml</code> declares the type, the colour, the canonical extension and the grammar scope; the pull request also needs real samples and the unique identifier that Linguist assigns. The canonical extension is <code>.triad</code>, while <code>.td</code> stays accepted as a historical alias: it is also the extension of LLVM TableGen, so a new file should use <code>.triad</code>.</p>
+<p class='section-sub'>Source: editors/README.md, editors/vscode/README.md, editors/linguist/README.md, editors/vscode/package.json.</p>
+</div>
+</div>
+</main>
+<div id='site-footer'></div>
+<script src='../assets/js/app.js'></script>
+<script>TriadSite.mount('Editor')</script>
+</body>
+</html>
