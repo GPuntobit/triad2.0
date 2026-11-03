@@ -842,3 +842,119 @@ allineamento runtime + tappa S1 (settimane).
 Residui di sessioni precedenti (non del front-end, non bloccanti): Critical di
 complessità/lint (`docs/security/TRIAGE-SEVERITY.md` rec. 3–5), CodeQL #128 da
 chiudere al push del commit `0f4d106`.
+
+## Sotto-task dalle note di sessione (2026-11-02)
+
+Sotto-task derivati dalle note «Note e rinvii» del 2026-11-02 e dalle nuove
+divergenze misurate (righe 14–15). Regola di lettura: N01/N03/N04/N05 sono
+meccaniche (`gen_seed.js`) e **conviene raggrupparle in un unico ciclo di
+rebuild PE/ELF + hash CI**; N02/N08 richiedono invece una decisione normativa
+prima del codice (regola operativa 1: non inventare semantica); N09 è
+l'abilitatore di tutti i rebuild verificabili senza Windows; N10 è azione umana.
+Ogni sotto-task ha verifica locale su PE (wine) **e** interprete JS.
+Mappatura con la tabella dei problemi: riga 1 → N10, riga 7 → N04,
+riga 8 → N05, riga 10 → N07, riga 11 → N06, riga 12 → N08, riga 14 → N01,
+riga 15 → N02; il caso `liste` skippato → N03.
+
+### N01 — Identificatori con iniziale maiuscola nel seed (riga 14, C2)
+- **Files:** `seed/dev/gen_seed.js` (`parse_ident`), PE/ELF + `seed.hex`, hash in
+  `.github/workflows/ci.yml`, `tests/probes/`.
+- **Work:** allargare la classe di START dell'identificatore da `[a-z_]` a
+  `[A-Za-z_]` (la classe di continuazione accetta già le maiuscole: `aB` funziona);
+  la tabella delle keyword resta solo minuscola (`IF` non è keyword). Rebuild
+  PE/ELF, aggiornare i due hash della CI.
+- **Acceptance:** probe ribaltato in `ok_identificatore_maiuscolo.td` e identico
+  sui due runtime; casi Core e probe `ok_*`/`test_*` verdi sul PE rigenerato;
+  dump riproducibili dai generatori.
+
+### N02 — Newline: decisione normativa e allineamento (riga 15, C4)
+- **Files:** `SPEC-CORE.md` §2/§4, `conformance/core/cases/`, poi un runtime.
+- **Work:** decidere quando un newline **continua** l'espressione (dopo un
+  operatore binario? dentro `()`/`[]`?) e quando **separa** gli statement;
+  scrivere la regola in §2/§4; aggiungere casi `newline_continua` e
+  `newline_separa`; allineare il runtime non conforme.
+- **Dipendenze:** decisione normativa (umana) PRIMA del codice.
+- **Acceptance:** casi newline verdi identici su PE e JS;
+  `bad_separatore_newline.td` non documenta più una divergenza.
+
+### N03 — `xs[i]` 1-based e sblocco del caso `liste` (C2, sottoinsieme di S0.2)
+- **Files:** `seed/dev/gen_seed.js`, `conformance/run.mjs` (skip `liste`), CI.
+- **Work:** implementare la lettura `xs[i]` (1-based) e la scrittura `xs[i] = v`
+  nel seed (il JS già le ha); verificare `length`/`push!` esistenti; rimuovere
+  `skip = ['liste']` dal runner e dai comandi CI.
+- **Acceptance:** `conformance/core/cases/liste` verde byte-exatto sul PE senza
+  skip; indici fuori intervallo e `0` → exit 1 + stderr (collegato a A05).
+
+### N04 — `-=` e `*=` nel seed (riga 7, C2)
+- **Files:** `seed/dev/gen_seed.js` (`st_sub_check`/`st_mul_check` simmetriche a
+  `st_add_check`), PE/ELF, hash CI, `tests/probes/`, casi Core.
+- **Work:** comporre assegnazione e operazione con wrap-around 64 bit firmato,
+  come `+=`; caso di conformance `assegnazioni_composte` su entrambi i runtime.
+- **Acceptance:** `-=`/`*=` producono gli stessi valori del JS; nessun caso
+  regresso fra i 38 Core.
+
+### N05 — Funzioni con più di 4 parametri (riga 8, C2)
+- **Files:** `seed/dev/gen_seed.js` (record funzione da 64 byte, 16 per parametro),
+  PE/ELF, hash CI, `tests/probes/`.
+- **Work:** allargare gli slot del record (o impiegare più record) fino a 8+
+  parametri; verificare ricorsione e chiamate con argomenti misti.
+- **Acceptance:** `bad_parametri_5.td` ribaltato in `ok_`; caso con 6–8 parametri
+  verificato identico sui due runtime.
+
+### N06 — Stringhe del seed: escape, `==`, `+=` (riga 11, C3)
+- **Files:** `seed/dev/gen_seed.js` (`pf_string`, valutatore stringhe), PE/ELF,
+  hash CI, `tests/probes/`, `SPEC-CORE.md` §2.
+- **Work:** escape `\n \t \" \\` nei letterali; `==`/`!=` per contenuto (oggi
+  sempre `false`); `+=` come concatenazione (oggi corrompe); rispettare gli
+  indici in byte UTF-8 di §2 (collegato a S0.3).
+- **Acceptance:** `bad_escape_stringa.td`, `bad_confronto_stringa.td`,
+  `bad_stringa_plus_equals.td` ribaltati; stringhe vuote, escape ai limiti e
+  multibyte verificati byte per byte.
+
+### N07 — Heap liste riutilizzabile (riga 10, C3)
+- **Files:** `seed/dev/gen_seed.js` (bump allocator → riuso/slab per i valori di
+  lista), PE/ELF, hash CI, `tests/probes/`.
+- **Work:** riusare la memoria dei letterali di lista quando il valore non è più
+  referenziato (oggi 528 byte irrecuperabili per valutazione, ~60/run, ~150 =
+  crash); misurare il limite residuo.
+- **Acceptance:** `bad_lista_alloc.td` (150 valutazioni) termina con exit 0 senza
+  crash; sblocca vettori di token e AST come dato in S1.
+
+### N08 — Scope dei nomi: decisione normativa (riga 12, C4)
+- **Files:** `SPEC-CORE.md` §4, poi un runtime fra `seed/dev/gen_seed.js` e
+  `seed/dev/triad_core.cjs`, `tests/probes/`.
+- **Work:** decidere se lo scope è lessicale (JS, maggioranza dei linguaggi) o
+  dinamico (seed: `env_find` vede i locali del chiamante); scrivere la regola in
+  §4; allineare il runtime non conforme; documentare l'impatto sui programmi con
+  omonimi nei frame.
+- **Dipendenze:** decisione normativa (umana) PRIMA del codice.
+- **Acceptance:** `bad_scope_dinamico.td` non documenta più una divergenza; i
+  programmi con shadowing fra chiamante e chiamato hanno comportamento unico e
+  specificato.
+
+### N09 — Harness di verifica locale del PE via wine (C1, abilitatore)
+- **Files:** `scripts/dev/seed-wine.sh` (nuovo), `tests/probes/README.md`,
+  `seed/README.md`.
+- **Work:** formalizzare la procedura usata in sessione: decodificare
+  `seed/windows-x86_64/seed.hex` in un PE temporaneo ed eseguirlo con
+  `WINEDEBUG=-all wine`, esportando `TRIAD_SEED` per `conformance/run.mjs` e
+  `tests/probes/run_probes.mjs` (che già lo accettano). Un solo comando ripete
+  conformance + probes su Linux.
+- **Acceptance:** da un checkout pulito, un comando su Linux esegue la
+  conformance Core e i probe sul PE nativo senza Windows; la CI resta invariata
+  (su Windows il seed gira nativo).
+
+### N10 — Rotazione del PAT esposto (riga 1, C0, azione umana)
+- **Files:** nessuno nel repository; `docs/security/SECURITY-REVIEW.md` #5,
+  `tests/security/no_live_tokens.test.py`.
+- **Work (manuale):** GitHub → Settings → Developer settings → Personal access
+  tokens: revocare il PAT rimosso da `.git-credentials` e generarne uno nuovo;
+  riconfigurare le credenziali locali FUORI dal repository (come da
+  `.git-credentials.example`).
+- **Acceptance:** il vecchio PAT risulta revocato; nessun token nel working tree
+  o negli URL di git (`sh tests/security/run.sh` verde).
+
+### Ordine suggerito
+1. **N09** (abilitatore, minuti) → 2. **N01+N03+N04+N05** in un unico rebuild +
+  hash CI (mezza giornata) → 3. **N10** (azione umana, indipendente) →
+  4. **N02** e **N08** dopo le decisioni normative → 5. **N06+N07** (C3, giorni).

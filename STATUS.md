@@ -213,6 +213,11 @@ New measured divergences logged as table rows 14–15 and probes:
 newline after an operator; the statement-separator semantics need a normative
 decision first).
 
+Sub-tasks derived from these notes are collected in `TASK.md` → «Sotto-task dalle
+note di sessione (2026-11-02)» (N01–N10), with the mapping to the problem-table
+rows and the suggested order (N09 wine harness → N01+N03+N04+N05 in a single PE
+rebuild → N10 human action → N02/N08 after the normative decisions → N06+N07).
+
 Verification run (2026-11-02, Linux + wine):
 
 - `node conformance/run.mjs` (JS): OK; `TRIAD_SEED=wine-seed node conformance/run.mjs` (PE): OK (37/38, `liste` skipped as known S0.2 gap);
