@@ -428,20 +428,35 @@ code, specification, and results reproduced here.
     on regenerated PE; exit `0`. Conformance Core Julia: All cases pass.
   - **Artifact:** PE 25088 bytes, code 8315 bytes, SHA-256 of `seed.hex`:
     `9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822`.
-- [ ] **A03 — Delete invalid or recursive S1 modules**
+- [x] **A03 — Delete invalid or recursive S1 modules**
   - **Files:** `selfhost/ast.td`, `selfhost/eval.td`, `selfhost/main.td`.
   - **Work:** remove `type AST = Int`, not present in the grammar; eliminate the
     recursive overriding of `string()` and the use of `/`, excluded from Core; don't use `get`
     as if it were a Full primitive.
   - **Acceptance:** every S1 source is valid Triad-Core, does not raise overflow and does not
     requires non-normative seed extensions; any obsolete files are removed.
-- [ ] **A04 — Introduce a unique runner for the seed**
+  - **Closed 2026-11-02:** `type AST = Int` removed from `selfhost/ast.td` (constants
+    now plain assignments; `make_call` uses the assign-then-return pattern so the
+    seed accepts it); `selfhost/program.td` rewritten on the flat integer-token
+    model (the old nested-token model was inconsistent and failed on its own test
+    data) — it now prints `42\n7\n` on PE seed and JS; `string()` overrides and `/`
+    were already absent; `get` is now a normative bootstrap primitive in
+    `SPEC-CORE.md` §8 (problem row 2). The `conformance-core` CI job checks that
+    every `selfhost/*.td` runs on the reference interpreter.
+- [x] **A04 — Introduce a unique runner for the seed**
   - **File:** new development runner, `.github/workflows/ci.yml`, `conformance/`.
   - **Work:** replace manual list of 30 cases with directory discovery,
     Binary comparison of stdout and checking exit code, `args.txt` and stderr where applicable.
     Separate shared Core cases from tests specific to bootstrap primitives.
   - **Acceptance:** all present cases are executed automatically; a new case
     does not require changes to the CI; adding or modifying an incorrect golden causes the job to fail.
+  - **Closed 2026-11-02:** the `seed-windows` job runs `node conformance/run.mjs
+    --cases conformance/core/cases --skip liste` (directory discovery, byte-exact
+    `expected.out`/`expected.golden`, `expected.code`, `args.txt`): the hardcoded
+    list of 35 cases is gone; `gcd` and `valori` are now covered too. Bootstrap
+    probes run via `node tests/probes/run_probes.mjs --strict` (ok_*/test_* must
+    match seed vs JS and their optional golden) and `run_probes.mjs
+    selfhost/source.td` checks the S1 front-end golden `selfhost/source.expected.out`.
 - [ ] **A05 — Add negative cases and limits to Core conformance**
   - **File:** `conformance/core/cases/`, `SPEC-CORE.md` §9–§10, runner seed.
   - **Job:** cover out-of-range indexes, wrong types, undefined variables, module for
@@ -683,7 +698,11 @@ code, specification, and results reproduced here.
   pretende stdout identico byte per byte; `lint.mjs` blocca i costrutti che il seed non
   esegue; CI `site-gen` (Ubuntu + Windows) verifica lint e sincronia. Sottoinsieme
   certificato e limiti misurati del seed: `tests/probes/README.md`.
-- [ ] **Chiarire in `SPEC-CORE.md` §2 se una stringa può contenere un newline grezzo.**
+- [x] **Chiarire in `SPEC-CORE.md` §2 se una stringa può contenere un newline grezzo.**
+  Deciso il 2026-11-02: **ammesso** — il letterale va a capo e il newline fa parte
+  del valore (documentato in §2); entrambi i runtime lo accettano e vietarlo
+  richiederebbe casi negativi e un cambiamento dei runtime. Allineare S1 non serve:
+  lo scanner di `selfhost/source.td` lo accetta già.
   I due runtime attuali lo accettano (i generatori del sito lo usavano), ma la specifica
   prevede `\n` come escape: è una delle poche cose che il generatore evita dopo la
   verifica. Decidere (spec o divieto esplicito) e allineare S1.
@@ -781,11 +800,11 @@ allineamento runtime + tappa S1 (settimane).
 | # | C | Problema | Evidenza | Intervento |
 |---|---|---|---|---|
 | 1 | C0 | Il PAT rimosso da `.git-credentials` va **ruotato** su GitHub: va considerato esposto | `docs/security/SECURITY-REVIEW.md` #5 | azione umana (GitHub → revoca/rotazione) |
-| 2 | C0 | `get(xs, i)` è nel codice macchina e nel riferimento JS ma **non in `SPEC-CORE.md` §8**: ambiguità reale da chiudere (aggiungerlo a §8 o dichiararlo non standard) | `tests/probes/test_get.td` | chiarimento normativo (una riga in §8 + nota §11) |
-| 3 | C1 | Letterali di lista su più righe: il parser JS li rifiuta (`parse error: SEP`), il seed li accetta | `tests/probes/bad_lista_multiriga.td` | `seed/dev/triad_core.cjs`: saltare i separatori dentro `[ ... ]` + ribaltare il probe in `ok_` |
-| 4 | C1 | `a ? b :c` (due punti attaccato al ramo): il lexer di `selfhost/source.td` legge `:c` come simbolo; il codice macchina risolve dal contesto | `selfhost/source.td` (divergenze, header) | opzionale: reinterpretare il token SYM come `:` nel ramo ternario (parser) |
-| 5 | C1 | Simboli operatore del lessico Core (`:+`) non nel dominio del codice macchina | header `selfhost/source.td` | supersett nello scanner di `selfhost/source.td` (l'esecuzione resta ai punti 7/11) |
-| 6 | C1 | Verifiche non agganciate alla CI: golden del front-end S1 e suite `tests/security` | `conformance/OK` locale | `.github/workflows/ci.yml`: `run_probes.mjs selfhost/source.td` + diff golden nello smoke `seed-windows`; `tests/security/run.sh` in una lane |
+| 2 ✅ | C0 | `get(xs, i)` è nel codice macchina e nel riferimento JS ma **non in `SPEC-CORE.md` §8**: ambiguità reale da chiudere (aggiungerlo a §8 o dichiararlo non standard) | `tests/probes/test_get.td` | chiarimento normativo (una riga in §8 + nota §11) — **fatto 2026-11-02** |
+| 3 ✅ | C1 | Letterali di lista su più righe: il parser JS li rifiuta (`parse error: SEP`), il seed li accetta | `tests/probes/bad_lista_multiriga.td` | `seed/dev/triad_core.cjs`: saltare i separatori dentro `[ ... ]` + ribaltare il probe in `ok_` — **fatto 2026-11-02** |
+| 4 ✅ | C1 | `a ? b :c` (due punti attaccato al ramo): il lexer di `selfhost/source.td` legge `:c` come simbolo; il codice macchina risolve dal contesto | `selfhost/source.td` (divergenze, header) | reinterpretare il token SYM come `:` nel ramo ternario (parser) — **fatto 2026-11-02** anche nel parser JS |
+| 5 ✅ | C1 | Simboli operatore del lessico Core (`:+`) non nel dominio del codice macchina | header `selfhost/source.td` | supersett nello scanner di `selfhost/source.td` (l'esecuzione resta ai punti 7/11) — **scanner fatto 2026-11-02** |
+| 6 ✅ | C1 | Verifiche non agganciate alla CI: golden del front-end S1 e suite `tests/security` | `conformance/OK` locale | `.github/workflows/ci.yml`: `run_probes.mjs selfhost/source.td` + diff golden nello smoke `seed-windows`; `tests/security/run.sh` in una lane — **fatto 2026-11-02** |
 | 7 | C2 | `-=` e `*=`: previsti dal lessico Core e accettati dal parser S1, il seed valuta solo `+=` | `STATUS.md` (limiti), probe `p6` della sessione | `seed/dev/gen_seed.js`: `st_sub_check`/`st_mul_check` simmetriche a `st_add_check`; rebuild PE/ELF, hash CI, conformance |
 | 8 | C2 | Massimo **4 parametri** per funzione nel seed (record da 64 byte, 16 per parametro) | `tests/probes/bad_parametri_5.td` | `gen_seed.js`: allargare gli slot del record (o più record); rebuild + hash CI |
 | 9 | C2 | Junk a destra del corpo di funzione breve: il seed ignora il resto riga, il parser S1 produce `ERR` | header `selfhost/source.td` | tracciare i separatori nello scanner S1 (token SEP o contatore riga) e consumare fino a fine riga |
@@ -793,6 +812,32 @@ allineamento runtime + tappa S1 (settimane).
 | 11 | C3 | Stringhe del seed: escape `\n \t \" \` assenti, `==` sempre `false`, `+=` corrompe | `bad_escape_stringa.td`, `bad_confronto_stringa.td`, `bad_stringa_plus_equals.td` | valutatore stringhe in `gen_seed.js` (escape in `pf_string`, confronto per contenuto, concat in `+=`) |
 | 12 | C4 | **Scope dei nomi**: il seed è dinamico (il callee vede i locali del chiamante), il JS è lessicale, `SPEC-CORE.md` §4 non decide | `tests/probes/bad_scope_dinamico.td` | 1) decisione normativa in §4; 2) allineamento di un runtime (cambia la semantica dei programmi con omonimi nei frame) |
 | 13 | C4 | S1.5 (eval) e AST come dato: richiedono §8 (`strlen`/`strbyte`/`strsub`/`readfile`) nel seed e/o il punto 10 | `BOOTSTRAP.md` S1, `SPEC-CORE.md` §8 | tappa S1 successiva: valutatore in Triad-Core sui token dell'algoritmo attuale |
+| 14 | C2 | Identificatori con **iniziale maiuscola** (`Ab = 0`): il seed esce con 1, il JS li accetta; `aB` funziona (solo la classe di start del seed è `[a-z_]`); SPEC-CORE §2 ammette `[A-Za-z]` | `tests/probes/bad_identificatore_maiuscolo.td` | `gen_seed.js`: allargare la classe di start di `parse_ident` a `[A-Za-z_]`; rebuild PE/ELF, hash CI, conformance |
+| 15 | C4 | Separatore newline dopo un operatore: il seed prosegue l'espressione (`x = 1` + `-2` = `-1`), il JS separa gli statement; SPEC-CORE §2 elenca il newline come separatore ma non decide la continuazione dopo un operatore | `tests/probes/bad_separatore_newline.td` | decisione normativa su §2/§4 (quando il newline continua l'espressione) + allineamento di un runtime |
+
+### Chiusi il 2026-11-02 (righe 2–6 della tabella, A03, A04)
+- **Riga 2 (`get`)**: aggiunta `get(xs, i)` a `SPEC-CORE.md` §8 come primitiva di
+  bootstrap a indice **0-based**, con nota che la distingue da `xs[i]` (§7, 1-based)
+  e che i casi di `conformance/core/` non la usano (§11). Risolve anche il vincolo
+  «non usare `get` come se fosse una primitiva Full» di A03.
+- **Riga 3 (liste multi-riga)**: `seed/dev/triad_core.cjs` tratta i newline come
+  trivia dentro `[ ... ]` (con contatore di profondità dei bracket); probe ribaltato
+  in `ok_lista_multiriga.td`. Il trailing comma resta errore su entrambi i runtime.
+  Divergenze residue sui newline: vedi riga 15.
+- **Riga 4 (`? :c`)**: reinterpretazione del token SYM come colon in posizione di
+  operatore sia in `selfhost/source.td` (root_pos con `td > 0` + colon check in
+  `parse_expr`, con avanzamento di un solo byte oltre i trivia) sia nel parser JS
+  (splice `COLON` + resto in `parseTernary`). Probe `ok_ternario_colon_attacco.td`
+  (7/8 identici su PE e JS) e nuovo chunk c8 nel sorgente di test di `source.td`
+  (ternario annidato con due colon attaccati); golden rigenerato e verificato su
+  entrambi i runtime.
+- **Riga 5 (`:+`)**: scanner di `selfhost/source.td` accetta dopo `:` una corsa di
+  caratteri operatore come nome simbolo (`is_opc`), superset del dominio del codice
+  macchina. Probe `bad_simbolo_operatore.td` documenta che il seed lo rifiuta ancora.
+- **Riga 6 (CI)**: job `security` (`tests/security/run.sh`), step
+  `run_probes.mjs --strict` + `run_probes.mjs selfhost/source.td` nel job
+  `seed-windows`, step di validità di tutti i `selfhost/*.td` in `conformance-core`.
+- **A03/A04**: vedi le note nelle rispettive voci sopra.
 
 Residui di sessioni precedenti (non del front-end, non bloccanti): Critical di
 complessità/lint (`docs/security/TRIAGE-SEVERITY.md` rec. 3–5), CodeQL #128 da

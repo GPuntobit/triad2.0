@@ -25,10 +25,14 @@ function tokenize(src){
   const toks = [];
   let i = 0;
   const n = src.length;
+  // Dentro [ ... ] i newline sono trivia (come nel codice macchina): un
+  // letterale di lista puo' andare a capo senza separare gli statement.
+  let bdepth = 0;
   while (i < n) {
     const c = src[i];
     if (c === '\n' || c === '\r') {
       if (c === '\r' && src[i+1] === '\n') i++;
+      if (bdepth > 0) { i++; continue; }
       toks.push({type:'SEP'});
       i++;
       continue;
@@ -115,8 +119,8 @@ function tokenize(src){
     }
     if (c === '(') { toks.push({type:'LPAREN'}); i++; continue; }
     if (c === ')') { toks.push({type:'RPAREN'}); i++; continue; }
-    if (c === '[') { toks.push({type:'LBRACKET'}); i++; continue; }
-    if (c === ']') { toks.push({type:'RBRACKET'}); i++; continue; }
+    if (c === '[') { toks.push({type:'LBRACKET'}); bdepth++; i++; continue; }
+    if (c === ']') { toks.push({type:'RBRACKET'}); if (bdepth > 0) bdepth--; i++; continue; }
     if (c === ',') { toks.push({type:'COMMA'}); i++; continue; }
     if (c === '?') { toks.push({type:'QMARK'}); i++; continue; }
     if (c === ':') { toks.push({type:'COLON'}); i++; continue; }
@@ -245,6 +249,19 @@ Parser.prototype.parseTernary = function(){
   if (this.peek().type === 'QMARK') {
     this.advance();
     const then = this.parseExpr();
+    // `a ? b :c` — il codice macchina (scannerless) risolve ':' dal contesto;
+    // il lexer a token ha invece prodotto SYM("c"). Si reinterpretano i due
+    // punti attaccati: il token SYM ricomincia come COLON piu' il resto
+    // (identificatore o operatore), come fa il codice macchina.
+    if (this.peek().type === 'SYM') {
+      const sym = this.advance();
+      const rest = sym.value;
+      this.toks.splice(this.pos, 0, {type:'COLON'});
+      if (rest !== '') {
+        this.toks.splice(this.pos + 1, 0,
+          /^[A-Za-z_]/.test(rest) ? {type:'IDENT', value: rest} : {type:'OP', value: rest});
+      }
+    }
     this.expect('COLON');
     const els = this.parseExpr();
     return {kind:'ternary', cond, then, else: els};
