@@ -1,6 +1,6 @@
 # Triad and S0 bootstrap status
 
-Updated after the A03 verification and conformance runner cleanup.
+Updated after the 2026-11-02 closure of problem-table rows 2–6 and backlog A03/A04.
 
 ## Goal
 
@@ -172,3 +172,51 @@ The goal **is not complete**:
 - Tested: `string(42)`, `string(0)`, `string(-5)`, `string("ciao")` work correctly.
 - Conformance `stringhe` passes with correct output: `ciao Triad\n5\n42`.
 - Bool/Symbol/Nothing remain unimplemented (they crashed before too; now they return fail).
+
+## Closure of open problems rows 2–6 + A03/A04 (2026-11-02)
+
+Verified locally on **both** runtimes: the PE seed executed under wine and the JS
+reference interpreter (`seed/dev/triad_core.cjs`).
+
+- **`get(xs, i)` normative** (row 2): added to `SPEC-CORE.md` §8 as a bootstrap
+  primitive with **0-based** index, explicitly distinct from `xs[i]` (§7, 1-based);
+  Core conformance cases stay on §2–§7 (§11).
+- **Multi-line list literals** (row 3): the JS lexer now treats newlines as trivia
+  inside `[ ... ]`; `tests/probes/bad_lista_multiriga.td` flipped to
+  `ok_lista_multiriga.td`. Trailing comma remains an error on both runtimes.
+- **Attached ternary colon `? 5 :7`** (row 4): both `selfhost/source.td` (root_pos
+  `td > 0` branch + `parse_expr` colon check) and the JS parser (`parseTernary`
+  SYM → `COLON` + rest) now reinterpret the SYM token like the scannerless machine
+  code. New probe `ok_ternario_colon_attacco.td` (7/8 identical on PE and JS) and
+  new test-source chunk c8 in `source.td` (nested ternary with two attached colons);
+  golden `selfhost/source.expected.out` regenerated and verified on both runtimes.
+- **Operator symbols `:+`** (row 5): the `selfhost/source.td` scanner accepts an
+  operator-character run after `:` (`is_opc`) — superset of the machine-code domain.
+  `bad_simbolo_operatore.td` documents that the seed still rejects `:+`.
+- **CI wiring** (row 6) + **A04**: `seed-windows` now runs `conformance/run.mjs`
+  (directory discovery + byte-exact goldens + exit codes; the hardcoded list of 35
+  cases is gone, `gcd` and `valori` are covered), `tests/probes/run_probes.mjs
+  --strict` (ok_*/test_* must match seed vs JS and their optional golden) and
+  `run_probes.mjs selfhost/source.td` (S1 front-end golden). New `security` job runs
+  `tests/security/run.sh`; `conformance-core` checks that every `selfhost/*.td`
+  executes on the reference interpreter.
+- **A03**: `selfhost/ast.td` no longer uses `type AST = Int` (outside the grammar);
+  `selfhost/program.td` rewritten on the flat integer-token model (the nested model
+  was inconsistent) and now prints `42\n7\n` on both runtimes; `get` legitimized as
+  a §8 bootstrap primitive.
+- **`SPEC-CORE.md` §2 strings**: raw newlines inside string literals are explicitly
+  **allowed** (both runtimes accept them; the S1 scanner already did).
+
+New measured divergences logged as table rows 14–15 and probes:
+`bad_identificatore_maiuscolo.td` (seed start class `[a-z_]` rejects `Ab = 0`) and
+`bad_separatore_newline.td` (the scannerless seed continues the expression across a
+newline after an operator; the statement-separator semantics need a normative
+decision first).
+
+Verification run (2026-11-02, Linux + wine):
+
+- `node conformance/run.mjs` (JS): OK; `TRIAD_SEED=wine-seed node conformance/run.mjs` (PE): OK (37/38, `liste` skipped as known S0.2 gap);
+- `node tests/probes/run_probes.mjs --strict`: 17 probes, 0 differences; full run: 37 probes, differences only in the 18 documented `bad_*` (0 violations);
+- `node tests/probes/run_probes.mjs selfhost/source.td`: seed == JS == golden;
+- every `selfhost/*.td` exits 0 on the JS interpreter; `tools/site-gen` lint + `build.mjs --check` OK;
+- `sh tests/security/run.sh`: ALL SECURITY VERIFICATIONS PASSED; `node --test conformance/run.test.mjs`: 2/2.

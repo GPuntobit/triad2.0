@@ -22,13 +22,19 @@ Included:
 | integer | `42`, `1_000` (sign handled by unary operator) |
 | boolean | `true`, `false` |
 | nothing | `nothing` |
-| string | `"..."` escaped `\n \t \" \\`; **no** interpolation `$` |
+| string | `"..."` escaped `\n \t \" \\`; **no** interpolation `$`; può contenere newline grezzi |
 | symbol | `:` + name or operator (`:alice`, `:+`) |
 | comment | `#` to end of line; `#= ... =#` |
 | separator | newline or `;` |
 | operators | `+ - * % ^ == != < <= > >= && \|\| ! = += -= *= -> ?:` |
 Excluded: `Float` literals, `?x` logical variables, characters (Triad has none),
 macro `@name`, the shebang is still ignored by the seed.
+
+Nota (decisione 2026-11-02): una stringa **può contenere newline grezzi** — il
+letterale va a capo e il newline fa parte del valore; l'escape `\n` produce lo
+stesso carattere. Entrambe le implementazioni di riferimento (seed in codice
+macchina e interprete JS) lo accettano: vietarlo richiederebbe casi negativi
+e un cambiamento dei runtime, quindi la regola è esplicitamente permessa.
 ## 3. Types and values
 | type | values |
 |---|---|
@@ -124,9 +130,18 @@ Triad-Full language and do not appear in `SPEC.md` §13:
 | `strlen(s)` | number of bytes of string |
 | `strbyte(s, i)` | bytes (`Int`, 0–255) at position 1-based |
 | `strsub(s, a, b)` | substring from bytes `a` to `b` inclusive (1-based) |
+| `get(xs, i)` | element of the list `xs` at index `i`, **0-based** |
 | `exit(n)` | terminate the process with code `n` |
 The seed must still provide `readfile` to load S1 itself; `strlen`/`strbyte`/`strsub`
 they are only required when S1 needs to analyze source.
+
+Nota (decisione 2026-11-02): `get(xs, i)` è un'**estensione di bootstrap** del
+seed a indice **0-based**, usata da S1 per leggere le strutture piatte senza
+entrare in conflitto con `xs[i]` di §7 che è 1-based. Non è un primitivo di
+Triad-Full (non compare in `SPEC.md` §13) e i casi di `conformance/core/` non
+la usano: restano limitati a §2–§7 (§11). Il codice macchina la implementa già;
+elenchi primitivi con `xs[i]`, `length`, `push!` sono l'accesso normativo (i
+limiti del seed su `xs[i]` sono lacune S0.2, non della specifica).
 ## 9. Errors
 Core has no `try`/`catch` nor `Err` values: an execution error (undefined variable,
 wrong type, index out of range, division by zero, file not readable) **ends on

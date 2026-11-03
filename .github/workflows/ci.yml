@@ -18,6 +18,24 @@ jobs:
           chmod +x seed/linux-x86_64/seed
       - name: Conformance Core (Node runner)
         run: node conformance/run.mjs --cases conformance/core/cases --skip liste
+      - name: Sorgenti selfhost validi Triad-Core
+        run: |
+          for f in selfhost/*.td; do
+            echo "check $f"
+            node seed/dev/triad_core.cjs "$f" > /dev/null
+          done
+
+  security:
+    # Verifiche di sicurezza (tests/security/run.sh): isolamento Python,
+    # path hijack, workflow pinnati, sanitizzazione, token, path spostati.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '20'
+      - name: Security checks
+        run: sh tests/security/run.sh
 
   site-gen:
     # Il sito statico in docs/ è generato da programmi Triad (tools/site-gen).
@@ -44,6 +62,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '20'
       - name: "AV exclusion (PE generato dal dump: falso positivo noto)"
         shell: pwsh
         continue-on-error: true
@@ -53,21 +74,15 @@ jobs:
         run: |
           Remove-Item seed/windows-x86_64/seed.exe -ErrorAction SilentlyContinue
           certutil -decodehex seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
-      - name: Seed conformance cases
+      - name: Seed conformance cases (runner unico: scoperta directory + golden)
         shell: pwsh
-        run: |
-          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','if_elseif','if_nested','if_no_else','while_loop','while_annidati','while_sentinella','lambda','closure','chiusure','scope','funzioni_blocco','funzioni_io','funzioni','aritmetica','begin_block','formula','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if','liste_base','liste_push')
-          foreach ($c in $cases) {
-            $out = Join-Path $env:TEMP "$c.out"
-            Remove-Item $out -ErrorAction SilentlyContinue
-            $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "conformance\core\cases\$c\program.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
-            if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for $c" }
-            $got = (Get-Content $out -Raw) -replace "`r`n", "`n"
-            $expFile = "conformance\core\cases\$c\expected.out"
-            if (-not (Test-Path $expFile)) { $expFile = "conformance\core\cases\$c\expected.golden" }
-            $exp = (Get-Content $expFile -Raw) -replace "`r`n", "`n"
-            if ($got -ne $exp) { throw "output mismatch for $c" }
-          }
+        run: node conformance/run.mjs --cases conformance/core/cases --skip liste
+      - name: Probe seed vs interprete JS (ok_* e test_*)
+        shell: pwsh
+        run: node tests/probes/run_probes.mjs --strict
+      - name: Front-end S1 (selfhost/source.td): golden e confronto seed/JS
+        shell: pwsh
+        run: node tests/probes/run_probes.mjs selfhost/source.td
       - name: Seed get probe
         shell: pwsh
         run: |

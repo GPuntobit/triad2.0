@@ -12,8 +12,15 @@ byte per byte sui due runtime.
 
 ```sh
 node tests/probes/run_probes.mjs                 # tutti i probe
+node tests/probes/run_probes.mjs --strict        # solo ok_* e test_* (per la CI)
 node tests/probes/run_probes.mjs ok_builder.td  # un probe
 ```
+
+Su Linux il seed PE si esegue via wine: `TRIAD_SEED="wine seed/windows-x86_64/seed.exe"
+node tests/probes/run_probes.mjs`. Se un file `<nome>.expected.out` esiste accanto
+al probe, i due runtime sono confrontati anche con il golden (usato per
+`selfhost/source.expected.out`). Exit code: 1 se un `ok_*`/`test_*` differisce
+dai due runtime o dal golden; i `bad_*` documentano divergenze e non falliscono.
 
 Output per ogni file: exit code e stdout dei due runtime, e il flag `same`
 quando coincidono.
@@ -30,11 +37,14 @@ quando coincidono.
 | `length(xs)` su lista | sì | sì | `bad_lista_indice.td` |
 | indice di lista `xs[i]` | **no** | sì | `bad_lista_indice.td` |
 | letterali di lista: ~60 valutazioni per esecuzione | **no** (528 byte fissi per valutazione, heap 64 KB: ~250 fanno crashare il processo) | sì | `bad_lista_alloc.td` |
-| letterale di lista su più righe | sì | **no** (parse error) | `bad_lista_multiriga.td` |
+| letterale di lista su più righe | sì | sì | `ok_lista_multiriga.td` |
 | scope dei nomi nelle funzioni | **dinamico** (il callee vede i locali del chiamante) | lessicale | `bad_scope_dinamico.td` |
 | funzioni con più di 4 parametri | **no** | sì | `bad_parametri_5.td` |
-| `if`/`elseif`/`else`, `while` | sì | sì | `ok_if_assegna.td`, `ok_while_in_funzione.td` |
-| ternario `? :` | sì | sì | `ok_ternario.td` |
+| `if`/`elseif`/`else`, `while` | sì | sì | `ok_if_assegna.td` (e i casi `while_*` della conformance) |
+| ternario `? :` (anche `:` attaccato al ramo, `? 5 :7`) | sì | sì | `ok_ternario.td`, `ok_ternario_colon_attacco.td` |
+| simboli operatore `:+` | **no** (exit 1) | sì | `bad_simbolo_operatore.td` |
+| identificatore con iniziale maiuscola (`Ab`) | **no** (exit 1) | sì | `bad_identificatore_maiuscolo.td` |
+| newline come separatore di statement dopo un operatore | divergente (prosegue l'espressione) | separa gli statement | `bad_separatore_newline.td` |
 | funzione a blocco, valore = ultima espressione | sì | sì | `ok_funzione_valore.td` |
 | `return` dentro una funzione a blocco | **no** | sì | `bad_return_blocco.td` |
 | `if`/`else` come *valore* del corpo | **no** | sì | `bad_if_valore_funzione.td` |
@@ -83,6 +93,15 @@ quando coincidono.
 7. **Quattro parametri.** `st_function`/`st_func` allocano 16 byte per
    parametro in un record da 64: la quinta chiamata fallisce. Il codice
    Triad-Core portabile usa al massimo 4 parametri per funzione.
+8. **Iniziale maiuscola negli identificatori.** La classe di start del seed
+   accetta solo `[a-z_]` (mentre SPEC-CORE §2 ammette le lettere `[A-Za-z]`):
+   `Ab = 0` termina con exit 1, `aB = 0` funziona. Le maiuscole *interne* ai
+   nomi e dentro le stringhe vanno bene.
+9. **Separatore newline dopo un operatore.** Il seed è scannerless e prosegue
+   l'espressione oltre il newline (`x = 1` seguito da `-2` vale `x = 1 - 2`);
+   il JS tratta il newline come separatore di statement. SPEC-CORE §2 elenca il
+   newline come separatore ma non decide la continuazione dopo un operatore:
+   serve una decisione normativa prima di allineare i runtime.
 
 I limiti sono anche codificati nel lint del generatore:
 `node tools/site-gen/lint.mjs`.

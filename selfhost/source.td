@@ -34,7 +34,7 @@
 # Lessico (SPEC-CORE, dominio del codice macchina): numeri decimali con
 # separatori _ opzionali (ignorati), identificatori [A-Za-z_][A-Za-z0-9_]* con
 # un '!' finale opzionale, stringhe "..." con escape \n \t \" \\ , simboli
-# :nome, commenti # e #= =#, separatori spazio/tab/CR/LF/; tutti trivia
+# :nome o :+, commenti # e #= =#, separatori spazio/tab/CR/LF/; tutti trivia
 # (come skip_ws del codice macchina), operatori
 # + - * % ^ == != < <= > >= && || ! = += -= *= -> ? : e delimitatori ( ) [ ] ,.
 #
@@ -48,11 +48,12 @@
 # quindi maiuscole); i nomi di statement iniziano con minuscola o _.
 #
 # Divergenze segnalate (non inventate):
-#   - "a ? b :c" (due punti attaccato al ramo): il codice macchina e'
-#     scannerless e risolve ':' dal contesto; un lexer a token e' ambiguo e
-#     legge ':c' come simbolo. Scrivere gli spazi attorno ai due punti.
-#   - i simboli operatore del lessico Core (':+') sono fuori dal dominio del
-#     codice macchina: qui ':' e' COLON e l'operatore resta separato.
+#   - "a ? b :c" (due punti attaccato al ramo): risolto — in posizione di
+#     operatore un token SYM viene reinterpretato come colon piu' il resto
+#     (root_pos e parse_expr), come fa il codice macchina scannerless.
+#   - i simboli operatore del lessico Core (':+') sono qui accettati dallo
+#     scanner (superset del dominio del codice macchina, che li rifiuta):
+#     l'esecuzione sul seed resta ai punti 7/11 dei problemi aperti.
 #   - il junk a destra del corpo di una funzione breve non viene saltato (il
 #     codice macchina ignora il resto riga): qui produce un nodo ERR.
 #   - il seed valuta solo '+=' fra gli operatori composti; '-=' e '*=' sono
@@ -63,8 +64,8 @@
 #     scope lessicale del JS: i nomi locali di questo file non devono
 #     collisionare con i globali letti dalle funzioni (lezione del bug p2:
 #     pad() leggeva il locale p2 del chiamante invece del globale "2 ").
-#   - i letterali di lista vanno scritti su una riga: il parser del
-#     riferimento JS non accetta separatori dentro [ ... ] su piu' righe.
+#   - i letterali di lista su piu' righe sono ora accettati dai due runtime:
+#     il parser del riferimento JS salta i separatori dentro [ ... ].
 #
 # Verifica: node tests/probes/run_probes.mjs selfhost/source.td
 # (stdout identico byte per byte su seed PE e interprete JS di riferimento)
@@ -232,6 +233,11 @@ end
 
 function is_ini(b)
   r = is_alf(b) || (b == 95)
+  r
+end
+
+function is_opc(b)
+  r = (b == 43) || (b == 45) || (b == 42) || (b == 37) || (b == 94) || (b == 61) || (b == 33) || (b == 60) || (b == 62) || (b == 38) || (b == 124) || (b == 63)
   r
 end
 
@@ -429,6 +435,21 @@ function next_tok(srcs, p, f)
                   cnt = cnt + 1
                   q = cur_adv(srcs, q)
                   go = 1
+                end
+              end
+            end
+            if cnt == 0
+              # simboli operatore del lessico Core (':+', ':-', ...): il nome
+              # e' una corsa di caratteri operatore (SPEC-CORE §2)
+              go = 1
+              while go == 1
+                go = 0
+                if at_eof(srcs, q) == false
+                  if is_opc(byte_at(srcs, q)) == true
+                    cnt = cnt + 1
+                    q = cur_adv(srcs, q)
+                    go = 1
+                  end
                 end
               end
             end
@@ -795,12 +816,22 @@ function root_pos(srcs, pos, lim)
             end
           end
         else
-          if pre == 0
-            done = 1
+          if (kt == k_sym) && (pre == 0) && (d == 0) && (td > 0)
+            # ':' attaccato al ramo (':c') reinterpretato come colon: chiude
+            # il ramo vero di un ternario; il resto del token e' riesaminato
+            # dalla discesa come operando (il codice macchina fa lo stesso)
+            td = td - 1
+            pre = 1
+            prev = k_op
+            q = cur_adv(srcs, skip_trivia(srcs, q))
           else
-            pre = 0
-            prev = kt
-            q = next_tok(srcs, q, 3)
+            if pre == 0
+              done = 1
+            else
+              pre = 0
+              prev = kt
+              q = next_tok(srcs, q, 3)
+            end
           end
         end
       end
@@ -1085,7 +1116,13 @@ function parse_expr(srcs, pos, d, lim)
           if is_tok(srcs, np, k_op, o_colon) == true
             np = next_tok(srcs, np, 3)
           else
-            println(mk(d + 1, "ERR"))
+            if next_tok(srcs, np, 0) == k_sym
+              # ':' attaccato al ramo (':c'): il token SYM ricomincia come
+              # colon piu' il resto, che la discesa riesamina
+              np = cur_adv(srcs, skip_trivia(srcs, np))
+            else
+              println(mk(d + 1, "ERR"))
+            end
           end
           np = parse_expr(srcs, np, d + 1, lim)
         else
@@ -1245,7 +1282,7 @@ function parse_prim(srcs, pos, d)
   r
 end
 
-# --- sorgente di test (384 byte in 7 chunk) ---------------------------------
+# --- sorgente di test (439 byte in 8 chunk) ---------------------------------
 # Il programma Triad-Core campione copre tutto il dominio del codice macchina:
 # commenti # e #= =#, assegnazioni = += -=, operatori + - * % ^, unari - !,
 # confronti, && ||, ternario, parentesi, liste, stringhe con escape, simboli,
@@ -1258,7 +1295,11 @@ c4 = [63, 10, 102, 117, 110, 99, 116, 105, 111, 110, 32, 103, 40, 97, 44, 32, 99
 c5 = [63, 100, 10, 98, 101, 103, 105, 110, 10, 32, 32, 120, 32, 61, 32, 103, 40, 120, 44, 32, 50, 41, 32, 59, 10, 101, 110, 100, 10, 105, 102, 32, 120, 32, 60, 32, 49, 48, 10, 32, 32, 120, 32, 61, 32, 49, 48, 10, 101, 108, 115, 101, 105, 102, 32, 120, 32, 61, 61, 32, 49, 48, 10, 32]
 c6 = [63, 32, 120, 32, 61, 32, 49, 49, 10, 101, 108, 115, 101, 10, 32, 32, 120, 32, 61, 32, 48, 10, 101, 110, 100, 10, 119, 104, 105, 108, 101, 32, 120, 32, 62, 32, 48, 10, 32, 32, 120, 32, 45, 61, 32, 49, 10, 32, 32, 98, 114, 101, 97, 107, 10, 101, 110, 100, 10, 112, 114, 105, 110, 116]
 c7 = [6, 108, 110, 40, 120, 41, 10]
-srcs = [c1, c2, c3, c4, c5, c6, c7]
+# c8 copre i due casi un tempo divergenti: colon attaccato al ramo del
+# ternario ('? 5 :7') e simbolo operatore (':+'); la terza riga e' un
+# ternario annidato con due colon attaccati
+c8 = [55, 117, 32, 61, 32, 48, 32, 61, 61, 32, 48, 32, 63, 32, 53, 32, 58, 55, 10, 115, 32, 61, 32, 58, 43, 10, 118, 32, 61, 32, 49, 32, 61, 61, 32, 49, 32, 63, 32, 50, 32, 61, 61, 32, 50, 32, 63, 32, 51, 32, 58, 52, 32, 58, 53, 10]
+srcs = [c1, c2, c3, c4, c5, c6, c7, c8]
 
 # --- driver -----------------------------------------------------------------
 println(mk(0, "PROGRAM"))

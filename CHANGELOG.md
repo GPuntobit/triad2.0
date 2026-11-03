@@ -2,6 +2,37 @@
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
+## Not released — 2026-11-02: chiusura righe 2–6 dei problemi aperti, A03/A04
+
+### Changed
+- `SPEC-CORE.md`: §8 aggiunge `get(xs, i)` (primitiva di bootstrap, indice
+  **0-based**) con nota che la distingue da `xs[i]` (§7, 1-based) e che i casi di
+  `conformance/core/` non la usano; §2 chiarisce che una stringa **può contenere
+  newline grezzi** (decisione normativa: entrambi i runtime li accettano).
+- `seed/dev/triad_core.cjs`: dentro `[ ... ]` i newline sono trivia (come nel codice
+  macchina), quindi i letterali di lista vanno a capo; in `parseTernary` un token
+  SYM in posizione di colon viene reinterpretato come `:` + resto (`a ? b :c`).
+- `selfhost/source.td`: lo scanner accetta i simboli operatore (`:+`) e i parser
+  reinterpretano il colon attaccato al ramo del ternario; nuovo chunk c8 nel
+  sorgente di test (ternario annidato con colon attaccati), golden rigenerato.
+- `selfhost/ast.td`: rimosso `type AST = Int` (fuori grammatica); `make_call` usa il
+  pattern assegna-e-restituisci. `selfhost/program.td`: riscritto sul modello piatto
+  di token interi (prima: modello annidato incoerente, errore a runtime).
+- `.github/workflows/ci.yml`: job `security` (`tests/security/run.sh`); il job
+  `seed-windows` usa `conformance/run.mjs` (scoperta directory + golden) al posto
+  della lista hardcodata di 35 casi, più `run_probes.mjs --strict` e
+  `run_probes.mjs selfhost/source.td` (golden del front-end S1);
+  `conformance-core` verifica che ogni `selfhost/*.td` sia eseguibile.
+- `tests/probes/run_probes.mjs`: override `TRIAD_SEED`, confronto con golden
+  opzionale (`<file>.expected.out`), exit code non-zero se un `ok_*`/`test_*`
+  differisce (i `bad_*` documentano divergenze e non falliscono).
+
+### Added
+- `tests/probes/ok_lista_multiriga.td` (ribaltato da `bad_`),
+  `ok_ternario_colon_attacco.td`, `bad_simbolo_operatore.td`,
+  `bad_identificatore_maiuscolo.td`, `bad_separatore_newline.td` — con le righe
+  corrispondenti in `tests/probes/README.md`.
+
 ## Not released — 2026-11-02: nuovo algoritmo per il codice sorgente (front-end S1)
 
 ### Added
