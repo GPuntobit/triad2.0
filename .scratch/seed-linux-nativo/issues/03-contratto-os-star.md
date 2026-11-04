@@ -1,7 +1,7 @@
 # 03 — Contratto delle routine `os_*`
 
 Type: prototype
-Status: open
+Status: claimed
 Blocked by: 02
 
 ## Question
