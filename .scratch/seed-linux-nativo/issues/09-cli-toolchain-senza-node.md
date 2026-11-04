@@ -1,7 +1,7 @@
 # 09 — CLI e toolchain senza Node
 
 Type: grilling
-Status: open
+Status: claimed
 Blocked by: 07
 
 ## Question

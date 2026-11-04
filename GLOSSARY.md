@@ -31,6 +31,11 @@ La garanzia sul percorso di esecuzione: eseguire programmi Triad richiede solo i
 della repository e una shell POSIX, nessun Wine, Node o linguaggio host installato.
 _Avoid_: standalone, portabile
 
+**Launcher**:
+Il punto d'ingresso d'uso garantito per eseguire programmi Triad (`triad programma.td`):
+l'unica interfaccia utente del percorso zero-install.
+_Avoid_: runtime (è il seed nativo), wrapper (meccanismo d'installazione), script di avvio
+
 **Core del codegen**:
 La parte del generatore del seed condivisa da tutte le piattaforme: emissione delle
 istruzioni x86-64 e codegen del corpo dell'interprete.
