@@ -3,7 +3,7 @@
 Updated after the 2026-11-02 closure of problem-table rows 2–6 and backlog A03/A04.
 **Main task promoted 2026-11-03:** native Linux seed without Wine (TASK.md → «Task
 principale (2026-11-03)», N15–N18); it takes precedence over N03 and the mechanical
-sub-tasks.
+sub-tasks. Decision map (wayfinder): `.scratch/seed-linux-nativo/map.md`.
 
 ## Goal
 

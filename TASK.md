@@ -25,6 +25,11 @@ strumento di sviluppo). Il dominio del linguaggio non cambia: `SPEC-CORE.md` res
 e vale il vincolo Triad-Core ⊂ Triad-Full (regola operativa 4). Nessuna semantica inventata
 (regola operativa 1): l'ELF deve comportarsi **identico al PE**, limiti noti compresi.
 
+Mappa decisionale (wayfinder): `.scratch/seed-linux-nativo/map.md`, ticket in
+`.scratch/seed-linux-nativo/issues/` (decisioni aperte: byte del PE, architettura codegen,
+contratto `os_*`, parità/CI, installazione zero-install). Le slice N15–N18 qui sotto
+restano il piano d'esecuzione: la mappa decide, le slice costruiscono.
+
 Obiettivo finale: `seed/linux-x86_64/seed` (ELF64 statico, senza libc né dynamic linker)
 che esegue gli stessi programmi Triad-Core del PE con stdout byte-identico; da un checkout
 pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipendenze esterne.
