@@ -58,15 +58,20 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   `0x40000` senza GC); stato `r14` base, `r12` stdout (solo PE), `rbx` file, `r13`
   conteggio; errori exit 1/2 identici, **PE muto**, stderr solo sull'ELF fuori
   parità; ELF usa `openat` (N15). Spike su branch `prototype/os-star-contract`.
+- [04 — Parità: suite di riferimento, CI e politica delle divergenze](issues/04-parita-suite-ci.md):
+  gate = `conformance/core` (39 casi, senza più lo skip `liste`) + probe `ok_*`/`test_*` +
+  golden `selfhost/source.expected.out` + esiti `bad_*` (exit code + stdout vuoto, niente
+  testi d'errore); confronto su **golden condivisi**, verifica **solo su Linux nativo**
+  (gambe Windows della CI rimosse: `seed-windows` + matrice `site-gen`); lato PE garantito
+  da hash `seed.hex` + golden congelati; anti-drift `gen_seed.js && cmp` in CI; ordine di
+  verità SPEC-CORE.md > PE (nei golden) > ELF, conflitto → CI rossa + ticket, golden
+  rigenerati solo da SPEC-CORE.md nei cambi deliberati.
 
 ## Not yet specified
 
 - **IDE / tooling di sviluppo per Triad**: diagnostica, run da editor, LSP minimo su
   `editors/`. Secondario e non bloccante (`TASK.md` N19, risposta Q2 → b): si cristallizza
   quando la catena nativa è chiara, poi diventa ticket.
-- **`triad-cli` senza Node**: il confine zero-install copre oggi l'**esecuzione** dei
-  programmi (risposta Q4); la CLI senza Node si specifica quando il percorso di esecuzione
-  è chiuso.
 
 ## Out of scope
 
@@ -77,7 +82,9 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   `BOOTSTRAP.md`; questa mappa si ferma alla toolchain Linux nativa.
 - **Rimozione completa di JavaScript dal progetto** (generatori del seed, runner di
   conformance/probe, riferimento JS `triad_core.cjs`, tooling `ai/`): strumenti di sviluppo
-  tollerati dalla regola operativa 2, fuori dalla catena S0→S4; eliminarli è conseguenza
-  del self-hosting S2–S4, non un passo di questa mappa. L'**esecuzione** dei programmi
-  Triad è già JS-free col seed nativo (percorso zero-install); la sola foglia in scope è
-  la CLI senza Node (vedi «Not yet specified»).
+  tollerati dalla regola operativa 2, fuori dalla catena S0→S4; eliminarli del tutto è
+  conseguenza del self-hosting S2–S4. L'**esecuzione** dei programmi Triad è già JS-free
+  col seed nativo (percorso zero-install); di questa mappa restano solo due foglie, entrate
+  in scope per decisione _Parità: suite di riferimento, CI e politica delle divergenze_:
+  l'harness di verifica senza Node ([08](issues/08-harness-verifica-senza-node.md)) e la
+  CLI senza Node ([09](issues/09-cli-toolchain-senza-node.md)).

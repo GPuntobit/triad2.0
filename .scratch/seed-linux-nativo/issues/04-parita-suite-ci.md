@@ -1,7 +1,7 @@
 # 04 — Parità: suite di riferimento, CI e politica delle divergenze
 
 Type: grilling
-Status: open
+Status: resolved
 
 ## Question
 
@@ -20,6 +20,43 @@ dettagli operativi:
 
 Cross-ref: [03 — Contratto delle routine `os_*`](03-contratto-os-star.md) determina a che
 livello la parità si può verificare oltre all'output finale.
+
+## Answer
+
+Decisioni firmate via grilling (3 round, 2026-11-04):
+
+- **Suite di parità come gate (round 1 Q1)**: tutte e tre le suite più gli esiti dei
+  `bad_*` — `conformance/core` (39 casi, **senza più lo skip storico `liste`**), probe
+  `ok_*`/`test_*` (19), golden `selfhost/source.expected.out`; i `bad_*` (20) entrano solo
+  per **exit code + stdout vuoto**, mai per i testi d'errore (PE muto per contratto,
+  stderr solo sull'ELF fuori parità).
+- **Meccanismo (round 1 Q2)**: confronto su **golden condivisi**, non su scambio di
+  artefatti di output fra job.
+- **Ambiente di verifica (round 1 Q3 → rettifica round 2 Q1/Q3)**: **solo Linux nativo** —
+  niente Wine, niente runner Windows nella verifica. Gambe Windows rimosse dalla CI:
+  job `seed-windows` e matrice `site-gen`. Il lato PE resta garantito da **hash di
+  `seed.hex`** (gate anti-tampering, *Immutabilità del PE*) + **golden congelati**
+  (registro del comportamento PE): il PE non viene emulato né rieseguito dal gate.
+- **Anti-drift (round 1 Q4)**: step CI `seed/dev/gen_seed.js <windows|linux>` + `cmp`
+  contro gli artefatti versionati, che chiude la lacuna del drift `649709a` (ADR 0001);
+  Node come strumento di sviluppo tollerato (regola operativa 2).
+- **Ordine di verità e divergenze (round 1 Q5 + round 2 Q2)**: `SPEC-CORE.md` > PE (entro
+  i limiti noti, ora registrato nei golden) > ELF; ogni conflitto = **CI rossa + ticket**,
+  nessuna semantica inventata (regola operativa 1); i golden si allineano solo per cambi
+  semantici deliberati documentati e in quel caso si rigenerano **da `SPEC-CORE.md`** —
+  la riesecuzione manuale del PE resta verifica una tantum opzionale, mai il meccanismo
+  del gate.
+- **Portata del «riscriviamo tutto» (round 2 Q3 → (c), rettificato a (b) in round 3 Q2)**:
+  la **destinazione non cambia**; lo scope si estende solo a ciò che serve al percorso
+  d'uso (CLI/toolchain) e alla verifica (harness). Niente «rimozione completa di
+  JavaScript»: restano fuori-scope generatori `gen_seed.js`, `triad_core.cjs`, tooling
+  `ai/`.
+- **Ticket nuovi (round 3 Q3)**: _Harness di verifica senza Node (shell POSIX)_, bloccato
+  da 06, e _CLI e toolchain senza Node_, bloccato da 07 — entrambi `grilling`.
+
+Asset: ADR [`docs/adr/0002-verifica-parita-senza-pe.md`](../../../docs/adr/0002-verifica-parita-senza-pe.md)
+— «La verifica di parità non riesegue mai il PE», con le alternative scartate (runner
+Windows, Wine, confronto diretto PE↔ELF).
 
 ## Comments
 

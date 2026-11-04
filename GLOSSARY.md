@@ -12,7 +12,8 @@ _Avoid_: runtime, emulatore, binario precompilato
 
 **Parità byte-a-byte**:
 L'equivalenza fra due seed nativi: stessi programmi Triad-Core, stessi byte su stdout e
-stesso comportamento di uscita sulle suite di riferimento.
+stessi exit code sulle suite di riferimento; i messaggi d'errore non fanno parte della
+parità.
 _Avoid_: compatibilità, equivalenza funzionale
 
 **Immutabilità del PE**:
