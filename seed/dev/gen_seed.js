@@ -559,8 +559,9 @@ ret();
 L('stmt_assign');
 pushRsi();                        // inizio statement (per expression statement)
 cmpByteRsiImm('_'); je('st_name');
-cmpByteRsiImm('a'); jb('st_expr_plain');
-cmpByteRsiImm('z'); ja('st_expr_plain');
+movzxEaxRsi(); orAlImm(0x20);     // case-folding: A-Z come a-z (SPEC-CORE §2)
+cmpAlImm('a'); jb('st_expr_plain');
+cmpAlImm('z'); ja('st_expr_plain');
 L('st_name');
 callL('parse_ident');
 pushR8(); pushR9();
@@ -1132,10 +1133,9 @@ incRsi();
 pushRsi();
 L('sym_scan');
 cmpByteRsiImm('_'); je('sym_adv');
-cmpByteRsiImm('a'); jb('sym_digit');
-cmpByteRsiImm('z'); jbe('sym_adv');
-cmpByteRsiImm('A'); jb('sym_digit');
-cmpByteRsiImm('Z'); jbe('sym_adv');
+movzxEaxRsi(); orAlImm(0x20);     // case-folding: A-Z come a-z (SPEC-CORE §2)
+cmpAlImm('a'); jb('sym_digit');
+cmpAlImm('z'); jbe('sym_adv');
 jmp('sym_end');
 L('sym_digit');
 cmpByteRsiImm('0'); jb('sym_end');

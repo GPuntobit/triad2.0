@@ -1,6 +1,9 @@
 # Triad and S0 bootstrap status
 
 Updated after the 2026-11-02 closure of problem-table rows 2–6 and backlog A03/A04.
+**Main task promoted 2026-11-03:** native Linux seed without Wine (TASK.md → «Task
+principale (2026-11-03)», N15–N18); it takes precedence over N03 and the mechanical
+sub-tasks.
 
 ## Goal
 
@@ -73,7 +76,16 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
 | Triad-Full | 11/12 cases not implemented (only `errore` passes) |
 | CLI seed | file execution only; REPL and SPEC section 14 options to do |
 | S2-S3 (native compiler, self-hosting) | not started |
-| S4 / M7 (parity, Linux ELF) | **E0 done** minimal Linux ELF; E1/E2/E3 and parity to do. POSIX Linux toolchain: `install.sh` + launcher `bin/triad`/`bin/triad-cli` with automatic fallback to the JS reference when the seed is a stub; dedicated CI job `linux-toolchain` |
+| S4 / M7 (parity, Linux ELF) | **E0 done** minimal Linux ELF; **MAIN TASK (2026-11-03): E1/E2/E3 = TASK.md N15–N18** — native ELF seed with the same machine-code domain as the PE, byte-exact conformance on Linux **without Wine**, `bin/triad`/`install.sh` using the native seed (zero dependencies beyond the repo on Linux; Windows keeps the PE). Today's POSIX toolchain: `install.sh` + launcher `bin/triad`/`bin/triad-cli` with automatic fallback to the JS reference when the seed is a stub; dedicated CI job `linux-toolchain` |
+
+## Main task (2026-11-03): native Linux seed — no Wine
+
+Per the maintainer's decision, Triad must not become a Windows-only emulator: Windows users
+keep the PE, Linux users must install **nothing beyond the GitHub repo**. The Linux port is
+therefore the main task (TASK.md N15–N18: E1 file runner → E2a platform-independent `os_*`
+codegen core → E2b ELF emitter with PE parity → E3 native toolchain/CI), preceding N03.
+Normative frame unchanged: `SPEC-CORE.md` is the reference, the ELF must behave identically
+to the PE (known limits included), `BOOTSTRAP.md` §4/§5/§6/§9 (M7 parity + Linux port).
 
 ## Verification commands
 
@@ -217,6 +229,33 @@ Sub-tasks derived from these notes are collected in `TASK.md` → «Sotto-task d
 note di sessione (2026-11-02)» (N01–N10), with the mapping to the problem-table
 rows and the suggested order (N09 wine harness → N01+N03+N04+N05 in a single PE
 rebuild → N10 human action → N02/N08 after the normative decisions → N06+N07).
+
+**N09 closed (2026-11-02):** `scripts/seed-runner/seed-wine.sh` runs the PE seed
+on Linux via wine with a hash-invalidated cache of the decoded PE
+(`~/.cache/triad2.0/seed-wine`); one command (`seed-wine.sh --check`) repeats the
+Core conformance, the strict probes and the S1 front-end golden on the native PE.
+Verified from a clean cache: conformance OK, 17 strict probes with 0 differences,
+golden confirmed; cache hit/invalidation verified. Documented in `seed/README.md`
+and `tests/probes/README.md`; CI unchanged.
+
+**N01 closed (2026-11-02):** uppercase-initial identifiers and symbols now work
+on the PE seed. The defect was not in `parse_ident` (already case-folding) but in
+two case-sensitive first-byte tests: `stmt_assign` (statement dispatch) and
+`sym_scan` (dead `A-Z` branch shadowed by `jb('sym_digit')`). Both now fold case
+like `parse_ident`. Probe flipped to `ok_identificatore_maiuscolo.td` (covers
+`Ab` and `:Ab`); keywords stay lowercase-only (`IF` is an identifier).
+New PE 25,088 bytes, SHA-256 of `seed.hex`:
+`4235A70790BAA6784DC3D944616705B37E76ED2263CE73210BCC20E53639B8F7` (CI hash updated).
+
+**Bug discovered and fixed by the same rebuild:** `gen_seed.js` no longer
+reproduced the committed `seed.hex` (1,705-byte drift): the CodeQL commit `649709a`
+(2026-10-31) fixed `testRcx` → `testRcx()` in `pf_call` (the closure cap check
+was corrupted) but the artifacts were never regenerated — the committed PE
+contained the bug. Reproducibility restored; all ±3-byte shifts traced to the
+3-byte `test rcx,rcx` insertion.
+
+Gate (`scripts/seed-runner/seed-wine.sh --check`) after the rebuild: conformance
+Core OK, 18 strict probes with 0 differences, S1 golden confirmed.
 
 Verification run (2026-11-02, Linux + wine):
 

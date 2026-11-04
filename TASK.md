@@ -6,7 +6,88 @@ Complete Triad 2.0 as a standalone and recognized language with its own standard
   - Support: integers, variables, functions (short form and block), recursion, Bool, operators, if/elseif/else, while, let, begin, lambda, closures, base strings, nothing, symbols, complete lists (build, print, push!, get)
   - Conformance: 33/33 Windows byte-exact cases, 36/36 Core Julia
 - **S1 (Triad Interpreter in Triad-Core):** Inline environment working with lists, complete basic primitives
+- **Seed S0 (Linux):** solo stub ELF64 **E0** (173 byte, stampa `Triad seed Linux OK`); la porta
+  completa dell'interprete in ELF è la **task principale** (N15–N18 qui sotto).
 - **S2-S4:** Uninitiated
+---
+# Task principale (2026-11-03): seed Linux nativo — senza Wine (N15–N18)
+
+Decisione del maintainer (2026-11-03), **prima di riprendere N03**: Triad non deve diventare
+«un emulatore solo Windows». L'utente Windows resta libero di usare il PE; l'utente Linux
+**non deve installare nulla oltre la repo di GitHub** (niente Wine, niente Node per eseguire
+i programmi): il seed deve girare **nativo** come ELF64. La porta Linux è quindi la task
+principale e precede N03 e tutte le altre sotto-task meccaniche.
+
+Riferimenti normativi: `BOOTSTRAP.md` §4 (chiamate di SO isolate in 4–5 routine `os_*`),
+§5 (riga «Linux x86-64 (ELF)»: E0 ✅, E1/E2/E3 dopo), §6 (M7 = parità + porta Linux), §9
+(rischio «Seed too tied to Windows»), §7 (il JS reference resta fuori dalla catena S0→S4,
+strumento di sviluppo). Il dominio del linguaggio non cambia: `SPEC-CORE.md` resta normativo
+e vale il vincolo Triad-Core ⊂ Triad-Full (regola operativa 4). Nessuna semantica inventata
+(regola operativa 1): l'ELF deve comportarsi **identico al PE**, limiti noti compresi.
+
+Obiettivo finale: `seed/linux-x86_64/seed` (ELF64 statico, senza libc né dynamic linker)
+che esegue gli stessi programmi Triad-Core del PE con stdout byte-identico; da un checkout
+pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipendenze esterne.
+
+### N15 — E1: runner ELF di un file `.td` (argv + I/O nativo)
+- **Files:** `seed/dev/gen_seed_linux.js`, `seed/linux-x86_64/seed.hex` + `seed`,
+  `seed/linux-x86_64/README.md`.
+- **Work:** estendere `_start` con argc/argv e syscall `openat`/`read`/`write`/`exit`:
+  il seed legge il sorgente indicato in `argv[1]` in un buffer (E1: caricamento + echo,
+  errore su file mancante; l'interprete arriva in N17). ELF statico senza libc, come E0.
+- **Acceptance:** `./seed file.td` legge il file; senza argomenti o con file inesistente →
+  exit ≠ 0 con messaggio su stderr; dump riproducibile da `gen_seed_linux.js`; verificato
+  nativamente su Linux x86-64 (CachyOS/CI).
+
+### N16 — E2a: nucleo di codegen piattaforma-indipendente (routine `os_*`)
+- **Files:** `seed/dev/gen_seed.js` (rifattorizzazione interna), PE + `seed.hex`, hash in
+  `.github/workflows/ci.yml`.
+- **Work:** separare in `gen_seed.js` il codegen dell'interprete dalle chiamate di sistema
+  Windows, isolando queste ultime in 4–5 routine `os_*` (BOOTSTRAP.md §4: write stdout,
+  read file, exit, heap). Solo struttura: il PE rigenerato deve restare **byte-identico**
+  a quello versionato (se così non fosse: nuovo hash in CI e diff tracciata qui).
+- **Acceptance:** `cmp` fra PE rigenerato e versionato; conformance Core e probe invariati;
+  nessuna modifica semantica (refactoring del solo generatore).
+
+### N17 — E2b: emettitore ELF64 e parità col PE (il cuore della task)
+- **Files:** `seed/dev/gen_seed_linux.js` (emettitore ELF + `os_*` via syscall Linux),
+  `seed/linux-x86_64/*`, `conformance/run.mjs` e `tests/probes/run_probes.mjs` (terzo
+  runtime via `TRIAD_SEED`), `.github/workflows/ci.yml`.
+- **Work:** implementare sull'ELF lo stesso dominio machine-code del PE — interi, variabili,
+  funzioni short e `function … end`, ricorsione, Bool, operatori, `if`/`elseif`/`else`,
+  `while`, `let`, `begin`, lambda/closures, stringhe base + `string()`, `nothing`, simboli,
+  liste (costruzione, stampa, `push!`, `get`) — usando solo le routine `os_*`, niente libc.
+- **Acceptance:** tutti i casi `conformance/core/` verdi sul PE risultano verdi **byte-exatti**
+  sull'ELF nativo senza Wine (stessi `expected.out`/`expected.code`); probe `ok_*`/`test_*`
+  identici su PE, ELF e JS; i limiti noti del PE restano limiti documentati (nessuna nuova
+  semantica); dump riproducibile dai generatori.
+
+### N18 — E3: toolchain Linux senza Wine (install → run)
+- **Files:** `install.sh`, `bin/triad`, `cli/lib/utils.mjs` (soglia stub 4 KB e fallback JS
+  automatico), `.github/workflows/ci.yml` (job `seed-linux` nativo), `seed/README.md`,
+  `seed/linux-x86_64/README.md`, `STATUS.md`, `BOOTSTRAP.md` §5/§10.
+- **Work:** il launcher `bin/triad` su Linux usa il seed ELF nativo (il fallback JS diventa
+  solo esplicito, non più automatico); job CI `seed-linux` su `ubuntu-latest` che esegue
+  conformance + probe sull'ELF nativo **senza Wine** (Wine resta solo nel job di parità PE,
+  opzionale); aggiornare la documentazione dello stato piattaforme.
+- **Acceptance:** su Linux: `git clone` → `./install.sh` → `triad program.td` funziona con
+  zero dipendenze oltre alla repo; CI `seed-linux` verde senza Wine; l'utente Windows
+  continua a usare il PE invariato; `linux-toolchain` copre launcher + install.
+
+### N19 — (secondario, non bloccante) Esperienza di sviluppo / IDE
+- **Files:** `editors/` (grammar VS Code/Vim già presenti), eventualmente un Language Server.
+- **Work:** se con «ide» si intendeva un ambiente di sviluppo (diagnostica, autocomplete,
+  run/Debug da editor): estendere `editors/` con un LSP minimo (diagnostica di parse + run
+  del seed) oppure pubblicare l'estensione VS Code già preparata. Fuori dalla catena
+  S0→S4 (regola operativa 2), non tocca il bootstrap.
+- **Dipendenze:** decisione di scope del maintainer PRIMA del codice (come N02/N08).
+- **Acceptance:** da definire alla decisione; finché non è decisa non blocca N15–N18.
+
+### Ordine (aggiornato 2026-11-03)
+1. **N15 → N16 → N17 → N18** (task principale: seed Linux nativo, senza Wine) →
+2. **N03** (e a seguire **N04+N05**) in un ciclo unico di rebuild PE/ELF + hash CI —
+   ora verificabile nativamente anche su Linux →
+3. **N02** e **N08** dopo le decisioni normative → 4. **N06+N07** (C3) → 5. **N19** (se deciso).
 ---
 # Backlog: errors and checks
 This file collects confirmed problems and checks still to be done on the project.
@@ -856,7 +937,7 @@ Mappatura con la tabella dei problemi: riga 1 → N10, riga 7 → N04,
 riga 8 → N05, riga 10 → N07, riga 11 → N06, riga 12 → N08, riga 14 → N01,
 riga 15 → N02; il caso `liste` skippato → N03.
 
-### N01 — Identificatori con iniziale maiuscola nel seed (riga 14, C2)
+### N01 — ✅ Identificatori con iniziale maiuscola nel seed (riga 14, C2, fatto 2026-11-02)
 - **Files:** `seed/dev/gen_seed.js` (`parse_ident`), PE/ELF + `seed.hex`, hash in
   `.github/workflows/ci.yml`, `tests/probes/`.
 - **Work:** allargare la classe di START dell'identificatore da `[a-z_]` a
@@ -866,6 +947,22 @@ riga 15 → N02; il caso `liste` skippato → N03.
 - **Acceptance:** probe ribaltato in `ok_identificatore_maiuscolo.td` e identico
   sui due runtime; casi Core e probe `ok_*`/`test_*` verdi sul PE rigenerato;
   dump riproducibili dai generatori.
+- **Closed 2026-11-02:** il difetto NON era in `parse_ident` (fa già case-folding)
+  ma in due test del primo byte senza folding: `stmt_assign` (dispatch statement:
+  `A = 0` diventava expression statement e falliva) e `sym_scan` (`:Ab`: il
+  `jb('sym_digit')` sul test `a-z` catturava `A-Z` prima del ramo `A-Z`, codice
+  morto). Entrambi ora usano il folding `or 0x20` come `parse_ident`. Verificato
+  anche: iniziali maiuscole nei corpi di funzione (come il caso minuscolo),
+  keyword solo minuscole (`IF = 5` → identificatore), `:Ab` = Symbol. Nuovo
+  PE 25088 byte, SHA-256 `seed.hex`: `4235A70790BAA6784DC3D944616705B37E76ED2263CE73210BCC20E53639B8F7`.
+- **Scoperta collegata (bug confermato, risolto dal rebuild):** `gen_seed.js`
+  **non** riproduceva `seed.hex` (1705 byte di drift): il commit CodeQL `649709a`
+  (2026-10-31) aveva fixato `testRcx` → `testRcx()` in `pf_call` (il cap check
+  delle chiusure era corrotto) senza rigenerare gli artefatti. Il PE versionato
+  conteneva il bug; il rebuild ripristina il contratto di riproducibilità.
+  Riproduzione: `node seed/dev/gen_seed.js /tmp/x.hex && cmp /tmp/x.hex
+  seed/windows-x86_64/seed.hex` (differiva a valle di `pf_call`, tutti gli shift
+  di ±3 byte coerenti con l'inserimento di `test rcx,rcx`).
 
 ### N02 — Newline: decisione normativa e allineamento (riga 15, C4)
 - **Files:** `SPEC-CORE.md` §2/§4, `conformance/core/cases/`, poi un runtime.
@@ -932,9 +1029,10 @@ riga 15 → N02; il caso `liste` skippato → N03.
   programmi con shadowing fra chiamante e chiamato hanno comportamento unico e
   specificato.
 
-### N09 — Harness di verifica locale del PE via wine (C1, abilitatore)
-- **Files:** `scripts/dev/seed-wine.sh` (nuovo), `tests/probes/README.md`,
-  `seed/README.md`.
+### N09 — ✅ Harness di verifica locale del PE via wine (C1, abilitatore, fatto 2026-11-02)
+- **Files:** `scripts/seed-runner/seed-wine.sh` (nuovo; path rifinito rispetto a
+  `scripts/dev/`: la cartella `scripts/seed-runner/` ospita già il runner Windows
+  `run_seed.bat`), `tests/probes/README.md`, `seed/README.md`.
 - **Work:** formalizzare la procedura usata in sessione: decodificare
   `seed/windows-x86_64/seed.hex` in un PE temporaneo ed eseguirlo con
   `WINEDEBUG=-all wine`, esportando `TRIAD_SEED` per `conformance/run.mjs` e
@@ -943,6 +1041,13 @@ riga 15 → N02; il caso `liste` skippato → N03.
 - **Acceptance:** da un checkout pulito, un comando su Linux esegue la
   conformance Core e i probe sul PE nativo senza Windows; la CI resta invariata
   (su Windows il seed gira nativo).
+- **Closed 2026-11-02:** `scripts/seed-runner/seed-wine.sh` con tre modalità
+  (`FILE.td [ARG...]`, `--check`, `--help`) e cache del PE in
+  `~/.cache/triad2.0/seed-wine` invalidata al cambio di SHA-256 di `seed.hex`
+  (verificata: cache hit, invalidazione, ripristino del marker). `--check` da
+  cache pulita: conformance Core OK (38 casi, `liste` skippata), 17 probe
+  `ok_*`/`test_*` con 0 differenze, golden `selfhost/source.expected.out`
+  confermato. Documentato in `seed/README.md` e `tests/probes/README.md`.
 
 ### N10 — Rotazione del PAT esposto (riga 1, C0, azione umana)
 - **Files:** nessuno nel repository; `docs/security/SECURITY-REVIEW.md` #5,
@@ -955,6 +1060,85 @@ riga 15 → N02; il caso `liste` skippato → N03.
   o negli URL di git (`sh tests/security/run.sh` verde).
 
 ### Ordine suggerito
-1. **N09** (abilitatore, minuti) → 2. **N01+N03+N04+N05** in un unico rebuild +
-  hash CI (mezza giornata) → 3. **N10** (azione umana, indipendente) →
-  4. **N02** e **N08** dopo le decisioni normative → 5. **N06+N07** (C3, giorni).
+> **Aggiornamento 2026-11-03:** la task principale «seed Linux nativo senza Wine»
+> (N15–N18, sezione in testa al file) **precede N03**; N03/N04/N05 restano raggruppate
+> in un unico ciclo di rebuild PE/ELF + hash CI dopo N15–N17.
+1. **N09** (abilitatore, minuti) → 2. **N15–N18** (task principale, vedi sopra) →
+  3. **N03+N04+N05** in un unico rebuild + hash CI (N01 chiuso; mezza giornata) →
+  4. **N10** (azione umana, indipendente) → 5. **N02** e **N08** dopo le decisioni
+  normative → 6. **N06+N07** (C3, giorni).
+
+## Sotto-task dalle note di sessione (2026-11-03)
+
+Sotto-task derivati dalle note di chiusura delle due lavorazioni del 2026-11-03:
+(1) libro fuori dal repo (`.gitignore` con `/docs/libro/` + `git rm --cached` dei
+3 artefatti tracciati) e (2) fix CodeQL TOCTOU in `tools/site-gen/build.mjs`.
+N11 è meccanico (stessa rimediazione già applicata in `build.mjs`); N12 è la
+verifica di chiusura dell'alert dopo il push; N13 e N14 richiedono una decisione
+(regola operativa 1: non inventare semantica — qui: non committare né rimuovere
+senza conferma).
+
+### N11 — Sweep TOCTOU check-then-use negli script CLI/dev (C1, meccanico)
+- **Files:** `cli/lib/commands/ai.mjs:39-42`, `cli/lib/utils.mjs:50-52`,
+  `scripts/docs/sync-playground-core.mjs:40`, `scripts/docs/build-docx.cjs:30`,
+  in subordine `scripts/docs/build-pdf.mjs:36`.
+- **Work:** applicare a ogni occorrenza la rimediazione già adottata in
+  `tools/site-gen/build.mjs`: niente `existsSync` prima dell'uso — operazione
+  diretta con gestione errore (`try { readFileSync/statSync } catch (ENOENT)`).
+  Le più chiare: `build-docx.cjs:30` (check → `readFileSync` poche righe dopo),
+  `sync-playground-core.mjs:40` (check → `readFileSync` alla riga 44),
+  `ai.mjs:39-42` (scelta path con `existsSync` → subito `readFileSync`);
+  `utils.mjs:50` ritorna un path già "controllato" poi usato da `seedIsStub`
+  (`statSync`) — stesso schema di `findSeed()` corretto in `build.mjs`.
+- **Acceptance:** nessuna coppia check-then-use residua (le `existsSync`
+  rimaste sono solo decisioni booleane senza uso fs successivo sullo stesso
+  path); scansione CodeQL/Codacy senza nuovi alert TOCTOU; comandi verdi:
+  `node cli/triad-cli.mjs ai verify`, `node scripts/docs/sync-playground-core.mjs`,
+  `node scripts/docs/build-docx.cjs`.
+
+### N12 — Chiusura dell'alert CodeQL su `tools/site-gen/build.mjs` (C1)
+- **Files:** `tools/site-gen/build.mjs` (fix già in working tree, non committato),
+  `.github/workflows/`, configurazione Codacy/CodeQL.
+- **Work:** committare e pushare il fix (read senza `existsSync`, scrittura
+  atomica temp+rename, `statSync` diretto in `findSeed`), rilanciare la
+  scansione e verificare che l'alert "Potential file system race condition"
+  risulti chiuso; chiudere anche il residuo `CodeQL #128` citato sopra se
+  ancora aperto.
+- **Acceptance:** alert chiuso sul portale della scansione dopo il push;
+  `node tools/site-gen/build.mjs --check` (13 file coincidenti) e
+  `node cli/triad-cli.mjs test conformance` (37/37) restano verdi.
+
+### N13 — Commit della politica «libro fuori dal repo» (C1, decisione)
+- **Files:** `.gitignore` (modificato), index git (staged:
+  `D docs/libro/libro.html`, `D docs/libro/The-book-of-Triad.epub`,
+  `D docs/libro/triad-logo.webp`), `STATUS.md` (voce «Book `docs/libro/`»).
+- **Work:** decidere fra due strade: (a) committare `.gitignore` + le rimozioni
+  staged (`docs/libro/` resta solo su disco e nel repo dedicato con il proprio
+  `.git`), oppure (b) `git restore --cached docs/libro/...` e restringere il
+  `.gitignore` con negazioni `!` per mantenere i 3 artefatti. Verificato il
+  2026-11-03: `docs/index.html`, `docs/pages/` e `tools/site-gen/` non
+  referenziano `docs/libro/`, quindi la rimozione non tocca il sito generato;
+  `scripts/docs/build-libro.mjs` legge le fonti in `docs/*.md` e scrive in
+  `docs/libro/` (ignorato da git ma presente su disco): il build resta ok.
+- **Acceptance:** `git status` pulito su `docs/libro/`; se (a), `git ls-files
+  docs/libro/` è vuoto; `node scripts/docs/build-libro.mjs` rigenera gli
+  artefatti senza che git li rilevi; `STATUS.md` aggiornato di conseguenza.
+
+### N14 — Decisione sui capitoli `Libro-*.md` del wiki (C4, decisione umana)
+- **Files:** `obsidian-triad/wiki-content/Libro-*.md` (`Libro-00`…`Libro-22`,
+  tracciati nel repo), `obsidian-triad/github-wiki/Libro-*.md` (submodule
+  `triad2.0.wiki`, gestito a parte).
+- **Work:** decidere se i capitoli restano versionati nel repo principale o
+  vengono ignorati/rimossi dal tracciamento come il resto del libro. Non sono
+  sorgente del build (`scripts/docs/build-libro.mjs` usa `docs/PREFazione.it.md`,
+  `docs/FONDAMENTA.it.md`, `docs/MANUALE.it.md`, `docs/tutorial/TUTORIAL.it.md`)
+  ma sono il mirror wiki del libro. In caso di rimozione intervenire solo su
+  `wiki-content` e aggiungere la regola a `.gitignore`.
+- **Acceptance:** decisione documentata in `STATUS.md`; se rimozione, stesse
+  verifiche di N13 (`git ls-files` vuoto per i file toccati, build libro
+  invariata).
+
+### Ordine suggerito
+1. **N12** (chiude l'alert già fixato, commit + push) → 2. **N11** (stessa
+  rimediazione, sweep meccanico) → 3. **N13** (decisione + commit della
+  politica sul libro) → 4. **N14** (decisione umana, indipendente).

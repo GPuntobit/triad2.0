@@ -16,8 +16,11 @@ node tests/probes/run_probes.mjs --strict        # solo ok_* e test_* (per la CI
 node tests/probes/run_probes.mjs ok_builder.td  # un probe
 ```
 
-Su Linux il seed PE si esegue via wine: `TRIAD_SEED="wine seed/windows-x86_64/seed.exe"
-node tests/probes/run_probes.mjs`. Se un file `<nome>.expected.out` esiste accanto
+Su Linux il seed PE si esegue via wine con l'harness `scripts/seed-runner/seed-wine.sh`
+(decodifica `seed.hex` in cache e aggiorna la cache solo al cambio del dump):
+`scripts/seed-runner/seed-wine.sh --check` ripete conformance Core + probe + golden S1;
+per i runner Node: `TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" node tests/probes/run_probes.mjs`.
+Se un file `<nome>.expected.out` esiste accanto
 al probe, i due runtime sono confrontati anche con il golden (usato per
 `selfhost/source.expected.out`). Exit code: 1 se un `ok_*`/`test_*` differisce
 dai due runtime o dal golden; i `bad_*` documentano divergenze e non falliscono.
@@ -43,7 +46,7 @@ quando coincidono.
 | `if`/`elseif`/`else`, `while` | sì | sì | `ok_if_assegna.td` (e i casi `while_*` della conformance) |
 | ternario `? :` (anche `:` attaccato al ramo, `? 5 :7`) | sì | sì | `ok_ternario.td`, `ok_ternario_colon_attacco.td` |
 | simboli operatore `:+` | **no** (exit 1) | sì | `bad_simbolo_operatore.td` |
-| identificatore con iniziale maiuscola (`Ab`) | **no** (exit 1) | sì | `bad_identificatore_maiuscolo.td` |
+| identificatore/simbolo con iniziale maiuscola (`Ab`, `:Ab`) | sì | sì | `ok_identificatore_maiuscolo.td` |
 | newline come separatore di statement dopo un operatore | divergente (prosegue l'espressione) | separa gli statement | `bad_separatore_newline.td` |
 | funzione a blocco, valore = ultima espressione | sì | sì | `ok_funzione_valore.td` |
 | `return` dentro una funzione a blocco | **no** | sì | `bad_return_blocco.td` |
@@ -93,10 +96,11 @@ quando coincidono.
 7. **Quattro parametri.** `st_function`/`st_func` allocano 16 byte per
    parametro in un record da 64: la quinta chiamata fallisce. Il codice
    Triad-Core portabile usa al massimo 4 parametri per funzione.
-8. **Iniziale maiuscola negli identificatori.** La classe di start del seed
-   accetta solo `[a-z_]` (mentre SPEC-CORE §2 ammette le lettere `[A-Za-z]`):
-   `Ab = 0` termina con exit 1, `aB = 0` funziona. Le maiuscole *interne* ai
-   nomi e dentro le stringhe vanno bene.
+8. **Iniziale maiuscola negli identificatori — CORRETTO il 2026-11-02 (N01).**
+   Il seed rifiutava `Ab = 0` (exit 1) e `:Ab` per due test del primo byte senza
+   case-folding (`stmt_assign`, `sym_scan` con salto morto sul ramo `A-Z`); con il
+   folding `or 0x20` (come `parse_ident`) accetta `[A-Za-z_]`. Le keyword restano
+   solo minuscole (`IF` è un identificatore, non una keyword).
 9. **Separatore newline dopo un operatore.** Il seed è scannerless e prosegue
    l'espressione oltre il newline (`x = 1` seguito da `-2` vale `x = 1 - 2`);
    il JS tratta il newline come separatore di statement. SPEC-CORE §2 elenca il
