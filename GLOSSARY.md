@@ -29,3 +29,18 @@ _Avoid_: determinismo del generatore, rebuild pulito
 La garanzia sul percorso di esecuzione: eseguire programmi Triad richiede solo il checkout
 della repository e una shell POSIX, nessun Wine, Node o linguaggio host installato.
 _Avoid_: standalone, portabile
+
+**Core del codegen**:
+La parte del generatore del seed condivisa da tutte le piattaforme: emissione delle
+istruzioni x86-64 e codegen del corpo dell'interprete.
+_Avoid_: generatore (ambiguo con l'intero strumento), interprete (è il programma, non il generatore)
+
+**Backend di piattaforma**:
+La parte del generatore del seed proprietaria di una piattaforma: formato dell'eseguibile,
+fixup e costanti di sistema.
+_Avoid_: emettitore (ambiguo con l'emettitore di istruzioni del core), port
+
+**`os_*`**:
+Il confine completo fra seed nativo e sistema operativo: l'unico livello in cui i seed
+delle piattaforme differiscono.
+_Avoid_: routine (ambiguo fra sottoroutine machine-code e funzioni del generatore), syscall (solo Linux), API KERNEL32 (solo Windows)
