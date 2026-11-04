@@ -82,7 +82,10 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
 - **Work:** il launcher `bin/triad` su Linux usa il seed ELF nativo (durante la transizione
   il fallback JS diventa solo esplicito con `--jsref`, non più automatico; **a chiusura di
   N18 la logica di stub — soglia 4 KB, flag `--jsref`, ramo JS — esce da `bin/triad`**,
-  decisione *Installazione e launcher: il contratto zero-install*); job CI `seed-linux` su
+  decisione *Installazione e launcher: il contratto zero-install*); la CLI diventa shell
+  POSIX: `bin/triad-cli` con `run`/`test`/`status` a pura delega, `cli/triad-cli.mjs`
+  ristretto ai soli comandi dev (`seed`/`ai`/`ext`), ramo `bin/triad-native` fuori dal
+  launcher (decisione *CLI e toolchain senza Node*); job CI `seed-linux` su
   `ubuntu-latest` che esegue
   conformance + probe sull'ELF nativo **senza Wine** (Wine resta solo nel job di parità PE,
   opzionale); aggiornare la documentazione dello stato piattaforme.
@@ -90,7 +93,8 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   zero dipendenze oltre alla repo (percorso garantito: la catena con `install.sh`);
   installazione con smoke test byte-exatto (`test_simple.td` + golden sidecar) che **fallisce
   con exit non-zero** su mismatch; launcher installato come wrapper a percorso assoluto,
-  senza logica di stub; CI `seed-linux` verde senza Wine; l'utente Windows
+  senza logica di stub; `triad-cli` in shell POSIX installato e funzionante senza Node
+  (`status`, `test` → harness); CI `seed-linux` verde senza Wine; l'utente Windows
   continua a usare il PE invariato; `linux-toolchain` copre launcher + install.
 
 ### N19 — (secondario, non bloccante) Esperienza di sviluppo / IDE

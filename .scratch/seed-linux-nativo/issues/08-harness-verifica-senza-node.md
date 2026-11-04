@@ -1,7 +1,7 @@
 # 08 — Harness di verifica senza Node (shell POSIX)
 
 Type: grilling
-Status: open
+Status: claimed
 Blocked by: 06
 
 ## Question
@@ -26,3 +26,12 @@ delimitano il vocabolario ammissibile di tool POSIX.
 Cross-ref: [04](04-parita-suite-ci.md) (composizione del gate e meccanismo dei golden
 condivisi); [07 — Installazione e launcher: il contratto zero-install](07-installazione-launcher.md)
 (solo shell POSIX + repo).
+
+## Comments
+
+- 2026-11-04 (sessione su *CLI e toolchain senza Node*): vincolo d'interfaccia imposto da
+  [09](09-cli-toolchain-senza-node.md) (Q5, risolta): questa ticket deve consegnare entry
+  point POSIX `conformance/run.sh`, `tests/probes/run_probes.sh` e `verify.sh` (root),
+  invocabili da qualunque cwd, exit 0 = gate verde, report su stdout. La CLI sh
+  `bin/triad-cli` li chiama 1:1 via `test conformance|probes|all`. Meccanismo interno e
+  transizione dal runner Node restano di pertinenza di questa ticket.

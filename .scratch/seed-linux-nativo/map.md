@@ -90,6 +90,15 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   smoke test byte-exatto su `test_simple.td` + golden sidecar, mismatch → installazione
   fallisce; fuori Linux x86-64 parziale + avviso; zero-install = **sola esecuzione** (la
   CLI Node resta fino a 09), catena garantita solo `./install.sh` → `triad`. Sblocca 09.
+- [09 — CLI e toolchain senza Node](issues/09-cli-toolchain-senza-node.md):
+  CLI sh **completa** `bin/triad-cli` (sostituzione 1:1) a **pura delega** — `run` →
+  `bin/triad`, `test conformance|probes|all` → harness, `status` info ambiente; interfaccia
+  **imposta a 08**: `conformance/run.sh` + `tests/probes/run_probes.sh` + `verify.sh` root,
+  cwd-indipendenti, exit 0 = gate verde; dev CLI `cli/triad-cli.mjs` resta col nome attuale
+  ma solo `seed`/`ai`/`ext` (`build standalone` rimosso, fallback JS lecito nei soli strumenti
+  dev); ramo `bin/triad-native` fuori dal launcher (exec-sempre-il-seed); `install.sh`
+  installa entrambi i wrapper, niente avvisi Node nel percorso utente; `.cmd` Windows
+  invariati.
 
 ## Not yet specified
 
