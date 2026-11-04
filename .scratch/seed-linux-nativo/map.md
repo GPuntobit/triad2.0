@@ -66,6 +66,12 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   da hash `seed.hex` + golden congelati; anti-drift `gen_seed.js && cmp` in CI; ordine di
   verità SPEC-CORE.md > PE (nei golden) > ELF, conflitto → CI rossa + ticket, golden
   rigenerati solo da SPEC-CORE.md nei cambi deliberati.
+- [05 — Ricerca: come altri seed scritti a mano isolano il confine OS](issues/05-ricerca-confine-os.md):
+  dai 2 servizi BIOS di sectorlisp/sectorforth/hex0 alle 2 routine-per-classe di Collapse
+  OS, fino alle 6 + sportello generico di jonesforth: il confine resta piccolo, heap sempre
+  gestito in linguaggio (o `brk` una tantum), errori per codice/flag mai per stringa.
+  Nessuna divergenza con _Architettura del codegen_ e _Contratto `os_*`_; innovazione
+  consapevole: `os_read` «leggi tutto e chiudi». Findings su branch `research/05-confine-os`.
 
 ## Not yet specified
 
