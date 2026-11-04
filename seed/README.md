@@ -25,6 +25,18 @@ xxd -r -p seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 Note: The product file is a PE for Windows; for Linux there is the ELF E0 seed in
 `linux-x86_64/` (see below). `certutil`/`xxd` are decoders only: they do not contain
 Triad logic and are not part of the chain.
+
+Run the PE on Linux/macOS (development only, via wine):
+```sh
+scripts/seed-runner/seed-wine.sh FILE.td [ARG...]   # un programma Triad
+scripts/seed-runner/seed-wine.sh --check            # conformance Core + probe + golden S1
+```
+The harness (`seed-wine.sh`) decodes `windows-x86_64/seed.hex` once into a cache
+(`~/.cache/triad2.0/seed-wine`), re-decoding it only when the SHA-256 of the dump
+changes, and runs the PE under `wine`. It also works as the runtime for the Node
+runners (`TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" node conformance/run.mjs`).
+It is a development tool: it is not part of the S0→S4 bootstrap chain and the
+Windows CI runs the seed natively.
 Linux ELF (E0):
 ```sh
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed

@@ -106,7 +106,7 @@ jobs:
         shell: pwsh
         run: |
           $h = (Get-FileHash seed/windows-x86_64/seed.hex -Algorithm SHA256).Hash
-          if ($h -ne '3A75A21E2F47D8DC4C88D4BC2580A85D5349BCDF7550E5FFA16E2C0AC7CA8C11') { throw "hash mismatch: $h" }
+          if ($h -ne '4235A70790BAA6784DC3D944616705B37E76ED2263CE73210BCC20E53639B8F7') { throw "hash mismatch: $h" }
   seed-linux:
     runs-on: ubuntu-24.04
     steps:

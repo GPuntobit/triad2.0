@@ -35,6 +35,16 @@ Runtime note: the machine-code seed is the default runtime for `.triad` (launche
 
 ## Current tasks
 
+### MAIN (2026-11-03): Linux native seed — no Wine (TASK.md N15–N18)
+
+- The maintainer decision: Triad must not be a Windows-only emulator. Windows keeps the PE;
+  Linux must need **nothing beyond the repo** (no Wine, no Node to run programs).
+- N15 (E1): ELF file runner (`argv` + `openat`/`read`/`write`) → N16 (E2a): split the
+  platform-independent interpreter codegen from the `os_*` OS routines in `gen_seed.js` →
+  N17 (E2b): ELF64 emitter with PE parity (byte-exact conformance, identical probes) →
+  N18 (E3): `install.sh`/`bin/triad` on the native seed + Wine-free `seed-linux` CI job.
+- This task precedes N03 (`xs[i]` 1-based) and the other mechanical sub-tasks.
+
 ### Immediate: final S1 verification
 
 - All ai/tasks/ tasks completed

@@ -81,7 +81,7 @@ The seed implements **only** Triad-Core; S1 uses Triad-Core to implement the res
 | Platform | Status | Reason |
 |---|---|---|
 | Windows x86-64 (PE) | **before**, testable here | only platform executable in this environment; no compiler installed |
-| Linux x86-64 (ELF) | in progress: **E0 ✅** (minimal ELF tested on CachyOS); E1/E2/E3 after | Linux environment available (native CachyOS) |
+| Linux x86-64 (ELF) | in progress: **E0 ✅** (minimal ELF tested on CachyOS); E1/E2/E3 = **main task since 2026-11-03** (TASK.md N15–N18, before N03) | Linux environment available (native CachyOS) |
 | macOS/ARM | after | depends on the first two |
 The seed logic is largely OS independent: you only change the layer
 `os_*` and the format of the executable. The first goal is Windows; the Linux port is one

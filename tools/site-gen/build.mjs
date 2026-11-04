@@ -48,8 +48,13 @@ function findSeed() {
     ? [SEED_WIN, path.join(ROOT, 'bin', 'triad-native.exe')]
     : [SEED_LINUX, SEED_LINUX_STUB];
   for (const c of candidates) {
-    if (!fs.existsSync(c)) continue;
-    const size = fs.statSync(c).size;
+    // stat diretto senza existsSync: evita il check-then-use (TOCTOU).
+    let size;
+    try {
+      size = fs.statSync(c).size;
+    } catch {
+      continue; // come l'existsSync: qualsiasi errore = candidato saltato
+    }
     if (size < 4096) continue; // stub Linux E0: non è l'interprete completo
     return c;
   }
@@ -184,7 +189,14 @@ for (const f of files) {
     process.exit(1);
   }
   const content = f.lines.join('\n') + '\n';
-  const current = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : null;
+  // Lettura diretta con gestione ENOENT: niente existsSync prima del read
+  // (check-then-use = race condition segnalata da CodeQL).
+  let current = null;
+  try {
+    current = fs.readFileSync(target, 'utf8');
+  } catch (e) {
+    if (e.code !== 'ENOENT') throw e;
+  }
   if (DRY) {
     console.log(`DRY  ${f.path} (${content.length} byte, ${f.lines.length} righe)`);
     continue;
@@ -199,7 +211,11 @@ for (const f of files) {
     continue;
   }
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, content, 'utf8');
+  // Scrittura atomica: temp + rename. Un file (o symlink) comparso o
+  // cambiato dopo la lettura viene sostituito, non inseguito.
+  const tmp = path.join(path.dirname(target), `.${path.basename(target)}.${process.pid}.tmp`);
+  fs.writeFileSync(tmp, content, 'utf8');
+  fs.renameSync(tmp, target);
   written++;
   console.log(`WRITE ${f.path} (${content.length} byte)`);
 }

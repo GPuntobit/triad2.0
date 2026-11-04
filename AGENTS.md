@@ -74,3 +74,13 @@ Estensione canonica dei file: `.triad` (alias storico `.td`).
   `BOOTSTRAP.md` (es. "S1: interprete Triad-Full scritto in Triad-Core").
 - **Review di PR**: validare la patch contro le regole operative 1–7.
 - **Generazione soluzioni per il benchmark AI**: usare regola 7 + `ai/SYSTEM_PROMPT.md`.
+
+## Agent skills
+
+### Issue tracker
+
+I ticket vivono come file markdown in `.scratch/<sforzo>/` (local markdown tracker). See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Layout single-context: `GLOSSARY.md` alla radice + `docs/adr/`. See `docs/agents/domain.md`.

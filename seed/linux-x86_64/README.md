@@ -49,6 +49,10 @@ and is not part of the S0→S4 chain.
 - **E2:** port of the Triad-Core interpreter; target the 26 Core cases supported by the seed
   Windows.
 - **E3:** Native Linux CI job without Wine.
+
+> **Task principale dal 2026-11-03:** E1/E2/E3 sono la task principale del progetto
+> (`TASK.md` → «Task principale (2026-11-03): seed Linux nativo — senza Wine», N15–N18)
+> e precedono N03 e le altre sotto-task meccaniche.
 Meanwhile the POSIX toolchain is ready: `./install.sh` decodes this seed,
 install `bin/triad` and `bin/triad-cli` in `~/.local/bin` and launchers use
 automatically the reference JS interpreter as long as the seed remains an E0 stub
