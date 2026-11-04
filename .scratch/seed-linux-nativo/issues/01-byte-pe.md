@@ -61,5 +61,7 @@ ogni revisione ridefinisce questa risoluzione, non la sospende.
   in CI e diff tracciata qui») è superata e allineata a questa decisione; la risposta
   vincola [02 — Architettura del codegen per due piattaforme](02-architettura-codegen.md)
   (padrone delle eccezioni) e, a valle, il contratto `os_*`.
+- **Documentazione:** la storia del drift `649709a` che motiva la politica è raccolta e
+  verificata byte-per-byte in `docs/adr/0001-immutabilita-pe-riproducibilita-dump.md`.
 
 ## Comments

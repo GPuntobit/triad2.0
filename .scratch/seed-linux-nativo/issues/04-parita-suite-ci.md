@@ -22,3 +22,10 @@ Cross-ref: [03 — Contratto delle routine `os_*`](03-contratto-os-star.md) dete
 livello la parità si può verificare oltre all'output finale.
 
 ## Comments
+
+- 2026-11-04 (sessione su *Politica dei byte del PE nella rifattorizzazione*): fatto
+  accertato per la scelta della suite CI — il gate hash attuale rileva cambi in
+  `seed.hex` ma **non** la divergenza generatore/artefatti (classe del drift `649709a`:
+  `gen_seed.js` modificato senza rebuild, CI silenziosa). Un controllo
+  `node seed/dev/gen_seed.js && cmp` chiuderebbe la lacuna. Storia verificata:
+  `docs/adr/0001-immutabilita-pe-riproducibilita-dump.md`.

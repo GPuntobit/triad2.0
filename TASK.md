@@ -969,8 +969,11 @@ riga 15 → N02; il caso `liste` skippato → N03.
   delle chiusure era corrotto) senza rigenerare gli artefatti. Il PE versionato
   conteneva il bug; il rebuild ripristina il contratto di riproducibilità.
   Riproduzione: `node seed/dev/gen_seed.js /tmp/x.hex && cmp /tmp/x.hex
-  seed/windows-x86_64/seed.hex` (differiva a valle di `pf_call`, tutti gli shift
-  di ±3 byte coerenti con l'inserimento di `test rcx,rcx`).
+  seed/windows-x86_64/seed.hex` (le differenze iniziano a `0x22f`, nei
+  displacement dei salti che attraversano il punto d'inserzione in `pf_call` a
+  `0x1c8b`: tutti gli shift di ±3 byte coerenti con l'inserimento di
+  `test rcx,rcx`). Storia verificata byte-per-byte e raccolta in
+  `docs/adr/0001-immutabilita-pe-riproducibilita-dump.md`.
 
 ### N02 — Newline: decisione normativa e allineamento (riga 15, C4)
 - **Files:** `SPEC-CORE.md` §2/§4, `conformance/core/cases/`, poi un runtime.
