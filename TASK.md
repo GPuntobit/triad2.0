@@ -48,8 +48,11 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
 - **Files:** `seed/dev/gen_seed.js` (rifattorizzazione interna), PE + `seed.hex`, hash in
   `.github/workflows/ci.yml`.
 - **Work:** separare in `gen_seed.js` il codegen dell'interprete dalle chiamate di sistema
-  Windows, isolando queste ultime in 4–5 routine `os_*` (BOOTSTRAP.md §4: write stdout,
-  read file, exit, heap). Solo struttura: il PE rigenerato deve restare **byte-identico**
+  Windows, isolando queste ultime nelle routine `os_*` — confine completo col sistema
+  operativo, lista e firme nel contratto
+  `.scratch/seed-linux-nativo/issues/03-contratto-os-star.md`, emissione inline
+  (decisione `.scratch/seed-linux-nativo/issues/02-architettura-codegen.md`). Solo
+  struttura: il PE rigenerato deve restare **byte-identico**
   a quello versionato — politica vincolante (a), decisione
   `.scratch/seed-linux-nativo/issues/01-byte-pe.md`: ogni diff nei byte è un bug o un
   cambio di layout da decidere nell'architettura del codegen; eccezioni solo per cambi
@@ -58,7 +61,9 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   nessuna modifica semantica (refactoring del solo generatore).
 
 ### N17 — E2b: emettitore ELF64 e parità col PE (il cuore della task)
-- **Files:** `seed/dev/gen_seed_linux.js` (emettitore ELF + `os_*` via syscall Linux),
+- **Files:** `seed/dev/gen_seed.js` (entry unico `<windows|linux|all>` + core condiviso +
+  backend ELF con `os_*` via syscall Linux — decisione
+  `.scratch/seed-linux-nativo/issues/02-architettura-codegen.md`),
   `seed/linux-x86_64/*`, `conformance/run.mjs` e `tests/probes/run_probes.mjs` (terzo
   runtime via `TRIAD_SEED`), `.github/workflows/ci.yml`.
 - **Work:** implementare sull'ELF lo stesso dominio machine-code del PE — interi, variabili,

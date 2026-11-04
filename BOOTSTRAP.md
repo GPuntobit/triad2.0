@@ -73,8 +73,14 @@ The seed implements **only** Triad-Core; S1 uses Triad-Core to implement the res
 - GC: initially **no GC** (growing arena; bootstrap programs are short),
   then mark-sweep to run S1 and the suite.
 - Code: x86-64. The seed is **a native function** with code and data in a single PE file
-  for Windows and, later, ELF for Linux. OS calls isolated in 4–5 routines
-  (`os_open`, `os_read`, `os_write`, `os_exit`, `os_alloc`), only point to report.
+  for Windows and, later, ELF for Linux. The whole OS boundary is isolated in `os_*`
+  generator routines — inline emission at each use site, never machine-code `call`
+  subroutines — covering argument acquisition, file open/read, write, alloc and exit.
+  *Clarified 2026-11-04 by the codegen-architecture decision
+  (`.scratch/seed-linux-nativo/issues/02-architettura-codegen.md`): "routines" here means
+  generator functions, not machine-code subroutines; the former "4–5 routines" count and
+  list are superseded — the complete list and signatures are fixed by the `os_*` contract
+  (`.scratch/seed-linux-nativo/issues/03-contratto-os-star.md`).*
 - No libc: on Windows you only import `kernel32` (ReadFile/WriteFile/GetCommandLineA/
   ExitProcess); on Linux direct syscalls are used (`open/read/write/mmap/exit`).
 ## 5. Platforms

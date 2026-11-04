@@ -46,6 +46,18 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   il lavoro strutturale; ogni diff nei byte è un bug, e un cambio di layout deliberato va
   deciso in _Architettura del codegen per due piattaforme_; eccezioni solo per cambi
   semantici deliberati (ciclo N03–N05) con hash CI + diff tracciati.
+- [02 — Architettura del codegen per due piattaforme](issues/02-architettura-codegen.md):
+  architettura **(a)** — un generatore, *core del codegen* condiviso + due *backend di
+  piattaforma* (PE/ELF); `os_*` è il confine completo con emissioni inline (mai
+  sottoroutine); memory map interna identica sulle due piattaforme; entry unico
+  `gen_seed.js <windows|linux|all>`; nessuna eccezione di layout del PE concessa.
+- [03 — Contratto delle routine `os_*`](issues/03-contratto-os-star.md):
+  contratto **firmato (Q1–Q6)** — forma a *piazzamenti ordinati* (byte-identico su PE
+  per costruzione, nessuna eccezione di layout); lista `os_arg`/`os_open`/`os_read`
+  (legge tutto e chiude)/`os_write`/`os_exit`/`os_alloc` (una chiamata, arena bump
+  `0x40000` senza GC); stato `r14` base, `r12` stdout (solo PE), `rbx` file, `r13`
+  conteggio; errori exit 1/2 identici, **PE muto**, stderr solo sull'ELF fuori
+  parità; ELF usa `openat` (N15). Spike su branch `prototype/os-star-contract`.
 
 ## Not yet specified
 
@@ -63,3 +75,9 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   non un passo di questa mappa.
 - **La catena S2–S4** (compilatore nativo e self-hosting): resta la mappa di
   `BOOTSTRAP.md`; questa mappa si ferma alla toolchain Linux nativa.
+- **Rimozione completa di JavaScript dal progetto** (generatori del seed, runner di
+  conformance/probe, riferimento JS `triad_core.cjs`, tooling `ai/`): strumenti di sviluppo
+  tollerati dalla regola operativa 2, fuori dalla catena S0→S4; eliminarli è conseguenza
+  del self-hosting S2–S4, non un passo di questa mappa. L'**esecuzione** dei programmi
+  Triad è già JS-free col seed nativo (percorso zero-install); la sola foglia in scope è
+  la CLI senza Node (vedi «Not yet specified»).
