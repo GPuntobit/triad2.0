@@ -72,6 +72,14 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   gestito in linguaggio (o `brk` una tantum), errori per codice/flag mai per stringa.
   Nessuna divergenza con _Architettura del codegen_ e _Contratto `os_*`_; innovazione
   consapevole: `os_read` «leggi tutto e chiudi». Findings su branch `research/05-confine-os`.
+- [06 — Ricerca: strumenti garantiti per la decodifica di `seed.hex`](issues/06-ricerca-decoder.md):
+  `od` è POSIX ma solo *dumper* (non decodifica); `xxd`/`python3` **non** garantiti
+  (non POSIX, assenti da BusyBox/minimal system); pavimento zero-install = `printf`
+  POSIX con escape ottali `"\ddd"` (decoder sh puro, byte-esatto, ~0,1 s); `awk` solo
+  con `LC_ALL=C` (`%c` non byte-sicuro in locale multibyte); `chmod`/`ln`/`mkdir`/
+  `command -v` tutti POSIX. Bug confermato: ramo `od`/`awk` di `install.sh` chiama
+  comunque `python3_decode`. Findings in
+  [`research/06-decoder.md`](research/06-decoder.md); sblocca 07 e 08.
 
 ## Not yet specified
 

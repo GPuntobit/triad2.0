@@ -1,7 +1,7 @@
 # 07 — Installazione e launcher: il contratto zero-install
 
 Type: grilling
-Status: open
+Status: claimed
 Blocked by: 06
 
 ## Question
