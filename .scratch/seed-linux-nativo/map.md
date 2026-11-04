@@ -41,7 +41,11 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
 <!-- indice: una riga per ticket chiuso — gisting della risposta + link al ticket, il
      dettaglio vive solo nel ticket -->
 
-_(nessuna: mappa appena tracciata)_
+- [01 — Politica dei byte del PE nella rifattorizzazione](issues/01-byte-pe.md):
+  politica **(a) vincolante** — immutabilità del PE + riproducibilità del dump per tutto
+  il lavoro strutturale; ogni diff nei byte è un bug, e un cambio di layout deliberato va
+  deciso in _Architettura del codegen per due piattaforme_; eccezioni solo per cambi
+  semantici deliberati (ciclo N03–N05) con hash CI + diff tracciati.
 
 ## Not yet specified
 

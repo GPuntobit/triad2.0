@@ -50,7 +50,10 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
 - **Work:** separare in `gen_seed.js` il codegen dell'interprete dalle chiamate di sistema
   Windows, isolando queste ultime in 4–5 routine `os_*` (BOOTSTRAP.md §4: write stdout,
   read file, exit, heap). Solo struttura: il PE rigenerato deve restare **byte-identico**
-  a quello versionato (se così non fosse: nuovo hash in CI e diff tracciata qui).
+  a quello versionato — politica vincolante (a), decisione
+  `.scratch/seed-linux-nativo/issues/01-byte-pe.md`: ogni diff nei byte è un bug o un
+  cambio di layout da decidere nell'architettura del codegen; eccezioni solo per cambi
+  semantici deliberati (ciclo N03–N05) con nuovo hash in CI e diff tracciata.
 - **Acceptance:** `cmp` fra PE rigenerato e versionato; conformance Core e probe invariati;
   nessuna modifica semantica (refactoring del solo generatore).
 
