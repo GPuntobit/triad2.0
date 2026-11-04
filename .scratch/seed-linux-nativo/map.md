@@ -51,6 +51,13 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   piattaforma* (PE/ELF); `os_*` è il confine completo con emissioni inline (mai
   sottoroutine); memory map interna identica sulle due piattaforme; entry unico
   `gen_seed.js <windows|linux|all>`; nessuna eccezione di layout del PE concessa.
+- [03 — Contratto delle routine `os_*`](issues/03-contratto-os-star.md):
+  contratto **firmato (Q1–Q6)** — forma a *piazzamenti ordinati* (byte-identico su PE
+  per costruzione, nessuna eccezione di layout); lista `os_arg`/`os_open`/`os_read`
+  (legge tutto e chiude)/`os_write`/`os_exit`/`os_alloc` (una chiamata, arena bump
+  `0x40000` senza GC); stato `r14` base, `r12` stdout (solo PE), `rbx` file, `r13`
+  conteggio; errori exit 1/2 identici, **PE muto**, stderr solo sull'ELF fuori
+  parità; ELF usa `openat` (N15). Spike su branch `prototype/os-star-contract`.
 
 ## Not yet specified
 
