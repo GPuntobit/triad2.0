@@ -85,3 +85,12 @@ call site; la forma (c) è byte-identica su 7/7 per costruzione.
 _SPEC-CORE.md_. Glossario: aggiunte le voci *Piazzamenti ordinati* e *Arena bump*.
 
 ## Comments
+
+- 2026-11-05 (attuazione N16): il contratto non nomina dove vive l'acquisizione
+  dell'handle stdout (`GetStdHandle` → `r12`, stato del corpo Q2) che su PE serve a
+  `os_write`: sanata nell'implementazione ponendola nella forma PE di `os_arg` (primo
+  ingresso nella sessione OS, ordine di emissione storico preservato; su ELF non serve,
+  `os_write` usa fd 1). Restano nella coda delle rispettive primitive i check di errore
+  (`os_open` → exit 1, `os_read` → exit 1 + chiusura, `os_alloc` → exit 1 su esaurimento)
+  come da Q4/Q5; il check `n < 0xF000` dopo `os_read` resta nel corpo, come prescritto.
+  Nessun cambio di semantica: PE byte-identico (N16, `seed/dev/gen_seed.js`).

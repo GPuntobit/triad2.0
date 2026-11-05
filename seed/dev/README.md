@@ -5,15 +5,17 @@ dependencies in the bootstrap chain: the source of the seed remains the hex dump
 (`../windows-x86_64/seed.hex`, `../linux-x86_64/seed.hex`), materializable with a simple
 system decoder (`certutil -decodehex` / `xxd -r -p`).
 ## `gen_seed.js`
-Seed Windows PE Generator (Node.js, development only). Contains the assembler-lite and the
-description of PE structures; produces `seed.hex` and prints its labels and dimensions.
+Seed Windows PE Generator (Node.js, development only). Contains the assembler-lite, the
+shared codegen core (interpreter body + `os_*` boundary) and the PE backend (inline `os_*`
+emissions — ordered slot placements per the `os_*` contract — Windows system constants and
+executable builder); produces `seed.hex` and prints its labels and dimensions.
 ```sh
 node seed/dev/gen_seed.js seed/windows-x86_64/seed.hex
 ```
 
 Current output: **25088 byte** PE, sha256 of `seed.hex` (same as verified by CI):
 ```
-3A75A21E2F47D8DC4C88D4BC2580A85D5349BCDF7550E5FFA16E2C0AC7CA8C11
+4235A70790BAA6784DC3D944616705B37E76ED2263CE73210BCC20E53639B8F7
 ```
 
 ## `gen_seed_linux.js`

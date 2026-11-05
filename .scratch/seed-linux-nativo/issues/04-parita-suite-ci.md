@@ -60,6 +60,17 @@ Windows, Wine, confronto diretto PE↔ELF).
 
 ## Comments
 
+- 2026-11-05 (attuazione): rimozione delle gambe Windows **implementata** nella CI — job
+  `seed-windows` eliminato e matrice `site-gen` ridotta a `ubuntu-24.04`, verifica solo su
+  Linux nativo. Promemoria: il commit `fc320f4` dichiara questa rimozione nel messaggio
+  ma **non la implementa** nel diff (tocca solo `docs/` e `.scratch/`); è stata fatta qui.
+  Lato PE resta il gate hash di `seed.hex` (spostato nel job `seed-linux`) + golden
+  congelati (ADR 0002). Conseguenza nota: le gate che giravano sul PE (probe `ok_*`/
+  `test_*`, golden `selfhost/source.td`, probe `get`, smoke `selfhost/main.td`) non sono
+  più eseguite da nessun job: rientrano sull'ELF nativo alla parità N17 (Q1). Ancora da
+  attuare da questa decisione: harness senza Node (ticket 08) e rimozione dello skip
+  storico `liste` (39/39 già verdi col runner Node).
+
 - 2026-11-04 (sessione su *Politica dei byte del PE nella rifattorizzazione*): fatto
   accertato per la scelta della suite CI — il gate hash attuale rileva cambi in
   `seed.hex` ma **non** la divergenza generatore/artefatti (classe del drift `649709a`:

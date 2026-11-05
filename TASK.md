@@ -6,9 +6,53 @@ Complete Triad 2.0 as a standalone and recognized language with its own standard
   - Support: integers, variables, functions (short form and block), recursion, Bool, operators, if/elseif/else, while, let, begin, lambda, closures, base strings, nothing, symbols, complete lists (build, print, push!, get)
   - Conformance: 33/33 Windows byte-exact cases, 36/36 Core Julia
 - **S1 (Triad Interpreter in Triad-Core):** Inline environment working with lists, complete basic primitives
-- **Seed S0 (Linux):** runner ELF **E1** (557 byte: argv + `openat`/`read`/`write`/`exit`, caricamento + echo del file `.td`, errori su stderr con exit 1/2) — **N15 chiusa il 2026-11-05**; la porta
-  completa dell'interprete in ELF resta la **task principale** (N16–N18 qui sotto).
-- **S2-S4:** Uninitiated
+- **Seed S0 (Linux):** runner ELF **E1** (557 byte: argv + `openat`/`read`/`write`/`exit`, caricamento + echo del file `.td`, errori su stderr con exit 1/2) — **N15 chiusa il 2026-11-05**;
+  **N16 chiusa il 2026-11-05** (confine `os_*` isolato nel generatore PE, byte-identico);
+  la porta completa dell'interprete in ELF resta la **task principale** (N17–N18 qui sotto).
+- **S2-S4:** mappa decisionale wayfinder `.scratch/self-hosting-m6/map.md` (tracciata
+  2026-11-05; destinazione M6: punto fisso del compilatore nativo + seed ritirato);
+  esecuzione da schedulare qui dopo le decisioni. Prima: porta Linux N15–N18.
+
+## Task da fare (2026-11-05, post-N16)
+
+Checklist operativa dalle note di chiusura di N16 e dalle decisioni wayfinder ancora da
+attuare; il dettaglio resta nelle slice N17–N18 e nei ticket di
+`.scratch/seed-linux-nativo/` (mai duplicati qui).
+
+- [x] **Revisione CI secondo decisione 04** (dentro N17) — ✅ **fatto 2026-11-05**: job
+  `seed-windows` rimosso e matrice `site-gen` ridotta a Ubuntu (solo Linux nativo);
+  lato PE resta il gate hash di `seed.hex` (spostato nel job `seed-linux`) + golden
+  congelati (ADR 0002); anti-drift `gen_seed.js && cmp` già presente. Promemoria storico:
+  il commit `fc320f4` dichiara la rimozione ma non la implementa nel diff — implementata
+  qui. Conseguenze noti (gate PE non più eseguite, tutorial da aggiornare): raccolte
+  come voci dedicate qui sotto.
+- [ ] **N17 — E2b** (slice sotto): entry unico `gen_seed.js <windows|linux|all>` + moduli
+  `core`/`backend_pe`/`backend_elf` (decisione 02 Q8); backend ELF con `os_*` via syscall
+  Linux (`openat`, contratto 03 Q6); parità **byte-exatta** col PE su `conformance/core`
+  (39 casi), probe `ok_*`/`test_*` e golden `selfhost/source.expected.out`.
+- [ ] **Harness di verifica senza Node, sostituzione in un colpo solo** (dentro N17,
+  decisione 08): `conformance/run.sh` + `tests/probes/run_probes.sh` + `verify.sh` al
+  posto di `run.mjs`/`run_probes.mjs`/`run.test.mjs`; 39 casi senza `--skip liste`;
+  golden sidecar committati (`*.expected.out`/`*.expected.code`); CI ripuntata.
+- [ ] **N18 — E3** (slice sotto): toolchain Linux senza Node — `bin/triad` senza logica di
+  stub (soglia 4 KB, `--jsref`, ramo JS escono), `bin/triad-cli` POSIX a pura delega,
+  `install.sh` con wrapper a percorso assoluto + smoke test byte-exatto (decisioni 07/09);
+  CI `seed-linux` sull'ELF nativo senza Wine.
+- [ ] **Ripristino sull'ELF delle gate perse dalle gambe Windows** (dentro N17): probe
+  `ok_*`/`test_*`, golden `selfhost/source.td`, probe `get`, smoke `selfhost/main.td`
+  — oggi non eseguite da nessun job (rimosse colla revisione CI della decisione 04,
+  ADR 0002: il PE non si riesegue) — da riagganciare al job `seed-linux` sulla parità
+  **byte-exatta** dell'ELF.
+- [ ] **Rimozione dello skip storico `liste`** (decisione 04 Q1): il gate `conformance/core`
+  deve coprire i **39 casi**; `--skip liste` è ancora in `conformance-core` e nel default
+  di `conformance/run.mjs` benché 39/39 siano già verdi senza skip — sovrapposto alla
+  voce *Harness senza Node* (che lo include), qui resta il promemoria puntuale.
+- [ ] **Aggiornamento tutorial alla CI post-decisione 04** (dentro N18, documentazione
+  stato piattaforme): `docs/tutorial/*` (it/en/ja/zh) citano ancora il job `seed-windows`
+  (33 casi Core sul PE, step `Hash check`, array `$cases`) — riscrivere secondo la CI
+  attuale (gate hash PE in `seed-linux`, suite sull'ELF nativo).
+- [ ] **Revisione delle modifiche pendenti preesistenti** in `GLOSSARY.md`/`STATUS.md`/
+  `TASK.md` (nel working tree prima della sessione N16): decidere se committare o scartare.
 ---
 # Task principale (2026-11-03): seed Linux nativo — senza Wine (N15–N18)
 
@@ -44,7 +88,7 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   exit ≠ 0 con messaggio su stderr; dump riproducibile da `gen_seed_linux.js`; verificato
   nativamente su Linux x86-64 (CachyOS/CI).
 
-### N16 — E2a: nucleo di codegen piattaforma-indipendente (routine `os_*`)
+### N16 — E2a: nucleo di codegen piattaforma-indipendente (routine `os_*`) — ✅ chiusa (2026-11-05)
 - **Files:** `seed/dev/gen_seed.js` (rifattorizzazione interna), PE + `seed.hex`, hash in
   `.github/workflows/ci.yml`.
 - **Work:** separare in `gen_seed.js` il codegen dell'interprete dalle chiamate di sistema
@@ -59,6 +103,17 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   semantici deliberati (ciclo N03–N05) con nuovo hash in CI e diff tracciata.
 - **Acceptance:** `cmp` fra PE rigenerato e versionato; conformance Core e probe invariati;
   nessuna modifica semantica (refactoring del solo generatore).
+- **Esito (2026-11-05):** `gen_seed.js` riorganizzato in emettitore neutro + *core del codegen*
+  (memoria condivisa, confine `os_*`, corpo) + *backend PE* (emissioni `os_*` inline a
+  piazzamenti ordinati, costanti di sistema, builder): il corpo non vede più nulla di
+  Windows (nessuna `callIat`/costante fuori dal backend). PE rigenerato **byte-identico**
+  (`cmp` + hash `seed.hex` invariato `4235A707…B8F7`), conformance Core e probe invariate;
+  anti-drift del dump PE (`gen_seed.js` + `cmp`) aggiunto alla CI. Note: (i) il contratto 03
+  non nomina dove vive l'acquisizione dell'handle stdout (`GetStdHandle` → r12): sanata
+  dentro la forma PE di `os_arg` (commento in `gen_seed.js` + commento a ticket 03);
+  (ii) la revisione della CI prevista da decisione 04 (rimozione gambe Windows + harness
+  senza Node) resta a **N17** — il commit `fc320f4` la dichiara nel messaggio ma non la
+  implementa nel diff.
 
 ### N17 — E2b: emettitore ELF64 e parità col PE (il cuore della task)
 - **Files:** `seed/dev/gen_seed.js` (entry unico `<windows|linux|all>` + core condiviso +

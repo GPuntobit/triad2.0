@@ -7,7 +7,7 @@ definisce i termini del progetto e dei suoi sforzi (seed, bootstrap, parità, to
 
 **Seed nativo**:
 L'interprete Triad-Core in codice macchina della piattaforma corrente (PE su Windows, ELF
-su Linux), l'unico artefatto eseguibile della catena S0→S4.
+su Linux), l'artefatto eseguibile da cui la catena S0→S4 ha inizio.
 _Avoid_: runtime, emulatore, binario precompilato
 
 **Parità byte-a-byte**:
@@ -73,3 +73,26 @@ _Avoid_: expected, snapshot, fixture
 Il controllo il cui esito decide la validità del lavoro: tutte le suite di riferimento
 verde sui golden.
 _Avoid_: CI (è il meccanismo che lo esegue), test (generico)
+
+## Bootstrap
+
+**Catena S0→S4**:
+La sequenza di stadi del bootstrap: seed in codice macchina (S0), implementazione completa
+scritta in Triad-Core (S1), compilatore nativo scritto in Triad (S2), compilatore
+self-hosted (S3), Triad completo (S4).
+_Avoid_: pipeline di build, catena di release
+
+**Punto fisso**:
+La proprietà del compilatore nativo per cui ricompilare la propria sorgente produce un
+binario identico byte-a-byte al proprio.
+_Avoid_: fixed point, autocompilazione (è il processo, non la proprietà)
+
+**Self-hosting**:
+Lo stato della catena in cui il compilatore è compilato da sé stesso e nessun linguaggio
+host partecipa.
+_Avoid_: bootstrap (è il processo che porta allo stato)
+
+**Seed ritirato**:
+Lo stato in cui la catena d'uso e di ricostruzione non richiede più il seed, la cui
+sorgente annotata resta versionata.
+_Avoid_: rimosso, eliminato, decommissionato

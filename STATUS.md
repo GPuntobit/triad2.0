@@ -3,7 +3,9 @@
 Updated after the 2026-11-02 closure of problem-table rows 2–6 and backlog A03/A04.
 **Main task promoted 2026-11-03:** native Linux seed without Wine (TASK.md → «Task
 principale (2026-11-03)», N15–N18); it takes precedence over N03 and the mechanical
-sub-tasks. Decision map (wayfinder): `.scratch/seed-linux-nativo/map.md`.
+sub-tasks. Decision map (wayfinder): `.scratch/seed-linux-nativo/map.md` (closed, the way
+is clear). Next decision map (wayfinder, 2026-11-05): `.scratch/self-hosting-m6/map.md` —
+self-hosting M6 (native compiler + fixed point, seed retired).
 
 ## Goal
 
@@ -55,9 +57,14 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
   checks the PDF against the KDP margin table at build time and fails (exit 3) if the
   gutter/outer margins are insufficient.
 - **Launcher/CLI**: the default runtime for `.triad` is the machine-code seed (`bin/triad`, `bin/triad.cmd`, `cli/lib/utils.mjs`); the Julia implementation (`triad.jl`, `syntax.jl`, `test/`, `bin/build_standalone.jl`) has been removed.
-- **CI**: `.github/workflows/ci.yml` — `conformance-core` (Ubuntu, `--skip liste`), `seed-windows`
-  (35 Core cases on the PE, `get` probe, `selfhost/main.td` smoke test, `seed.hex` hash
-  `3A75A21E...8C11`), `seed-linux` (ELF E1 + hash + `check_e1.sh` + anti-drift dump).
+- **CI**: `.github/workflows/ci.yml` — **solo runner Linux nativi** (decisione 04, ticket
+  `.scratch/seed-linux-nativo/issues/04-parita-suite-ci.md`): gambe Windows rimosse il
+  2026-11-05 (job `seed-windows` eliminato, matrice `site-gen` ridotta a Ubuntu; il commit
+  `fc320f4` lo dichiarava nel messaggio ma non lo implementava nel diff). Job:
+  `conformance-core` (Ubuntu, `--skip liste`), `site-gen` (Ubuntu), `seed-linux` (ELF E1 +
+  `check_e1.sh` + hash PE **ed** ELF + anti-drift dump of **both** artifacts:
+  `gen_seed.js`/`gen_seed_linux.js` + `cmp`), `linux-toolchain`, `security`. Lato PE: gate
+  hash di `seed.hex` + golden congelati (ADR 0002: il PE non viene mai rieseguito dal gate).
 
 ## What is missing
 
@@ -76,7 +83,7 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
 | Triad-Full | 11/12 cases not implemented (only `errore` passes) |
 | CLI seed | file execution only; REPL and SPEC section 14 options to do |
 | S2-S3 (native compiler, self-hosting) | not started |
-| S4 / M7 (parity, Linux ELF) | **E1 done** (2026-11-05): ELF runner of a `.td` file (argv + native I/O: load + echo, exit 1/2 errors on stderr) — TASK.md N15 closed; **MAIN TASK (2026-11-03): E2a/E2b/E3 = TASK.md N16–N18** — native ELF seed with the same machine-code domain as the PE, byte-exact conformance on Linux **without Wine**, `bin/triad`/`install.sh` using the native seed (zero dependencies beyond the repo on Linux; Windows keeps the PE). Today's POSIX toolchain: `install.sh` + launcher `bin/triad`/`bin/triad-cli` with automatic fallback to the JS reference when the seed is a stub; dedicated CI job `linux-toolchain` |
+| S4 / M7 (parity, Linux ELF) | **E1 done** (2026-11-05): ELF runner of a `.td` file (argv + native I/O: load + echo, exit 1/2 errors on stderr) — TASK.md N15 closed; **E2a done** (2026-11-05, N16: `os_*` codegen core isolated in the PE generator, byte-identical PE); **MAIN TASK (2026-11-03): E2b/E3 = TASK.md N17–N18** — native ELF seed with the same machine-code domain as the PE, byte-exact conformance on Linux **without Wine**, `bin/triad`/`install.sh` using the native seed (zero dependencies beyond the repo on Linux; Windows keeps the PE). Today's POSIX toolchain: `install.sh` + launcher `bin/triad`/`bin/triad-cli` with automatic fallback to the JS reference when the seed is a stub; dedicated CI job `linux-toolchain` |
 
 ## Main task (2026-11-03): native Linux seed — no Wine
 
@@ -126,7 +133,7 @@ certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 The goal **is not complete**:
 - S0 is a machine-code interpreter, but **S1 (Triad in Triad-Core) has not started**, so there is no self-hosting yet;
 - S2-S3 (native compiler in Triad, fixed point) not started;
-- S4/M7 (conformance parity, Linux ELF port) partially started: E1 artifact exists and is verified natively (`seed/linux-x86_64/seed.hex` + `check_e1.sh`, load + echo of a `.td` file, exit 1/2 errors on stderr); parity/interpreter (E2) not started;
+- S4/M7 (conformance parity, Linux ELF port) partially started: E1 artifact exists and is verified natively (`seed/linux-x86_64/seed.hex` + `check_e1.sh`, load + echo of a `.td` file, exit 1/2 errors on stderr); E2a (platform-independent `os_*` codegen core isolated in `gen_seed.js`, PE byte-identical) done 2026-11-05 (TASK.md N16); parity/interpreter (E2b) not started;
 - external recognition: MIT LICENSE chosen; Linguist PR and extension publishing require the maintainer.
 
 ## Seed Windows verification (round 32)

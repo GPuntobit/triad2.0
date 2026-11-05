@@ -2,6 +2,34 @@
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
+## Not released — 2026-11-05: CI senza gambe Windows (decisione 04)
+
+### Changed
+- `.github/workflows/ci.yml`: rimosse le **gambe Windows** come da decisione 04 (ticket
+  `.scratch/seed-linux-nativo/issues/04-parita-suite-ci.md`, *Parità: suite di
+  riferimento, CI e politica delle divergenze*): job `seed-windows` eliminato e matrice
+  `site-gen` ridotta a `ubuntu-24.04` — la verifica gira solo su Linux nativo, senza
+  runner Windows. Il lato PE resta garantito dal gate hash di `seed.hex` (spostato nel
+  job `seed-linux`, anti-tampering) + golden congelati (ADR 0002: il PE non viene mai
+  rieseguito dal gate). Nota storica: il commit `fc320f4` dichiara questa rimozione nel
+  messaggio ma non la implementa nel diff. Le gate che giravano sul PE (probe
+  `ok_*`/`test_*`, golden `selfhost/source.td`, probe `get`, smoke `selfhost/main.td`)
+  rientreranno sull'ELF nativo alla parità N17.
+
+## Not released — 2026-11-05: confine `os_*` nel generatore del seed (N16)
+
+### Changed
+- `seed/dev/gen_seed.js`: rifattorizzazione **solo strutturale** — il codegen dell'interprete
+  (*core del codegen*, piattaforma-indipendente) è separato dalle chiamate di sistema
+  Windows, isolate nelle routine `os_*` (`os_arg`/`os_open`/`os_read`/`os_write`/`os_exit`/
+  `os_alloc`) in emissione inline a *piazzamenti ordinati* (contratto `os_*`, ticket 03
+  della mappa `seed-linux-nativo`). Il PE rigenerato resta **byte-identico** (hash
+  `seed.hex` invariato `4235A707…B8F7`); conformance Core e probe invariate.
+- `.github/workflows/ci.yml`: anti-drift del dump PE (`gen_seed.js` + `cmp`) accanto a
+  quello ELF — chiude la lacuna del drift `649709a` (ADR 0001) anche lato Windows.
+- `seed/dev/README.md`: descrizione della nuova struttura del generatore; hash di
+  `seed.hex` corretto (era obsoleto: `3A75A21E…`).
+
 ## Not released — 2026-11-05: seed Linux E1 — runner di un file `.td` (N15)
 
 ### Added
