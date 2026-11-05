@@ -37,7 +37,8 @@ indipendente da host language, con:
   deve superare. Triad-Core: 37/37 verdi; Triad-Full: oggi passa solo il caso `errore`.
 - `ai/` — benchmark per generazione di codice Triad da parte di LLM: `SYSTEM_PROMPT.md` + `tasks/*/task.md`,
   soluzione salvata come `solution.triad`, verificata con `node cli/triad-cli.mjs ai verify`.
-- `bin/triad`, `bin/triad.cmd`, `cli/triad-cli.mjs` — launcher e CLI (SPEC.md §14). L'implementazione
+- `bin/triad`, `bin/triad-cli`, `bin/triad.cmd`, `cli/triad-cli.mjs` — launcher e CLI (SPEC.md §14).
+  L'implementazione
   Julia è stata **rimossa**: il runtime è il seed in machine code.
 - `editors/` — grammar VS Code, Vim/Neovim ed entry per GitHub Linguist. Estensione canonica `.triad`
   (alias storico `.td`).
@@ -51,7 +52,7 @@ indipendente da host language, con:
    tollerati ma fuori dalla catena S0→S4.
 3. **Conformance prima di tutto**: ogni modifica a lessico, parser, tipi, valutazione o I/O deve
    essere accompagnata da casi in `conformance/` e deve mantenere verdi i 37 casi Triad-Core.
-   Esegui `node cli/triad-cli.mjs test conformance` (o `conformance/run.mjs`) per verificare.
+   Esegui `sh verify.sh` (o `sh conformance/run.sh`) per verificare.
 4. **Triad-Core ⊂ Triad-Full**: ogni programma Core (esclusi i primitivi §8 di SPEC-CORE.md) deve
    comportarsi identicamente anche in un'implementazione Full. Non aggiungere mai al Core features
    non implementabili in machine code handwritten.
@@ -82,9 +83,10 @@ machine code) per supportare X", oppure "scrivere i 12 casi Triad-Full mancanti"
 
 Lavora sul repo Triad 2.0: linguaggio standalone con specifica normativa (`SPEC.md`, `SPEC-CORE.md`),
 conformance golden (`conformance/`, Triad-Core 37/37 verdi), seed in machine code come unico runtime
-(Zero host language; la Julia implementation è rimossa) e CLI `node cli/triad-cli.mjs`.
+(Zero host language; la Julia implementation è rimossa) e CLI `bin/triad-cli` (POSIX, senza Node;
+i comandi dev restano in `node cli/triad-cli.mjs`).
 Regole: la specifica è normativa; ogni modifica al linguaggio richiede casi di conformance e deve
-mantenere `node cli/triad-cli.mjs test conformance` verde; Triad-Core è il sottoinsieme implementabile
+mantenere `sh verify.sh` verde; Triad-Core è il sottoinsieme implementabile
 in machine code e Triad-Full vi si riduce via sugar. Task: [DESCRIVERE]. Output: analisi → file toccati
 → diff → test → note.
 

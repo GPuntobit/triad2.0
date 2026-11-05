@@ -50,7 +50,7 @@
 
 | профиль | где определён | исполняем сегодня? |
 |---|---|---|
-| **Triad-Core** | `SPEC-CORE.md` | **да**: эталонный JavaScript-интерпретатор `seed/dev/triad_core.cjs` (37/37 кейсов Core) и частично Windows-seed `seed/windows-x86_64/seed.exe` (33 кейса Core проверены в CI) |
+| **Triad-Core** | `SPEC-CORE.md` | **да**: машинные seed'ы (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) проходят все 39 кейсов Core побайтово; эталонный JavaScript-интерпретатор `seed/dev/triad_core.cjs` тоже проходит все |
 | **Triad-Full** | `SPEC.md` | **нет**: struct, dispatch, логика, макросы, контракты, бюджеты, трассы, эффекты, деструктуризация, `for`, `try`, `Float` — это спецификация; в conformance Full проходит только `errore` |
 
 Два уточнения о контексте, полезные, чтобы не путать книгу с проектом. Версия стандарта —
@@ -133,7 +133,7 @@ runtime ещё не исполняет. **JS-интерпретатор** озн
 33. [Карта репозитория](#cap-33)
 34. [Эталонный JS-интерпретатор (`seed/dev/triad_core.cjs`)](#cap-34)
 35. [Windows-seed S0 и его генератор](#cap-35)
-36. [Linux-seed (E0)](#cap-36)
+36. [Linux-seed (E2)](#cap-36)
 37. [Self-hosting: S1 в `selfhost/`](#cap-37)
 38. [Conformance: чтение, написание и проверка кейсов](#cap-38)
 39. [CLI разработки `triad-cli`](#cap-39)
@@ -238,7 +238,8 @@ Seed S0 распространяется не как исполняемый фа
 операционной системы ([глава 2](#cap-2)). Стадии S1–S4 — направление проекта, а не то, что нужно
 для чтения этой книги: чтобы следовать учебнику, достаточно seed S0 или JS-интерпретатора.
 
-Инструменты на Node.js (`seed/dev/*.js`, `conformance/run.mjs`, `cli/`) — это **инструменты
+Инструменты разработки (`seed/dev/*.js` и `cli/` на Node.js, харнесы `conformance/run.sh`
+и `verify.sh` на POSIX shell) — это **инструменты
 разработки**: они помогают генерировать и проверять, но не входят в цепочку S0→S4. Часть IV
 представляет их по одному, объясняя, что они делают и почему они внешни по отношению к бутстрапу.
 
@@ -308,30 +309,25 @@ certutil -decodehex seed\windows-x86_64\seed.hex seed\windows-x86_64\seed.exe
 ```
 
 ```sh
-# Linux: seed ELF на стадии E0 (печатает только "Triad seed Linux OK")
+# Linux: seed ELF E2 (интерпретатор Triad-Core) — рекомендуется ./install.sh
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed
 ```
 
 Команда для Windows сначала удаляет предыдущий исполняемый файл, если он есть, затем воссоздаёт
-его из дампа; на Linux результатом становится минимальный ELF — стадия E0, которая пока
-ограничивается печатью стартового сообщения: это ещё не интерпретатор. Это не ошибка установки —
-это состояние порта, описанное в [`STATUS.md`](STATUS.md).
+его из дампа; на Linux результатом становится машинный интерпретатор Triad-Core (стадия E2).
+На Linux рекомендуется запускать `./install.sh` из корня репозитория: он перекодирует seed
+только средствами POSIX shell, установит лаунчеры и пройдёт побайтовый smoke-тест.
 
 ### 2.4 Лаунчеры `bin/triad` и `bin/triad.cmd`
 
 Лаунчер нужен, чтобы не вспоминать каждый раз, какой бинарник использовать и в какой папке он
 лежит. Он необязателен, но удобен: когда `bin/` в `PATH`, достаточно `triad file.triad` — как с
-языком, установленным в систему. Поиск runtime'а идёт по строгому порядку — от лучшего к
-доступному:
-
-1. `bin/triad-native` (standalone-исполняемый файл, **ещё не выпущен**: появится с S2–S3);
-2. `seed/<платформа>/seed` (на Windows — `seed\windows-x86_64\seed.exe`).
-
-На Linux лаунчер найдёт ELF-seed E0, который **ещё не интерпретирует программы**: для исполнения
-кода на Linux используйте напрямую JS-интерпретатор. `triad --build` — остаток старой
-реализации на Julia: он печатает сообщение с объяснением, почему сборка больше не поддерживается,
-и завершается с кодом 2. Когда ни один runtime недоступен, лаунчер не падает молча: он печатает
-инструкции по материализации seed.
+языком, установленным в систему. Лаунчер **всегда** исполняет машинный seed (на Windows —
+`seed\windows-x86_64\seed.exe`, на Linux — `seed/linux-x86_64/seed`, стадия E2): автоматического
+отката на другие runtime'ы нет — JS-интерпретатор остаётся инструментом разработки и никогда
+не попадает в пользовательский путь. Переменная `TRIAD_SEED` позволяет указать конкретный seed.
+Когда seed отсутствует или не исполняем, лаунчер не падает молча: он печатает инструкции по
+материализации seed (`./install.sh` или декодирование `seed.hex`).
 
 ### 2.5 Коды завершения
 
@@ -355,15 +351,18 @@ CLI необязательна: она собирает в одной коман
 в репозитории. Ниже самые используемые строки, каждая с комментарием о том, что она делает.
 
 ```sh
-bin/triad-cli status                 # окружение и найденный seed (Windows: bin\triad-cli.cmd)
-bin/triad-cli test conformance       # conformance Core
-bin/triad-cli ai verify -v           # проверяет решения из ai/tasks/
-bin/triad-cli seed generate windows  # перегенерирует seed.hex и печатает SHA-256
-node conformance/run.mjs             # прямой runner conformance (Core)
+bin/triad-cli status                 # окружение и найденный seed (без Node)
+bin/triad-cli test conformance       # conformance Core (39 кейсов, побайтово)
+bin/triad-cli test all               # полный гейт: conformance + пробы
+node cli/triad-cli.mjs ai verify -v  # проверяет решения из ai/tasks/ (dev, Node)
+node cli/triad-cli.mjs seed generate windows  # перегенерирует seed.hex и печатает SHA-256
+sh conformance/run.sh                # прямой запуск харнеса conformance (Core)
 ```
 
-Лаунчеры `bin/triad-cli*` при первом запуске выполняют `npm install` в `cli/`. Альтернатива —
-standalone-исполняемые файлы `triad-cli.exe` / `triad-cli`, приложенные к
+CLI `bin/triad-cli` — чистый POSIX shell и **не требует Node**: это `run`/`test`/`status`.
+Команды разработки (`ai verify`, `seed generate`, `ext`) живут в Node CLI
+`node cli/triad-cli.mjs` (после `cd cli && npm install`), либо в standalone-исполняемых
+файлах `triad-cli.exe` / `triad-cli`, приложенных к
 [beta-релизу](https://github.com/GPuntobit/triad2.0/releases). Подробности в [главе 39](#cap-39).
 Для Части II CLI не нужна: примеры запускаются прямо через `node`.
 

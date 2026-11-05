@@ -48,7 +48,7 @@ casi, e ogni blocco di codice dichiara il profilo a cui appartiene.
 
 | profilo | dove è definito | eseguibile oggi? |
 |---|---|---|
-| **Triad-Core** | `SPEC-CORE.md` | **sì**: interprete di riferimento JavaScript `seed/dev/triad_core.cjs` (37/37 casi Core) e, in parte, il seed Windows `seed/windows-x86_64/seed.exe` (33 casi Core verificati in CI) |
+| **Triad-Core** | `SPEC-CORE.md` | **sì**: i seed in codice macchina (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) passano 39/39 casi Core byte per byte; anche l'interprete di riferimento JavaScript `seed/dev/triad_core.cjs` li passa tutti |
 | **Triad-Full** | `SPEC.md` | **no**: struct, dispatch, logica, macro, contratti, budget, tracce, effetti, destrutturazione, `for`, `try`, `Float` sono specifica; nella conformance Full passa solo `errore` |
 
 Due precisazioni sul contesto, utili per non confondere il libro con il progetto. La versione
@@ -133,7 +133,7 @@ Triad-Core in codice macchina (S0). Dove i due si comportano diversamente lo dic
 33. [Mappa del repository](#cap-33)
 34. [L'interprete di riferimento JS (`seed/dev/triad_core.cjs`)](#cap-34)
 35. [Il seed S0 Windows e il suo generatore](#cap-35)
-36. [Il seed Linux (E0)](#cap-36)
+36. [Il seed Linux (E2)](#cap-36)
 37. [Self-hosting: S1 in `selfhost/`](#cap-37)
 38. [Conformance: leggere, scrivere e verificare casi](#cap-38)
 39. [La CLI di sviluppo `triad-cli`](#cap-39)
@@ -241,7 +241,8 @@ decodifica del sistema operativo ([capitolo 2](#cap-2)). Gli stadi S1–S4 sono 
 progetto, non ciò che serve per leggere questo libro: per seguire il tutorial basta il seed S0
 o l'interprete JS.
 
-Gli strumenti in Node.js (`seed/dev/*.js`, `conformance/run.mjs`, `cli/`) sono **strumenti di
+Gli strumenti di sviluppo (`seed/dev/*.js` e `cli/` in Node.js, gli harness
+`conformance/run.sh` e `verify.sh` in shell POSIX) sono **strumenti di
 sviluppo**: aiutano a generare e verificare, ma non fanno parte della catena S0→S4. La Parte IV
 del libro li presenta uno per uno, spiegando che cosa fanno e perché sono esterni al bootstrap.
 
@@ -331,30 +332,25 @@ certutil -decodehex seed\windows-x86_64\seed.hex seed\windows-x86_64\seed.exe
 ```
 
 ```sh
-# Linux: seed ELF allo stadio E0 (stampa solo "Triad seed Linux OK")
+# Linux: seed ELF E2 (interprete Triad-Core) — oppure, consigliato: ./install.sh
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed
 ```
 
 Il comando Windows cancella prima l'eseguibile precedente, se c'è, e poi lo ricrea dal dump; su
-Linux il risultato è un ELF minimale, lo stadio E0, che per ora si limita a stampare un messaggio
-di avvio: non è ancora un interprete. Non è un errore di installazione, è lo stato del port
-descritto in [`STATUS.md`](STATUS.md).
+Linux il risultato è l'interprete Triad-Core in codice macchina (stadio E2). Su Linux la strada
+consigliata è `./install.sh` dalla radice del repository: ridecodifica il seed con la sola shell
+POSIX, installa i launcher e supera uno smoke test byte-exatto.
 
 ### 2.4 Launcher `bin/triad` e `bin/triad.cmd`
 
 Un launcher serve a non dover ricordare ogni volta quale binario usare e in quale cartella si
 trova. Non è obbligatorio, ma è comodo: quando `bin/` è nel `PATH` basta `triad file.triad`, come
-con un linguaggio installato nel sistema. La ricerca del runtime segue un ordine preciso, dal
-runtime migliore a quello disponibile:
-
-1. `bin/triad-native` (eseguibile standalone, **non ancora prodotto**: arriverà con S2–S3);
-2. `seed/<piattaforma>/seed` (su Windows `seed\windows-x86_64\seed.exe`).
-
-Su Linux il launcher trova il seed ELF E0, che **non interpreta ancora programmi**: per
-eseguire codice su Linux usa direttamente l'interprete JS. `triad --build` è un residuo della
-vecchia implementazione Julia: stampa un messaggio che spiega perché la build non è più
-supportata ed esce con codice 2. Quando nessun runtime è disponibile, il launcher non fallisce in
-silenzio: stampa le istruzioni per materializzare il seed.
+con un linguaggio installato nel sistema. Il launcher esegue **sempre** il seed in codice
+macchina (`seed\windows-x86_64\seed.exe` su Windows, `seed/linux-x86_64/seed` su Linux, stadio
+E2): nessun fallback automatico su altri runtime — l'interprete JS resta uno strumento di
+sviluppo, mai il percorso utente. La variabile `TRIAD_SEED` permette di forzare un seed
+specifico. Quando il seed non è disponibile o non è eseguibile, il launcher non fallisce in
+silenzio: stampa le istruzioni per materializzarlo (`./install.sh` o decodifica di `seed.hex`).
 
 ### 2.5 Codici di uscita
 
@@ -381,15 +377,18 @@ nel repository. Le righe seguenti mostrano le più usate, ciascuna con il commen
 cosa fa.
 
 ```sh
-bin/triad-cli status                 # ambiente e seed trovato (Windows: bin\triad-cli.cmd)
-bin/triad-cli test conformance       # conformance Core
-bin/triad-cli ai verify -v           # verifica le soluzioni di ai/tasks/
-bin/triad-cli seed generate windows  # rigenera seed.hex e stampa lo SHA-256
-node conformance/run.mjs             # runner di conformance diretto (Core)
+bin/triad-cli status                 # ambiente e seed trovato (senza Node)
+bin/triad-cli test conformance       # conformance Core (39 casi, byte-exatti)
+bin/triad-cli test all               # gate completo: conformance + probe
+node cli/triad-cli.mjs ai verify -v  # verifica le soluzioni di ai/tasks/ (dev, Node)
+node cli/triad-cli.mjs seed generate windows  # rigenera seed.hex e stampa lo SHA-256
+sh conformance/run.sh                # harness di conformance diretto (Core)
 ```
 
-I launcher `bin/triad-cli*` eseguono `npm install` in `cli/` al primo avvio. In alternativa si
-usa l'eseguibile standalone `triad-cli.exe` / `triad-cli` allegato alla
+La CLI `bin/triad-cli` è shell POSIX pura e **non richiede Node**: copre `run`/`test`/`status`.
+I comandi di sviluppo (`ai verify`, `seed generate`, `ext`) vivono nella CLI Node
+`node cli/triad-cli.mjs` (dopo `cd cli && npm install`), oppure nell'eseguibile standalone
+`triad-cli.exe` / `triad-cli` allegato alla
 [release beta](https://github.com/GPuntobit/triad2.0/releases). Dettagli nel
 [capitolo 39](#cap-39). Per seguire la Parte II la CLI non serve: gli esempi si eseguono
 direttamente con `node`.
@@ -402,7 +401,7 @@ direttamente con `node`.
 3. **Materializzare il seed.** Segui la procedura del paragrafo 2.3 e verifica il seed ottenuto.
 4. **Il launcher.** Prova `bin/triad` (e `bin/triad.cmd` su Windows): quale runtime usano?
 5. **Codici di uscita.** Produci programmi con codice `0`, `1` e `2` e verificali dal terminale.
-6. **La CLI di sviluppo.** Esegui `node cli/triad-cli.mjs test conformance` e leggi il riepilogo.
+6. **La CLI.** Esegui `bin/triad-cli test all` e leggi il riepilogo.
 7. **File mancante.** Esegui un programma inesistente: quale errore e quale codice di uscita?
 8. **Percorsi.** Scrivi lo stesso comando di esecuzione nella forma Windows e nella forma
    Linux/macOS: che cosa cambia?
@@ -1799,8 +1798,9 @@ funziona su entrambi è essenziale se un programma deve girare anche sul seed, c
 S1.
 
 Il contratto è `conformance/core/`: entrambi i runtime devono produrre gli stessi golden. Oggi
-l'interprete JS li passa tutti, il seed Windows i 33 casi elencati nel job `seed-windows` della
-CI. Fuori da quei casi i due runtime differiscono:
+sia l'interprete JS sia i seed (PE Windows ed ELF Linux) passano tutti i 39 casi byte per byte:
+il gate gira sull'ELF nativo (job `seed-linux`). Restano differenze di dominio misurate,
+registrate nei probe e nella tabella:
 
 | funzionalità | interprete JS (`seed/dev/triad_core.cjs`) | seed Windows (`seed.exe`) |
 |---|---|---|
@@ -3500,10 +3500,10 @@ codice che contiene.
 |---|---|---|
 | `SPEC.md`, `SPEC-CORE.md`, `VERSION`, `CHANGELOG.md` | Markdown | lo standard (Full e Core), versione, storia |
 | `BOOTSTRAP.md`, `STATUS.md`, `TASK.md`, `plan.md` | Markdown | piano S0→S4, stato, backlog e task |
-| `conformance/` | Triad + Node | casi golden (`cases/` Full, `core/cases/` Core) e runner `run.mjs` |
+| `conformance/` | Triad + sh | casi golden (`cases/` Full, `core/cases/` Core) e harness `run.sh` |
 | `seed/windows-x86_64/` | codice macchina | `seed.hex` (sorgente), `seed.exe` (decodificato), README con layout |
-| `seed/linux-x86_64/` | codice macchina | seed ELF E0 (`seed.hex`, `seed`) |
-| `seed/dev/` | Node.js | generatori del seed (`gen_seed.js`, `gen_seed_linux.js`) e interprete di riferimento `triad_core.cjs` |
+| `seed/linux-x86_64/` | codice macchina | seed ELF E2, interprete Triad-Core (`seed.hex`, `seed`) |
+| `seed/dev/` | Node.js | generatore del seed (`gen_seed.js <windows\|linux\|all>`) e interprete di riferimento `triad_core.cjs` |
 | `selfhost/` | Triad-Core | S1: interprete Triad scritto in Triad-Core (in corso) |
 | `examples/` | Triad-Full | programmi di esempio dello standard |
 | `cli/` | Node.js (ESM) | `triad-cli`: CLI di sviluppo (commander, execa, chalk) |
@@ -3603,7 +3603,7 @@ const BUILTIN_NAMES = new Set(['print','println','length','push!','Int','string'
   }
 ```
 
-Poi: un caso in `conformance/core/cases/` ([§38](#cap-38)) e `node conformance/run.mjs`.
+Poi: un caso in `conformance/core/cases/` ([§38](#cap-38)) e `sh conformance/run.sh`.
 Ricorda che gli `Int` sono `BigInt` (`0n`, `1n`) e che i risultati vanno costruiti con gli
 helper (`I`, `B`, `S`, `Y`, `L`, `NOTHING`).
 
@@ -3701,13 +3701,17 @@ cmpByteRsiImm(0x22); jne('q_loop');
 ### 35.4 Flusso per modificare il seed
 
 1. modifica `seed/dev/gen_seed.js` (aggiungi un'etichetta, un ramo nel dispatcher, …);
-2. rigenera il dump: `node seed/dev/gen_seed.js seed/windows-x86_64/seed.hex`
-   (oppure `bin/triad-cli seed generate windows`, che stampa anche lo SHA-256);
-3. decodifica su Windows: `certutil -decodehex -f seed\windows-x86_64\seed.hex seed\windows-x86_64\seed.exe`;
-4. esegui i casi Core sul seed e il probe `test_get.td`;
-5. aggiorna **insieme**: hash in `.github/workflows/ci.yml` (job `seed-windows`, step
-   `Hash check`), `seed/windows-x86_64/README.md`, `seed/dev/README.md`, `STATUS.md`; se un
-   nuovo caso Core passa sul seed, aggiungilo all'array `$cases` del job.
+2. rigenera i dump: `node seed/dev/gen_seed.js all`
+   (oppure `node cli/triad-cli.mjs seed generate windows|linux`, che stampa anche lo SHA-256);
+3. decodifica: su Windows `certutil -decodehex -f seed\windows-x86_64\seed.hex seed\windows-x86_64\seed.exe`;
+   su Linux `xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed`
+   (oppure `./install.sh`, che ridecodifica e fa lo smoke test);
+4. esegui il gate: `sh verify.sh` (conformance 39 + probe + golden S1) e
+   `sh seed/linux-x86_64/check_seed.sh`;
+5. aggiorna **insieme**: hash in `.github/workflows/ci.yml` (job `seed-linux`, step
+   `Hash check`), `seed/windows-x86_64/README.md`, `seed/linux-x86_64/README.md`,
+   `seed/dev/README.md`, `STATUS.md`; i casi Core non vanno elencati da nessuna parte:
+   il harness `conformance/run.sh` li scopre da `conformance/core/cases`.
 
 Trappole note (da `STATUS.md`): il codice cresce e può sovrapporsi ai dati (i nomi import ora
 partono da RVA `0x5000`); registri usati prima di essere inizializzati (bug `pbs_int`);
@@ -3740,38 +3744,40 @@ PE come falso positivo (la CI aggiunge un'esclusione).
 
 <a id="cap-36"></a>
 
-## 36. Il seed Linux (E0)
+## 36. Il seed Linux (E2)
 
-`seed/linux-x86_64/seed` è un ELF64 statico di **173 byte** generato da
-`seed/dev/gen_seed_linux.js`: entry `0x400078`, un solo `PT_LOAD` R|X, syscall dirette
-`write`/`exit`. Stampa `Triad seed Linux OK` ed esce con 0. È il primo passo della milestone
-M7; E1/E2/E3 (lettura file, interprete) sono da fare, riusando la logica del seed Windows con un
-layer `os_*` diverso.
+`seed/linux-x86_64/seed` è un ELF64 statico di **8499 byte** generato da
+`seed/dev/gen_seed.js linux`: entry `0x400078`, un solo `PT_LOAD` R|X, syscall dirette
+(`openat`/`read`/`write`/`exit`, isolate nelle routine `os_*`). È l'**interprete Triad-Core**
+completo: stessa macchina del seed Windows, stdout byte-identico sui golden condivisi
+(conformance 39/39 + probe + golden S1). La milestone M7 (port Linux) è completa: E0
+(minimale) → E1 (lettura file) → E2 (interprete) → E3 (toolchain senza Node, `./install.sh`).
 
 ```sh
-node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex   # verifica magic, entry, round-trip
+node seed/dev/gen_seed.js linux seed/linux-x86_64/seed.hex   # rigenera il dump (riproducibile)
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed
-./seed/linux-x86_64/seed                                     # Triad seed Linux OK
+./seed/linux-x86_64/seed tuo_programma.td                     # esegue il programma
 ```
 
 ### Esercizi
 
-1. **Che fa oggi.** Esegui il seed Linux e descrivi esattamente il suo comportamento.
+1. **Che fa oggi.** Esegui un programma Core sul seed Linux e confronta l'output col golden.
 2. **Materializzare l'ELF.** Genera il binario Linux a partire dal dump e verificane l'hash.
 3. **Confronto fra seed.** Metti a confronto seed Windows e seed Linux: quali funzionalità ha
    ciascuno?
-4. **Perché E0 non basta.** Che cosa manca al seed Linux per essere un interprete? Elabora una
-   lista di requisiti.
-5. **Il prossimo passo.** Quale sarebbe il primo costrutto da implementare per un E1 utile?
-   Giustifica.
-6. **Su Linux oggi.** Perché su Linux si usa l'interprete JS? Scrivi i comandi di esecuzione.
+4. **Parità.** Perché la parità si misura in byte e non solo negli stessi valori? Cosa
+   dimostra il gate `sh verify.sh`?
+5. **Il layer `os_*`.** Che cosa deve cambiare per portare il seed su un'altra piattaforma?
+   Consulta `seed/dev/gen_seed.js`.
+6. **Su Linux oggi.** Quali comandi eseguono un programma Triad su Linux? E su una piattaforma
+   senza seed nativo?
 7. **Hash e verifica.** Verifica l'hash del seed Linux come fa la CI e spiega cosa protegge.
-8. **Programmi portabili.** Scrivi un programma che un futuro seed Linux dovrà eseguire:
-   quale sottoinsieme usi?
+8. **Programmi portabili.** Scrivi un programma che giri identico su PE ed ELF: quale
+   sottoinsieme usi?
 9. **Stato del bootstrap.** Dove si documenta lo stato del seed (`STATUS.md`, `TASK.md`)? Che
    cosa dicono oggi?
-10. **Pianifica una milestone.** Scrivi cosa dovrebbe contenere una milestone «seed Linux
-    esegue il primo caso Core».
+10. **La milestone M7.** Riscrivi la storia E0→E3 con le date di `STATUS.md`: quali gate
+    verificano ogni stadio?
 
 ---
 
@@ -3861,22 +3867,25 @@ conformance/core/cases/<nome>/      (oppure conformance/cases/<nome>/ per Full)
 Un caso passa se stdout e codice di uscita coincidono; stderr non è confrontato. Niente stdin
 né input interattivo.
 
-### 38.2 Il runner `conformance/run.mjs`
+### 38.2 L'harness `conformance/run.sh`
 
 ```sh
-node conformance/run.mjs                              # Core (default conformance/core/cases)
-node conformance/run.mjs --cases conformance/cases    # Full (oggi passa solo errore)
-node conformance/run.mjs --skip liste,valori          # salta casi (default: liste)
-node conformance/run.mjs --update                     # RIGENERA i golden dal runtime corrente
+sh conformance/run.sh              # Core (39 casi, scoperti da conformance/core/cases)
+sh conformance/run.sh --update     # RIGENERA i golden dal runtime corrente (uso dev)
 ```
 
-Runtime scelto, in ordine: variabile `TRIAD_SEED`; su Linux/macOS l'interprete JS; su Windows
-`bin/triad-native.exe`, poi `seed/windows-x86_64/seed.exe`. Esempio per provare il seed con un
-percorso esplicito: `TRIAD_SEED=/percorso/seed node conformance/run.mjs`.
+La suite Full (`conformance/cases`) resta fuori dal gate: oggi passa solo `errore`. Il runner
+Node `conformance/run.mjs` è stato sostituito dall'harness POSIX (2026-11-05).
 
-Su Linux/macOS il runner usa l'interprete JS e verifica tutti i 37 casi. Su Windows usa il seed e
-salta per impostazione predefinita il caso `liste`, perché il seed non implementa l'indicizzazione
-standard `xs[i]`: il runner stampa quindi 36 casi. Per provare il caso escluso con l'interprete JS:
+Runtime scelto: il seed ELF del repository (`seed/linux-x86_64/seed`), con override possibile
+via variabile `TRIAD_SEED`. Esempio per provare un seed con percorso esplicito:
+`TRIAD_SEED=/percorso/seed sh conformance/run.sh`. Nessun fallback JS: il gate verifica il
+seed nativo, byte per byte contro i golden.
+
+Il gate copre tutti i 39 casi senza esclusioni: il gap storico `liste` (il seed non implementa
+l'indicizzazione standard `xs[i]`) è **registrato** nell'harness come esito atteso (exit 1 con
+stdout vuoto, identico su PE ed ELF), non skippato. Per vedere il caso con l'interprete JS di
+sviluppo:
 
 ```sh
 node seed/dev/triad_core.cjs conformance/core/cases/liste/program.td
@@ -3902,10 +3911,10 @@ pretesa di correttezza.
    girare anche su Full);
 3. scrivi a mano `expected.out` (con LF finale) ed `expected.code` (`0`), ragionando sulla
    specifica — **non** generarli alla cieca con `--update`, altrimenti fissi i bug del runtime;
-4. copia `expected.out` in `expected.golden`;
-5. `node conformance/run.mjs` deve stampare `PASS  <nome>`;
-6. se il caso passa anche sul seed Windows, aggiungilo a `$cases` nel job `seed-windows` di
-   `.github/workflows/ci.yml`.
+4. `sh conformance/run.sh` deve stampare `PASS  <nome>`;
+5. nessun elenco da aggiornare: il harness scopre i casi dalla directory e il job `seed-linux`
+   esegue la suite sull'ELF nativo; assicurati solo che `expected.out`/`expected.code` siano
+   committati.
 
 ```sh
 mkdir conformance/core/cases/somma_lista
@@ -3922,7 +3931,7 @@ TD
 printf '12\n' > conformance/core/cases/somma_lista/expected.out
 cp conformance/core/cases/somma_lista/expected.out conformance/core/cases/somma_lista/expected.golden
 printf '0' > conformance/core/cases/somma_lista/expected.code
-node conformance/run.mjs | grep somma_lista          # PASS  somma_lista
+sh conformance/run.sh | grep somma_lista          # PASS  somma_lista
 ```
 
 I golden Full (`conformance/cases/`) sono **congelati**: non vanno rigenerati finché non esiste
@@ -3931,7 +3940,7 @@ un'implementazione Full.
 ### Esercizi
 
 1. **Il formato.** Quali file compongono un caso di conformance e che cosa dichiara ciascuno?
-2. **Il runner.** Esegui `node conformance/run.mjs` (o il comando della CLI) e leggi il
+2. **Il runner.** Esegui `sh conformance/run.sh` (o il comando della CLI) e leggi il
    riepilogo.
 3. **Un caso alla volta.** Esegui un singolo caso Core e confronta output e codice con i golden.
 4. **Aggiungi un caso.** Segui il paragrafo 38.3 e crea un caso Core tuo (programma, output
@@ -3954,33 +3963,36 @@ un'implementazione Full.
 
 ### 39.1 Uso
 
+La toolchain è divisa in due livelli: `bin/triad-cli` (POSIX, **senza Node**, percorso utente)
+e `node cli/triad-cli.mjs` (Node, soli comandi di sviluppo).
+
 | comando | cosa fa |
 |---|---|
-| `triad-cli status` | versione Node, piattaforma, seed trovato, root del progetto |
-| `triad-cli test conformance [-c DIR] [-u]` | esegue `conformance/run.mjs` (default Core, `--skip liste`) |
-| `triad-cli test run` | alias della conformance Core (i vecchi test Julia non esistono più) |
-| `triad-cli ai verify [-t DIR] [-v]` | esegue le `solution.triad` di `ai/tasks/` sul seed nativo e le confronta con i golden |
-| `triad-cli seed generate windows\|linux [-o FILE]` | esegue il generatore del seed e stampa lo SHA-256 del dump |
-| `triad-cli build standalone` | non disponibile: stampa un messaggio |
+| `triad-cli status` | root del progetto, piattaforma, seed trovato, stato del PATH |
+| `triad-cli run <file> [-- args]` | esegue un programma Triad via `bin/triad` |
+| `triad-cli test conformance [--update]` | esegue `conformance/run.sh` (39 casi Core) |
+| `triad-cli test probes` / `test all` | probe / gate completo (`verify.sh`) |
+| `node cli/triad-cli.mjs ai verify [-t DIR] [-v]` | esegue le `solution.triad` di `ai/tasks/` sul seed nativo e le confronta con i golden |
+| `node cli/triad-cli.mjs seed generate windows\|linux [-o FILE]` | esegue il generatore del seed e stampa lo SHA-256 del dump |
+| `node cli/triad-cli.mjs ext check\|package` | valida/impacchetta l'estensione VS Code |
 
-Avvio: `node cli/triad-cli.mjs …` (dopo `cd cli && npm install`), i launcher `bin/triad-cli` /
-`bin\triad-cli.cmd` (installano le dipendenze al primo avvio e si fermano se `npm install`
-fallisce), oppure l'eseguibile standalone della release.
+Avvio: `bin/triad-cli` è già pronto (shell POSIX, nessuna installazione); i comandi dev si
+invocano come `node cli/triad-cli.mjs …` (dopo `cd cli && npm install`), oppure con
+`bin\triad-cli.cmd` su Windows o l'eseguibile standalone della release.
 
 ### 39.2 Struttura del codice
 
 ```
 cli/
-  triad-cli.mjs            definizione dei comandi con commander
-  lib/utils.mjs            findProjectRoot, findSeed, runSeed, runNode, projectPath, …
-  lib/commands/test.mjs    handleTestRun, handleTestConformance
+  triad-cli.mjs            definizione dei comandi dev con commander (seed/ai/ext)
+  lib/utils.mjs            findProjectRoot, runNode, projectPath, fileExists
   lib/commands/ai.mjs      handleAIVerify
   lib/commands/seed.mjs    handleSeedGenerate (windows/linux)
-  lib/commands/build.mjs   handleBuildStandalone
+  lib/commands/ext.mjs     handleExtCheck, handleExtPackage
   build-exe.mjs            build dell'eseguibile Node SEA (esbuild + postject)
 ```
 
-- `findProjectRoot()` cerca la root (una cartella con `conformance/run.mjs` e `seed/`) partendo
+- `findProjectRoot()` cerca la root (una cartella con `conformance/run.sh` e `seed/`) partendo
   da `TRIAD_HOME`, dalla cartella del modulo, da quella dell'eseguibile e dalla cartella
   corrente.
 - Ogni handler restituisce `true`/`false`; `triad-cli.mjs` lo traduce in exit code 0/1.
@@ -4119,9 +4131,11 @@ generato da un modello solo in un ambiente isolato.
 
 | job | cosa verifica |
 |---|---|
-| `conformance-core` (Ubuntu, Node 20) | `node conformance/run.mjs --cases conformance/core/cases --skip liste` con l'interprete JS |
-| `seed-windows` | decodifica `seed.hex`, esegue 33 casi Core sul PE confrontando stdout, probe `test_get.td` (atteso `20`), smoke test `selfhost/main.td` (atteso `Value: 10`), hash di `seed.hex` |
-| `seed-linux` | decodifica l'ELF E0, lo esegue e ne verifica l'hash |
+| `conformance-core` (Ubuntu) | `sh conformance/run.sh` (39 casi Core, byte-exatti) + validità dei sorgenti `selfhost/` |
+| `seed-linux` (ELF nativo, senza Wine) | `check_seed.sh` (contratto errori/limiti), hash di `seed.hex` PE **ed** ELF (gate anti-tampering), dump riproducibili (`gen_seed.js` + `cmp`), `sh verify.sh` (conformance + probe + golden S1 + smoke) |
+| `linux-toolchain` (senza Node) | launcher `bin/triad`, `install.sh` con smoke test byte-exatto (un golden alterato fa fallire l'installazione), `triad-cli status` e `triad-cli test all` |
+| `security` | `tests/security/run.sh` (azioni pinnate, path hijack, token, sanitizzazione) |
+| `site-gen` | lint dei generatori Triad e corrispondenza byte-exatta del sito pubblicato |
 
 `pages.yml` e `static.yml` pubblicano `docs/` su GitHub Pages a ogni push su `main`.
 
@@ -4130,9 +4144,9 @@ Il profilo Full **non è in CI** perché non è implementato: non presentarlo co
 ### Esercizi
 
 1. **I job.** Leggi `.github/workflows/ci.yml` e l'elenco dei job: cosa verifica ciascuno?
-2. **`conformance-core`.** Perché su Ubuntu il job salta alcuni casi? Quali?
-3. **`seed-windows`.** Che cosa controlla il job Windows e perché confronta l'hash di `seed.hex`?
-4. **`seed-linux`.** Che cosa fa il job Linux oggi? Perché non può ancora eseguire la suite?
+2. **`conformance-core`.** Quanti casi copre il job e perché nessuno viene saltato?
+3. **`seed-linux`.** Perché il job confronta l'hash di `seed.hex` (PE ed ELF) e rigenera i dump?
+4. **`linux-toolchain`.** Perché lo smoke test di `install.sh` deve fallire su un golden diverso?
 5. **Site-gen.** Perché la generazione del sito è in CI e cosa richiede ai due runtime?
 6. **Smoke test.** Che cosa verifica lo smoke test di `selfhost/main.td` e perché è in CI?
 7. **Locale e CI.** Esegui in locale gli stessi comandi della CI: quali risultati ottieni?
@@ -4154,7 +4168,7 @@ Checklist per tipo di modifica:
 | modifica | da fare |
 |---|---|
 | comportamento del linguaggio | aggiorna `SPEC.md`/`SPEC-CORE.md`, `CHANGELOG.md` e, se normativa, `VERSION`; aggiungi o aggiorna casi di conformance |
-| interprete JS | resta fedele a SPEC-CORE; `node conformance/run.mjs` verde |
+| interprete JS | resta fedele a SPEC-CORE; `sh conformance/run.sh` verde |
 | seed Windows | rigenera `seed.hex`, aggiorna hash in CI e nei README, prova su Windows |
 | S1 (`selfhost/`) | gira su `seed.exe`; se cambia l'output di `main.td`, aggiorna lo smoke test in CI |
 | CLI | handler che restituisce un booleano; `cli/README.md`; ricostruisci l'eseguibile se serve |
@@ -4373,7 +4387,7 @@ Strumenti Full previsti: `triad --tree file`, `sexpr(codice)`, `parse`/`unparse`
 - **S0 / seed**: interprete Triad-Core in codice macchina (`seed/`).
 - **S1**: interprete di tutto Triad scritto in Triad-Core (`selfhost/`).
 - **S2 / S3 / S4**: compilatore nativo, self-hosting, runtime completo (vedi `BOOTSTRAP.md`).
-- **E0 / E1 / …**: stadi del port Linux del seed (milestone M7).
+- **E0 / E1 / E2 / E3**: stadi del port Linux del seed (milestone M7): minimale, lettura file, interprete Triad-Core, toolchain senza Node.
 - **Triad-Core / Triad-Full**: i due profili di conformità.
 - **Interprete JS**: `seed/dev/triad_core.cjs`, riferimento Core per sviluppo e CI.
 - **Golden**: output atteso committato (`expected.out`, `expected.code`).
@@ -4416,10 +4430,10 @@ Strumenti Full previsti: `triad --tree file`, `sexpr(codice)`, `parse`/`unparse`
 ## 48. Stato, limiti noti e fix storici
 
 **Stato** (dettagli in [`STATUS.md`](STATUS.md)):
-- Core: 37/37 casi con l'interprete JS; 33 casi sul seed Windows in CI.
+- Core: 39/39 casi byte-exatti su PE, ELF e interprete JS.
 - Full: 12 casi golden congelati, passa solo `errore`.
 - S1: prototipi in `selfhost/`, smoke test in CI; non ancora conformance.
-- S2–S4: non iniziati. Seed Linux: E0.
+- S2–S4: non iniziati. Seed Linux: E2/E3 completi (interprete + toolchain senza Node).
 - CLI `triad`: solo esecuzione di file (REPL e opzioni di SPEC §14 da fare).
 
 **Limiti dello standard** (SPEC §15): argomenti con nome (salvo `budget(steps = …)`), struct
