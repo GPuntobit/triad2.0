@@ -65,7 +65,10 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   backend ELF con `os_*` via syscall Linux — decisione
   `.scratch/seed-linux-nativo/issues/02-architettura-codegen.md`),
   `seed/linux-x86_64/*`, `conformance/run.mjs` e `tests/probes/run_probes.mjs` (terzo
-  runtime via `TRIAD_SEED`), `.github/workflows/ci.yml`.
+  runtime via `TRIAD_SEED`; sostituiti in un colpo solo dagli entry point POSIX
+  `conformance/run.sh`/`tests/probes/run_probes.sh`/`verify.sh` — decisione
+  `.scratch/seed-linux-nativo/issues/08-harness-verifica-senza-node.md`),
+  `.github/workflows/ci.yml`.
 - **Work:** implementare sull'ELF lo stesso dominio machine-code del PE — interi, variabili,
   funzioni short e `function … end`, ricorsione, Bool, operatori, `if`/`elseif`/`else`,
   `while`, `let`, `begin`, lambda/closures, stringhe base + `string()`, `nothing`, simboli,

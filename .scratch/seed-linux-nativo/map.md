@@ -90,6 +90,14 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   smoke test byte-exatto su `test_simple.td` + golden sidecar, mismatch → installazione
   fallisce; fuori Linux x86-64 parziale + avviso; zero-install = **sola esecuzione** (la
   CLI Node resta fino a 09), catena garantita solo `./install.sh` → `triad`. Sblocca 09.
+- [08 — Harness di verifica senza Node (shell POSIX)](issues/08-harness-verifica-senza-node.md):
+  contratto firmato (Q1–Q11) — entry point POSIX `conformance/run.sh [--update]` +
+  `tests/probes/run_probes.sh` + `verify.sh`, oracle su **golden sidecar committati**
+  (`<file>.expected.out` + `.expected.code`, generati una tantum dal **PE** poi congelati),
+  confronto byte-exatto `cmp` senza normalizzazione, `bad_*` = exit ≠ 0 + stdout vuoto,
+  report `diff -u`, runtime = seed repo + `TRIAD_SEED` senza fallback JS né `install.sh`,
+  transizione **un colpo solo** (`run.mjs`/`run_probes.mjs`/`run.test.mjs` escono, CI
+  ripuntata).
 - [09 — CLI e toolchain senza Node](issues/09-cli-toolchain-senza-node.md):
   CLI sh **completa** `bin/triad-cli` (sostituzione 1:1) a **pura delega** — `run` →
   `bin/triad`, `test conformance|probes|all` → harness, `status` info ambiente; interfaccia

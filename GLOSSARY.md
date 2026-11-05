@@ -63,3 +63,13 @@ La politica di memoria del seed: una sola regione fissa `0x40000` ottenuta con
 `os_alloc` all'avvio; le allocazioni avanzano un puntatore, niente `free` niente GC
 fino a S1.
 _Avoid_: heap (implica free/riutilizzo), malloc
+
+**Golden**:
+Il file che registra l'esito atteso di un caso di verifica (stdout ed exit code): il
+registro del comportamento atteso su cui cade ogni confronto.
+_Avoid_: expected, snapshot, fixture
+
+**Gate di verifica**:
+Il controllo il cui esito decide la validità del lavoro: tutte le suite di riferimento
+verde sui golden.
+_Avoid_: CI (è il meccanismo che lo esegue), test (generico)
