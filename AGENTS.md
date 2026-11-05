@@ -59,6 +59,17 @@ Estensione canonica dei file: `.triad` (alias storico `.td`).
 7. **Per il benchmark `ai/`**: quando il compito è generare una soluzione, restituire **solo un
    unico blocco di codice Triad**, senza spiegazioni né markdown, conforme a `ai/SYSTEM_PROMPT.md`,
    e verificare con `node cli/triad-cli.mjs ai verify`.
+8. **Budget di sessione e handoff.** Il consumo di token di una sessione **non deve superare
+   1.5–2 milioni di token**. Al raggiungimento della soglia (da considerare già a 1.5M), l'agente
+   deve fermarsi: chiudere in modo coerente il passo di lavoro in corso e produrre un **riepilogo
+   di handoff da aggiungere in `TASK.md`** per la sessione successiva, contenente almeno:
+   - stato attuale del lavoro e obiettivo perseguito;
+   - file toccati e modifiche effettuate;
+   - decisioni prese (con riferimento a eventuali ADR);
+   - test di conformance eseguiti ed esito (PASS/FAIL);
+   - prossimi passi concordati e problemi aperti/noti.
+   Non proseguire "a spron battuto" oltre la soglia: meglio un handoff pulito che una sessione
+   troncata a metà modifica.
 
 ## 4. Formato della risposta richiesto agli agenti
 
@@ -70,9 +81,9 @@ Estensione canonica dei file: `.triad` (alias storico `.td`).
 
 ## 5. Varianti d'uso
 
-- **Sviluppo seed/bootstrap**: applicare le regole 1–6 e compilare l'obiettivo con una tappa di
+- **Sviluppo seed/bootstrap**: applicare le regole 1–6 e 8 e compilare l'obiettivo con una tappa di
   `BOOTSTRAP.md` (es. "S1: interprete Triad-Full scritto in Triad-Core").
-- **Review di PR**: validare la patch contro le regole operative 1–7.
+- **Review di PR**: validare la patch contro le regole operative 1–8.
 - **Generazione soluzioni per il benchmark AI**: usare regola 7 + `ai/SYSTEM_PROMPT.md`.
 
 ## Agent skills

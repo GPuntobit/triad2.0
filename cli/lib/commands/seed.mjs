@@ -16,7 +16,7 @@ export async function generateWindowsSeed(options = {}) {
   console.log(`    Script: ${genSeedPath}`);
   console.log(`    Output: ${outputHex}`);
 
-  const result = await runNode(genSeedPath, [outputHex]);
+  const result = await runNode(genSeedPath, ['windows', outputHex]);
 
   if (!result.success) {
     console.error('✗ Generazione fallita');
@@ -39,21 +39,22 @@ export async function generateWindowsSeed(options = {}) {
 }
 
 /**
- * Genera seed Linux
+ * Genera seed Linux (entry unico gen_seed.js <windows|linux|all>,
+ * decisione 02 Q8: gen_seed_linux.js e' stato assorbito)
  */
 export async function generateLinuxSeed(options = {}) {
-  const genSeedPath = projectPath('seed', 'dev', 'gen_seed_linux.js');
+  const genSeedPath = projectPath('seed', 'dev', 'gen_seed.js');
   const outputHex = options.output || projectPath('seed', 'linux-x86_64', 'seed.hex');
 
   if (!fileExists(genSeedPath)) {
-    throw new Error(`Generatore seed Linux non trovato: ${genSeedPath}`);
+    throw new Error(`Generatore seed non trovato: ${genSeedPath}`);
   }
 
   console.log('==> Generazione seed Linux...');
   console.log(`    Script: ${genSeedPath}`);
   console.log(`    Output: ${outputHex}`);
 
-  const result = await runNode(genSeedPath, [outputHex]);
+  const result = await runNode(genSeedPath, ['linux', outputHex]);
 
   if (!result.success) {
     console.error('✗ Generazione fallita');

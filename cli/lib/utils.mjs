@@ -6,7 +6,7 @@ function moduleDir() {
   try { return path.dirname(fileURLToPath(import.meta.url)); } catch { return null; }
 }
 function isProjectRoot(dir) {
-  return fs.existsSync(path.join(dir, 'conformance', 'run.mjs')) && fs.existsSync(path.join(dir, 'seed'));
+  return fs.existsSync(path.join(dir, 'conformance', 'run.sh')) && fs.existsSync(path.join(dir, 'seed'));
 }
 // Repository root: TRIAD_HOME, then going back from the module, from the executable
 // (triad-cli.exe standalone) and from the current folder.
@@ -27,7 +27,7 @@ const PROJECT_ROOT = findProjectRoot();
 /**
  * Find seed in machine code (no dependencies on Julia).
  * TRIAD_SEED takes precedence (also used by CI), consistent with
- * conformance/run.mjs.
+ * conformance/run.sh.
  */
 export function findSeed() {
   const isWindows = process.platform === 'win32';
@@ -92,6 +92,34 @@ export async function runNode(scriptPath, args = [], options = {}) {
   };
 try {
     const result = await execa('node', [scriptPath, ...args], defaultOptions);
+    return {
+      success: true,
+      stdout: result.stdout,
+      stderr: result.stderr,
+      exitCode: result.exitCode
+    };
+  } catch (error) {
+    return {
+      success: false,
+      stdout: error.stdout || '',
+      stderr: error.stderr || '',
+      exitCode: error.exitCode || 1,
+      error
+    };
+  }
+}
+/**
+ * Run a POSIX shell entry point (harness without Node: conformance/run.sh,
+ * tests/probes/run_probes.sh, verify.sh — decisione 08 Q4/Q9).
+ */
+export async function runSh(scriptPath, args = [], options = {}) {
+  const defaultOptions = {
+    cwd: PROJECT_ROOT,
+    env: { ...process.env },
+    ...options
+  };
+  try {
+    const result = await execa('sh', [scriptPath, ...args], defaultOptions);
     return {
       success: true,
       stdout: result.stdout,

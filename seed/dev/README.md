@@ -5,35 +5,28 @@ dependencies in the bootstrap chain: the source of the seed remains the hex dump
 (`../windows-x86_64/seed.hex`, `../linux-x86_64/seed.hex`), materializable with a simple
 system decoder (`certutil -decodehex` / `xxd -r -p`).
 ## `gen_seed.js`
-Seed Windows PE Generator (Node.js, development only). Contains the assembler-lite, the
-shared codegen core (interpreter body + `os_*` boundary) and the PE backend (inline `os_*`
-emissions — ordered slot placements per the `os_*` contract — Windows system constants and
-executable builder); produces `seed.hex` and prints its labels and dimensions.
+Single entry point of the seed generator (Node.js, development only):
+
 ```sh
-node seed/dev/gen_seed.js seed/windows-x86_64/seed.hex
+node seed/dev/gen_seed.js <windows|linux|all> [out.hex]
 ```
 
-Current output: **25088 byte** PE, sha256 of `seed.hex` (same as verified by CI):
-```
-4235A70790BAA6784DC3D944616705B37E76ED2263CE73210BCC20E53639B8F7
-```
+`windows` and `linux` regenerate one dump in its canonical path
+(`../windows-x86_64/seed.hex`, `../linux-x86_64/seed.hex`; `out.hex` overrides it),
+`all` regenerates both. Structure (decisione 02, `.scratch/seed-linux-nativo/issues/02`):
+the assembler-lite and the **shared codegen core** (interpreter body + `os_*` boundary)
+live in `core.js`; the two backends contain the inline `os_*` emissions (ordered slot
+placements per the `os_*` contract), the system constants and the executable builders —
+`backend_pe.js` (Windows PE) and `backend_elf.js` (Linux ELF).
 
-## `gen_seed_linux.js`
-Seed ELF Linux x86-64 Generator (E1: syscall `openat`/`read`/`write`/`exit`;
-loads the source from `argv[1]` and echoes it to stdout). Constructs static
-ELF64, entry `0x400078`, a single `PT_LOAD` R|X.
-```sh
-node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex
-```
-
-Current output: **557 byte** ELF, sha256 of `seed.hex`:
-```
-2BE2734FCAD2E87181A420AE176C86F9D9DCA51B3F1E8EA8A271FAFC6973DAEE
-```
-
-sha256 of the decoded ELF:
-`6d504451e1d8a39c6e139a8a120bfaf03373131894292be12f0039eb8a7797f9`.
-The script checks the dump's magic, `e_machine`, entry, and round-trip before exiting.
+Current output:
+- **windows:** 25088 byte PE, sha256 of `seed.hex` (verified by CI):
+  `4235A70790BAA6784DC3D944616705B37E76ED2263CE73210BCC20E53639B8F7`
+- **linux** (E2, Triad-Core interpreter): 8499 byte ELF (entry `0x400078`, single
+  `PT_LOAD` R|X), sha256 of `seed.hex`:
+  `0E121DB8B4C126062C05BA55621635DE4C47751E25F0AE617036440F9451EC4D`,
+  sha256 of the decoded ELF:
+  `C8C82BC9C77C69E603E07AB7287065076E04C8139A57AE3EE454A472CEE2A0CE`
 ## Because they are versioned
 Writing a byte interpreter by hand without a generator is impractical beyond a few
 instructions; losing the generator blocks the seed extension. Keeping them here makes the work

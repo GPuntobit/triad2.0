@@ -64,11 +64,11 @@ if [ -z "$RUNTIME" ]; then
         *)       SEED_CAND="" ;;
     esac
     if [ -n "$SEED_CAND" ] && [ -x "$SEED_CAND" ]; then
-        # The E1 seed is a stub (loads and echoes a .td file, cannot execute
-        # it). Recognized by
-        # dimensione (< 4 KB) e in quel caso si usa l'interprete JS di
-        # riferimento, come fa conformance/run.mjs. Sostituire il seed con la
-        # versione E2 rimuove automaticamente il fallback.
+        # Il seed E2 (interprete Triad-Core, > 4 KB) e' il runtime normale.
+        # La logica di stub (< 4 KB: solo echo del sorgente, serve l'interprete
+        # JS di riferimento) resta durante la transizione e **esce alla chiusura
+        # di N18** (decisione "Installazione e launcher"); con l'E2 committato
+        # il ramo seed vince sempre.
         seed_size=$(wc -c < "$SEED_CAND" 2>/dev/null || echo 0)
         if [ "$seed_size" -gt 4096 ]; then
             SEED="$SEED_CAND"

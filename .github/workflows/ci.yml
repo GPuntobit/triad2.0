@@ -16,8 +16,8 @@ jobs:
         run: |
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Conformance Core (Node runner)
-        run: node conformance/run.mjs --cases conformance/core/cases --skip liste
+      - name: Conformance Core (harness POSIX `run.sh`, 39 casi senza skip)
+        run: sh conformance/run.sh
       - name: Sorgenti selfhost validi Triad-Core
         run: |
           for f in selfhost/*.td; do
@@ -64,21 +64,27 @@ jobs:
           sudo apt-get install -y xxd || sudo apt-get install -y vim-common
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Run E1 (accettazione N15)
+      - name: Contratto errori/limiti del seed E2 (check_seed.sh)
         run: |
-          sh seed/linux-x86_64/check_e1.sh ./seed/linux-x86_64/seed
+          sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed
       - name: Hash check (PE + ELF, gate anti-tampering decisione 04)
         run: |
           h=$(sha256sum seed/linux-x86_64/seed.hex | cut -d' ' -f1)
-          test "$h" = "2be2734fcad2e87181a420ae176c86f9d9dca51b3f1e8ea8a271fafc6973daee"
+          test "$h" = "0e121db8b4c126062c05ba55621635de4c47751e25f0ae617036440f9451ec4d"
           hp=$(sha256sum seed/windows-x86_64/seed.hex | cut -d' ' -f1)
           test "$hp" = "4235a70790baa6784dc3d944616705b37e76ed2263ce73210bcc20e53639b8f7"
       - name: Reproducible dump (anti-drift, PE + ELF)
         run: |
-          node seed/dev/gen_seed.js /tmp/seed-pe-repro.hex
+          node seed/dev/gen_seed.js windows /tmp/seed-pe-repro.hex
           cmp /tmp/seed-pe-repro.hex seed/windows-x86_64/seed.hex
-          node seed/dev/gen_seed_linux.js /tmp/seed-repro.hex
+          node seed/dev/gen_seed.js linux /tmp/seed-repro.hex
           cmp /tmp/seed-repro.hex seed/linux-x86_64/seed.hex
+      - name: Verify (harness senza Node: conformance + probe + golden S1 + smoke)
+        # Gate ripristinate sull'ELF alla parita' N17 (ticket 04): probe
+        # ok_*/test_* (incluso `test_get`), golden selfhost/source.td e
+        # smoke selfhost/main.td — esattamente cio' che correva sulle gambe
+        # Windows rimosse dalla decisione 04.
+        run: sh verify.sh
 
   linux-toolchain:
     # Verifica che l'intera toolchain POSIX funzioni su Linux: launcher,

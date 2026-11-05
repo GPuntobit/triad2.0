@@ -6,9 +6,9 @@
 #   scripts/seed-runner/seed-wine.sh --check            conformance Core + probe + golden S1
 #   scripts/seed-runner/seed-wine.sh --help
 #
-# Come runtime per i runner Node (accettano la variabile TRIAD_SEED):
-#   TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" node conformance/run.mjs
-#   TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" node tests/probes/run_probes.mjs --strict
+# Come runtime per gli harness POSIX (accettano la variabile TRIAD_SEED):
+#   TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" sh conformance/run.sh
+#   TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" sh tests/probes/run_probes.sh
 #
 # Il PE si decodifica una sola volta nella cache
 # (${XDG_CACHE_HOME:-$HOME/.cache}/triad2.0/seed-wine) e si rigenera quando
@@ -25,19 +25,19 @@ SELF="$ROOT/scripts/seed-runner/seed-wine.sh"
 die() { echo "seed-wine: $*" >&2; exit 2; }
 
 case "${1:-}" in
-  --help)
+  --help) 
     cat <<'EOF'
 Uso:
   seed-wine.sh FILE.td [ARG...]   esegue un programma Triad sul seed PE via wine
-  seed-wine.sh --check            conformance Core + probe ok_*/test_* + golden S1
+  seed-wine.sh --check            conformance Core + probe + golden S1 + smoke
   seed-wine.sh --help             questo messaggio
 
-Runtime per i runner Node:
-  TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" node conformance/run.mjs
-  TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" node tests/probes/run_probes.mjs --strict
+Runtime per gli harness POSIX:
+  TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" sh conformance/run.sh
+  TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" sh tests/probes/run_probes.sh
 
-Requisiti: wine, xxd, node (solo per --check). Il PE si decodifica in cache e
-si rigenera quando cambia seed.hex.
+Requisiti: wine, xxd. Il PE si decodifica in cache e si rigenera quando
+cambia seed.hex.
 EOF
     exit 0
     ;;
@@ -65,14 +65,11 @@ if [ ! -f "$EXE" ] || [ -z "$hash" ] || [ "$(cat "$CACHE/seed.hex.sha256" 2>/dev
 fi
 
 if [ "${1:-}" = "--check" ]; then
-  command -v node >/dev/null 2>&1 || die "node non trovato (serve per --check)"
   cd "$ROOT"
-  echo "== conformance Core (PE via wine; 'liste' skippata: gap S0.2 noto) =="
-  TRIAD_SEED="$SELF" node conformance/run.mjs --cases conformance/core/cases --skip liste
-  echo "== probe ok_*/test_* (seed PE vs interprete JS) =="
-  TRIAD_SEED="$SELF" node tests/probes/run_probes.mjs --strict
-  echo "== front-end S1: golden selfhost/source.expected.out =="
-  TRIAD_SEED="$SELF" node tests/probes/run_probes.mjs selfhost/source.td
+  echo "== conformance Core (PE via wine; gap 'liste' registrato nell'harness) =="
+  TRIAD_SEED="$SELF" sh conformance/run.sh
+  echo "== probe ok_*/test_* + bad_* + golden S1 + smoke (sidecar committati) =="
+  TRIAD_SEED="$SELF" sh tests/probes/run_probes.sh
   echo "seed-wine --check: OK"
   exit 0
 fi
