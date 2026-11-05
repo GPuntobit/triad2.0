@@ -4,7 +4,7 @@
 #
 #  Cosa fa:
 #    1. Decodifica il seed ELF Linux da seed.hex (xxd, od o Python).
-#    2. Verifica che l'ELF venga eseguito (smoke test "Triad seed Linux OK").
+#    2. Verifica che l'ELF venga eseguito (smoke test su test_simple.td).
 #    3. Installa i launcher bin/triad e bin/triad-cli in ~/.local/bin
 #       (o nella directory passata con --prefix).
 #    4. Opzionale (--desktop): installa la voce menu freedesktop.org
@@ -99,14 +99,11 @@ if [ -f "$HEX" ]; then
 fi
 
 # --- 2. smoke test -------------------------------------------------------
+# Smoke agnostico alla fase del seed (E0 messaggio, E1 echo, E2 interprete):
+# basta che l'esecuzione di un file .td termini con exit 0.
 if [ -x "$SEED" ]; then
-    if out=$("$SEED" 2>/dev/null || true); then
-        case "$out" in
-            *"Triad seed Linux OK"*)
-                echo "==> Smoke test seed: OK (\"$out\")" ;;
-            *)
-                echo "==> Smoke test seed: eseguito (output: $out)" ;;
-        esac
+    if "$SEED" "$ROOT/tests/probes/test_simple.td" >/dev/null 2>&1; then
+        echo "==> Smoke test seed: OK (test_simple.td eseguito, exit 0)"
     else
         echo "    (avviso) il seed ELF non è eseguibile su questa macchina." >&2
         echo "    (normale su piattaforme diverse da Linux x86-64)" >&2

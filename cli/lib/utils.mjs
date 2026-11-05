@@ -52,8 +52,8 @@ export function findSeed() {
   return null;
 }
 /**
- * True if the current seed is a stub (e.g. Linux E0: ELF of a few hundred
- * of bytes which only prints "Triad seed Linux OK"). Under 4 KB it cannot
+ * True if the current seed is a stub (e.g. Linux E1: small ELF which only
+ * loads and echoes the source file). Under 4 KB it cannot
  * be the full Triad-Core interpreter (E2): JS fallback is needed.
  */
 export function seedIsStub(seedPath = findSeed()) {

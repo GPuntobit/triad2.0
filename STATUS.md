@@ -57,7 +57,7 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
 - **Launcher/CLI**: the default runtime for `.triad` is the machine-code seed (`bin/triad`, `bin/triad.cmd`, `cli/lib/utils.mjs`); the Julia implementation (`triad.jl`, `syntax.jl`, `test/`, `bin/build_standalone.jl`) has been removed.
 - **CI**: `.github/workflows/ci.yml` — `conformance-core` (Ubuntu, `--skip liste`), `seed-windows`
   (35 Core cases on the PE, `get` probe, `selfhost/main.td` smoke test, `seed.hex` hash
-  `3A75A21E...8C11`), `seed-linux` (ELF E0 + hash).
+  `3A75A21E...8C11`), `seed-linux` (ELF E1 + hash + `check_e1.sh` + anti-drift dump).
 
 ## What is missing
 
@@ -76,7 +76,7 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
 | Triad-Full | 11/12 cases not implemented (only `errore` passes) |
 | CLI seed | file execution only; REPL and SPEC section 14 options to do |
 | S2-S3 (native compiler, self-hosting) | not started |
-| S4 / M7 (parity, Linux ELF) | **E0 done** minimal Linux ELF; **MAIN TASK (2026-11-03): E1/E2/E3 = TASK.md N15–N18** — native ELF seed with the same machine-code domain as the PE, byte-exact conformance on Linux **without Wine**, `bin/triad`/`install.sh` using the native seed (zero dependencies beyond the repo on Linux; Windows keeps the PE). Today's POSIX toolchain: `install.sh` + launcher `bin/triad`/`bin/triad-cli` with automatic fallback to the JS reference when the seed is a stub; dedicated CI job `linux-toolchain` |
+| S4 / M7 (parity, Linux ELF) | **E1 done** (2026-11-05): ELF runner of a `.td` file (argv + native I/O: load + echo, exit 1/2 errors on stderr) — TASK.md N15 closed; **MAIN TASK (2026-11-03): E2a/E2b/E3 = TASK.md N16–N18** — native ELF seed with the same machine-code domain as the PE, byte-exact conformance on Linux **without Wine**, `bin/triad`/`install.sh` using the native seed (zero dependencies beyond the repo on Linux; Windows keeps the PE). Today's POSIX toolchain: `install.sh` + launcher `bin/triad`/`bin/triad-cli` with automatic fallback to the JS reference when the seed is a stub; dedicated CI job `linux-toolchain` |
 
 ## Main task (2026-11-03): native Linux seed — no Wine
 
@@ -126,7 +126,7 @@ certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 The goal **is not complete**:
 - S0 is a machine-code interpreter, but **S1 (Triad in Triad-Core) has not started**, so there is no self-hosting yet;
 - S2-S3 (native compiler in Triad, fixed point) not started;
-- S4/M7 (conformance parity, Linux ELF port) not started; the E0 artifact exists (`seed/linux-x86_64/seed.hex`), CI is ready but parity has not started;
+- S4/M7 (conformance parity, Linux ELF port) partially started: E1 artifact exists and is verified natively (`seed/linux-x86_64/seed.hex` + `check_e1.sh`, load + echo of a `.td` file, exit 1/2 errors on stderr); parity/interpreter (E2) not started;
 - external recognition: MIT LICENSE chosen; Linguist PR and extension publishing require the maintainer.
 
 ## Seed Windows verification (round 32)

@@ -2,6 +2,27 @@
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
+## Not released — 2026-11-05: seed Linux E1 — runner di un file `.td` (N15)
+
+### Added
+- `seed/linux-x86_64/check_e1.sh` — 7 casi di accettazione POSIX shell (echo
+  byte-exatto, file vuoto, usage exit 2, path vuoto exit 2, file inesistente exit 1,
+  sorgente 0xEFFF ammesso, sorgente 0xF000 exit 1) con confronti `cmp`; eseguito dalla
+  CI `seed-linux`.
+
+### Changed
+- `seed/dev/gen_seed_linux.js` + `seed/linux-x86_64/seed.hex`/`seed`: il seed ELF passa da
+  E0 (messaggio fisso) a **E1** — `_start` con argc/argv e syscall `openat`/`read`/`write`/
+  `exit`; legge il sorgente da `argv[1]` e lo riscrive su stdout (echo). Exit code pari al
+  PE (contratto `os_*`): 2 = usage, 1 = open/read fail o sorgente ≥ `0xF000`; diagnostica
+  su stderr solo sull'ELF (il PE resta muto). 557 byte, sotto la soglia stub di 4 KB.
+- `.github/workflows/ci.yml`: job `seed-linux` ora esegue `check_e1.sh`, verifica hash
+  del dump e anti-drift (`gen_seed_linux.js` + `cmp`).
+- `install.sh`: smoke test agnostico alla fase del seed (esecuzione di `test_simple.td`
+  con exit 0, non più stringa `Triad seed Linux OK`).
+- `seed/linux-x86_64/README.md`, `seed/README.md`, `seed/dev/README.md`: comportamento,
+  numeri, hash e limiti noti di E1.
+
 ## Not released — 2026-11-02: chiusura righe 2–6 dei problemi aperti, A03/A04
 
 ### Changed

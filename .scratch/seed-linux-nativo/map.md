@@ -110,10 +110,6 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
 
 ## Not yet specified
 
-- **IDE / tooling di sviluppo per Triad**: diagnostica, run da editor, LSP minimo su
-  `editors/`. Secondario e non bloccante (`TASK.md` N19, risposta Q2 → b): si cristallizza
-  quando la catena nativa è chiara, poi diventa ticket.
-
 ## Out of scope
 
 - **Architetture diverse da x86-64** (aarch64/Termux incluso): un secondo seed scritto a
@@ -121,6 +117,11 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   non un passo di questa mappa.
 - **La catena S2–S4** (compilatore nativo e self-hosting): resta la mappa di
   `BOOTSTRAP.md`; questa mappa si ferma alla toolchain Linux nativa.
+- **Esperienza di sviluppo / IDE** (diagnostica, run da editor, LSP minimo su `editors/`):
+  oltre la destinazione zero-dep — il frontier si ferma alla destinazione
+  ([10 — Esperienza di sviluppo / IDE: scope e forma](issues/10-esperienza-sviluppo-ide.md),
+  chiusa fuori scope, 2026-11-05). Resta `TASK.md` N19 («se deciso») per uno sforzo futuro
+  con destinazione propria.
 - **Rimozione completa di JavaScript dal progetto** (generatori del seed, runner di
   conformance/probe, riferimento JS `triad_core.cjs`, tooling `ai/`): strumenti di sviluppo
   tollerati dalla regola operativa 2, fuori dalla catena S0→S4; eliminarli del tutto è

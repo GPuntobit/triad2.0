@@ -64,8 +64,8 @@ if [ -z "$RUNTIME" ]; then
         *)       SEED_CAND="" ;;
     esac
     if [ -n "$SEED_CAND" ] && [ -x "$SEED_CAND" ]; then
-        # The E0 seed is a stub (prints only "Triad seed Linux OK"): if given
-        # a .td file it cannot execute it. Recognized by
+        # The E1 seed is a stub (loads and echoes a .td file, cannot execute
+        # it). Recognized by
         # dimensione (< 4 KB) e in quel caso si usa l'interprete JS di
         # riferimento, come fa conformance/run.mjs. Sostituire il seed con la
         # versione E2 rimuove automaticamente il fallback.

@@ -17,15 +17,16 @@ Current output: **25088 byte** PE, sha256 of `seed.hex` (same as verified by CI)
 ```
 
 ## `gen_seed_linux.js`
-Seed ELF Linux x86-64 Generator (E0: syscall `write`/`exit`, message
-`Triad seed Linux OK`). Constructs static ELF64, entry `0x400078`, a single `PT_LOAD` R|X.
+Seed ELF Linux x86-64 Generator (E1: syscall `openat`/`read`/`write`/`exit`;
+loads the source from `argv[1]` and echoes it to stdout). Constructs static
+ELF64, entry `0x400078`, a single `PT_LOAD` R|X.
 ```sh
 node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex
 ```
 
-Current output: **173 byte** ELF, sha256 of `seed.hex`:
+Current output: **557 byte** ELF, sha256 of `seed.hex`:
 ```
-AD4C9F08176D9964D5BE17D44C72230184434025980447395E7A3250F63CA5EA
+2BE2734FCAD2E87181A420AE176C86F9D9DCA51B3F1E8EA8A271FAFC6973DAEE
 ```
 
 sha256 of the decoded ELF:

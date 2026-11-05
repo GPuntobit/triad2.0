@@ -117,14 +117,17 @@ jobs:
           sudo apt-get install -y xxd || sudo apt-get install -y vim-common
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Run E0
+      - name: Run E1 (accettazione N15)
         run: |
-          out=$(./seed/linux-x86_64/seed)
-          test "$out" = "Triad seed Linux OK"
+          sh seed/linux-x86_64/check_e1.sh ./seed/linux-x86_64/seed
       - name: Hash check
         run: |
           h=$(sha256sum seed/linux-x86_64/seed.hex | cut -d' ' -f1)
-          test "$h" = "ad4c9f08176d9964d5be17d44c72230184434025980447395e7a3250f63ca5ea"
+          test "$h" = "2be2734fcad2e87181a420ae176c86f9d9dca51b3f1e8ea8a271fafc6973daee"
+      - name: Reproducible dump (anti-drift)
+        run: |
+          node seed/dev/gen_seed_linux.js /tmp/seed-repro.hex
+          cmp /tmp/seed-repro.hex seed/linux-x86_64/seed.hex
 
   linux-toolchain:
     # Verifica che l'intera toolchain POSIX funzioni su Linux: launcher,

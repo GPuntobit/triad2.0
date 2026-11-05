@@ -37,11 +37,11 @@ changes, and runs the PE under `wine`. It also works as the runtime for the Node
 runners (`TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" node conformance/run.mjs`).
 It is a development tool: it is not part of the S0→S4 bootstrap chain and the
 Windows CI runs the seed natively.
-Linux ELF (E0):
+Linux ELF (E1):
 ```sh
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
 chmod +x seed/linux-x86_64/seed
-./seed/linux-x86_64/seed          # Triad seed Linux OK
+./seed/linux-x86_64/seed tuo_programma.td   # echo del sorgente, exit 0
 ```
 
 Or, for the complete installation of the POSIX toolchain (launcher in
@@ -62,15 +62,18 @@ $exe = .\seed\windows-x86_64\seed.exe
 & $exe non_esiste.td ; $LASTEXITCODE                  # 1
 ```
 
-Linux (ELF E0 seed):
+Linux (ELF E1 seed):
 ```sh
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
 chmod +x seed/linux-x86_64/seed
-./seed/linux-x86_64/seed           # Triad seed Linux OK, exit 0
+./seed/linux-x86_64/seed file.td       # echo del sorgente, exit 0
+./seed/linux-x86_64/seed               # usage su stderr, exit 2
+./seed/linux-x86_64/seed non_esiste.td # errore su stderr, exit 1
+sh seed/linux-x86_64/check_e1.sh       # 7 casi di accettazione
 ```
 
-The Windows seed covers **25 of the 29 Core cases**; the Linux E0 seed only covers printing the
-message. Details in [`windows-x86_64/README.md`](windows-x86_64/README.md) and
+The Windows seed covers **25 of the 29 Core cases**; the Linux E1 seed only loads and
+echoes the source (the interpreter comes with E2). Details in [`windows-x86_64/README.md`](windows-x86_64/README.md) and
 [`linux-x86_64/README.md`](linux-x86_64/README.md).
 ## Rules
 - The seed **does not** contain Julia or any other language: just x86-64 bytes and data.

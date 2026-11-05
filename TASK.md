@@ -6,8 +6,8 @@ Complete Triad 2.0 as a standalone and recognized language with its own standard
   - Support: integers, variables, functions (short form and block), recursion, Bool, operators, if/elseif/else, while, let, begin, lambda, closures, base strings, nothing, symbols, complete lists (build, print, push!, get)
   - Conformance: 33/33 Windows byte-exact cases, 36/36 Core Julia
 - **S1 (Triad Interpreter in Triad-Core):** Inline environment working with lists, complete basic primitives
-- **Seed S0 (Linux):** solo stub ELF64 **E0** (173 byte, stampa `Triad seed Linux OK`); la porta
-  completa dell'interprete in ELF è la **task principale** (N15–N18 qui sotto).
+- **Seed S0 (Linux):** runner ELF **E1** (557 byte: argv + `openat`/`read`/`write`/`exit`, caricamento + echo del file `.td`, errori su stderr con exit 1/2) — **N15 chiusa il 2026-11-05**; la porta
+  completa dell'interprete in ELF resta la **task principale** (N16–N18 qui sotto).
 - **S2-S4:** Uninitiated
 ---
 # Task principale (2026-11-03): seed Linux nativo — senza Wine (N15–N18)
@@ -34,9 +34,9 @@ Obiettivo finale: `seed/linux-x86_64/seed` (ELF64 statico, senza libc né dynami
 che esegue gli stessi programmi Triad-Core del PE con stdout byte-identico; da un checkout
 pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipendenze esterne.
 
-### N15 — E1: runner ELF di un file `.td` (argv + I/O nativo)
-- **Files:** `seed/dev/gen_seed_linux.js`, `seed/linux-x86_64/seed.hex` + `seed`,
-  `seed/linux-x86_64/README.md`.
+### N15 — E1: runner ELF di un file `.td` (argv + I/O nativo) — ✅ chiusa (2026-11-05)
+- **Files:** `seed/dev/gen_seed_linux.js`, `seed/linux-x86_64/seed.hex` + `seed` +
+  `check_e1.sh`, `seed/linux-x86_64/README.md`.
 - **Work:** estendere `_start` con argc/argv e syscall `openat`/`read`/`write`/`exit`:
   il seed legge il sorgente indicato in `argv[1]` in un buffer (E1: caricamento + echo,
   errore su file mancante; l'interprete arriva in N17). ELF statico senza libc, come E0.
@@ -107,6 +107,10 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   del seed) oppure pubblicare l'estensione VS Code già preparata. Fuori dalla catena
   S0→S4 (regola operativa 2), non tocca il bootstrap.
 - **Dipendenze:** decisione di scope del maintainer PRIMA del codice (come N02/N08).
+  Ruling 2026-11-05: **fuori dalla mappa** `.scratch/seed-linux-nativo` (oltre la sua
+  destinazione zero-dep; ticket chiuso fuori scope — vedi *Out of scope* in
+  `.scratch/seed-linux-nativo/map.md`). Forma e perimetro (LSP minimo vs solo estensione,
+  debug/autocomplete, accettazione) si decidono in uno sforzo proprio, quando deciso.
 - **Acceptance:** da definire alla decisione; finché non è decisa non blocca N15–N18.
 
 ### Ordine (aggiornato 2026-11-03)
