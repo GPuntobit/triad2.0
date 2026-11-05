@@ -6,9 +6,67 @@ Complete Triad 2.0 as a standalone and recognized language with its own standard
   - Support: integers, variables, functions (short form and block), recursion, Bool, operators, if/elseif/else, while, let, begin, lambda, closures, base strings, nothing, symbols, complete lists (build, print, push!, get)
   - Conformance: 33/33 Windows byte-exact cases, 36/36 Core Julia
 - **S1 (Triad Interpreter in Triad-Core):** Inline environment working with lists, complete basic primitives
-- **Seed S0 (Linux):** solo stub ELF64 **E0** (173 byte, stampa `Triad seed Linux OK`); la porta
-  completa dell'interprete in ELF è la **task principale** (N15–N18 qui sotto).
-- **S2-S4:** Uninitiated
+- **Seed S0 (Linux):** ELF **E2** (8499 byte: interprete Triad-Core completo, stessa
+  macchina del PE, parità **byte-exatta** su conformance 39/39 + probe 39/39 + golden S1)
+  — **N15 chiusa il 2026-11-05** (E1 runner), **N16 chiusa il 2026-11-05** (confine `os_*`
+  isolato nel generatore PE, byte-identico), **N17 chiusa il 2026-11-05**
+  (E2b + harness senza Node + gate ripristinate + note di stato e commit); resta la
+  toolchain Linux senza Node (**N18**, qui sotto).
+- **S2-S4:** mappa decisionale wayfinder `.scratch/self-hosting-m6/map.md` (tracciata
+  2026-11-05; destinazione M6: punto fisso del compilatore nativo + seed ritirato);
+  esecuzione da schedulare qui dopo le decisioni. Prima: porta Linux N15–N18.
+
+## Task da fare (2026-11-05, post-N16)
+
+Checklist operativa dalle note di chiusura di N16 e dalle decisioni wayfinder ancora da
+attuare; il dettaglio resta nelle slice N17–N18 e nei ticket di
+`.scratch/seed-linux-nativo/` (mai duplicati qui).
+
+- [x] **Revisione CI secondo decisione 04** (dentro N17) — ✅ **fatto 2026-11-05**: job
+  `seed-windows` rimosso e matrice `site-gen` ridotta a Ubuntu (solo Linux nativo);
+  lato PE resta il gate hash di `seed.hex` (spostato nel job `seed-linux`) + golden
+  congelati (ADR 0002); anti-drift `gen_seed.js && cmp` già presente. Promemoria storico:
+  il commit `fc320f4` dichiara la rimozione ma non la implementa nel diff — implementata
+  qui. Conseguenze noti (gate PE non più eseguite, tutorial da aggiornare): raccolte
+  come voci dedicate qui sotto.
+- [x] **N17 — E2b** (slice sotto) — ✅ **fatto 2026-11-05**: entry unico
+  `gen_seed.js <windows|linux|all>` + moduli `core`/`backend_pe`/`backend_elf`
+  (decisione 02 Q8); backend ELF con `os_*` via syscall Linux (`openat`, contratto 03 Q6);
+  parità **byte-exatta** col PE su `conformance/core` (39 casi), probe `ok_*`/`test_*` e
+  golden `selfhost/source.expected.out` (esito dettagliato nella slice N17).
+- [x] **Harness di verifica senza Node, sostituzione in un colpo solo** (dentro N17,
+  decisione 08) — ✅ **fatto 2026-11-05**: `conformance/run.sh` +
+  `tests/probes/run_probes.sh` + `verify.sh` al posto di `run.mjs`/`run_probes.mjs`/
+  `run.test.mjs` (assieme a loro: `gen_seed_linux.js` assorbito in `gen_seed.js`,
+  `check_e1.sh` → `check_seed.sh`); 39 casi senza `--skip liste`; golden sidecar
+  committati (`*.expected.out`/`*.expected.code`); CI ripuntata, inclusa la delega di
+  `triad-cli test conformance` a `run.sh`.
+- [ ] **N18 — E3** (slice sotto): toolchain Linux senza Node — `bin/triad` senza logica di
+  stub (soglia 4 KB, `--jsref`, ramo JS escono), `bin/triad-cli` POSIX a pura delega,
+  `install.sh` con wrapper a percorso assoluto + smoke test byte-exatto (decisioni 07/09);
+  CI `seed-linux` sull'ELF nativo senza Wine.
+- [x] **Ripristino sull'ELF delle gate perse dalle gambe Windows** (dentro N17) —
+  ✅ **fatto 2026-11-05**: probe `ok_*`/`test_*`, golden `selfhost/source.td`, probe
+  `get` e smoke `selfhost/main.td` riagganciate al job `seed-linux` (step `sh verify.sh` →
+  `run_probes.sh` coi sidecar) sulla parità **byte-exatta** dell'ELF.
+- [x] **Rimozione dello skip storico `liste`** (decisione 04 Q1) — ✅ **fatto 2026-11-05**:
+  il gate `conformance/core` copre i **39 casi** con `sh conformance/run.sh`, senza
+  `--skip`: il gap `liste` è **registrato** nell'harness (esito del seed congelato come
+  `exit 1 + stdout vuoto`, identico su PE ed ELF), non skippato.
+- [ ] **Aggiornamento tutorial alla CI post-decisione 04** (dentro N18, documentazione
+  stato piattaforme): `docs/tutorial/*` (it/en/ja/zh) citano ancora il job `seed-windows`
+  (33 casi Core sul PE, step `Hash check`, array `$cases`) — riscrivere secondo la CI
+  attuale (gate hash PE in `seed-linux`, suite sull'ELF nativo).
+- [x] **Revisione delle modifiche pendenti preesistenti** in `GLOSSARY.md`/`STATUS.md`/
+  `TASK.md` (nel working tree prima della sessione N16) — ✅ **risolta col commit
+  `7350412`** (modifiche incorporate, nessun scarto).
+- [x] **Chiusura N17: note di stato + commit** (azione immediata, prima di N18):
+  — ✅ **fatto 2026-11-05**: `STATUS.md` (riga S4/M7, comandi di verifica, distanza
+  dall'obiettivo, nota di chiusura N17) e `CHANGELOG.md` (voce «seed Linux E2b + harness
+  senza Node») aggiornati; commenti di chiusura ai ticket 04/08 in
+  `.scratch/seed-linux-nativo/issues/`; commit del working tree N17 (ELF E2 da 8499 byte,
+  harness sh + golden sidecar, CI ripuntata, `gen_seed_linux.js`/`check_e1.sh` assorbiti,
+  file `windows` spurio rimosso).
 ---
 # Task principale (2026-11-03): seed Linux nativo — senza Wine (N15–N18)
 
@@ -34,9 +92,9 @@ Obiettivo finale: `seed/linux-x86_64/seed` (ELF64 statico, senza libc né dynami
 che esegue gli stessi programmi Triad-Core del PE con stdout byte-identico; da un checkout
 pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipendenze esterne.
 
-### N15 — E1: runner ELF di un file `.td` (argv + I/O nativo)
-- **Files:** `seed/dev/gen_seed_linux.js`, `seed/linux-x86_64/seed.hex` + `seed`,
-  `seed/linux-x86_64/README.md`.
+### N15 — E1: runner ELF di un file `.td` (argv + I/O nativo) — ✅ chiusa (2026-11-05)
+- **Files:** `seed/dev/gen_seed_linux.js`, `seed/linux-x86_64/seed.hex` + `seed` +
+  `check_e1.sh`, `seed/linux-x86_64/README.md`.
 - **Work:** estendere `_start` con argc/argv e syscall `openat`/`read`/`write`/`exit`:
   il seed legge il sorgente indicato in `argv[1]` in un buffer (E1: caricamento + echo,
   errore su file mancante; l'interprete arriva in N17). ELF statico senza libc, come E0.
@@ -44,7 +102,7 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   exit ≠ 0 con messaggio su stderr; dump riproducibile da `gen_seed_linux.js`; verificato
   nativamente su Linux x86-64 (CachyOS/CI).
 
-### N16 — E2a: nucleo di codegen piattaforma-indipendente (routine `os_*`)
+### N16 — E2a: nucleo di codegen piattaforma-indipendente (routine `os_*`) — ✅ chiusa (2026-11-05)
 - **Files:** `seed/dev/gen_seed.js` (rifattorizzazione interna), PE + `seed.hex`, hash in
   `.github/workflows/ci.yml`.
 - **Work:** separare in `gen_seed.js` il codegen dell'interprete dalle chiamate di sistema
@@ -59,13 +117,27 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   semantici deliberati (ciclo N03–N05) con nuovo hash in CI e diff tracciata.
 - **Acceptance:** `cmp` fra PE rigenerato e versionato; conformance Core e probe invariati;
   nessuna modifica semantica (refactoring del solo generatore).
+- **Esito (2026-11-05):** `gen_seed.js` riorganizzato in emettitore neutro + *core del codegen*
+  (memoria condivisa, confine `os_*`, corpo) + *backend PE* (emissioni `os_*` inline a
+  piazzamenti ordinati, costanti di sistema, builder): il corpo non vede più nulla di
+  Windows (nessuna `callIat`/costante fuori dal backend). PE rigenerato **byte-identico**
+  (`cmp` + hash `seed.hex` invariato `4235A707…B8F7`), conformance Core e probe invariate;
+  anti-drift del dump PE (`gen_seed.js` + `cmp`) aggiunto alla CI. Note: (i) il contratto 03
+  non nomina dove vive l'acquisizione dell'handle stdout (`GetStdHandle` → r12): sanata
+  dentro la forma PE di `os_arg` (commento in `gen_seed.js` + commento a ticket 03);
+  (ii) la revisione della CI prevista da decisione 04 (rimozione gambe Windows + harness
+  senza Node) resta a **N17** — il commit `fc320f4` la dichiara nel messaggio ma non la
+  implementa nel diff.
 
 ### N17 — E2b: emettitore ELF64 e parità col PE (il cuore della task)
 - **Files:** `seed/dev/gen_seed.js` (entry unico `<windows|linux|all>` + core condiviso +
   backend ELF con `os_*` via syscall Linux — decisione
   `.scratch/seed-linux-nativo/issues/02-architettura-codegen.md`),
   `seed/linux-x86_64/*`, `conformance/run.mjs` e `tests/probes/run_probes.mjs` (terzo
-  runtime via `TRIAD_SEED`), `.github/workflows/ci.yml`.
+  runtime via `TRIAD_SEED`; sostituiti in un colpo solo dagli entry point POSIX
+  `conformance/run.sh`/`tests/probes/run_probes.sh`/`verify.sh` — decisione
+  `.scratch/seed-linux-nativo/issues/08-harness-verifica-senza-node.md`),
+  `.github/workflows/ci.yml`.
 - **Work:** implementare sull'ELF lo stesso dominio machine-code del PE — interi, variabili,
   funzioni short e `function … end`, ricorsione, Bool, operatori, `if`/`elseif`/`else`,
   `while`, `let`, `begin`, lambda/closures, stringhe base + `string()`, `nothing`, simboli,
@@ -74,17 +146,35 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   sull'ELF nativo senza Wine (stessi `expected.out`/`expected.code`); probe `ok_*`/`test_*`
   identici su PE, ELF e JS; i limiti noti del PE restano limiti documentati (nessuna nuova
   semantica); dump riproducibile dai generatori.
+- **Esito (2026-11-05):** E2b verificato — conformance **39/39 byte-exatta** sull'ELF
+  nativo (gap `liste` registrato come `exit 1 + stdout vuoto`, assenza identica misurata
+  su PE ed ELF), probe **39/39** con sidecar `<file>.expected.out`/`.expected.code`
+  congelati da PE (ticket 08 Q10), `verify.sh` + `check_seed.sh` (7 casi) verdi, dump
+  PE/ELF riproducibili da `gen_seed.js <windows|linux>` + `cmp` (hash PE `4235A707…`
+  invariato). Harness senza Node sostituito in un colpo solo (ticket 08 Q4) e CI
+  ripuntata; gate perse dalle gambe Windows riagganciate al job `seed-linux`. Restano
+  commit + note di stato (voce dedicata nella checklist qui sopra).
 
 ### N18 — E3: toolchain Linux senza Wine (install → run)
 - **Files:** `install.sh`, `bin/triad`, `cli/lib/utils.mjs` (soglia stub 4 KB e fallback JS
   automatico), `.github/workflows/ci.yml` (job `seed-linux` nativo), `seed/README.md`,
   `seed/linux-x86_64/README.md`, `STATUS.md`, `BOOTSTRAP.md` §5/§10.
-- **Work:** il launcher `bin/triad` su Linux usa il seed ELF nativo (il fallback JS diventa
-  solo esplicito, non più automatico); job CI `seed-linux` su `ubuntu-latest` che esegue
+- **Work:** il launcher `bin/triad` su Linux usa il seed ELF nativo (durante la transizione
+  il fallback JS diventa solo esplicito con `--jsref`, non più automatico; **a chiusura di
+  N18 la logica di stub — soglia 4 KB, flag `--jsref`, ramo JS — esce da `bin/triad`**,
+  decisione *Installazione e launcher: il contratto zero-install*); la CLI diventa shell
+  POSIX: `bin/triad-cli` con `run`/`test`/`status` a pura delega, `cli/triad-cli.mjs`
+  ristretto ai soli comandi dev (`seed`/`ai`/`ext`), ramo `bin/triad-native` fuori dal
+  launcher (decisione *CLI e toolchain senza Node*); job CI `seed-linux` su
+  `ubuntu-latest` che esegue
   conformance + probe sull'ELF nativo **senza Wine** (Wine resta solo nel job di parità PE,
   opzionale); aggiornare la documentazione dello stato piattaforme.
 - **Acceptance:** su Linux: `git clone` → `./install.sh` → `triad program.td` funziona con
-  zero dipendenze oltre alla repo; CI `seed-linux` verde senza Wine; l'utente Windows
+  zero dipendenze oltre alla repo (percorso garantito: la catena con `install.sh`);
+  installazione con smoke test byte-exatto (`test_simple.td` + golden sidecar) che **fallisce
+  con exit non-zero** su mismatch; launcher installato come wrapper a percorso assoluto,
+  senza logica di stub; `triad-cli` in shell POSIX installato e funzionante senza Node
+  (`status`, `test` → harness); CI `seed-linux` verde senza Wine; l'utente Windows
   continua a usare il PE invariato; `linux-toolchain` copre launcher + install.
 
 ### N19 — (secondario, non bloccante) Esperienza di sviluppo / IDE
@@ -94,6 +184,10 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   del seed) oppure pubblicare l'estensione VS Code già preparata. Fuori dalla catena
   S0→S4 (regola operativa 2), non tocca il bootstrap.
 - **Dipendenze:** decisione di scope del maintainer PRIMA del codice (come N02/N08).
+  Ruling 2026-11-05: **fuori dalla mappa** `.scratch/seed-linux-nativo` (oltre la sua
+  destinazione zero-dep; ticket chiuso fuori scope — vedi *Out of scope* in
+  `.scratch/seed-linux-nativo/map.md`). Forma e perimetro (LSP minimo vs solo estensione,
+  debug/autocomplete, accettazione) si decidono in uno sforzo proprio, quando deciso.
 - **Acceptance:** da definire alla decisione; finché non è decisa non blocca N15–N18.
 
 ### Ordine (aggiornato 2026-11-03)

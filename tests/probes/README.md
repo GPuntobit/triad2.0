@@ -1,32 +1,29 @@
 # Probe — matrice di portabilità Triad-Core
 
 Questi probe **misurano** quali costrutti di Triad-Core danno lo stesso risultato
-sul seed in codice macchina (Windows, `seed/windows-x86_64/seed.exe`) e
-sull'interprete di riferimento in JavaScript (`seed/dev/triad_core.cjs`).
+sul seed in codice macchina (PE Windows `seed/windows-x86_64/seed.exe` ed ELF
+Linux `seed/linux-x86_64/seed`) e sull'interprete di riferimento in JavaScript
+(`seed/dev/triad_core.cjs`).
 
-Non sono test di conformance: non hanno golden. Sono il **guardrail** che
+Non sono test di conformance: non hanno golden normativi. Sono il **guardrail** che
 permette al generatore del sito (`tools/site-gen/`) di produrre output identico
-byte per byte sui due runtime.
+byte per byte sui runtime.
 
 ## Esecuzione
 
 ```sh
-node tests/probes/run_probes.mjs                 # tutti i probe
-node tests/probes/run_probes.mjs --strict        # solo ok_* e test_* (per la CI)
-node tests/probes/run_probes.mjs ok_builder.td  # un probe
+sh tests/probes/run_probes.sh     # suite cablata, senza flag
 ```
 
-Su Linux il seed PE si esegue via wine con l'harness `scripts/seed-runner/seed-wine.sh`
-(decodifica `seed.hex` in cache e aggiorna la cache solo al cambio del dump):
-`scripts/seed-runner/seed-wine.sh --check` ripete conformance Core + probe + golden S1;
-per i runner Node: `TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" node tests/probes/run_probes.mjs`.
-Se un file `<nome>.expected.out` esiste accanto
-al probe, i due runtime sono confrontati anche con il golden (usato per
-`selfhost/source.expected.out`). Exit code: 1 se un `ok_*`/`test_*` differisce
-dai due runtime o dal golden; i `bad_*` documentano divergenze e non falliscono.
-
-Output per ogni file: exit code e stdout dei due runtime, e il flag `same`
-quando coincidono.
+L'harness POSIX (senza Node, ticket `.scratch/seed-linux-nativo/issues/08`)
+assegna a ogni probe `ok_*`/`test_*` e a `selfhost/source.td`/`selfhost/main.td`
+un golden sidecar committato `<file>.expected.out` + `<file>.expected.code`,
+confrontato **byte-exatto** con `cmp`; i `bad_*` devono dare exit ≠ 0 + stdout
+vuoto (con le eccezioni misurate congelate come sidecar, vedi header di
+`run_probes.sh`). Runtime: `TRIAD_SEED` se impostato, altrimenti il seed ELF del
+repo; nessun fallback JS. Lo stesso entry point copre la parità PE via wine:
+`TRIAD_SEED="$PWD/scripts/seed-runner/seed-wine.sh" sh tests/probes/run_probes.sh`
+(`scripts/seed-runner/seed-wine.sh --check` ripete conformance + probe + golden S1).
 
 ## Il sottoinsieme certificato
 
@@ -66,7 +63,7 @@ quando coincidono.
 | `readfile` | **no** | sì | `bad_readfile.td` |
 | riferimento in avanti a una funzione | **no** | no | `bad_riferimento_avanti.td` |
 | costruzione di stringhe con pattern "builder" | sì | sì | `ok_builder.td`, `ok_elenco_funzione.td` |
-| front-end S1 (scanner + parser, `selfhost/source.td`) | sì | sì | `node tests/probes/run_probes.mjs selfhost/source.td` |
+| front-end S1 (scanner + parser, `selfhost/source.td`) | sì | sì | golden `selfhost/source.expected.out` (eseguito da `run_probes.sh`) |
 
 ## Note sui limiti misurati
 
@@ -81,8 +78,8 @@ quando coincidono.
    fallisce su `\"`: ogni riga generata deve essere un `println` separato.
 4. Sono limiti **del seed in codice macchina**, non della specifica:
    `SPEC-CORE.md` §2–§7 li consente tutti. L'interprete JS di riferimento li
-   implementa correttamente ed è il runtime con cui la suite di conformance
-   viene eseguita su Linux.
+   implementa correttamente; la suite di conformance gira oggi sul seed ELF
+   nativo (`conformance/run.sh`, stessi golden del PE per parità N17).
 5. **Heap delle liste.** Ogni *valutazione* di un letterale di lista alloca
    528 byte fissi (64 slot da 8 byte + header) nell'heap del seed (64 KB,
    bump allocator senza liberazione): ~60 liste per esecuzione vanno,

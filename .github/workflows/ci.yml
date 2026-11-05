@@ -16,8 +16,8 @@ jobs:
         run: |
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Conformance Core (Node runner)
-        run: node conformance/run.mjs --cases conformance/core/cases --skip liste
+      - name: Conformance Core (harness POSIX `run.sh`, 39 casi senza skip)
+        run: sh conformance/run.sh
       - name: Sorgenti selfhost validi Triad-Core
         run: |
           for f in selfhost/*.td; do
@@ -41,13 +41,9 @@ jobs:
     # Il sito statico in docs/ è generato da programmi Triad (tools/site-gen).
     # La CI verifica due cose: che i sorgenti dei generatori restino nel
     # sottoinsieme Triad-Core portabile, e che i file pubblicati coincidano
-    # con il generato. Su Windows il confronto avviene anche fra i due
-    # runtime (seed in codice macchina e interprete di riferimento JS).
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, windows-latest]
+    # con il generato. Solo Linux nativo (decisione 04: niente runner
+    # Windows nella verifica).
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -58,55 +54,6 @@ jobs:
       - name: Sito generato in sync con i sorgenti
         run: node tools/site-gen/build.mjs --check
 
-  seed-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: '20'
-      - name: "AV exclusion (PE generato dal dump: falso positivo noto)"
-        shell: pwsh
-        continue-on-error: true
-        run: Add-MpPreference -ExclusionPath "${{ github.workspace }}\seed\windows-x86_64"
-      - name: Decode seed
-        shell: pwsh
-        run: |
-          Remove-Item seed/windows-x86_64/seed.exe -ErrorAction SilentlyContinue
-          certutil -decodehex seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
-      - name: Seed conformance cases (runner unico: scoperta directory + golden)
-        shell: pwsh
-        run: node conformance/run.mjs --cases conformance/core/cases --skip liste
-      - name: Probe seed vs interprete JS (ok_* e test_*)
-        shell: pwsh
-        run: node tests/probes/run_probes.mjs --strict
-      - name: Front-end S1 (selfhost/source.td): golden e confronto seed/JS
-        shell: pwsh
-        run: node tests/probes/run_probes.mjs selfhost/source.td
-      - name: Seed get probe
-        shell: pwsh
-        run: |
-          $out = Join-Path $env:TEMP "test_get.out"
-          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "tests\\probes\\test_get.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
-          if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for test_get.td" }
-          $got = (Get-Content $out -Raw) -replace "`r`n", "`n"
-          if ($got -cne "20`n") { throw "unexpected output for test_get.td: $got" }
-      - name: Self-hosted environment smoke test (not S1 conformance)
-        shell: pwsh
-        run: |
-          $out = Join-Path $env:TEMP "selfhost-main.out"
-          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "selfhost\main.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
-          if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for selfhost\main.td" }
-          $got = [System.IO.File]::ReadAllBytes($out)
-          $expected = [System.Text.Encoding]::ASCII.GetBytes("Value: 10`n")
-          if ([BitConverter]::ToString($got) -cne [BitConverter]::ToString($expected)) {
-            throw "unexpected byte output for selfhost\main.td: $([System.Text.Encoding]::ASCII.GetString($got))"
-          }
-      - name: Hash check
-        shell: pwsh
-        run: |
-          $h = (Get-FileHash seed/windows-x86_64/seed.hex -Algorithm SHA256).Hash
-          if ($h -ne '4235A70790BAA6784DC3D944616705B37E76ED2263CE73210BCC20E53639B8F7') { throw "hash mismatch: $h" }
   seed-linux:
     runs-on: ubuntu-24.04
     steps:
@@ -117,14 +64,27 @@ jobs:
           sudo apt-get install -y xxd || sudo apt-get install -y vim-common
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Run E0
+      - name: Contratto errori/limiti del seed E2 (check_seed.sh)
         run: |
-          out=$(./seed/linux-x86_64/seed)
-          test "$out" = "Triad seed Linux OK"
-      - name: Hash check
+          sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed
+      - name: Hash check (PE + ELF, gate anti-tampering decisione 04)
         run: |
           h=$(sha256sum seed/linux-x86_64/seed.hex | cut -d' ' -f1)
-          test "$h" = "ad4c9f08176d9964d5be17d44c72230184434025980447395e7a3250f63ca5ea"
+          test "$h" = "0e121db8b4c126062c05ba55621635de4c47751e25f0ae617036440f9451ec4d"
+          hp=$(sha256sum seed/windows-x86_64/seed.hex | cut -d' ' -f1)
+          test "$hp" = "4235a70790baa6784dc3d944616705b37e76ed2263ce73210bcc20e53639b8f7"
+      - name: Reproducible dump (anti-drift, PE + ELF)
+        run: |
+          node seed/dev/gen_seed.js windows /tmp/seed-pe-repro.hex
+          cmp /tmp/seed-pe-repro.hex seed/windows-x86_64/seed.hex
+          node seed/dev/gen_seed.js linux /tmp/seed-repro.hex
+          cmp /tmp/seed-repro.hex seed/linux-x86_64/seed.hex
+      - name: Verify (harness senza Node: conformance + probe + golden S1 + smoke)
+        # Gate ripristinate sull'ELF alla parita' N17 (ticket 04): probe
+        # ok_*/test_* (incluso `test_get`), golden selfhost/source.td e
+        # smoke selfhost/main.td — esattamente cio' che correva sulle gambe
+        # Windows rimosse dalla decisione 04.
+        run: sh verify.sh
 
   linux-toolchain:
     # Verifica che l'intera toolchain POSIX funzioni su Linux: launcher,

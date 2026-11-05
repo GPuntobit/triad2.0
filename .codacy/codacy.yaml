@@ -1,15 +1,11 @@
 runtimes:
-    - dart@3.7.2
-    - go@1.26.10
     - java@17.0.10
     - node@22.23.4
     - python@3.11.17
 tools:
-    - dartanalyzer@3.7.2
-    - eslint@8.57.0
-    - lizard@1.17.31
-    - opengrep@1.16.4
-    - pmd@7.11.0
-    - pylint@3.3.6
-    - revive@1.7.0
-    - trivy@0.69.3
+    - eslint@9.39.5
+    - lizard@1.24.0
+    - opengrep@1.30.0
+    - pmd@7.27.0
+    - pylint@4.0.8
+    - trivy@0.74.0

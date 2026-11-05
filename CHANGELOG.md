@@ -2,6 +2,87 @@
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
+## Not released — 2026-11-05: seed Linux E2b — interprete Triad-Core nativo + harness senza Node (N17)
+
+### Added
+- `seed/linux-x86_64/seed` (ELF64 statico **E2**, 8499 byte, senza libc): interprete
+  Triad-Core completo — stessa macchina del PE (interi, variabili, funzioni short e
+  `function … end`, ricorsione, Bool, operatori, `if`/`elseif`/`else`, `while`, `let`,
+  `begin`, lambda/closures, stringhe base + `string()`, `nothing`, simboli, liste con
+  costruzione/stampa/`push!`/`get`). Parità **byte-exatta** col PE: `conformance/core`
+  39/39, probe 39/39, golden S1 `selfhost/source.expected.out`; il gap storico `liste`
+  è registrato nell'harness (exit 1 + stdout vuoto, identico su PE ed ELF), non skippato.
+- Harness di verifica **senza Node** (ticket 08, sostituzione in un colpo solo):
+  `conformance/run.sh`, `tests/probes/run_probes.sh`, `verify.sh` (entry point unico) e
+  `seed/linux-x86_64/check_seed.sh` (7 casi errori/limiti); golden sidecar
+  `<file>.expected.out`/`<file>.expected.code` congelati da PE committati per tutti i
+  probe e per i casi selfhost.
+
+### Changed
+- `seed/dev/gen_seed.js`: entry unico `gen_seed.js <windows|linux|all>` — core del codegen
+  condiviso + moduli `backend_pe`/`backend_elf` (decisioni 02 Q8 / 03 Q6); `os_*` su ELF
+  via syscall Linux (`openat`/`read`/`write`/`exit`), niente libc. Dump PE/ELF
+  riproducibili; hash PE `4235A707…B8F7` invariato. `gen_seed_linux.js` assorbito.
+- `.github/workflows/ci.yml`: ripuntata ai nuovi entry point sh; le gate perse dalle
+  gambe Windows (probe `ok_*`/`test_*`, golden `selfhost/source.td`, probe `get`, smoke
+  `selfhost/main.td`) riagganciate al job `seed-linux` sull'ELF nativo; delega di
+  `triad-cli test conformance` a `run.sh`.
+- `cli/lib/commands/test.mjs`, `cli/lib/utils.mjs`, `bin/triad`: delega all'harness sh.
+
+### Removed
+- `conformance/run.mjs`, `conformance/run.test.mjs`, `tests/probes/run_probes.mjs`
+  (sostituiti dagli entry point sh); `seed/linux-x86_64/check_e1.sh` (rinominato
+  `check_seed.sh`); file spurio `windows`.
+
+## Not released — 2026-11-05: CI senza gambe Windows (decisione 04)
+
+### Changed
+- `.github/workflows/ci.yml`: rimosse le **gambe Windows** come da decisione 04 (ticket
+  `.scratch/seed-linux-nativo/issues/04-parita-suite-ci.md`, *Parità: suite di
+  riferimento, CI e politica delle divergenze*): job `seed-windows` eliminato e matrice
+  `site-gen` ridotta a `ubuntu-24.04` — la verifica gira solo su Linux nativo, senza
+  runner Windows. Il lato PE resta garantito dal gate hash di `seed.hex` (spostato nel
+  job `seed-linux`, anti-tampering) + golden congelati (ADR 0002: il PE non viene mai
+  rieseguito dal gate). Nota storica: il commit `fc320f4` dichiara questa rimozione nel
+  messaggio ma non la implementa nel diff. Le gate che giravano sul PE (probe
+  `ok_*`/`test_*`, golden `selfhost/source.td`, probe `get`, smoke `selfhost/main.td`)
+  rientreranno sull'ELF nativo alla parità N17.
+
+## Not released — 2026-11-05: confine `os_*` nel generatore del seed (N16)
+
+### Changed
+- `seed/dev/gen_seed.js`: rifattorizzazione **solo strutturale** — il codegen dell'interprete
+  (*core del codegen*, piattaforma-indipendente) è separato dalle chiamate di sistema
+  Windows, isolate nelle routine `os_*` (`os_arg`/`os_open`/`os_read`/`os_write`/`os_exit`/
+  `os_alloc`) in emissione inline a *piazzamenti ordinati* (contratto `os_*`, ticket 03
+  della mappa `seed-linux-nativo`). Il PE rigenerato resta **byte-identico** (hash
+  `seed.hex` invariato `4235A707…B8F7`); conformance Core e probe invariate.
+- `.github/workflows/ci.yml`: anti-drift del dump PE (`gen_seed.js` + `cmp`) accanto a
+  quello ELF — chiude la lacuna del drift `649709a` (ADR 0001) anche lato Windows.
+- `seed/dev/README.md`: descrizione della nuova struttura del generatore; hash di
+  `seed.hex` corretto (era obsoleto: `3A75A21E…`).
+
+## Not released — 2026-11-05: seed Linux E1 — runner di un file `.td` (N15)
+
+### Added
+- `seed/linux-x86_64/check_e1.sh` — 7 casi di accettazione POSIX shell (echo
+  byte-exatto, file vuoto, usage exit 2, path vuoto exit 2, file inesistente exit 1,
+  sorgente 0xEFFF ammesso, sorgente 0xF000 exit 1) con confronti `cmp`; eseguito dalla
+  CI `seed-linux`.
+
+### Changed
+- `seed/dev/gen_seed_linux.js` + `seed/linux-x86_64/seed.hex`/`seed`: il seed ELF passa da
+  E0 (messaggio fisso) a **E1** — `_start` con argc/argv e syscall `openat`/`read`/`write`/
+  `exit`; legge il sorgente da `argv[1]` e lo riscrive su stdout (echo). Exit code pari al
+  PE (contratto `os_*`): 2 = usage, 1 = open/read fail o sorgente ≥ `0xF000`; diagnostica
+  su stderr solo sull'ELF (il PE resta muto). 557 byte, sotto la soglia stub di 4 KB.
+- `.github/workflows/ci.yml`: job `seed-linux` ora esegue `check_e1.sh`, verifica hash
+  del dump e anti-drift (`gen_seed_linux.js` + `cmp`).
+- `install.sh`: smoke test agnostico alla fase del seed (esecuzione di `test_simple.td`
+  con exit 0, non più stringa `Triad seed Linux OK`).
+- `seed/linux-x86_64/README.md`, `seed/README.md`, `seed/dev/README.md`: comportamento,
+  numeri, hash e limiti noti di E1.
+
 ## Not released — 2026-11-02: chiusura righe 2–6 dei problemi aperti, A03/A04
 
 ### Changed

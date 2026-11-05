@@ -76,7 +76,6 @@ program
     new Command('conformance')
       .description('Run conformance suite')
       .option('-u, --update', 'Update golden outputs (development only)')
-      .option('-c, --cases <path>', 'Specific cases directory')
       .action(async (options) => {
         const success = await handleTestConformance(options);
         process.exit(success ? 0 : 1);

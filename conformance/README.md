@@ -34,28 +34,28 @@ not covered by this suite.
 
 - Definitive (from milestone M4): `triad --conformance DIR`, implemented in
 Triad, run by the implementation under test.
-- Temporary (phase 0): `run.mjs`, Node runner (no Julia dependency):
+- Current (phase 0, without Node): `run.sh`, POSIX shell harness:
 
 ```sh
-node conformance/run.mjs            # verify (Core profile, default)
-node conformance/run.mjs --update   # regenerate expected.out/expected.golden/expected.code
-
-# Full profile
-node conformance/run.mjs --cases conformance/cases
-node conformance/run.mjs --cases conformance/cases --update
+sh conformance/run.sh            # verify (Core profile, 39 cases, wired suite)
+sh conformance/run.sh --update   # regenerate expected.out/expected.code
 ```
 
-Options: `--cases DIR` (default `conformance/core/cases`), `--update`, `--skip a,b`
-(default `liste`; CI passes `--skip liste`, but today `liste` passes too).
+The suite is **wired**: no `--cases`/`--skip`/`--strict` flags (ticket
+`.scratch/seed-linux-nativo/issues/08`, Q9). The known seed gap (`liste`:
+`xs[i]` and `push!`-statement, S0.2 lacunae of `SPEC-CORE.md`) is *registered*,
+not skipped: the runner freezes it as `exit 1 + empty stdout` and fails if the
+seed behaviour changes. The same entry point runs on any runtime through
+`TRIAD_SEED` (default `seed/linux-x86_64/seed`); no JS fallback and no
+dependency on `install.sh`: the gate runs on a bare checkout.
+`run.mjs`, `run.test.mjs` (Node) have been removed in one shot (ticket 08, Q4).
 
-Runtime used, in order: `TRIAD_SEED` if set; on Linux/macOS the reference
-interpreter `seed/dev/triad_core.cjs` (the ELF seed is still E0); on Windows
-`bin/triad-native.exe`, then `seed/windows-x86_64/seed.exe`.
-
-Golden: the runner reads `expected.out` and, if missing, `expected.golden` (identical copy).
-If both are missing the case fails with `golden mancante`: usually the checkout lacks the
-files (`git pull`), because `.gitignore` excludes `*.out` with the exception
-`!conformance/**/expected.out`.
+Golden: per case `expected.out` + `expected.code` (exit code), compared byte-exact
+with `cmp`, no CRLF normalization. A missing golden fails the case with
+`golden mancante`: usually the checkout lacks the files (`git pull`).
+The legacy `expected.golden` copies are no longer read by the gate.
+Failure report: `diff -u` between golden and actual output + the line
+`exit: atteso/ottenuto` (ticket 08, Q8).
 
 `run.jl` (Julia) has been removed: the suite runs without Julia or any other language.
 

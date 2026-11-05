@@ -14,7 +14,7 @@ function resolveProgram(file) {
 /**
  * Run a .triad/.td program seeded in machine code.
  * On platforms where the seed is still a stub (Linux E0) use the interpreter
- * Reference JS seed/dev/triad_core.cjs, as does conformance/run.mjs.
+ * Reference JS seed/dev/triad_core.cjs, as does conformance/run.sh.
  * Arguments after `--` are passed to the Triad program.
  */
 export async function runProgram(file, programArgs = [], options = {}) {
@@ -27,7 +27,7 @@ export async function runProgram(file, programArgs = [], options = {}) {
   const seed = findSeed();
   const jsInterp = projectPath('seed', 'dev', 'triad_core.cjs');
 // Use the native seed only if it exists and is not a stub (Linux E0). Consistent
-  // with bin/triad and conformance/run.mjs: on Windows the seed.exe is complete,
+  // with bin/triad and conformance/run.sh: on Windows the seed.exe is complete,
   // on Linux the E0 stub (<4KB) is recognized and the JS reference is used.
   const useNative = seed && !seedIsStub(seed);
   if (!options.native && !useNative && fileExists(jsInterp)) {
