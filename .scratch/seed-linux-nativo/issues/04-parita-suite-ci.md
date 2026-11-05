@@ -60,6 +60,19 @@ Windows, Wine, confronto diretto PE↔ELF).
 
 ## Comments
 
+- 2026-11-05 (chiusura N17, attuazione completa): la decisione è **interamente attuata**.
+  Composizione del gate confermata sull'ELF nativo: `conformance/core` **39/39 senza
+  skip** (il gap `liste` è registrato nell'harness come exit 1 + stdout vuoto, identico
+  su PE ed ELF), probe `ok_*`/`test_*` + `bad_*` + golden `selfhost/source.expected.out`;
+  tutte le gate perdute dalle gambe Windows (probe `ok_*`/`test_*`, golden
+  `selfhost/source.td`, probe `get`, smoke `selfhost/main.td`) sono riagganciate al job
+  `seed-linux`. Meccanismo dei golden condivisi: sidecar `<file>.expected.out`/
+  `.expected.code` congelati da PE (ticket 08 Q10). Anti-drift `gen_seed.js` + `cmp`
+  presente per entrambi i dump. Ordine di verità `SPEC-CORE.md` > PE > ELF invariato;
+  nessuna semantica inventata. Gate: `sh verify.sh` OK (2026-11-05). Residuo da questa
+  decisione: nessuno — le voci aperte (tutorial alla CI post-decisione 04) vivono in
+  TASK.md dentro N18.
+
 - 2026-11-05 (attuazione): rimozione delle gambe Windows **implementata** nella CI — job
   `seed-windows` eliminato e matrice `site-gen` ridotta a `ubuntu-24.04`, verifica solo su
   Linux nativo. Promemoria: il commit `fc320f4` dichiara questa rimozione nel messaggio

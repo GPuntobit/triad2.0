@@ -76,6 +76,21 @@ in `TASK.md`; ADR 0002 copre già la scelta di fondo «la verifica non riesegue 
 
 ## Comments
 
+- 2026-11-05 (chiusura N17, attuazione completa): harness **senza Node** consegnati e
+  sostitutivi **in un colpo solo** (Q4) — `conformance/run.mjs`, `run.test.mjs` e
+  `tests/probes/run_probes.mjs` rimossi nello stesso cambio; al loro posto
+  `conformance/run.sh` (con `--update`, Q6/Q9), `tests/probes/run_probes.sh` e
+  `verify.sh` (root, solo entry point sh, Q7), più `seed/linux-x86_64/check_seed.sh`
+  (7 casi errori/limiti, ex `check_e1.sh`). Contratto rispettato: golden sidecar
+  committati per tutti i 19 `ok_*`/`test_*` + `selfhost/source.td` + smoke di 07 (Q1/Q10,
+  congelati da PE); confronto **byte-exatto `cmp`** senza normalizzazione (Q2); runtime
+  seed ELF del repo con override `TRIAD_SEED`, nessun fallback JS né logica stub (Q3);
+  `bad_*` = exit ≠ 0 + stdout vuoto (Q5); report `diff -u` + riga exit (Q8); suite
+  cablate senza `--cases`/`--skip`/`--strict` (Q9); sidecar `.expected.code` per tutti i
+  probe (Q11). Vincolo d'interfaccia di 09 rispettato: entry point invocabili da qualunque
+  cwd, exit 0 = gate verde, `bin/triad-cli test …` delega 1:1. Gate: `sh verify.sh` OK
+  (conformance 39 casi + probes 39, 2026-11-05). CI ripuntata agli entry point sh.
+
 - 2026-11-04 (sessione su *CLI e toolchain senza Node*): vincolo d'interfaccia imposto da
   [09](09-cli-toolchain-senza-node.md) (Q5, risolta): questa ticket deve consegnare entry
   point POSIX `conformance/run.sh`, `tests/probes/run_probes.sh` e `verify.sh` (root),

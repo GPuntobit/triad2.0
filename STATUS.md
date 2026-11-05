@@ -1,6 +1,7 @@
 # Triad and S0 bootstrap status
 
-Updated after the 2026-11-02 closure of problem-table rows 2–6 and backlog A03/A04.
+Updated after the 2026-11-05 closure of N17 (E2b ELF seed + Node-free harness); previous:
+2026-11-02 closure of problem-table rows 2–6 and backlog A03/A04.
 **Main task promoted 2026-11-03:** native Linux seed without Wine (TASK.md → «Task
 principale (2026-11-03)», N15–N18); it takes precedence over N03 and the mechanical
 sub-tasks. Decision map (wayfinder): `.scratch/seed-linux-nativo/map.md` (closed, the way
@@ -14,10 +15,12 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
 ## What is ready
 
 - **Standard**: `SPEC.md` (v0.2.0), `SPEC-CORE.md`, `VERSION`, `CHANGELOG.md`.
-- **Conformance**: Node runner `conformance/run.mjs` (no Julia); Triad-Core 39/39 green
-  (Linux: interpreter `seed/dev/triad_core.cjs`; Windows: seed PE). Triad-Full: 12 cases, today
-  only `errore` passes. Golden `expected.out`/`expected.code` versioned; a missing golden
-  fails the case with `golden mancante`. See `conformance/README.md`.
+- **Conformance**: POSIX harness `conformance/run.sh` (no Node, no Julia — 2026-11-05,
+  N17: replaced `conformance/run.mjs`/`run.test.mjs` in one shot, ticket 08); Triad-Core
+  39/39 green **byte-exact** on the native ELF seed (`seed/linux-x86_64/seed`, no Wine).
+  Triad-Full: 12 cases, today only `errore` passes (outside the gate, ticket 08 Q3).
+  Golden `expected.out`/`expected.code` sidecar versioned; a missing golden fails the
+  case with `golden mancante`. See `conformance/README.md`.
 - **Canonical extension**: `.triad` (`.td` historical alias), VS Code/Vim grammars and Linguist entry prepared.
 - **Repository layout** (2026-11-01): documentation consolidated under `docs/` (`tutorial/`, `wiki/`,
   `security/`), probe programs in `tests/probes/`, legacy Jekyll scaffold in `tools/site-jekyll/`;
@@ -83,7 +86,7 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
 | Triad-Full | 11/12 cases not implemented (only `errore` passes) |
 | CLI seed | file execution only; REPL and SPEC section 14 options to do |
 | S2-S3 (native compiler, self-hosting) | not started |
-| S4 / M7 (parity, Linux ELF) | **E1 done** (2026-11-05): ELF runner of a `.td` file (argv + native I/O: load + echo, exit 1/2 errors on stderr) — TASK.md N15 closed; **E2a done** (2026-11-05, N16: `os_*` codegen core isolated in the PE generator, byte-identical PE); **MAIN TASK (2026-11-03): E2b/E3 = TASK.md N17–N18** — native ELF seed with the same machine-code domain as the PE, byte-exact conformance on Linux **without Wine**, `bin/triad`/`install.sh` using the native seed (zero dependencies beyond the repo on Linux; Windows keeps the PE). Today's POSIX toolchain: `install.sh` + launcher `bin/triad`/`bin/triad-cli` with automatic fallback to the JS reference when the seed is a stub; dedicated CI job `linux-toolchain` |
+| S4 / M7 (parity, Linux ELF) | **E1 done** (2026-11-05): ELF runner of a `.td` file (argv + native I/O: load + echo, exit 1/2 errors on stderr) — TASK.md N15 closed; **E2a done** (2026-11-05, N16: `os_*` codegen core isolated in the PE generator, byte-identical PE); **E2b done** (2026-11-05, N17 closed: ELF **E2** 8499 byte = full Triad-Core interpreter, same machine as the PE, **byte-exact parity** on conformance 39/39 + probes 39/39 + S1 golden, native Linux **without Wine**; Node-free harness `conformance/run.sh`/`tests/probes/run_probes.sh`/`verify.sh`); **MAIN TASK remaining: E3 = TASK.md N18** — `bin/triad`/`install.sh` using the native seed (zero dependencies beyond the repo on Linux; Windows keeps the PE). Today's POSIX toolchain: `install.sh` + launcher `bin/triad`/`bin/triad-cli` with automatic fallback to the JS reference when the seed is a stub (stub logic exits at N18); dedicated CI job `linux-toolchain` |
 
 ## Main task (2026-11-03): native Linux seed — no Wine
 
@@ -97,11 +100,14 @@ to the PE (known limits included), `BOOTSTRAP.md` §4/§5/§6/§9 (M7 parity + L
 ## Verification commands
 
 ```sh
-node conformance/run.mjs                                 # Core, 39 cases
-node conformance/run.mjs --cases conformance/cases       # Full, 12 cases
+sh verify.sh                       # gate unico: conformance/run.sh + tests/probes/run_probes.sh
+sh conformance/run.sh              # Core, 39 casi, byte-exatti sull'ELF nativo
+sh tests/probes/run_probes.sh      # 39 probe (ok_*/test_* + bad_* + selfhost golden)
+sh seed/linux-x86_64/check_seed.sh # errori/limiti del seed (7 casi)
 ```
 
-Windows, seed:
+Triad-Full (`conformance/cases`) resta fuori dal gate (ticket 08 Q3); da eseguire con la
+dev CLI dove serve. Windows, seed (PE invariato, non rieseguito dal gate — ADR 0002):
 
 ```powershell
 certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
@@ -133,7 +139,7 @@ certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 The goal **is not complete**:
 - S0 is a machine-code interpreter, but **S1 (Triad in Triad-Core) has not started**, so there is no self-hosting yet;
 - S2-S3 (native compiler in Triad, fixed point) not started;
-- S4/M7 (conformance parity, Linux ELF port) partially started: E1 artifact exists and is verified natively (`seed/linux-x86_64/seed.hex` + `check_e1.sh`, load + echo of a `.td` file, exit 1/2 errors on stderr); E2a (platform-independent `os_*` codegen core isolated in `gen_seed.js`, PE byte-identical) done 2026-11-05 (TASK.md N16); parity/interpreter (E2b) not started;
+- S4/M7 (conformance parity, Linux ELF port) mostly done: E1 (file runner) and E2a (`os_*` codegen core, PE byte-identical) done 2026-11-05 (TASK.md N15/N16); **E2b done 2026-11-05** (TASK.md N17 closed: ELF E2 = full Triad-Core interpreter with byte-exact PE parity on conformance 39/39 + probes 39/39 + S1 golden, Node-free harness); **E3 remains** (TASK.md N18: toolchain `bin/triad`/`install.sh` without Node, tutorial update);
 - external recognition: MIT LICENSE chosen; Linguist PR and extension publishing require the maintainer.
 
 ## Seed Windows verification (round 32)
@@ -271,3 +277,24 @@ Verification run (2026-11-02, Linux + wine):
 - `node tests/probes/run_probes.mjs selfhost/source.td`: seed == JS == golden;
 - every `selfhost/*.td` exits 0 on the JS interpreter; `tools/site-gen` lint + `build.mjs --check` OK;
 - `sh tests/security/run.sh`: ALL SECURITY VERIFICATIONS PASSED; `node --test conformance/run.test.mjs`: 2/2.
+
+**N17 closed (2026-11-05):** E2b delivered — the native ELF seed is now a **complete
+Triad-Core interpreter** (8,499 bytes, `seed/linux-x86_64/seed`, static ELF64 without
+libc) running the same machine-code domain as the PE. Single generator entry
+`seed/dev/gen_seed.js <windows|linux|all>` with shared `core` + `backend_pe`/`backend_elf`
+(tickets 02 Q8 / 03 Q6: `os_*` via Linux syscalls `openat`/`read`/`write`/`exit`/`mmap`
+-adjacent arena, no libc); dumps reproducible (`gen_seed.js` + `cmp`), PE hash
+`4235A707…B8F7` unchanged. **Parity byte-exact**: `conformance/core` 39/39 (the historical
+`liste` skip is *registered*, not skipped: seed exits 1 with empty stdout, identical on PE
+and ELF), probes 39/39 with frozen `<file>.expected.out`/`.expected.code` sidecars, S1
+golden `selfhost/source.expected.out`. Node-free harness replaced the Node runners **in one
+shot** (ticket 08 Q4): `conformance/run.sh`, `tests/probes/run_probes.sh`, `verify.sh`,
+`seed/linux-x86_64/check_seed.sh` (7 cases); `gen_seed_linux.js` absorbed into
+`gen_seed.js`, `check_e1.sh` renamed `check_seed.sh`, spurious `windows` file removed.
+CI re-pointed (decision 04): `seed-windows` gone, `site-gen` matrix Ubuntu-only, PE hash
+gate moved into `seed-linux`, anti-drift `gen_seed.js && cmp` for both dumps; the gates
+lost with the Windows legs (probes `ok_*`/`test_*`, `selfhost/source.td` golden, `get`
+probe, `selfhost/main.td` smoke) are wired back on the native ELF. Verification
+(2026-11-05, Linux native): `sh verify.sh` OK (conformance 39 casi OK + probes 39 OK),
+`check_seed.sh` OK. Remaining for the main task: **N18** (E3 toolchain without Node +
+tutorial update to the post-decision-04 CI).

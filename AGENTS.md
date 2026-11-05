@@ -62,12 +62,22 @@ Estensione canonica dei file: `.triad` (alias storico `.td`).
 8. **Budget di sessione e handoff.** Il consumo di token di una sessione **non deve superare
    1.5–2 milioni di token**. Al raggiungimento della soglia (da considerare già a 1.5M), l'agente
    deve fermarsi: chiudere in modo coerente il passo di lavoro in corso e produrre un **riepilogo
-   di handoff da aggiungere in `TASK.md`** per la sessione successiva, contenente almeno:
+   di handoff da aggiungere in `TASK.md`** per la sessione successiva, sotto un'intestazione
+   `## Handoff — <data/ora>` e contenente almeno:
    - stato attuale del lavoro e obiettivo perseguito;
    - file toccati e modifiche effettuate;
    - decisioni prese (con riferimento a eventuali ADR);
    - test di conformance eseguiti ed esito (PASS/FAIL);
-   - prossimi passi concordati e problemi aperti/noti.
+   - prossimi passi concordati e problemi aperti/noti;
+   - **comando di ripresa**: un comando pronto all'uso che l'utente può copiare e incollare
+     nella sessione successiva per riprendere esattamente da dove si era interrotti.
+   Il comando di ripresa deve essere mostrato **in chiaro nella risposta finale all'utente**,
+   in questo formato:
+
+   ```
+   Ripresa sessione: leggi la sezione "Handoff — <data/ora>" in TASK.md e continua da lì
+   ```
+
    Non proseguire "a spron battuto" oltre la soglia: meglio un handoff pulito che una sessione
    troncata a metà modifica.
 

@@ -2,6 +2,38 @@
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
+## Not released — 2026-11-05: seed Linux E2b — interprete Triad-Core nativo + harness senza Node (N17)
+
+### Added
+- `seed/linux-x86_64/seed` (ELF64 statico **E2**, 8499 byte, senza libc): interprete
+  Triad-Core completo — stessa macchina del PE (interi, variabili, funzioni short e
+  `function … end`, ricorsione, Bool, operatori, `if`/`elseif`/`else`, `while`, `let`,
+  `begin`, lambda/closures, stringhe base + `string()`, `nothing`, simboli, liste con
+  costruzione/stampa/`push!`/`get`). Parità **byte-exatta** col PE: `conformance/core`
+  39/39, probe 39/39, golden S1 `selfhost/source.expected.out`; il gap storico `liste`
+  è registrato nell'harness (exit 1 + stdout vuoto, identico su PE ed ELF), non skippato.
+- Harness di verifica **senza Node** (ticket 08, sostituzione in un colpo solo):
+  `conformance/run.sh`, `tests/probes/run_probes.sh`, `verify.sh` (entry point unico) e
+  `seed/linux-x86_64/check_seed.sh` (7 casi errori/limiti); golden sidecar
+  `<file>.expected.out`/`<file>.expected.code` congelati da PE committati per tutti i
+  probe e per i casi selfhost.
+
+### Changed
+- `seed/dev/gen_seed.js`: entry unico `gen_seed.js <windows|linux|all>` — core del codegen
+  condiviso + moduli `backend_pe`/`backend_elf` (decisioni 02 Q8 / 03 Q6); `os_*` su ELF
+  via syscall Linux (`openat`/`read`/`write`/`exit`), niente libc. Dump PE/ELF
+  riproducibili; hash PE `4235A707…B8F7` invariato. `gen_seed_linux.js` assorbito.
+- `.github/workflows/ci.yml`: ripuntata ai nuovi entry point sh; le gate perse dalle
+  gambe Windows (probe `ok_*`/`test_*`, golden `selfhost/source.td`, probe `get`, smoke
+  `selfhost/main.td`) riagganciate al job `seed-linux` sull'ELF nativo; delega di
+  `triad-cli test conformance` a `run.sh`.
+- `cli/lib/commands/test.mjs`, `cli/lib/utils.mjs`, `bin/triad`: delega all'harness sh.
+
+### Removed
+- `conformance/run.mjs`, `conformance/run.test.mjs`, `tests/probes/run_probes.mjs`
+  (sostituiti dagli entry point sh); `seed/linux-x86_64/check_e1.sh` (rinominato
+  `check_seed.sh`); file spurio `windows`.
+
 ## Not released — 2026-11-05: CI senza gambe Windows (decisione 04)
 
 ### Changed

@@ -6,9 +6,12 @@ Complete Triad 2.0 as a standalone and recognized language with its own standard
   - Support: integers, variables, functions (short form and block), recursion, Bool, operators, if/elseif/else, while, let, begin, lambda, closures, base strings, nothing, symbols, complete lists (build, print, push!, get)
   - Conformance: 33/33 Windows byte-exact cases, 36/36 Core Julia
 - **S1 (Triad Interpreter in Triad-Core):** Inline environment working with lists, complete basic primitives
-- **Seed S0 (Linux):** runner ELF **E1** (557 byte: argv + `openat`/`read`/`write`/`exit`, caricamento + echo del file `.td`, errori su stderr con exit 1/2) — **N15 chiusa il 2026-11-05**;
-  **N16 chiusa il 2026-11-05** (confine `os_*` isolato nel generatore PE, byte-identico);
-  la porta completa dell'interprete in ELF resta la **task principale** (N17–N18 qui sotto).
+- **Seed S0 (Linux):** ELF **E2** (8499 byte: interprete Triad-Core completo, stessa
+  macchina del PE, parità **byte-exatta** su conformance 39/39 + probe 39/39 + golden S1)
+  — **N15 chiusa il 2026-11-05** (E1 runner), **N16 chiusa il 2026-11-05** (confine `os_*`
+  isolato nel generatore PE, byte-identico), **N17 chiusa il 2026-11-05**
+  (E2b + harness senza Node + gate ripristinate + note di stato e commit); resta la
+  toolchain Linux senza Node (**N18**, qui sotto).
 - **S2-S4:** mappa decisionale wayfinder `.scratch/self-hosting-m6/map.md` (tracciata
   2026-11-05; destinazione M6: punto fisso del compilatore nativo + seed ritirato);
   esecuzione da schedulare qui dopo le decisioni. Prima: porta Linux N15–N18.
@@ -26,33 +29,44 @@ attuare; il dettaglio resta nelle slice N17–N18 e nei ticket di
   il commit `fc320f4` dichiara la rimozione ma non la implementa nel diff — implementata
   qui. Conseguenze noti (gate PE non più eseguite, tutorial da aggiornare): raccolte
   come voci dedicate qui sotto.
-- [ ] **N17 — E2b** (slice sotto): entry unico `gen_seed.js <windows|linux|all>` + moduli
-  `core`/`backend_pe`/`backend_elf` (decisione 02 Q8); backend ELF con `os_*` via syscall
-  Linux (`openat`, contratto 03 Q6); parità **byte-exatta** col PE su `conformance/core`
-  (39 casi), probe `ok_*`/`test_*` e golden `selfhost/source.expected.out`.
-- [ ] **Harness di verifica senza Node, sostituzione in un colpo solo** (dentro N17,
-  decisione 08): `conformance/run.sh` + `tests/probes/run_probes.sh` + `verify.sh` al
-  posto di `run.mjs`/`run_probes.mjs`/`run.test.mjs`; 39 casi senza `--skip liste`;
-  golden sidecar committati (`*.expected.out`/`*.expected.code`); CI ripuntata.
+- [x] **N17 — E2b** (slice sotto) — ✅ **fatto 2026-11-05**: entry unico
+  `gen_seed.js <windows|linux|all>` + moduli `core`/`backend_pe`/`backend_elf`
+  (decisione 02 Q8); backend ELF con `os_*` via syscall Linux (`openat`, contratto 03 Q6);
+  parità **byte-exatta** col PE su `conformance/core` (39 casi), probe `ok_*`/`test_*` e
+  golden `selfhost/source.expected.out` (esito dettagliato nella slice N17).
+- [x] **Harness di verifica senza Node, sostituzione in un colpo solo** (dentro N17,
+  decisione 08) — ✅ **fatto 2026-11-05**: `conformance/run.sh` +
+  `tests/probes/run_probes.sh` + `verify.sh` al posto di `run.mjs`/`run_probes.mjs`/
+  `run.test.mjs` (assieme a loro: `gen_seed_linux.js` assorbito in `gen_seed.js`,
+  `check_e1.sh` → `check_seed.sh`); 39 casi senza `--skip liste`; golden sidecar
+  committati (`*.expected.out`/`*.expected.code`); CI ripuntata, inclusa la delega di
+  `triad-cli test conformance` a `run.sh`.
 - [ ] **N18 — E3** (slice sotto): toolchain Linux senza Node — `bin/triad` senza logica di
   stub (soglia 4 KB, `--jsref`, ramo JS escono), `bin/triad-cli` POSIX a pura delega,
   `install.sh` con wrapper a percorso assoluto + smoke test byte-exatto (decisioni 07/09);
   CI `seed-linux` sull'ELF nativo senza Wine.
-- [ ] **Ripristino sull'ELF delle gate perse dalle gambe Windows** (dentro N17): probe
-  `ok_*`/`test_*`, golden `selfhost/source.td`, probe `get`, smoke `selfhost/main.td`
-  — oggi non eseguite da nessun job (rimosse colla revisione CI della decisione 04,
-  ADR 0002: il PE non si riesegue) — da riagganciare al job `seed-linux` sulla parità
-  **byte-exatta** dell'ELF.
-- [ ] **Rimozione dello skip storico `liste`** (decisione 04 Q1): il gate `conformance/core`
-  deve coprire i **39 casi**; `--skip liste` è ancora in `conformance-core` e nel default
-  di `conformance/run.mjs` benché 39/39 siano già verdi senza skip — sovrapposto alla
-  voce *Harness senza Node* (che lo include), qui resta il promemoria puntuale.
+- [x] **Ripristino sull'ELF delle gate perse dalle gambe Windows** (dentro N17) —
+  ✅ **fatto 2026-11-05**: probe `ok_*`/`test_*`, golden `selfhost/source.td`, probe
+  `get` e smoke `selfhost/main.td` riagganciate al job `seed-linux` (step `sh verify.sh` →
+  `run_probes.sh` coi sidecar) sulla parità **byte-exatta** dell'ELF.
+- [x] **Rimozione dello skip storico `liste`** (decisione 04 Q1) — ✅ **fatto 2026-11-05**:
+  il gate `conformance/core` copre i **39 casi** con `sh conformance/run.sh`, senza
+  `--skip`: il gap `liste` è **registrato** nell'harness (esito del seed congelato come
+  `exit 1 + stdout vuoto`, identico su PE ed ELF), non skippato.
 - [ ] **Aggiornamento tutorial alla CI post-decisione 04** (dentro N18, documentazione
   stato piattaforme): `docs/tutorial/*` (it/en/ja/zh) citano ancora il job `seed-windows`
   (33 casi Core sul PE, step `Hash check`, array `$cases`) — riscrivere secondo la CI
   attuale (gate hash PE in `seed-linux`, suite sull'ELF nativo).
-- [ ] **Revisione delle modifiche pendenti preesistenti** in `GLOSSARY.md`/`STATUS.md`/
-  `TASK.md` (nel working tree prima della sessione N16): decidere se committare o scartare.
+- [x] **Revisione delle modifiche pendenti preesistenti** in `GLOSSARY.md`/`STATUS.md`/
+  `TASK.md` (nel working tree prima della sessione N16) — ✅ **risolta col commit
+  `7350412`** (modifiche incorporate, nessun scarto).
+- [x] **Chiusura N17: note di stato + commit** (azione immediata, prima di N18):
+  — ✅ **fatto 2026-11-05**: `STATUS.md` (riga S4/M7, comandi di verifica, distanza
+  dall'obiettivo, nota di chiusura N17) e `CHANGELOG.md` (voce «seed Linux E2b + harness
+  senza Node») aggiornati; commenti di chiusura ai ticket 04/08 in
+  `.scratch/seed-linux-nativo/issues/`; commit del working tree N17 (ELF E2 da 8499 byte,
+  harness sh + golden sidecar, CI ripuntata, `gen_seed_linux.js`/`check_e1.sh` assorbiti,
+  file `windows` spurio rimosso).
 ---
 # Task principale (2026-11-03): seed Linux nativo — senza Wine (N15–N18)
 
@@ -132,6 +146,14 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   sull'ELF nativo senza Wine (stessi `expected.out`/`expected.code`); probe `ok_*`/`test_*`
   identici su PE, ELF e JS; i limiti noti del PE restano limiti documentati (nessuna nuova
   semantica); dump riproducibile dai generatori.
+- **Esito (2026-11-05):** E2b verificato — conformance **39/39 byte-exatta** sull'ELF
+  nativo (gap `liste` registrato come `exit 1 + stdout vuoto`, assenza identica misurata
+  su PE ed ELF), probe **39/39** con sidecar `<file>.expected.out`/`.expected.code`
+  congelati da PE (ticket 08 Q10), `verify.sh` + `check_seed.sh` (7 casi) verdi, dump
+  PE/ELF riproducibili da `gen_seed.js <windows|linux>` + `cmp` (hash PE `4235A707…`
+  invariato). Harness senza Node sostituito in un colpo solo (ticket 08 Q4) e CI
+  ripuntata; gate perse dalle gambe Windows riagganciate al job `seed-linux`. Restano
+  commit + note di stato (voce dedicata nella checklist qui sopra).
 
 ### N18 — E3: toolchain Linux senza Wine (install → run)
 - **Files:** `install.sh`, `bin/triad`, `cli/lib/utils.mjs` (soglia stub 4 KB e fallback JS
