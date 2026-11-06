@@ -87,24 +87,31 @@ jobs:
         run: sh verify.sh
 
   linux-toolchain:
-    # Verifica che l'intera toolchain POSIX funzioni su Linux: launcher,
-    # install.sh (senza root), esecuzione di programmi .td e suite di
-    # conformità tramite i launcher installati.
+    # Verifica che l'intera toolchain POSIX funzioni su Linux SENZA Node
+    # (N18, ticket 09): launcher bin/triad, install.sh senza root
+    # (wrapper a percorso assoluto + smoke test byte-exatto), CLI sh
+    # bin/triad-cli (status + test). Un mismatch del golden deve far
+    # fallire l'installazione (caso negativo esplicito).
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: '20'
-      - name: Launcher bin/triad esegue un programma
+      - name: Launcher bin/triad esegue un programma (senza Node)
         run: ./bin/triad tests/probes/test_simple.td | grep -q '^test$'
       - name: install.sh (utente non root, prefix temporaneo)
         run: |
           ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop
           export PATH="$RUNNER_TEMP/triad-bin:$PATH"
           triad tests/probes/test_let.td | grep -q '^15$'
-          triad-cli status >/dev/null
-      - name: Conformance via launcher installato
+          triad-cli status
+      - name: Smoke test negativo (golden diverso => installazione fallisce)
+        run: |
+          cp tests/probes/test_simple.expected.out "$RUNNER_TEMP/golden.bak"
+          echo "tamper" >> tests/probes/test_simple.expected.out
+          if ./install.sh --prefix "$RUNNER_TEMP/triad-neg" --no-desktop; then
+            echo "ERRORE: install.sh ha accettato un golden diverso"; exit 1
+          fi
+          mv "$RUNNER_TEMP/golden.bak" tests/probes/test_simple.expected.out
+      - name: Conformance via launcher installato (CLI sh, senza Node)
         run: |
           export PATH="$RUNNER_TEMP/triad-bin:$PATH"
-          triad-cli test conformance
+          triad-cli test all

@@ -22,7 +22,7 @@
 
 | 配置档 | 定义位置 | 今天即可运行？ |
 |---|---|---|
-| **Triad-Core** | `SPEC-CORE.md` | **是**：JavaScript 参考解释器 `seed/dev/triad_core.cjs`（37/37 个 Core 用例），以及部分可用的 Windows seed `seed/windows-x86_64/seed.exe`（CI 中验证了 33 个 Core 用例）|
+| **Triad-Core** | `SPEC-CORE.md` | **是**：机器码 seed（`seed/windows-x86_64/seed.exe`、`seed/linux-x86_64/seed`）逐字节通过全部 39 个 Core 用例，JavaScript 参考解释器 `seed/dev/triad_core.cjs` 也全部通过 |
 | **Triad-Full** | `SPEC.md` | **否**：struct、dispatch、逻辑、宏、契约、预算、追踪、副作用、解构、`for`、`try`、`Float` 都属于规范；在 Full 一致性测试中只有 `errore` 通过 |
 
 关于背景，有两点需要说明，以免把本书与项目本身混为一谈。标准的版本号是 `0.2.0`，登记在 `VERSION` 中。Triad 不依赖 Julia：那个旧实现已经被移除，你在书中看到的 Triad-Full 输出都是 **golden**，也就是当年由该实现产出、并冻结在 `conformance/cases/` 中的期望结果；当前运行时并未复现它们。相反，每个标注 **Output:** 的示例都是用 `node seed/dev/triad_core.cjs` 验证过的 Triad-Core 程序； Full 示例则标注 **Output (golden Full):**，或者干脆不给输出。
@@ -89,7 +89,7 @@
 33. [仓库地图](#cap-33)
 34. [JS 参考解释器（`seed/dev/triad_core.cjs`）](#cap-34)
 35. [Windows S0 seed 及其生成器](#cap-35)
-36. [Linux seed（E0）](#cap-36)
+36. [Linux seed（E2）](#cap-36)
 37. [自举：`selfhost/` 中的 S1](#cap-37)
 38. [一致性测试：读取、编写与验证用例](#cap-38)
 39. [开发 CLI `triad-cli`](#cap-39)
@@ -158,7 +158,7 @@ S4  Triad completo: REPL, CLI, tooling, parità Linux     (non iniziato)
 
 S0 seed 并不是以可执行文件的形式发布，而是以十六进制转储（dump）的形式：这是给文本仓库中的二进制文件做版本管理最简单的办法，它可以用操作系统的解码工具还原出来（见[第 2 章](#cap-2)）。S1–S4 这些阶段是项目的方向，而不是阅读本书所必需的东西：要跟着本教程走，有 S0 seed 或 JS 解释器就够了。
 
-Node.js 下的工具（`seed/dev/*.js`、`conformance/run.mjs`、`cli/`）属于**开发工具**：它们有助于生成和验证，但不属于 S0→S4 这条链。书中的第四部分会逐一介绍它们，说明它们做什么，以及为什么它们在引导链之外。
+开发工具（Node.js 下的 `seed/dev/*.js` 与 `cli/`，POSIX shell 的测试入口 `conformance/run.sh` 与 `verify.sh`）属于**开发工具**：它们有助于生成和验证，但不属于 S0→S4 这条链。书中的第四部分会逐一介绍它们，说明它们做什么，以及为什么它们在引导链之外。
 
 ---
 
@@ -210,20 +210,15 @@ certutil -decodehex seed\windows-x86_64\seed.hex seed\windows-x86_64\seed.exe
 ```
 
 ```sh
-# Linux: seed ELF allo stadio E0 (stampa solo "Triad seed Linux OK")
+# Linux: seed ELF E2（Triad-Core 解释器）——推荐用 ./install.sh
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed
 ```
 
-Windows 命令会先删除已有的旧可执行文件（如果存在），再从转储重新生成它；在 Linux 上，产物是一个极简的 ELF，即 E0 阶段，它目前只会打印一条启动消息，还不是真正的解释器。这不是安装错误，而是 [`STATUS.md`](STATUS.md) 中描述的移植现状。
+Windows 命令会先删除已有的旧可执行文件（如果存在），再从转储重新生成它；在 Linux 上，产物是机器码的 Triad-Core 解释器（E2 阶段）。在 Linux 上推荐从仓库根目录执行 `./install.sh`：它仅用 POSIX shell 重新解码 seed、安装启动器并通过逐字节的冒烟测试。
 
 ### 2.4 启动器 `bin/triad` 与 `bin/triad.cmd`
 
-有了启动器，你就不必每次都记着用哪个二进制文件、它放在哪个目录。它不是必需的，但很方便：当 `bin/` 在 `PATH` 中时，只需 `triad file.triad`，就像使用安装在系统里的语言一样。运行时查找遵循一个精确顺序，从最好的运行时排到当前可用的那个：
-
-1. `bin/triad-native`（独立可执行文件，**尚未产出**：将随 S2–S3 一起到来）；
-2. `seed/<piattaforma>/seed`（在 Windows 上是 `seed\windows-x86_64\seed.exe`）。
-
-在 Linux 上，启动器会找到 E0 阶段的 ELF seed，它**还不会解释程序**：要在 Linux 上执行代码，请直接使用 JS 解释器。`triad --build` 是旧 Julia 实现留下的残留：它会打印一条消息，说明为什么不再支持构建，并以退出码 2 结束。当没有任何运行时可用时，启动器不会悄无声息地失败：它会打印还原 seed 的操作说明。
+有了启动器，你就不必每次都记着用哪个二进制文件、它放在哪个目录。它不是必需的，但很方便：当 `bin/` 在 `PATH` 中时，只需 `triad file.triad`，就像使用安装在系统里的语言一样。启动器**始终**执行机器码 seed（Windows 上是 `seed\windows-x86_64\seed.exe`，Linux 上是 `seed/linux-x86_64/seed`，E2 阶段）：不会自动回退到其他运行时——JS 解释器始终只是开发工具，绝不进入用户路径。环境变量 `TRIAD_SEED` 可以强制指定某个 seed。当 seed 缺失或不可执行时，启动器不会悄无声息地失败：它会打印还原 seed 的操作说明（`./install.sh` 或解码 `seed.hex`）。
 
 ### 2.5 退出码
 
@@ -242,14 +237,15 @@ SPEC §14 中的选项（`-e`、`-E`、`-l`、`-i`、`--tree`、`--help`、REPL�
 CLI 是可选的：它把原本要在仓库里手动完成的各种操作汇总到一个命令中。下面几行是最常用的用法，每一行都带有说明其作用的注释。
 
 ```sh
-bin/triad-cli status                 # ambiente e seed trovato (Windows: bin\triad-cli.cmd)
-bin/triad-cli test conformance       # conformance Core
-bin/triad-cli ai verify -v           # verifica le soluzioni di ai/tasks/
-bin/triad-cli seed generate windows  # rigenera seed.hex e stampa lo SHA-256
-node conformance/run.mjs             # runner di conformance diretto (Core)
+bin/triad-cli status                 # 环境与找到的 seed（不需要 Node）
+bin/triad-cli test conformance       # conformance Core（39 个用例，逐字节）
+bin/triad-cli test all               # 完整门禁：conformance + probe
+node cli/triad-cli.mjs ai verify -v  # 验证 ai/tasks/ 的解（开发用，Node）
+node cli/triad-cli.mjs seed generate windows  # 重新生成 seed.hex 并打印 SHA-256
+sh conformance/run.sh                # 直接运行 conformance 测试入口（Core）
 ```
 
-启动器 `bin/triad-cli*` 会在首次启动时于 `cli/` 中执行 `npm install`。另一种做法是使用随 [beta 版发布](https://github.com/GPuntobit/triad2.0/releases)附带的独立可执行文件 `triad-cli.exe` / `triad-cli`。细节见[第 39 章](#cap-39)。要跟随第二部分并不需要 CLI：示例可以直接用 `node` 运行。
+CLI `bin/triad-cli` 是纯 POSIX shell，**不需要 Node**：负责 `run`/`test`/`status`。开发命令（`ai verify`、`seed generate`、`ext`）在 Node CLI `node cli/triad-cli.mjs` 中（先执行 `cd cli && npm install`），也可以使用随 [beta 版发布](https://github.com/GPuntobit/triad2.0/releases)附带的独立可执行文件 `triad-cli.exe` / `triad-cli`。细节见[第 39 章](#cap-39)。要跟随第二部分并不需要 CLI：示例可以直接用 `node` 运行。
 
 ---
 
@@ -1124,7 +1120,7 @@ errore domain: divisione per zero
 
 Triad-Core 有两套实现，而它们并不是同一回事。JS 解释器是开发工具：只要有 Node.js 就能运行，容易修改，并且是用于验证一致性用例的参考实现。Windows seed 是自举的第一步：一个用机器码编写、不依赖宿主运行时的解释器，因为是手写的，限制更多。如果一个程序也必须能在 seed 上运行（就像 S1 的代码那样），了解两者各自能做什么就至关重要。
 
-契约是 `conformance/core/`：两个运行时必须产生相同的 golden 输出。目前 JS 解释器通过全部用例，Windows seed 通过 CI 中 `seed-windows` 作业所列的 33 个用例。在这些用例之外，两个运行时存在差异：
+契约是 `conformance/core/`：两个运行时必须产生相同的 golden 输出。目前 JS 解释器与两个 seed（Windows PE 和 Linux ELF）都逐字节通过全部 39 个用例：门禁在原生 ELF 上运行（job `seed-linux`）。仍存在已测量的域差异，记录在探针和下表中：
 
 | 功能 | JS 解释器（`seed/dev/triad_core.cjs`）| Windows seed（`seed.exe`）|
 |---|---|---|
@@ -2325,10 +2321,10 @@ r.kind          # :budget
 |---|---|---|
 | `SPEC.md`、`SPEC-CORE.md`、`VERSION`、`CHANGELOG.md` | Markdown | 标准（Full 与 Core）、版本、历史 |
 | `BOOTSTRAP.md`、`STATUS.md`、`TASK.md`、`plan.md` | Markdown | S0→S4 计划、状态、backlog 与任务 |
-| `conformance/` | Triad + Node | golden 用例（Full 为 `cases/`，Core 为 `core/cases/`）与 runner `run.mjs` |
+| `conformance/` | Triad + sh | golden 用例（Full 为 `cases/`，Core 为 `core/cases/`）与测试入口 `run.sh` |
 | `seed/windows-x86_64/` | 机器码 | `seed.hex`（源）、`seed.exe`（解码后）、含布局说明的 README |
-| `seed/linux-x86_64/` | 机器码 | ELF E0 seed（`seed.hex`、`seed`）|
-| `seed/dev/` | Node.js | seed 生成器（`gen_seed.js`、`gen_seed_linux.js`）与参考解释器 `triad_core.cjs` |
+| `seed/linux-x86_64/` | 机器码 | ELF E2 seed，Triad-Core 解释器（`seed.hex`、`seed`）|
+| `seed/dev/` | Node.js | seed 生成器（`gen_seed.js <windows|linux|all>`）与参考解释器 `triad_core.cjs` |
 | `selfhost/` | Triad-Core | S1：用 Triad-Core 编写的 Triad 解释器（进行中）|
 | `examples/` | Triad-Full | 标准的示例程序 |
 | `cli/` | Node.js (ESM) | `triad-cli`：开发用 CLI（commander、execa、chalk）|
@@ -2385,7 +2381,7 @@ const BUILTIN_NAMES = new Set(['print','println','length','push!','Int','string'
   }
 ```
 
-然后：在 `conformance/core/cases/` 中添加一个用例（[§38](#cap-38)），并运行 `node conformance/run.mjs`。记住 `Int` 就是 `BigInt`（`0n`、`1n`），结果必须用这些辅助函数构建（`I`、`B`、`S`、`Y`、`L`、`NOTHING`）。
+然后：在 `conformance/core/cases/` 中添加一个用例（[§38](#cap-38)），并运行 `sh conformance/run.sh`。记住 `Int` 就是 `BigInt`（`0n`、`1n`），结果必须用这些辅助函数构建（`I`、`B`、`S`、`Y`、`L`、`NOTHING`）。
 
 ### 34.3 示例：添加语法
 
@@ -2452,7 +2448,7 @@ cmpByteRsiImm(0x22); jne('q_loop');
 2. 重新生成 dump：`node seed/dev/gen_seed.js seed/windows-x86_64/seed.hex`（或者用 `bin/triad-cli seed generate windows`，它还会打印 SHA-256）；
 3. 在 Windows 上解码：`certutil -decodehex -f seed\windows-x86_64\seed.hex seed\windows-x86_64\seed.exe`；
 4. 在 seed 上运行 Core 用例以及探针 `test_get.td`；
-5. **同时**更新：`.github/workflows/ci.yml` 中的哈希（job `seed-windows`、step `Hash check`）、`seed/windows-x86_64/README.md`、`seed/dev/README.md`、`STATUS.md`；如果有新的 Core 用例在 seed 上通过，就把它加入该 job 的 `$cases` 数组。
+5. **同时**更新：`.github/workflows/ci.yml` 中的哈希（job `seed-linux`、step `Hash check`）、`seed/windows-x86_64/README.md`、`seed/linux-x86_64/README.md`、`seed/dev/README.md`、`STATUS.md`；Core 用例不需要在任何地方登记：测试入口 `conformance/run.sh` 会从 `conformance/core/cases` 自动发现它们。
 
 已知陷阱（来自 `STATUS.md`）：代码不断增长，可能与数据重叠（导入名现在从 RVA `0x5000` 开始）；寄存器在初始化之前就被使用（bug `pbs_int`）；内置函数调用中栈上参数顺序有误（`get`）。Defender 可能把该 PE 报为误报（CI 中已加入排除项）。
 
@@ -2460,14 +2456,14 @@ cmpByteRsiImm(0x22); jne('q_loop');
 
 <a id="cap-36"></a>
 
-## 36. Linux seed（E0）
+## 36. Linux seed（E2）
 
-`seed/linux-x86_64/seed` 是一个 **173 字节**的静态 ELF64，由 `seed/dev/gen_seed_linux.js` 生成：入口 `0x400078`，只有一个 R|X 的 `PT_LOAD`，直接使用 `write`/`exit` 系统调用。它会打印 `Triad seed Linux OK` 并以 0 退出。这是里程碑 M7 的第一步；E1/E2/E3（读文件、解释器）还要完成，做法是复用 Windows seed 的逻辑，但换成不同的 `os_*` 层。
+`seed/linux-x86_64/seed` 是一个 **8499 字节**的静态 ELF64，由 `seed/dev/gen_seed.js linux` 生成：入口 `0x400078`，只有一个 R|X 的 `PT_LOAD`，直接使用系统调用（`openat`/`read`/`write`/`exit`，隔离在 `os_*` 例程中）。它是完整的 **Triad-Core 解释器**：与 Windows seed 同一套机器，在共享 golden 上 stdout 逐字节一致（conformance 39/39 + probe + golden S1）。里程碑 M7（Linux 移植）已完成：E0（极简）→ E1（读文件）→ E2（解释器）→ E3（无 Node 的工具链，`./install.sh`）。
 
 ```sh
-node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex   # verifica magic, entry, round-trip
+node seed/dev/gen_seed.js linux seed/linux-x86_64/seed.hex   # 重新生成 dump（可复现）
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed
-./seed/linux-x86_64/seed                                     # Triad seed Linux OK
+./seed/linux-x86_64/seed tuo_programma.td                     # 运行程序
 ```
 
 ---
@@ -2532,18 +2528,18 @@ conformance/core/cases/<nome>/      (oppure conformance/cases/<nome>/ per Full)
 
 一个用例通过的条件是 stdout 与退出码都一致；stderr 不参与比对。没有 stdin，也没有交互式输入。
 
-### 38.2 runner `conformance/run.mjs`
+### 38.2 测试入口 `conformance/run.sh`
 
 ```sh
-node conformance/run.mjs                              # Core (default conformance/core/cases)
-node conformance/run.mjs --cases conformance/cases    # Full (oggi passa solo errore)
-node conformance/run.mjs --skip liste,valori          # salta casi (default: liste)
-node conformance/run.mjs --update                     # RIGENERA i golden dal runtime corrente
+sh conformance/run.sh              # Core（39 个用例，从 conformance/core/cases 自动发现）
+sh conformance/run.sh --update     # 从当前运行时重新生成 golden（开发用）
 ```
 
-所选运行时按以下顺序确定：变量 `TRIAD_SEED`；在 Linux/macOS 上是 JS 解释器；在 Windows 上是 `bin/triad-native.exe`，其次是 `seed/windows-x86_64/seed.exe`。例如用显式路径试用 seed： `TRIAD_SEED=/percorso/seed node conformance/run.mjs`。
+Full 套件（`conformance/cases`）留在门禁之外：今天只有 `errore` 通过。Node 运行器 `conformance/run.mjs` 已被 POSIX 测试入口取代（2026-11-05）。
 
-在 Linux/macOS 上，运行器使用 JS 解释器并校验全部 37 个用例。在 Windows 上使用 seed，并且默认跳过 `liste` 用例，因为 seed 没有实现标准的 `xs[i]` 下标访问：因此运行器会打印 36 个用例。要用 JS 解释器测试那个被排除的用例：
+所选运行时是仓库里的 ELF seed（`seed/linux-x86_64/seed`），可用环境变量 `TRIAD_SEED` 覆盖。例如用显式路径试用 seed：`TRIAD_SEED=/percorso/seed sh conformance/run.sh`。没有 JS 回退：门禁逐字节比对原生 seed 与 golden。
+
+门禁毫无排除地覆盖全部 39 个用例：历史上的 `liste` 缺口（seed 没有实现标准的 `xs[i]` 下标访问）不是跳过，而是作为预期结果（exit 1、stdout 为空，PE 与 ELF 上一致）**登记**在测试入口里。要用 JS 解释器测试该用例：
 
 ```sh
 node seed/dev/triad_core.cjs conformance/core/cases/liste/program.td
@@ -2560,9 +2556,8 @@ golden 是一份版本化的期望值，而不是语义的规范性来源。`pro
 1. 选一个意大利语的描述性名称（`liste_annidate`、`stringhe_vuote`……）；
 2. 编写 `program.td`，**只**使用 SPEC-CORE §2–§7（不要用引导原语：它们也必须能在 Full 上运行）；
 3. 手工编写 `expected.out`（结尾带 LF）和 `expected.code`（`0`），依据规范来推理——**不要**用 `--update` 盲目生成，否则等于把运行时的 bug 固定下来；
-4. 把 `expected.out` 复制为 `expected.golden`；
-5. `node conformance/run.mjs` 必须打印 `PASS  <nome>`；
-6. 如果该用例在 Windows seed 上也能通过，就把它加到 `.github/workflows/ci.yml` 中 `seed-windows` job 的 `$cases` 里。
+4. `sh conformance/run.sh` 必须打印 `PASS  <nome>`；
+5. 没有需要更新的清单：测试入口会从目录自动发现用例，job `seed-linux` 在原生 ELF 上运行套件；只需确认 `expected.out`/`expected.code` 已提交。
 
 ```sh
 mkdir conformance/core/cases/somma_lista
@@ -2579,7 +2574,7 @@ TD
 printf '12\n' > conformance/core/cases/somma_lista/expected.out
 cp conformance/core/cases/somma_lista/expected.out conformance/core/cases/somma_lista/expected.golden
 printf '0' > conformance/core/cases/somma_lista/expected.code
-node conformance/run.mjs | grep somma_lista          # PASS  somma_lista
+sh conformance/run.sh | grep somma_lista          # PASS  somma_lista
 ```
 
 Full 的 golden（`conformance/cases/`）是**冻结的**：在存在 Full 实现之前不要重新生成。
@@ -2588,40 +2583,42 @@ Full 的 golden（`conformance/cases/`）是**冻结的**：在存在 Full 实�
 
 <a id="cap-39"></a>
 
-## 39. 开发 CLI `triad-cli`
+## 39. 工具链 CLI `triad-cli`
 
 ### 39.1 用法
 
+工具链分为两层：`bin/triad-cli`（POSIX，**不需要 Node**，用户路径）与 `node cli/triad-cli.mjs`（Node，仅开发命令）。
+
 | 命令 | 作用 |
 |---|---|
-| `triad-cli status` | Node 版本、平台、找到的 seed、项目根目录 |
-| `triad-cli test conformance [-c DIR] [-u]` | 执行 `conformance/run.mjs`（默认 Core，`--skip liste`）|
-| `triad-cli test run` | Core conformance 的别名（旧的 Julia 测试已经不存在）|
-| `triad-cli ai verify [-t DIR] [-v]` | 在原生 seed 上执行 `ai/tasks/` 里的 `solution.triad` 并与 golden 比对 |
-| `triad-cli seed generate windows\|linux [-o FILE]` | 运行 seed 生成器并打印 dump 的 SHA-256 |
-| `triad-cli build standalone` | 不可用：只打印一条消息 |
+| `triad-cli status` | 项目根目录、平台、找到的 seed、PATH 状态 |
+| `triad-cli run <file> [-- args]` | 通过 `bin/triad` 运行 Triad 程序 |
+| `triad-cli test conformance [--update]` | 执行 `conformance/run.sh`（39 个 Core 用例） |
+| `triad-cli test probes` / `test all` | 探针 / 完整门禁（`verify.sh`） |
+| `node cli/triad-cli.mjs ai verify [-t DIR] [-v]` | 在原生 seed 上执行 `ai/tasks/` 里的 `solution.triad` 并与 golden 比对 |
+| `node cli/triad-cli.mjs seed generate windows\|linux [-o FILE]` | 运行 seed 生成器并打印 dump 的 SHA-256 |
+| `node cli/triad-cli.mjs ext check\|package` | 验证/打包 VS Code 扩展 |
 
-启动方式：`node cli/triad-cli.mjs …`（先执行 `cd cli && npm install`）、启动器 `bin/triad-cli` / `bin\triad-cli.cmd`（首次启动时安装依赖，若 `npm install` 失败则停止），或者使用 release 中的 standalone 可执行文件。
+启动方式：`bin/triad-cli` 开箱即用（POSIX shell，无需安装）；开发命令用 `node cli/triad-cli.mjs …`（先执行 `cd cli && npm install`），Windows 上用 `bin\triad-cli.cmd`，或使用 release 中的 standalone 可执行文件。
 
 ### 39.2 代码结构
 
 ```
 cli/
-  triad-cli.mjs            definizione dei comandi con commander
-  lib/utils.mjs            findProjectRoot, findSeed, runSeed, runNode, projectPath, …
-  lib/commands/test.mjs    handleTestRun, handleTestConformance
+  triad-cli.mjs            用 commander 定义开发命令（seed/ai/ext）
+  lib/utils.mjs            findProjectRoot, runNode, projectPath, fileExists
   lib/commands/ai.mjs      handleAIVerify
   lib/commands/seed.mjs    handleSeedGenerate (windows/linux)
-  lib/commands/build.mjs   handleBuildStandalone
-  build-exe.mjs            build dell'eseguibile Node SEA (esbuild + postject)
+  lib/commands/ext.mjs     handleExtCheck, handleExtPackage
+  build-exe.mjs            构建 Node SEA 可执行文件（esbuild + postject）
 ```
 
-- `findProjectRoot()` 查找项目根目录（一个同时包含 `conformance/run.mjs` 和 `seed/` 的文件夹），依次从 `TRIAD_HOME`、模块所在目录、可执行文件所在目录和当前目录开始查找。
+- `findProjectRoot()` 查找项目根目录（一个同时包含 `conformance/run.sh` 和 `seed/` 的文件夹），依次从 `TRIAD_HOME`、模块所在目录、可执行文件所在目录和当前目录开始查找。
 - 每个 handler 返回 `true`/`false`；`triad-cli.mjs` 把它转换成退出码 0/1。
 
 ### 39.3 新增一个命令
 
-1. 创建 `cli/lib/commands/<nome>.mjs`，其中有一个返回布尔的 `handle<Nome>(options)` 函数，并使用 `utils.mjs` 里的 `projectPath`、`runNode`、`runSeed`；
+1. 创建 `cli/lib/commands/<nome>.mjs`，其中有一个返回布尔的 `handle<Nome>(options)` 函数，并使用 `utils.mjs` 里的 `projectPath`、`runNode`；
 2. 在 `triad-cli.mjs` 中注册它：
 
 ```js
@@ -2687,9 +2684,11 @@ node build-exe.mjs path/to/win/node.exe   # dist/triad-cli.exe per Windows, anch
 
 | job | 校验什么 |
 |---|---|
-| `conformance-core`（Ubuntu、Node 20）| 用 JS 解释器执行 `node conformance/run.mjs --cases conformance/core/cases --skip liste` |
-| `seed-windows` | 解码 `seed.hex`，在 PE 上运行 33 个 Core 用例并比对 stdout，探针 `test_get.td`（期望 `20`），冒烟测试 `selfhost/main.td`（期望 `Value: 10`），`seed.hex` 的哈希 |
-| `seed-linux` | 解码 ELF E0，运行它并校验其哈希 |
+| `conformance-core`（Ubuntu）| `sh conformance/run.sh`（39 个 Core 用例，逐字节）与 `selfhost/` 源文件的有效性 |
+| `seed-linux`（原生 ELF，无 Wine）| `check_seed.sh`（错误/限制契约）、PE 与 ELF `seed.hex` 的哈希（防篡改门禁）、可复现的 dump（`gen_seed.js` + `cmp`）、`sh verify.sh`（conformance + probe + golden S1 + 冒烟测试） |
+| `linux-toolchain`（无 Node）| 启动器 `bin/triad`、带逐字节冒烟测试的 `install.sh`（golden 被改动则安装失败）、`triad-cli status` 与 `triad-cli test all` |
+| `security` | `tests/security/run.sh`（action 固定 SHA、路径劫持、token、净化） |
+| `site-gen` | Triad 生成器的 lint 与发布站点的逐字节一致 |
 
 `pages.yml` 和 `static.yml` 在每次推送到 `main` 时把 `docs/` 发布到 GitHub Pages。
 
@@ -2706,7 +2705,7 @@ Full 配置**不在 CI 中**，因为它还没有实现：不要把它展示为�
 | 改动 | 要做的事 |
 |---|---|
 | 语言行为 | 更新 `SPEC.md`/`SPEC-CORE.md`、`CHANGELOG.md`，如果改动具有规范意义还要更新 `VERSION`；新增或更新 conformance 用例 |
-| JS 解释器 | 保持忠于 SPEC-CORE；`node conformance/run.mjs` 通过 |
+| JS 解释器 | 保持忠于 SPEC-CORE；`sh conformance/run.sh` 通过 |
 | Windows seed | 重新生成 `seed.hex`，更新 CI 和 README 中的哈希，在 Windows 上测试 |
 | S1（`selfhost/`）| 运行在 `seed.exe` 上；如果 `main.td` 的输出发生变化，就更新 CI 中的冒烟测试 |
 | CLI | handler 返回布尔值；`cli/README.md`；必要时重新构建可执行文件 |
@@ -2843,7 +2842,7 @@ Full 规划中的工具：`triad --tree file`、`sexpr(codice)`、`parse`/`unpar
 - **S0 / seed**：以机器码实现的 Triad-Core 解释器（`seed/`）。
 - **S1**：用 Triad-Core 编写的完整 Triad 解释器（`selfhost/`）。
 - **S2 / S3 / S4**：原生编译器、自举、完整运行时（见 `BOOTSTRAP.md`）。
-- **E0 / E1 / …**：seed 的 Linux 移植阶段（里程碑 M7）。
+- **E0 / E1 / E2 / E3**：seed 的 Linux 移植阶段（里程碑 M7）：极简、读文件、Triad-Core 解释器、无 Node 的工具链。
 - **Triad-Core / Triad-Full**：两个一致性配置。
 - **JS 解释器**：`seed/dev/triad_core.cjs`，用于开发和 CI 的 Core 参考实现。
 - **Golden**：已提交的期望输出（`expected.out`、`expected.code`）。
@@ -2868,10 +2867,10 @@ Full 规划中的工具：`triad --tree file`、`sexpr(codice)`、`parse`/`unpar
 
 **状态**（详见 [`STATUS.md`](STATUS.md)）：
 
-- Core：JS 解释器上 37/37 个用例通过；CI 中 Windows seed 上 33 个用例通过。
+- Core：PE、ELF 与 JS 解释器上 39 个用例逐字节一致。
 - Full：12 个 golden 用例已冻结，仅 `errore` 通过。
 - S1：`selfhost/` 中的原型，CI 中跑冒烟测试；尚未达到一致性。
-- S2–S4：尚未开始。Linux seed：E0。
+- S2–S4：尚未开始。Linux seed：E2/E3 完成（解释器 + 无 Node 的工具链）。
 - CLI `triad`：目前只能执行文件（REPL 和 SPEC §14 的选项待实现）。
 
 **标准的限制**（SPEC §15）：标准未涵盖具名参数（`budget(steps = …)` 除外）、可变 struct、用户自定义的抽象类型与参数化类型、无括号的宏、多层嵌套的 quote、Prolog 的 cut；副作用检查是动态的。

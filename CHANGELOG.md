@@ -2,6 +2,38 @@
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
+## Not released — 2026-11-05: toolchain Linux senza Node — install → run (N18, E3)
+
+### Added
+- `bin/triad-cli` — CLI **POSIX senza Node** a pura delega: `run <file> [-- args]` →
+  `bin/triad`; `test conformance [--update]|probes|all` → `conformance/run.sh` /
+  `tests/probes/run_probes.sh` / `verify.sh`; `status` deterministico (root, `uname -s -m`,
+  seed, stato del PATH). Exit code = comando delegato; exit 2 = errori d'uso.
+- `install.sh` riscritto secondo il contratto zero-install (ticket 07): decoder hex
+  **sh-puro `printf`** con escape ottali (nessun `xxd`/`python3`/`od`), verifica anti-drift
+  della decodifica col binario committato (`cmp` + avviso), launcher installati come
+  **wrapper a percorso assoluto** (niente symlink), **smoke test byte-exatto**
+  (`test_simple.td` vs `test_simple.expected.out`) che fa fallire l'installazione su
+  mismatch; fuori Linux x86-64 installazione parziale con avviso, exit 0.
+
+### Changed
+- `bin/triad`: **exec-sempre-il-seed** — escono la soglia stub 4 KB, la flag `--jsref`, il
+  ramo JS e il ramo `bin/triad-native` (nessun artefatto opzionale devia il runtime);
+  `TRIAD_SEED` resta l'unico override; seed mancante/non eseguibile → errore chiaro, exit 1.
+- `cli/triad-cli.mjs` (CLI Node di sviluppo): ai soli comandi dev `seed generate`,
+  `ai verify`, `ext check|package` (nome invariato).
+- `.github/workflows/ci.yml`: job `linux-toolchain` senza `setup-node` (launcher + install +
+  smoke negativo + `triad-cli test all`); documentazione tutorial (it/en/ja/zh/ru),
+  `README.md`, `cli/README.md`, `AGENTS.md`, `PROJECT_PROMPT.md`, `seed/README.md`,
+  `seed/linux-x86_64/README.md`, `BOOTSTRAP.md` §5/§10 allineati alla CI post-decisione 04.
+
+### Removed
+- `cli/lib/commands/run.mjs`, `test.mjs`, `build.mjs` e la logica di stub/fallback
+  (`seedIsStub`, `runSeed`, `runSh`, `findSeed`) da `cli/lib/utils.mjs`; comandi
+  `run`/`test`/`status`/`build standalone` dalla CLI Node (coperti dalla CLI sh).
+- `install.sh`: opzione `--no-symlink` (opzione sconosciuta → exit 2) e i rami decoder
+  `xxd`/`python3`/`od`+`awk`.
+
 ## Not released — 2026-11-05: seed Linux E2b — interprete Triad-Core nativo + harness senza Node (N17)
 
 ### Added

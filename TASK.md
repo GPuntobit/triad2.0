@@ -8,10 +8,11 @@ Complete Triad 2.0 as a standalone and recognized language with its own standard
 - **S1 (Triad Interpreter in Triad-Core):** Inline environment working with lists, complete basic primitives
 - **Seed S0 (Linux):** ELF **E2** (8499 byte: interprete Triad-Core completo, stessa
   macchina del PE, parità **byte-exatta** su conformance 39/39 + probe 39/39 + golden S1)
-  — **N15 chiusa il 2026-11-05** (E1 runner), **N16 chiusa il 2026-11-05** (confine `os_*`
-  isolato nel generatore PE, byte-identico), **N17 chiusa il 2026-11-05**
-  (E2b + harness senza Node + gate ripristinate + note di stato e commit); resta la
-  toolchain Linux senza Node (**N18**, qui sotto).
+  — **N15–N18 tutte chiuse il 2026-11-05**: E1 runner, E2a confine `os_*` (PE byte-identico),
+  E2b interprete + harness senza Node, E3 toolchain senza Node (`install.sh` →
+  `bin/triad`/`bin/triad-cli`, smoke byte-exatto). **Task principale (2026-11-03) completa**;
+  prossima in ordine: **N03** (`xs[i]` 1-based + gap `liste`) in un ciclo unico di rebuild
+  PE/ELF + hash CI.
 - **S2-S4:** mappa decisionale wayfinder `.scratch/self-hosting-m6/map.md` (tracciata
   2026-11-05; destinazione M6: punto fisso del compilatore nativo + seed ritirato);
   esecuzione da schedulare qui dopo le decisioni. Prima: porta Linux N15–N18.
@@ -41,10 +42,12 @@ attuare; il dettaglio resta nelle slice N17–N18 e nei ticket di
   `check_e1.sh` → `check_seed.sh`); 39 casi senza `--skip liste`; golden sidecar
   committati (`*.expected.out`/`*.expected.code`); CI ripuntata, inclusa la delega di
   `triad-cli test conformance` a `run.sh`.
-- [ ] **N18 — E3** (slice sotto): toolchain Linux senza Node — `bin/triad` senza logica di
-  stub (soglia 4 KB, `--jsref`, ramo JS escono), `bin/triad-cli` POSIX a pura delega,
-  `install.sh` con wrapper a percorso assoluto + smoke test byte-exatto (decisioni 07/09);
-  CI `seed-linux` sull'ELF nativo senza Wine.
+- [x] **N18 — E3** (slice sotto) — ✅ **fatto 2026-11-05**: `bin/triad` senza logica di
+  stub (soglia 4 KB, `--jsref`, ramo JS e ramo `bin/triad-native` escono), `bin/triad-cli`
+  POSIX a pura delega (`run`/`test`/`status`), `install.sh` con decoder `printf` puro,
+  wrapper a percorso assoluto e smoke test byte-exatto (mismatch → exit non-zero; verificato
+  anche con golden alterato); `cli/triad-cli.mjs` ai soli comandi dev; CI `seed-linux`
+  sull'ELF nativo senza Wine e `linux-toolchain` senza Node (decisioni 07/09).
 - [x] **Ripristino sull'ELF delle gate perse dalle gambe Windows** (dentro N17) —
   ✅ **fatto 2026-11-05**: probe `ok_*`/`test_*`, golden `selfhost/source.td`, probe
   `get` e smoke `selfhost/main.td` riagganciate al job `seed-linux` (step `sh verify.sh` →
@@ -53,10 +56,11 @@ attuare; il dettaglio resta nelle slice N17–N18 e nei ticket di
   il gate `conformance/core` copre i **39 casi** con `sh conformance/run.sh`, senza
   `--skip`: il gap `liste` è **registrato** nell'harness (esito del seed congelato come
   `exit 1 + stdout vuoto`, identico su PE ed ELF), non skippato.
-- [ ] **Aggiornamento tutorial alla CI post-decisione 04** (dentro N18, documentazione
-  stato piattaforme): `docs/tutorial/*` (it/en/ja/zh) citano ancora il job `seed-windows`
-  (33 casi Core sul PE, step `Hash check`, array `$cases`) — riscrivere secondo la CI
-  attuale (gate hash PE in `seed-linux`, suite sull'ELF nativo).
+- [x] **Aggiornamento tutorial alla CI post-decisione 04** (dentro N18, documentazione
+  stato piattaforme) — ✅ **fatto 2026-11-05**: `docs/tutorial/*` (it/en/ja/zh/ru)
+  riscritti secondo la CI attuale (gate hash PE in `seed-linux`, suite sull'ELF nativo,
+  nessun riferimento a `seed-windows`/`$cases`/`conformance/run.mjs`), incluse le tabelle
+  dei job CI, la CLI a due livelli e il capitolo del seed Linux (E0 → E2).
 - [x] **Revisione delle modifiche pendenti preesistenti** in `GLOSSARY.md`/`STATUS.md`/
   `TASK.md` (nel working tree prima della sessione N16) — ✅ **risolta col commit
   `7350412`** (modifiche incorporate, nessun scarto).
@@ -176,6 +180,21 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   senza logica di stub; `triad-cli` in shell POSIX installato e funzionante senza Node
   (`status`, `test` → harness); CI `seed-linux` verde senza Wine; l'utente Windows
   continua a usare il PE invariato; `linux-toolchain` copre launcher + install.
+- **Esito (2026-11-05):** N18 verificata e chiusa — `install.sh` decodifica `seed.hex` con
+  un solo decoder sh-puro `printf` (nessun `xxd`/`python3`/`od`; 8499 byte in ~0,2 s),
+  confronta la decodifica col binario committato (anti-drift `cmp` + avviso) e installa
+  `triad`/`triad-cli` come wrapper a percorso assoluto; smoke test byte-exatto su
+  `test_simple.expected.out` con `cmp`, che **fa fallire l'installazione** su mismatch
+  (verificato anche negativamente); fuori Linux x86-64 installazione parziale con avviso,
+  exit 0. `bin/triad` exec-sempre-il-seed; `bin/triad-cli` sh (`run`/`test`/`status`,
+  `status` deterministico); `cli/triad-cli.mjs` ai soli comandi dev con
+  `run.mjs`/`test.mjs`/`build.mjs` e `seedIsStub`/`runSeed` eliminati. CI: `linux-toolchain`
+  senza `setup-node` con smoke negativo esplicito; `seed-linux` resta su runner pinnato
+  `ubuntu-24.04` (deviazione minore dall'acceptance `ubuntu-latest`, nota a ticket 09).
+  Tutorial (it/en/ja/zh/ru) + `README.md`/`cli/README.md`/`AGENTS.md`/`PROJECT_PROMPT.md`/
+  `seed/*README*`/`BOOTSTRAP.md` §5/§10 aggiornati. Gate verdi: `sh verify.sh` (conformance
+  39 + probe 39), `check_seed.sh` (7 casi), `ai verify` 5/5, site-gen lint + `--check`,
+  `tests/security/run.sh` ALL PASSED.
 
 ### N19 — (secondario, non bloccante) Esperienza di sviluppo / IDE
 - **Files:** `editors/` (grammar VS Code/Vim già presenti), eventualmente un Language Server.

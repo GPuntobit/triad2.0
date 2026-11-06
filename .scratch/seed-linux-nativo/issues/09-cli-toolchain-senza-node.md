@@ -81,3 +81,26 @@ Conseguenze registrate senza dibattito:
 Aggiornamenti: `TASK.md` (N18: CLI sh e dev CLI), vincolo d'interfaccia commentato su
 [08 — Harness di verifica senza Node (shell POSIX)](08-harness-verifica-senza-node.md).
 Nessun ADR.
+
+## Comments
+
+- 2026-11-05 (chiusura N18, attuazione completa): CLI senza Node **consegnata**.
+  (Q1/Q4) `bin/triad-cli` in shell POSIX, pura delega: `run <file> [-- args]` → `bin/triad`;
+  `test conformance [--update]|probes|all` → `conformance/run.sh`/`run_probes.sh`/`verify.sh`;
+  `status` deterministico senza colori (root, `uname -s -m`, seed trovato/eseguibile, stato del
+  PATH d'installazione); exit code = comando delegato, exit 2 = errori d'uso; invocabile da
+  qualunque cwd. (Q3/Q6/Q7) `cli/triad-cli.mjs` assottigliata ai soli comandi dev
+  (`seed generate`, `ai verify`, `ext check|package`) con il nome invariato; escono
+  `run`/`test`/`status` e `build standalone`; `run.mjs`/`test.mjs`/`build.mjs` eliminati e con
+  loro `seedIsStub`/`runSeed`/`runSh`/`findSeed` («la logica di stub/fallback decade»).
+  (Q2/Q8) `bin/triad-native` fuori dal launcher; `install.sh` installa `triad` + `triad-cli`
+  come wrapper a percorso assoluto; verifica finale = smoke byte-exatto + `triad-cli status`,
+  senza Node; `linux-toolchain` gira senza `setup-node` e copre launcher + install + smoke
+  negativo (golden alterato → installazione fallisce).
+  Nota d'implementazione: i comandi dev non sono raggiungibili da `bin/triad-cli` (solo
+  `node cli/triad-cli.mjs …`): la CLI sh resta così a pura delega senza Node per intero.
+  Conseguenza registrata: `bin/triad-cli.cmd` (Windows) resta invariato ma i comandi
+  `run`/`test`/`status` sono usciti da `triad-cli.mjs` — su Windows restano da disambiguare
+  in uno sforzo futuro (fuori destinazione Linux). Deviazione minore dall'acceptance:
+  il job `seed-linux` resta su runner pinnato `ubuntu-24.04` (non `ubuntu-latest`), per
+  coerenza col resto della CI e riproducibilità del gate.

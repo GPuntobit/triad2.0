@@ -22,7 +22,7 @@
 
 | プロファイル | 定義場所 | 本日実行可能か |
 |---|---|---|
-| **Triad-Core** | `SPEC-CORE.md` | **はい**：JavaScriptの参照インタプリタ`seed/dev/triad_core.cjs`（Coreの37/37ケース）およびWindows seed `seed/windows-x86_64/seed.exe`（CIで検証済みのCore 33ケース） |
+| **Triad-Core** | `SPEC-CORE.md` | **はい**：機械語のseed（`seed/windows-x86_64/seed.exe`、`seed/linux-x86_64/seed`）はCoreの39ケースをバイト単位で通過する。JavaScriptの参照インタプリタ`seed/dev/triad_core.cjs`もすべて通す |
 | **Triad-Full** | `SPEC.md` | **いいえ**：struct、dispatch、論理、マクロ、契約、バジェット、トレース、効果、分配分解、`for`、`try`、`Float`は仕様書で定義されているだけである。Fullのconformanceで通るのは`errore`のみ |
 
 文脈についての補足を2つ述べる。本書とプロジェクトを取り違えないようにするためのものである。標準のバージョンは`0.2.0`で、`VERSION`に記録されている。TriadはJuliaには依存しない。かつてのその実装は削除されており、本書で読むTriad-Fullの出力は**golden**、すなわち当時のその実装が生成して`conformance/cases/`に固定された期待結果であり、現在のランタイムが再現したものではない。反対に、**Output:**と表示された例はいずれも`node seed/dev/triad_core.cjs`で検証済みのTriad-Coreプログラムである。Fullの例は**Output (golden Full):**と表示されるか、出力を記載しないかのどちらかである。
@@ -89,7 +89,7 @@
 33. [リポジトリのマップ](#cap-33)
 34. [JSの参照インタプリタ（`seed/dev/triad_core.cjs`）](#cap-34)
 35. [Windows S0 seedとそのジェネレータ](#cap-35)
-36. [Linux seed（E0）](#cap-36)
+36. [Linux seed（E2）](#cap-36)
 37. [自己ホスト：`selfhost/`のS1](#cap-37)
 38. [Conformance：ケースの読み書きと検証](#cap-38)
 39. [開発CLI `triad-cli`](#cap-39)
@@ -158,7 +158,7 @@ S4  Triad completo: REPL, CLI, tooling, parità Linux     (non iniziato)
 
 S0 seedは実行ファイルとしてではなく16進ダンプとして配布される。テキストのリポジトリでバイナリを版管理する最も単純な方法だからであり、オペレーティングシステムのデコード用ツールで実体化する（[第2章](#cap-2)）。S1–S4の各段階はプロジェクトの進行方向であり、この本を読むために必要なものではない。チュートリアルを追うにはS0 seedかJSインタプリタがあればよい。
 
-Node.jsのツール（`seed/dev/*.js`、`conformance/run.mjs`、`cli/`）は**開発ツール**である。生成と検証には役立つが、S0→S4の連鎖の一部ではない。本書のパートIVが1つずつ紹介し、何をするのか、なぜブートストラップの外側にあるのかを説明する。
+開発ツール（Node.jsの`seed/dev/*.js`と`cli/`、POSIXシェルのハーネス`conformance/run.sh`と`verify.sh`）は**開発ツール**である。生成と検証には役立つが、S0→S4の連鎖の一部ではない。本書のパートIVが1つずつ紹介し、何をするのか、なぜブートストラップの外側にあるのかを説明する。
 
 ---
 
@@ -210,20 +210,15 @@ certutil -decodehex seed\windows-x86_64\seed.hex seed\windows-x86_64\seed.exe
 ```
 
 ```sh
-# Linux: seed ELF allo stadio E0 (stampa solo "Triad seed Linux OK")
+# Linux: seed ELF E2（Triad-Coreインタプリタ）——推奨は ./install.sh
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed
 ```
 
-Windowsのコマンドは、前の実行ファイルが存在すればそれを削除してからダンプから作り直す。Linuxでは結果は最小のELF、すなわちE0段階になる。現時点では起動メッセージを出力するだけである。まだインタプリタではない。これはインストールのエラーではなく、[`STATUS.md`](STATUS.md)に記された移植の現状である。
+Windowsのコマンドは、前の実行ファイルが存在すればそれを削除してからダンプから作り直す。Linuxでは結果は機械語のTriad-Coreインタプリタ（E2段階）である。Linuxではリポジトリのrootから`./install.sh`を実行するのが推奨だ：POSIXシェルだけでseedを再デコードし、ランチャーをインストールし、バイト単位のスモークテストを通過する。
 
 ### 2.4 ランチャー`bin/triad`と`bin/triad.cmd`
 
-ランチャーは、毎回どのバイナリを使うのか、それがどのフォルダにあるのかを覚えておく必要がなくなるためのものである。必須ではないが便利である。`bin/`が`PATH`に入っていれば、`triad file.triad`だけでよい。システムにインストールされた言語と同じように。ランタイムの探索は、最もよいランタイムから利用可能なものへと、決まった順序で行われる。
-
-1. `bin/triad-native`（スタンドアロン実行ファイル。**まだ作成されていない**。S2–S3で追加される）；
-2. `seed/<piattaforma>/seed`（Windowsでは`seed\windows-x86_64\seed.exe`）。
-
-LinuxではランチャーはE0段階のELF seedを見つけるが、これは**まだプログラムを解釈しない**。Linuxでコードを実行するには直接JSインタプリタを使う。`triad --build`はかつてのJulia実装の残骸である。ビルドがサポートされなくなった理由を説明するメッセージを出力し、終了コード2で終わる。どのランタイムも利用できない場合、ランチャーは黙って失敗しない。seedを実体化するための手順を出力する。
+ランチャーは、毎回どのバイナリを使うのか、それがどのフォルダにあるのかを覚えておく必要がなくなるためのものである。必須ではないが便利である。`bin/`が`PATH`に入っていれば、`triad file.triad`だけでよい。システムにインストールされた言語と同じように。ランチャーは機械語のseed（Windowsでは`seed\windows-x86_64\seed.exe`、Linuxでは`seed/linux-x86_64/seed`、E2段階）を**常に**実行する。他のランタイムへの自動フォールバックは存在しない——JSインタプリタは開発ツールのままであり、ユーザーパスになることはない。環境変数`TRIAD_SEED`で特定のseedを強制できる。seedが見つからないか実行できない場合、ランチャーは黙って失敗せず、seedを実体化するための手順（`./install.sh`または`seed.hex`のデコード）を出力する。
 
 ### 2.5 終了コード
 
@@ -242,14 +237,15 @@ SPEC §14のオプション（`-e`、`-E`、`-l`、`-i`、`--tree`、`--help`、
 CLIは任意である。通常リポジトリで手作業で行う操作を1つのコマンドにまとめている。以下の行はよく使われるものを選び、各行に何をするかを表すコメントを付けている。
 
 ```sh
-bin/triad-cli status                 # ambiente e seed trovato (Windows: bin\triad-cli.cmd)
-bin/triad-cli test conformance       # conformance Core
-bin/triad-cli ai verify -v           # verifica le soluzioni di ai/tasks/
-bin/triad-cli seed generate windows  # rigenera seed.hex e stampa lo SHA-256
-node conformance/run.mjs             # runner di conformance diretto (Core)
+bin/triad-cli status                 # 環境と検出されたseed（Node不要）
+bin/triad-cli test conformance       # conformance Core（39ケース、バイト単位）
+bin/triad-cli test all               # 完全なゲート：conformance + probe
+node cli/triad-cli.mjs ai verify -v  # ai/tasks/の解を検証（開発用、Node）
+node cli/triad-cli.mjs seed generate windows  # seed.hexを再生成しSHA-256を出力
+sh conformance/run.sh                # conformanceハーネスを直接実行（Core）
 ```
 
-ランチャー`bin/triad-cli*`は初回起動時に`npm install`を`cli/`で実行する。代わりに[betaリリース](https://github.com/GPuntobit/triad2.0/releases)同梱のスタンドアロン実行ファイル`triad-cli.exe`/`triad-cli`を使ってもよい。詳細は[第39章](#cap-39)にある。パートIIを追うのにCLIは不要である。例は直接`node`で実行する。
+CLI`bin/triad-cli`は純粋なPOSIXシェルで、**Nodeを必要としない**：`run`/`test`/`status`を担う。開発コマンド（`ai verify`、`seed generate`、`ext`）はNode CLI`node cli/triad-cli.mjs`（`cd cli && npm install`の後）にある。あるいは[betaリリース](https://github.com/GPuntobit/triad2.0/releases)同梱のスタンドアロン実行ファイル`triad-cli.exe`/`triad-cli`を使ってもよい。詳細は[第39章](#cap-39)にある。パートIIを追うのにCLIは不要である。例は直接`node`で実行する。
 
 ---
 
@@ -1121,7 +1117,7 @@ S1がTriad-Fullを実行する時点では、言語は本物の`Err`値を持つ
 
 Triad-Coreには2つの実装があり、同一のものではない。JSインタプリタは開発用の道具である。Node.jsがあればどこでも動き、修改しやすく、準拠ケースの検証に使われる参照でもある。Windows seedはブートストラップの第一歩である。ホストのランタイムを持たない機械語のインタプリタであり、手書きであるため制限が多い。プログラムがseed上でも動かなければならない場合、S1のコードのように、何が両方で動くかを知っておくことは不可欠である。
 
-契約は`conformance/core/`にある。両方のランタイムは同じgoldenを生成しなければならない。現在、JSインタプリタはすべてを通す。Windows seedはCIの`seed-windows`ジョブに記載された33ケースを通す。これらのケースの外では、二つのランタイムは異なる。
+契約は`conformance/core/`にある。両方のランタイムは同じgoldenを生成しなければならない。現在、JSインタプリタもseed（Windows PEとLinux ELF）も39ケースすべてをバイト単位で通過する：ゲートはネイティブELF上で動く（ジョブ`seed-linux`）。測定済みのドメイン差異は残っており、probeと表に記録されている：
 
 | 機能 | JSインタプリタ（`seed/dev/triad_core.cjs`） | Windows seed（`seed.exe`） |
 |---|---|---|
@@ -2322,10 +2318,10 @@ r.kind          # :budget
 |---|---|---|
 | `SPEC.md`、`SPEC-CORE.md`、`VERSION`、`CHANGELOG.md` | Markdown | 標準（FullとCore）、バージョン、履歴 |
 | `BOOTSTRAP.md`、`STATUS.md`、`TASK.md`、`plan.md` | Markdown | S0→S4の計画、状態、バックログとタスク |
-| `conformance/` | Triad + Node | goldenケース（`cases/`がFull、`core/cases/`がCore）とランナー`run.mjs` |
+| `conformance/` | Triad + sh | goldenケース（`cases/`がFull、`core/cases/`がCore）とハーネス`run.sh` |
 | `seed/windows-x86_64/` | 機械語 | `seed.hex`（ソース）、`seed.exe`（デコード済み）、レイアウトを記したREADME |
-| `seed/linux-x86_64/` | 機械語 | seed ELF E0（`seed.hex`、`seed`） |
-| `seed/dev/` | Node.js | seedの生成器（`gen_seed.js`、`gen_seed_linux.js`）と参照インタプリタ`triad_core.cjs` |
+| `seed/linux-x86_64/` | 機械語 | seed ELF E2、Triad-Coreインタプリタ（`seed.hex`、`seed`） |
+| `seed/dev/` | Node.js | seedの生成器（`gen_seed.js <windows|linux|all>`）と参照インタプリタ`triad_core.cjs` |
 | `selfhost/` | Triad-Core | S1：Triad-Coreで書かれたTriadインタプリタ（進行中） |
 | `examples/` | Triad-Full | 標準のサンプルプログラム |
 | `cli/` | Node.js (ESM) | `triad-cli`：開発用CLI（commander, execa, chalk） |
@@ -2382,7 +2378,7 @@ const BUILTIN_NAMES = new Set(['print','println','length','push!','Int','string'
   }
 ```
 
-次に、`conformance/core/cases/`にケースを1つ追加し（[§38](#cap-38)）、`node conformance/run.mjs`を実行する。`Int`が`BigInt`（`0n`、`1n`）であること、結果はヘルパー（`I`、`B`、`S`、`Y`、`L`、`NOTHING`）で組み立てることを忘れずに。
+次に、`conformance/core/cases/`にケースを1つ追加し（[§38](#cap-38)）、`sh conformance/run.sh`を実行する。`Int`が`BigInt`（`0n`、`1n`）であること、結果はヘルパー（`I`、`B`、`S`、`Y`、`L`、`NOTHING`）で組み立てることを忘れずに。
 
 ### 34.3 例：構文を追加する
 
@@ -2447,7 +2443,7 @@ cmpByteRsiImm(0x22); jne('q_loop');
 2. ダンプを再生成する：`node seed/dev/gen_seed.js seed/windows-x86_64/seed.hex`（または`bin/triad-cli seed generate windows`。こちらはSHA-256も表示する）；
 3. Windowsでデコードする：`certutil -decodehex -f seed\windows-x86_64\seed.hex seed\windows-x86_64\seed.exe`；
 4. seedでCoreのケースとprobe`test_get.td`を実行する；
-5. **まとめて**更新する：`.github/workflows/ci.yml`のハッシュ（job`seed-windows`、step`Hash check`）、`seed/windows-x86_64/README.md`、`seed/dev/README.md`、`STATUS.md`。新しいCoreのケースがseedで通るなら、そのjobの`$cases`配列に追加する。
+5. **まとめて**更新する：`.github/workflows/ci.yml`のハッシュ（ジョブ`seed-linux`、ステップ`Hash check`）、`seed/windows-x86_64/README.md`、`seed/linux-x86_64/README.md`、`seed/dev/README.md`、`STATUS.md`。Coreのケースはどこにも列挙しない：ハーネス`conformance/run.sh`が`conformance/core/cases`から発見する。
 
 既知の落とし穴（`STATUS.md`より）：コードが伸びるとデータに重なることがある（import名は現在RVA`0x5000`から始まる）；初期化前にレジスタを使う（バグ`pbs_int`）；組み込み関数の呼び出しでスタック上の引数の順序（`get`）。DefenderがPEを偽陽性として検出することがある（CIは除外設定を追加している）。
 
@@ -2455,14 +2451,14 @@ cmpByteRsiImm(0x22); jne('q_loop');
 
 <a id="cap-36"></a>
 
-## 36. Linuxのseed（E0）
+## 36. Linuxのseed（E2）
 
-`seed/linux-x86_64/seed`は`seed/dev/gen_seed_linux.js`が生成した**173バイト**の静的ELF64である。entry`0x400078`、R/Xの`PT_LOAD`は1つだけで、`write`/`exit`を直接syscallする。`Triad seed Linux OK`を出力して0で終了する。マイルストーンM7の第一歩であり、E1/E2/E3（ファイル読み込み、インタプリタ）は未完で、Windows seedのロジックを別の`os_*`レイヤーに置き換えて再利用する形になる。
+`seed/linux-x86_64/seed`は`seed/dev/gen_seed.js linux`が生成した**8499バイト**の静的ELF64である。entry`0x400078`、R/Xの`PT_LOAD`は1つだけで、直接syscall（`openat`/`read`/`write`/`exit`、`os_*`ルーチンに隔離）を使う。完全な**Triad-Coreインタプリタ**であり、Windows seedと同じマシンで、共有golden上でstdoutはバイト単位で一致する（conformance 39/39 + probe + golden S1）。マイルストーンM7（Linux移植）は完了している：E0（最小）→ E1（ファイル読み込み）→ E2（インタプリタ）→ E3（Nodeなしのツールチェーン、`./install.sh`）。
 
 ```sh
-node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex   # verifica magic, entry, round-trip
+node seed/dev/gen_seed.js linux seed/linux-x86_64/seed.hex   # dumpを再生成（再現可能）
 xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed
-./seed/linux-x86_64/seed                                     # Triad seed Linux OK
+./seed/linux-x86_64/seed tuo_programma.td                     # プログラムを実行
 ```
 
 ---
@@ -2527,18 +2523,18 @@ conformance/core/cases/<nome>/      (oppure conformance/cases/<nome>/ per Full)
 
 stdoutと終了コードが一致すればケースは合格とする。stderrは比較しない。stdinも対話的入力も存在しない。
 
-### 38.2 ランナー`conformance/run.mjs`
+### 38.2 ハーネス`conformance/run.sh`
 
 ```sh
-node conformance/run.mjs                              # Core (default conformance/core/cases)
-node conformance/run.mjs --cases conformance/cases    # Full (oggi passa solo errore)
-node conformance/run.mjs --skip liste,valori          # salta casi (default: liste)
-node conformance/run.mjs --update                     # RIGENERA i golden dal runtime corrente
+sh conformance/run.sh              # Core（39ケース、conformance/core/casesから発見）
+sh conformance/run.sh --update     # 現在のランタイムからgoldenを再生成（開発用）
 ```
 
-選択されるランタイムは次の順である：環境変数`TRIAD_SEED`、Linux/macOSではJSインタプリタ、Windowsでは`bin/triad-native.exe`、次に`seed/windows-x86_64/seed.exe`。明示的なパスでseedを試す例：`TRIAD_SEED=/percorso/seed node conformance/run.mjs`。
+Fullスイート（`conformance/cases`）はゲートの外にとどまる：今日通るのは`errore`だけである。Nodeランナー`conformance/run.mjs`はPOSIXハーネスに置き換えられた（2026-11-05）。
 
-Linux/macOSではランナーはJSインタプリタを使い、37件のケースをすべて検証する。Windowsではseedを使う。seedは標準の添字構文`xs[i]`を実装していないため、デフォルトで`liste`のケースをスキップする。よってランナーは36件のケースを出力する。除外されたケースをJSインタプリタで試すには：
+選択されるランタイムはリポジトリのELF seed（`seed/linux-x86_64/seed`）で、環境変数`TRIAD_SEED`で上書きできる。明示的なパスでseedを試す例：`TRIAD_SEED=/percorso/seed sh conformance/run.sh`。JSフォールバックは存在しない：ゲートはネイティブseedをgoldenとバイト単位で比較する。
+
+ゲートは除外なしで39ケースすべてをカバーする：歴史的な`liste`のギャップ（seedは標準の添字構文`xs[i]`を実装していない）はスキップではなく、期待される結果（exit 1、stdout空、PEとELFで同一）としてハーネスに**登録**されている。除外されたケースをJSインタプリタで試すには：
 
 ```sh
 node seed/dev/triad_core.cjs conformance/core/cases/liste/program.td
@@ -2555,9 +2551,8 @@ goldenはバージョン管理された期待値であり、セマンティク�
 1. イタリア語で説明的な名前を選ぶ（`liste_annidate`、`stringhe_vuote`、…）；
 2. SPEC-CORE §2–§7だけを使って`program.td`を書く（ブートストラッププリミティブは使わない：Fullでも動く必要がある）；
 3. 仕様に基づいて`expected.out`（末尾LF付き）と`expected.code`（`0`）を手書きする——`--update`で盲目的に生成しては**ならない**、さもないとランタイムのバグを固定してしまう；
-4. `expected.out`を`expected.golden`にコピーする；
-5. `node conformance/run.mjs`が`PASS  <nome>`を出力すること；
-6. ケースがWindows seedでも通るなら、`.github/workflows/ci.yml`の`seed-windows`ジョブの`$cases`に追加する。
+4. `sh conformance/run.sh`が`PASS  <nome>`を出力すること；
+5. 更新すべきリストはない：ハーネスがディレクトリからケースを発見し、ジョブ`seed-linux`がネイティブELF上でスイートを実行する。`expected.out`/`expected.code`がコミットされていることだけ確認する。
 
 ```sh
 mkdir conformance/core/cases/somma_lista
@@ -2574,7 +2569,7 @@ TD
 printf '12\n' > conformance/core/cases/somma_lista/expected.out
 cp conformance/core/cases/somma_lista/expected.out conformance/core/cases/somma_lista/expected.golden
 printf '0' > conformance/core/cases/somma_lista/expected.code
-node conformance/run.mjs | grep somma_lista          # PASS  somma_lista
+sh conformance/run.sh | grep somma_lista          # PASS  somma_lista
 ```
 
 Fullのgolden（`conformance/cases/`）は**凍結**されている：Fullの実装が存在するまで再生成してはならない。
@@ -2583,40 +2578,42 @@ Fullのgolden（`conformance/cases/`）は**凍結**されている：Fullの実
 
 <a id="cap-39"></a>
 
-## 39. 開発CLI `triad-cli`
+## 39. ツールチェーンCLI `triad-cli`
 
 ### 39.1 使い方
 
+ツールチェーンは2層に分かれている：`bin/triad-cli`（POSIX、**Node不要**、ユーザーパス）と`node cli/triad-cli.mjs`（Node、開発コマンドのみ）。
+
 | コマンド | 機能 |
 |---|---|
-| `triad-cli status` | Nodeのバージョン、プラットフォーム、検出されたseed、プロジェクトのroot |
-| `triad-cli test conformance [-c DIR] [-u]` | `conformance/run.mjs`を実行する（デフォルトはCore、`--skip liste`） |
-| `triad-cli test run` | Coreのconformanceのエイリアス（古いJuliaのテストはもう存在しない） |
-| `triad-cli ai verify [-t DIR] [-v]` | `ai/tasks/`の`solution.triad`をネイティブseedで実行し、goldenと比較する |
-| `triad-cli seed generate windows\|linux [-o FILE]` | seedのジェネレータを実行し、dumpのSHA-256を出力する |
-| `triad-cli build standalone` | 利用不可：メッセージを出力する |
+| `triad-cli status` | プロジェクトのroot、プラットフォーム、検出されたseed、PATHの状態 |
+| `triad-cli run <file> [-- args]` | `bin/triad`経由でTriadプログラムを実行する |
+| `triad-cli test conformance [--update]` | `conformance/run.sh`を実行する（Core 39ケース） |
+| `triad-cli test probes` / `test all` | probe / 完全なゲート（`verify.sh`） |
+| `node cli/triad-cli.mjs ai verify [-t DIR] [-v]` | `ai/tasks/`の`solution.triad`をネイティブseedで実行し、goldenと比較する |
+| `node cli/triad-cli.mjs seed generate windows\|linux [-o FILE]` | seedのジェネレータを実行し、dumpのSHA-256を出力する |
+| `node cli/triad-cli.mjs ext check\|package` | VS Code拡張機能を検証・パッケージする |
 
-起動方法：`node cli/triad-cli.mjs …`（`cd cli && npm install`の後）、ランチャー`bin/triad-cli` / `bin\triad-cli.cmd`（初回起動時に依存関係をインストールし、`npm install`が失敗すれば停止する）、またはリリースのスタンドアロン実行ファイル。
+起動方法：`bin/triad-cli`はすぐに使える（POSIXシェル、インストール不要）。開発コマンドは`node cli/triad-cli.mjs …`（`cd cli && npm install`の後）、Windowsでは`bin\triad-cli.cmd`、またはリリースのスタンドアロン実行ファイルで呼び出す。
 
 ### 39.2 コードの構成
 
 ```
 cli/
-  triad-cli.mjs            definizione dei comandi con commander
-  lib/utils.mjs            findProjectRoot, findSeed, runSeed, runNode, projectPath, …
-  lib/commands/test.mjs    handleTestRun, handleTestConformance
+  triad-cli.mjs            commanderによる開発コマンドの定義（seed/ai/ext）
+  lib/utils.mjs            findProjectRoot, runNode, projectPath, fileExists
   lib/commands/ai.mjs      handleAIVerify
   lib/commands/seed.mjs    handleSeedGenerate (windows/linux)
-  lib/commands/build.mjs   handleBuildStandalone
-  build-exe.mjs            build dell'eseguibile Node SEA (esbuild + postject)
+  lib/commands/ext.mjs     handleExtCheck, handleExtPackage
+  build-exe.mjs            Node SEA実行ファイルのビルド（esbuild + postject）
 ```
 
-- `findProjectRoot()`はroot（`conformance/run.mjs`と`seed/`を持つフォルダ）を、`TRIAD_HOME`、モジュールのフォルダ、実行ファイルのフォルダ、現在のフォルダの順に探して見つける。
+- `findProjectRoot()`はroot（`conformance/run.sh`と`seed/`を持つフォルダ）を、`TRIAD_HOME`、モジュールのフォルダ、実行ファイルのフォルダ、現在のフォルダの順に探して見つける。
 - 各ハンドラは`true`/`false`を返し、`triad-cli.mjs`がそれを終了コード0/1に変換する。
 
 ### 39.3 コマンドを追加する
 
-1. `cli/lib/commands/<nome>.mjs`を作り、`handle<Nome>(options)`という真偽値を返す関数を用意して、`utils.mjs`の`projectPath`、`runNode`、`runSeed`を使う；
+1. `cli/lib/commands/<nome>.mjs`を作り、`handle<Nome>(options)`という真偽値を返す関数を用意して、`utils.mjs`の`projectPath`、`runNode`を使う；
 2. `triad-cli.mjs`に登録する：
 
 ```js
@@ -2682,9 +2679,11 @@ LLMがTriad-Coreをどう上手く書けるかを測る。
 
 | ジョブ | 検証内容 |
 |---|---|
-| `conformance-core`（Ubuntu、Node 20） | JSインタプリタで`node conformance/run.mjs --cases conformance/core/cases --skip liste`を実行する |
-| `seed-windows` | `seed.hex`をデコードし、PE上で33件のCoreケースを実行してstdoutを比較、probeの`test_get.td`（期待値は`20`）、スモークテストの`selfhost/main.td`（期待値は`Value: 10`）、`seed.hex`のハッシュ |
-| `seed-linux` | ELF E0をデコードして実行し、そのハッシュを検証する |
+| `conformance-core`（Ubuntu） | `sh conformance/run.sh`（Core 39ケース、バイト単位）と`selfhost/`ソースの有効性 |
+| `seed-linux`（ネイティブELF、Wineなし） | `check_seed.sh`（エラー・制限の契約）、PEとELFの`seed.hex`のハッシュ（改ざん防止ゲート）、再現可能なdump（`gen_seed.js` + `cmp`）、`sh verify.sh`（conformance + probe + golden S1 + smoke） |
+| `linux-toolchain`（Nodeなし） | ランチャー`bin/triad`、バイト単位のスモークテスト付き`install.sh`（goldenを変えるとインストールが失敗する）、`triad-cli status`と`triad-cli test all` |
+| `security` | `tests/security/run.sh`（ピン留めアクション、パスハイジャック、トークン、サニタイズ） |
+| `site-gen` | Triadジェネレータのlintと公開サイトのバイト単位の一致 |
 
 `pages.yml`と`static.yml`は、`main`へのpushごとに`docs/`をGitHub Pagesへ公開する。
 
@@ -2701,7 +2700,7 @@ Fullプロファイルは未実装のため**CIには含まれない**。緑と�
 | 変更 | 対応 |
 |---|---|
 | 言語の挙動 | `SPEC.md`/`SPEC-CORE.md`、`CHANGELOG.md`、規範的な変更なら`VERSION`を更新する；conformanceのケースを追加・更新する |
-| JSインタプリタ | SPEC-COREに忠実であること；`node conformance/run.mjs`が緑であること |
+| JSインタプリタ | SPEC-COREに忠実であること；`sh conformance/run.sh`が緑であること |
 | Windows seed | `seed.hex`を再生成し、CIとREADMEのハッシュを更新し、Windowsで試す |
 | S1（`selfhost/`） | `seed.exe`上で動くこと；`main.td`の出力が変わるなら、CIのスモークテストを更新する |
 | CLI | 真偽値を返すハンドラ；`cli/README.md`；必要なら実行ファイルを再ビルドする |
@@ -2838,7 +2837,7 @@ eval:        eval(codice)
 - **S0 / seed**：機械語で書かれたTriad-Coreインタプリタ（`seed/`）。
 - **S1**：Triad-Coreで書かれたTriad全体のインタプリタ（`selfhost/`）。
 - **S2 / S3 / S4**：ネイティブコンパイラ、自己ホスト、完全なランタイム（`BOOTSTRAP.md`を参照）。
-- **E0 / E1 / …**：seedのLinux移植の段階（マイルストーンM7）。
+- **E0 / E1 / E2 / E3**：seedのLinux移植の段階（マイルストーンM7）：最小、ファイル読み込み、Triad-Coreインタプリタ、Nodeなしのツールチェーン。
 - **Triad-Core / Triad-Full**：2つの準拠プロファイル。
 - **JSインタプリタ**：`seed/dev/triad_core.cjs`、開発とCIのためのCoreの参照実装。
 - **Golden**：コミットされた期待出力（`expected.out`、`expected.code`）。
@@ -2862,10 +2861,10 @@ eval:        eval(codice)
 ## 48. 状態、既知の制限と過去の修正
 
 **状態**（詳細は[`STATUS.md`](STATUS.md)）：
-- Core：JSインタプリタで37/37ケース、CIではWindows seedで33ケース。
+- Core：PE、ELF、JSインタプリタで39ケースがバイト単位で一致。
 - Full：12件のgoldenケースが凍結されており、パスするのは`errore`のみ。
 - S1：`selfhost/`にプロトタイプ、CIでスモークテスト。準拠対応はまだ。
-- S2–S4：未着手。Linux seed：E0。
+- S2–S4：未着手。Linux seed：E2/E3完了（インタプリタ + Nodeなしのツールチェーン）。
 - CLI `triad`：ファイル実行のみ（REPLとSPEC §14のオプションは未対応）。
 
 **標準の制限**（SPEC §15）：名前付き引数（`budget(steps = …)`を除く）、可変struct、ユーザー定義の抽象型と型パラメータ、括弧なしのマクロ、複数段階にネストされたquote、Prologのcutは想定されていない。効果の制御は動的なものだ。
