@@ -21,16 +21,7 @@
 #      rm + ricreazione, mai attraverso un symlink (protezione nota in
 #      docs/security/SECURITY-REVIEW.md, ex run.mjs).
 #
-#  Gap noto (registrazione, non skip): il caso `liste` usa xs[i] e
-#  push!-statement, fuori dal dominio machine-code del seed (lacune
-#  S0.2 registrate in SPEC-CORE.md, nota 2026-11-02; assenza misurata
-#  identica su PE ed ELF il 2026-11-05). Il golden SPEC del caso resta
-#  quello normativo (39/39 verdi sull'interprete JS di riferimento);
-#  l'esito del seed e' congelato come "exit 1 + stdout vuoto": se il
-#  seed cambia comportamento (es. N03 estende il dominio) il gate
-#  fallisce e forza la rigenerazione deliberata del golden dal SPEC
-#  piu' la rimozione del gap. Nessuna semantica inventata (regola 1).
-#
+
 #  Uso: sh conformance/run.sh [--update]        (invocabile da qualunque cwd)
 #  Exit: 0 = gate verde, 1 = casi falliti, 2 = ambiente non valido.
 # =====================================================================
@@ -106,7 +97,7 @@ report_failure() {
   fi
 }
 
-total=0; failed=0; gaps=0
+total=0; failed=0
 for dir in "$cases"/*/; do
   [ -f "$dir/program.td" ] || continue
   name=$(basename "$dir")
@@ -121,10 +112,6 @@ for dir in "$cases"/*/; do
   fi
 
   if [ "$update" = 1 ]; then
-    if [ "$name" = liste ]; then
-      echo "SKIP  liste (--update: golden SPEC non rigenerabile dal seed, gap S0.2)"
-      continue
-    fi
     "$seed" "$@" > "$tmp/out" 2> "$tmp/err"
     rc=$?
     # rm prima della scrittura: un expected.out symlink non viene mai
@@ -139,20 +126,6 @@ for dir in "$cases"/*/; do
   "$seed" "$@" > "$tmp/out" 2> "$tmp/err"
   rc=$?
 
-  if [ "$name" = liste ]; then
-    # gap noto: esito del seed congelato (exit 1 + stdout vuoto), il
-    # golden SPEC resta fuori dalla portata del seed finche' N03 non
-    # estende il dominio (xs[i], push!-statement)
-    if [ "$rc" = 1 ] && [ ! -s "$tmp/out" ]; then
-      echo "GAP   liste  (lacuna S0.2 del seed: xs[i] / push!-statement — SPEC-CORE.md; golden SPEC non raggiungibile)"
-      gaps=$((gaps + 1))
-    else
-      echo "FAIL  liste  (gap noto cambiato: atteso exit 1 + stdout vuoto, ottenuto exit $rc + $(wc -c < "$tmp/out") byte)"
-      failed=$((failed + 1))
-    fi
-    continue
-  fi
-
   check_case "$dir" "$name"
   case "$result" in
     PASS) echo "PASS  $name" ;;
@@ -166,7 +139,7 @@ for dir in "$cases"/*/; do
 done
 
 if [ "$failed" = 0 ]; then
-  echo "conformance: $total casi, OK ($gaps gap noti)"
+  echo "conformance: $total casi, OK"
   exit 0
 fi
 echo "conformance: $failed casi falliti su $total"

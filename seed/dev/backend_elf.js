@@ -26,10 +26,10 @@
 'use strict';
 const core = require('./core.js');
 const {
-  code, patches, BODY_FRAME, B, B32, L, je, jne, jmp, jnz, js, jz,
+  code, patches, BODY_FRAME, B, B32, L, je, jne, jnz, js, jz,
   movEaxImm, movEdx, movR8d, movR10dImm, xorEax, xorEdx, xorEdi, xorR9d,
   testDl, testRax, movzxEdxRsi, movPtrRdiDl, incRsi, incRdi,
-  leaRsp, leaRsiRax16, movRdxMemRax, movR8MemRax8, movRsiRdi, movRsiR14,
+  leaRsp, leaRsiRax16, movRsiRdi, movRsiR14,
   movRdiRbx, movRbxRax,
 } = core;
 
@@ -56,7 +56,7 @@ function leaRsiRip(label) {
 }
 
 // ---- costanti di sistema Linux x86-64 --------------------------------------
-const SYS_WRITE = 1, SYS_READ = 0, SYS_CLOSE = 3, SYS_OPENAT = 257;
+const SYS_WRITE = 1, SYS_CLOSE = 3, SYS_OPENAT = 257;
 const SYS_MMAP = 9, SYS_EXIT = 60;
 const AT_FDCWD = -100;            // openat relativo alla cwd
 const PROT_RW = 3;                // PROT_READ | PROT_WRITE

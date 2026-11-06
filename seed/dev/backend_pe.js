@@ -12,7 +12,7 @@ const {
   code, patches, B, B32, L, je, jne, jmp,
   movEcx, movEdx, movR8d, movR8dR9d, movR8MemRax8, movR13dMemRsp,
   xorEcx, xorR9d, movR12Rax, movRsiRax, movRbxRax, movRcxRbx, movRcxR12,
-  movRdxRdi, movRdxR14, movR9R8, movR9dImm, leaRsp, leaRspR9, leaRdxRax16,
+  movRdxRdi, movRdxR14, movR9dImm, leaRsp, leaRspR9, leaRdxRax16,
   movMemRspImm, movzxEdxRsi, testDl, testEax, testRax, cmpRaxM1,
   cmpByteRsiImm, movByteRdiImm, incRsi, incRdi,
 } = core;

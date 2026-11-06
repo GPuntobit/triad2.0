@@ -497,6 +497,7 @@ callL('skip_ws');
 cmpByteRsiImm('='); je('st_assign_eq');
 cmpByteRsiImm('('); je('st_func');
 cmpByteRsiImm('+'); je('st_add_check');
+cmpByteRsiImm('['); je('st_assign_list');
 jmp('st_expr');
 L('st_add_check');
 cmpByteRsiDispImm(1, '='); jne('st_expr');
@@ -505,6 +506,38 @@ popR9(); popR8(); pushRax();
 callL('env_lookup'); popRcx();
 sarRax1(); sarRcx1(); addRaxRcx(); shlRax1();
 callL('env_assign'); addRspImm8(); jmp('pp_loop');
+
+L('st_assign_list');
+// xs[i] = v  (scrittura lista, indice 1-based)
+// stack all'ingresso: [r8=ptr_nome, r9=len_nome] (push da stmt_assign)
+// rax=valore, r10=valore, r11=indice (1-based) dopo i pop
+incRsi();
+callL('skip_ws');
+callL('parse_expr');          // rax = indice (tagged)
+pushRax();
+callL('skip_ws');
+cmpByteRsiImm(']'); jne('fail'); incRsi();
+callL('skip_ws');
+cmpByteRsiImm('='); jne('fail'); incRsi();
+callL('skip_ws');
+callL('parse_expr');          // rax = valore (tagged)
+pushRax();
+popR10();                     // r10 = valore
+B(0x41, 0x5b);                // pop r11  (indice 1-based tagged)
+popR9(); popR8();             // ripristina nome
+callL('env_lookup');          // rax = valore lista (tagged)
+movRdxRax(); andRdxImm3(); cmpEdxImm3(); jne('fail');   // tag lista == 3?
+andRdxImmFc();                // rdx = puntatore lista (destaggitato)
+B(0x48, 0x8b, 0x12);          // mov rdx, [rdx]  (tipo da [list+0])
+B(0x48, 0x83, 0xfa, 0x02); jne('fail');                 // tipo == 2 (list)?
+B(0x4c, 0x8b, 0x42, 0x08);    // mov r8, [rdx+8]  (lunghezza)
+B(0x4c, 0x89, 0xf8);          // mov rax, r11  (indice in rax)
+testAlImm(3); jne('fail');    // indice e' Int?
+sarRax1(); testRax(); js('fail');   // indice >= 0?
+decRax();                     // 1-based -> 0-based
+B(0x4c, 0x39, 0xc0); jae('fail');   // indice < lunghezza?
+B(0x4c, 0x89, 0x54, 0xc2, 0x10);    // [rdx + rax*8 + 0x10] = r10 (valore)
+jmp('pp_loop');
 
 L('st_assign_eq');
 incRsi();
@@ -1131,6 +1164,28 @@ L('pf_not_nothing');
 callL('skip_ws');
 cmpByteRsiImm('('); je('pf_call');
 callL('env_lookup');
+cmpByteRsiImm('['); je('pf_list_index');
+ret();
+
+// xs[i]  (lettura lista, indice 1-based)
+// rax = valore lista (da env_lookup), rsi punta a '['
+L('pf_list_index');
+pushRax();                          // salva valore lista
+callL('skip_ws');
+callL('parse_expr');                // rax = indice (tagged)
+callL('skip_ws');
+cmpByteRsiImm(']'); jne('fail'); incRsi();
+popRdx();                           // rdx = valore lista, rax = indice
+andRdxImm3(); cmpEdxImm3(); jne('fail');   // tag lista == 3?
+andRdxImmFc();                      // rdx = puntatore lista
+B(0x48, 0x8b, 0x12);                // mov rdx, [rdx]  (tipo da [list+0])
+B(0x48, 0x83, 0xfa, 0x02); jne('fail');   // tipo == 2 (list)?
+B(0x4c, 0x8b, 0x42, 0x08);          // mov r8, [rdx+8]  (lunghezza)
+testAlImm(3); jne('fail');          // indice e' Int? (AL da rax)
+sarRax1(); testRax(); js('fail');   // indice >= 0?
+decRax();                           // 1-based -> 0-based
+B(0x4c, 0x39, 0xc0); jae('fail');   // indice < lunghezza?
+B(0x48, 0x8b, 0x44, 0xc2, 0x10);    // rax = [rdx + rax*8 + 0x10]
 ret();
 
 // lambda a un parametro: x -> expr (chiusura con ambiente dinamico)
