@@ -28,8 +28,8 @@ limits (see [`tests/probes/README.md`](../../tests/probes/README.md) and the reg
 - **Base:** `0x400000`; **entry:** `0x400078`
 - **Program header:** a single `PT_LOAD` R|X, offset 0, filesz/memsz `0x2133`, align `0x1000`
   (no section headers, like the PE dump: the artifact is pure machine code)
-- **sha256 of `seed.hex`:** `0E121DB8B4C126062C05BA55621635DE4C47751E25F0AE617036440F9451EC4D`
-- **sha256 of the decoded ELF:** `C8C82BC9C77C69E603E07AB7287065076E04C8139A57AE3EE454A472CEE2A0CE`
+- **sha256 of `seed.hex`:** `41580ADEB58F4BD9B982AB1FBE3877E9B8B3E3439DFC34D085C850C1D6E3AA1B`
+- **sha256 of the decoded ELF:** `AB60C0C2C4BD5384D141BD50C5429FA0D13CCA781D7103CF7453DD8DCA3119C5`
 ## Build and test (Linux)
 ```sh
 cd seed/linux-x86_64

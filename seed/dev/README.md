@@ -24,9 +24,9 @@ Current output:
   `4235A70790BAA6784DC3D944616705B37E76ED2263CE73210BCC20E53639B8F7`
 - **linux** (E2, Triad-Core interpreter): 8499 byte ELF (entry `0x400078`, single
   `PT_LOAD` R|X), sha256 of `seed.hex`:
-  `0E121DB8B4C126062C05BA55621635DE4C47751E25F0AE617036440F9451EC4D`,
+  `41580ADEB58F4BD9B982AB1FBE3877E9B8B3E3439DFC34D085C850C1D6E3AA1B`,
   sha256 of the decoded ELF:
-  `C8C82BC9C77C69E603E07AB7287065076E04C8139A57AE3EE454A472CEE2A0CE`
+  `AB60C0C2C4BD5384D141BD50C5429FA0D13CCA781D7103CF7453DD8DCA3119C5`
 ## Because they are versioned
 Writing a byte interpreter by hand without a generator is impractical beyond a few
 instructions; losing the generator blocks the seed extension. Keeping them here makes the work
