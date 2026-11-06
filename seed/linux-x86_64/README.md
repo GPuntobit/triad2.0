@@ -67,15 +67,18 @@ requires `cmp` equality (anti-drift), plus `check_seed.sh` and `verify.sh`.
   [`tests/probes/README.md`](../../tests/probes/README.md); `xs[i]` and `push!`-statement
   remain outside the seed domain (gap `liste`, registered in `conformance/run.sh`).
 ## Next steps
-- **E3 (N18):** toolchain Linux without Wine — `install.sh` → `bin/triad` with this seed as
-  the only runtime (the stub/fallback logic exits), POSIX `bin/triad-cli`, CI `seed-linux`
-  on the native ELF.
+- **E3 (N18) ✅ chiusa:** toolchain Linux senza Node — `install.sh` → `bin/triad` con questo
+  seed come unico runtime (la logica di stub/fallback è uscita dal launcher), CLI POSIX
+  `bin/triad-cli` (`run`/`test`/`status`), CI `seed-linux` sull'ELF nativo.
 
 > **Task principale dal 2026-11-03:** E1/E2/E3 sono la task principale del progetto
 > (`TASK.md` → «Task principale (2026-11-03): seed Linux nativo — senza Wine», N15–N18)
 > e precedono N03 e le altre sotto-task meccaniche.
-Meanwhile the POSIX toolchain is ready: `./install.sh` decodes this seed,
-install `bin/triad` and `bin/triad-cli` in `~/.local/bin` and the launchers use the
-seed ELF (the JS reference fallback remains only for stubs < 4 KB during the N18
-transition). The `linux-toolchain` CI job covers launcher + install + conformance.
-See [`../dev/README.md`](../dev/README.md) and [`../../BOOTSTRAP.md`](../../BOOTSTRAP.md).
+La toolchain POSIX è pronta: `./install.sh` ridecodifica questo seed da `seed.hex`
+(anti-drift), installa `bin/triad` e `bin/triad-cli` come wrapper a percorso assoluto in
+`~/.local/bin` e supera uno **smoke test byte-exatto** (mismatch => installazione
+fallisce). Il launcher esegue sempre il seed: nessun fallback JS nel percorso utente
+(il riferimento `../dev/triad_core.cjs` resta solo nel tooling di sviluppo). Il job CI
+`linux-toolchain` copre launcher + install + gate; `seed-linux` copre check_seed.sh,
+hash PE/ELF, dump riproducibili e `verify.sh`.
+Vedi [`../dev/README.md`](../dev/README.md) e [`../../BOOTSTRAP.md`](../../BOOTSTRAP.md).

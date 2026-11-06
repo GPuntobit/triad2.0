@@ -1,7 +1,8 @@
 # Triad and S0 bootstrap status
 
-Updated after the 2026-11-05 closure of N17 (E2b ELF seed + Node-free harness); previous:
-2026-11-02 closure of problem-table rows 2–6 and backlog A03/A04.
+Updated after the 2026-11-05 closure of N18 (E3: Linux toolchain without Node — **main task
+complete**); previous: N17 closure (E2b ELF seed + Node-free harness), 2026-11-02 closure of
+problem-table rows 2–6 and backlog A03/A04.
 **Main task promoted 2026-11-03:** native Linux seed without Wine (TASK.md → «Task
 principale (2026-11-03)», N15–N18); it takes precedence over N03 and the mechanical
 sub-tasks. Decision map (wayfinder): `.scratch/seed-linux-nativo/map.md` (closed, the way
@@ -86,16 +87,19 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
 | Triad-Full | 11/12 cases not implemented (only `errore` passes) |
 | CLI seed | file execution only; REPL and SPEC section 14 options to do |
 | S2-S3 (native compiler, self-hosting) | not started |
-| S4 / M7 (parity, Linux ELF) | **E1 done** (2026-11-05): ELF runner of a `.td` file (argv + native I/O: load + echo, exit 1/2 errors on stderr) — TASK.md N15 closed; **E2a done** (2026-11-05, N16: `os_*` codegen core isolated in the PE generator, byte-identical PE); **E2b done** (2026-11-05, N17 closed: ELF **E2** 8499 byte = full Triad-Core interpreter, same machine as the PE, **byte-exact parity** on conformance 39/39 + probes 39/39 + S1 golden, native Linux **without Wine**; Node-free harness `conformance/run.sh`/`tests/probes/run_probes.sh`/`verify.sh`); **MAIN TASK remaining: E3 = TASK.md N18** — `bin/triad`/`install.sh` using the native seed (zero dependencies beyond the repo on Linux; Windows keeps the PE). Today's POSIX toolchain: `install.sh` + launcher `bin/triad`/`bin/triad-cli` with automatic fallback to the JS reference when the seed is a stub (stub logic exits at N18); dedicated CI job `linux-toolchain` |
+| S4 / M7 (parity, Linux ELF) | **✅ MAIN TASK (2026-11-03) COMPLETE (2026-11-05)**: E1 file runner (N15); E2a `os_*` codegen core, PE byte-identical (N16); E2b ELF **E2** 8499 byte = full Triad-Core interpreter, **byte-exact parity** on conformance 39/39 + probes 39/39 + S1 golden, native Linux **without Wine** + Node-free harness (N17); E3 toolchain without Node (N18): `./install.sh` (pure-`printf` seed decode, absolute-path wrappers, byte-exact smoke test that fails the install on mismatch) → `bin/triad` exec-always-seed (stub/`--jsref`/JS/triad-native logic removed) + POSIX `bin/triad-cli` (`run`/`test`/`status`, no Node), `cli/triad-cli.mjs` thinned to dev commands (`seed`/`ai`/`ext`), CI `seed-linux` native + `linux-toolchain` without Node, tutorials (it/en/ja/zh/ru) updated to the post-decision-04 CI. Windows keeps the PE unchanged. |
 
-## Main task (2026-11-03): native Linux seed — no Wine
+## Main task (2026-11-03): native Linux seed — no Wine — ✅ COMPLETE (2026-11-05)
 
 Per the maintainer's decision, Triad must not become a Windows-only emulator: Windows users
-keep the PE, Linux users must install **nothing beyond the GitHub repo**. The Linux port is
+keep the PE, Linux users must install **nothing beyond the GitHub repo**. The Linux port was
 therefore the main task (TASK.md N15–N18: E1 file runner → E2a platform-independent `os_*`
 codegen core → E2b ELF emitter with PE parity → E3 native toolchain/CI), preceding N03.
-Normative frame unchanged: `SPEC-CORE.md` is the reference, the ELF must behave identically
-to the PE (known limits included), `BOOTSTRAP.md` §4/§5/§6/§9 (M7 parity + Linux port).
+All four slices are closed (2026-11-05): the native ELF seed interprets Triad-Core with
+byte-exact PE parity and the whole user path (`./install.sh` → `triad program.td`) is
+Node-free. Next in line: N03 (`xs[i]` 1-based and the `liste` gap) in a single PE/ELF rebuild
++ CI hash cycle. Normative frame unchanged: `SPEC-CORE.md` is the reference, the ELF behaves
+identically to the PE (known limits included), `BOOTSTRAP.md` §4/§5/§6/§9 (M7 parity + Linux port).
 
 ## Verification commands
 
@@ -139,7 +143,7 @@ certutil -decodehex -f seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
 The goal **is not complete**:
 - S0 is a machine-code interpreter, but **S1 (Triad in Triad-Core) has not started**, so there is no self-hosting yet;
 - S2-S3 (native compiler in Triad, fixed point) not started;
-- S4/M7 (conformance parity, Linux ELF port) mostly done: E1 (file runner) and E2a (`os_*` codegen core, PE byte-identical) done 2026-11-05 (TASK.md N15/N16); **E2b done 2026-11-05** (TASK.md N17 closed: ELF E2 = full Triad-Core interpreter with byte-exact PE parity on conformance 39/39 + probes 39/39 + S1 golden, Node-free harness); **E3 remains** (TASK.md N18: toolchain `bin/triad`/`install.sh` without Node, tutorial update);
+- S4/M7 (conformance parity, Linux ELF port) **done 2026-11-05** (TASK.md N15–N18): E1 file runner, E2a `os_*` codegen core (PE byte-identical), E2b ELF E2 = full Triad-Core interpreter with byte-exact PE parity (conformance 39/39 + probes 39/39 + S1 golden), E3 toolchain without Node (`install.sh` → `bin/triad`/`bin/triad-cli`, byte-exact smoke test, CI native + `linux-toolchain` without Node);
 - external recognition: MIT LICENSE chosen; Linguist PR and extension publishing require the maintainer.
 
 ## Seed Windows verification (round 32)
@@ -298,3 +302,29 @@ probe, `selfhost/main.td` smoke) are wired back on the native ELF. Verification
 (2026-11-05, Linux native): `sh verify.sh` OK (conformance 39 casi OK + probes 39 OK),
 `check_seed.sh` OK. Remaining for the main task: **N18** (E3 toolchain without Node +
 tutorial update to the post-decision-04 CI).
+
+**N18 closed (2026-11-05):** E3 delivered — the Linux toolchain is **Node-free end to end**
+and the 2026-11-03 main task is complete. `bin/triad` now execs the seed unconditionally
+(the 4 KB stub threshold, `--jsref`, the JS branch and the `bin/triad-native` branch are
+removed); `bin/triad-cli` is a pure POSIX CLI delegating `run`/`test`/`status` to the seed
+and the sh harnesses; `cli/triad-cli.mjs` keeps only the dev commands (`seed generate`,
+`ai verify`, `ext check|package`), with `run.mjs`/`test.mjs`/`build.mjs` and the
+`seedIsStub`/`runSeed` fallback logic deleted. `install.sh` (ticket 07) decodes `seed.hex`
+with a single pure-`printf` octal decoder (no xxd/python3/od), verifies the decode against
+the committed binary (anti-drift `cmp` + warning), installs `triad`/`triad-cli` as
+absolute-path wrappers (no symlinks, `--no-symlink` removed) and performs a **byte-exact
+smoke test** (`test_simple.td` vs `test_simple.expected.out`) that **fails the install**
+(exit non-zero, verified also with a tampered golden); outside Linux x86-64 the install is
+partial (launchers + PATH) with an explicit warning, exit 0. CI: `linux-toolchain` runs
+without `setup-node` (launcher + install + negative smoke + `triad-cli test all`);
+`seed-linux` stays pinned to `ubuntu-24.04` (deviation from the acceptance wording
+`ubuntu-latest`, noted in ticket 09). Docs updated: `README.md` (deduplicated, new
+Startup/Testing/Requirements/Termux), `cli/README.md` (two-level toolchain), `AGENTS.md`
+rule 3 (`sh verify.sh`), `PROJECT_PROMPT.md`, `seed/README.md`, `seed/linux-x86_64/README.md`,
+`BOOTSTRAP.md` §5/§10 and the tutorials (it/en/ja/zh/ru) rewritten to the post-decision-04
+CI (no more `seed-windows`/`$cases`/`conformance/run.mjs` references). Verification
+(2026-11-05): `sh verify.sh` OK (conformance 39 + probes 39), `check_seed.sh` OK (7 casi),
+`install.sh` + smoke + negative smoke OK, `node cli/triad-cli.mjs ai verify` 5/5,
+`tools/site-gen` lint + `--check` OK, `tests/security/run.sh` ALL PASSED. Known consequence:
+`bin/triad-cli.cmd` (Windows) unchanged but `run`/`test`/`status` left the Node CLI (ticket
+09). Next: **N03** (`xs[i]` 1-based + gap `liste`) in a single PE/ELF rebuild + CI hash cycle.

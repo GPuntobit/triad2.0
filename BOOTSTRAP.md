@@ -87,7 +87,7 @@ The seed implements **only** Triad-Core; S1 uses Triad-Core to implement the res
 | Platform | Status | Reason |
 |---|---|---|
 | Windows x86-64 (PE) | **before**, testable here | only platform executable in this environment; no compiler installed |
-| Linux x86-64 (ELF) | in progress: **E0 ✅** (minimal ELF tested on CachyOS); E1/E2/E3 = **main task since 2026-11-03** (TASK.md N15–N18, before N03) | Linux environment available (native CachyOS) |
+| Linux x86-64 (ELF) | **✅ E0→E3 completi** (2026-11-05): minimal ELF → file runner → interprete Triad-Core con parità byte-exatta col PE → toolchain senza Node (`install.sh`, `bin/triad`/`bin/triad-cli`, CI `seed-linux`) — TASK.md N15–N18 | Linux environment available (native CachyOS) |
 | macOS/ARM | after | depends on the first two |
 The seed logic is largely OS independent: you only change the layer
 `os_*` and the format of the executable. The first goal is Windows; the Linux port is one
@@ -145,7 +145,7 @@ The goldens are generated one-off with stage0 (`conformance/run.mjs --update`) a
 - [x] Plan S0→S4 and milestones.
 - [x] `SPEC-CORE.md` — normative Triad-Core subset (types, shapes, primitives,
   bootstrap primitives, conformity).
-- [x] `conformance/` — 12 Full cases + 29 Core cases, green on stage0.
+- [x] `conformance/` — 12 Full cases + 39 Core cases, green on stage0.
 - [x] **M1** — seed "Triad seed OK" in machine code: Windows x86-64 PE 1024 byte,
   `seed/windows-x86_64/`, built only by decoding a hex dump.
 - [x] **M2** — seed with I/O: reads the file from the first argument and writes its bytes to stdout
@@ -153,5 +153,10 @@ The goldens are generated one-off with stage0 (`conformance/run.mjs --update`) a
 - [ ] **M3** (in progress) — `SPEC-CORE.md` ✅ and `conformance/core/` ✅ ready;
   **M3b1** ✅ integers; **M3b2a** ✅ variables; **M3b2b1** ✅ functions; **M3b2b2** ✅
   comparisons/ternary/recursion; **M3b2b3a-e** ✅ Bool, operators, `if`, `while`, lambda;
-  **M3b2b3f** ⚠️ unstable capture. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ multi-statement body; **M3b2b3j** ✅ lexical frames and `let`; **M3b2b3k** ✅ closures; **M3b2b3l** ✅ `begin`/`end` and **CI**; **M3b2b3m** ✅ basic heap strings; **M3b2b3n** ✅ `nothing`; **M3b2b3o/p/q** ✅ concat/symboli/coverage; **M7/E0** ✅ Minimal ELF Linux. Needs AST/bytecode for multi-binding capture, `elseif`, lists; then E1/E2 of the Linux seed.
-  Next: `elseif` (case `control`), lists (cases `lists` and `values`), capture multi-binding; then E1/E2 of the Linux seed.
+  **M3b2b3f** ⚠️ unstable capture. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ multi-statement body; **M3b2b3j** ✅ lexical frames and `let`; **M3b2b3k** ✅ closures; **M3b2b3l** ✅ `begin`/`end` and **CI**; **M3b2b3m** ✅ basic heap strings; **M3b2b3n** ✅ `nothing`; **M3b2b3o/p/q** ✅ concat/symboli/coverage; **M7/E0** ✅ Minimal ELF Linux. Needs AST/bytecode for multi-binding capture, `elseif`, lists.
+  Next: `elseif` (case `control`), lists (cases `lists` and `values`), capture multi-binding.
+- [x] **M7 — Linux port E1/E2/E3** ✅ (2026-11-05, TASK.md N15–N18): E1 file runner (argv +
+  native I/O), E2 Triad-Core interpreter (8499-byte ELF, same machine as the PE,
+  **byte-exact parity**: conformance 39/39 + probes 39/39 + S1 golden), E3 toolchain
+  without Node (`./install.sh` → `bin/triad`/`bin/triad-cli`, byte-exact smoke test,
+  CI `seed-linux` native without Wine, Node-free harness `verify.sh`).

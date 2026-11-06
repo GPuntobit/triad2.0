@@ -66,3 +66,19 @@ che fallisce l'installazione), `GLOSSARY.md` (termine *Launcher*). Nessun ADR: s
 tutte reversibili a basso costo.
 
 ## Comments
+
+- 2026-11-05 (chiusura N18, attuazione completa): contratto **interamente attuato**.
+  (Q1) `install.sh` decodifica con un **unico decoder sh-puro `printf`** con escape ottali
+  (nessun `xxd`/`python3`/`od`); 8499 byte in ~0,2 s. (Q2) decodifica su temporaneo + `cmp`
+  col binario committato + avviso anti-drift + sovrascrittura (no-op deterministico).
+  (Q4) launcher installati come **wrapper sh a percorso assoluto** (`exec "$ROOT/bin/…"`),
+  niente symlink, `--no-symlink` rimossa (opzione sconosciuta → exit 2).
+  (Q3/Q9) la logica di stub (soglia 4 KB, `--jsref`, ramo JS) e il ramo `bin/triad-native`
+  sono **usciti** da `bin/triad`: exec-sempre-il-seed, seed mancante/non eseguibile → errore
+  chiaro su stderr + exit 1. (Q5/Q10) smoke test **byte-exatto** via `cmp` su
+  `tests/probes/test_simple.expected.out`: mismatch → `install.sh` exit 1 (verificato anche
+  con golden alterato). (Q6) fuori Linux x86-64: installazione parziale (launcher + PATH)
+  con avviso esplicito, decode/smoke saltati, exit 0. (Q7/Q8) perimetro zero-install confermato:
+  la promessa copre la sola esecuzione; nessun warning Node nel percorso utente (i comandi dev
+  restano `node cli/triad-cli.mjs`, fuori promessa). Gate: `verify.sh`, `check_seed.sh`,
+  smoke + install in prefix temporaneo, tutti verdi (2026-11-05).
