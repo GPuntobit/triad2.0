@@ -58,7 +58,6 @@ function leaRsiRip(label) {
 // ---- costanti di sistema Linux x86-64 --------------------------------------
 const SYS_WRITE = 1, SYS_READ = 0, SYS_CLOSE = 3, SYS_OPENAT = 257;
 const SYS_MMAP = 9, SYS_EXIT = 60;
-const AT_FDCWD = -100;            // openat relativo alla cwd
 const PROT_RW = 3;                // PROT_READ | PROT_WRITE
 const MAP_PRIVATE_ANON = 0x22;    // MAP_PRIVATE | MAP_ANONYMOUS
 const STDERR = 2;
