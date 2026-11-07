@@ -30,7 +30,18 @@ while [ -L "$self" ]; do
 done
 ROOT=$(CDPATH= cd -- "$(dirname -- "$self")/.." && pwd -P)
 
+print_logo() {
+    printf '%s\n' \
+        ' _______  _____  ___   ___  ______' \
+        '|__   __||  ___||   \ /   ||  ____|' \
+        '   | |   | |__  | |\ V /| || |__' \
+        '   | |   |  __| | | \_/ | ||  __|' \
+        '   | |   | |___ | |     | || |____' \
+        '   |_|   |_____||_|     |_||______|'
+}
+
 usage() {
+    print_logo
     echo "uso: triad-cli <comando> [opzioni]"
     echo ""
     echo "comandi:"
@@ -84,6 +95,7 @@ case "$cmd" in
     status)
         # Info ambiente: output deterministico, niente colori (Q1).
         seed="$ROOT/seed/linux-x86_64/seed"
+        print_logo
         case "$(uname -s)" in
             Linux*) ;;
             *)      seed="" ;;
