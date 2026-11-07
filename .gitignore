@@ -94,3 +94,6 @@ docs/assets/js/triad-core.js
 /libro/
 # docs/libro è un repo separato (ha il proprio .git) per la pubblicazione del libro
 /docs/libro/
+
+# Installer smoke golden
+!tests/probes/test_simple.expected.out

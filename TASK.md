@@ -1,4 +1,51 @@
 # Task Triad 2.0
+
+## Merge `origin/main` — 2026-11-07 (branch `fix/desktop-cli-session`)
+
+Merge commit `45c7d7d` (base `83ca5ed`). Three conflicts resolved:
+
+- `.codacy/codacy.config.json`, `.codacy/codacy.config.baseline.json` → **versione di
+  `origin/main`** (`source: remote`, provider `gh`, org `GPuntobit`, repo `triad2.0`).
+  La versione del ramo era `source: auto` (config "auto" rigenerata senza remoto); quella di
+  `main` è la config remota effettiva e include i linguaggi presenti nel repo (`Lua`, `Swift`,
+  `XML`). Il contenuto è identico a quello rigenerato localmente da `codacy-cli`, salvo i
+  timestamp `createdAt`/`updatedAt`.
+- `bin/triad-desktop` → **versione del ramo** (sessione POSIX che chiede il percorso del
+  programma, preserva l'exit code e `:quit`/EOF). La versione di `main` è il launcher
+  pre-sessione: usciva subito con exit 2 quando lanciato senza file. Modalità file: `755`.
+- `.github/instructions/codacy.instructions.md` → `repository: triad2.0` (allineato a `main`
+  e al `repositoryName` della baseline Codacy; il ramo puntava a `triad2.0.wiki`, che è il
+  repo wiki, non quello analizzato).
+
+Le modifiche locali non committate (rigenerazione `codacy-cli` con path assoluti della macchina,
+`.codacy/generated/*`) sono state scartate: sono artefatti machine-specific e sovrascriverebbero
+i file con path Windows già versionati.
+
+Validazione post-merge: `sh verify.sh` → 38/39 PASS, l'unico FAIL è `liste` (gap **N03**,
+`xs[i]` 1-based non ancora implementato nel seed), preesistente su `17796ce`; `sh tests/desktop.sh`
+→ PASS.
+
+## Desktop launcher — 2026-11-07
+
+Double-click follow-up: install.sh now registers shared-mime-info globs for
+`.triad`/`.td`, refreshes the MIME database and selects triad.desktop via xdg-mime.
+Previously MimeType in the desktop entry alone did not recognize these extensions.
+The isolated desktop regression also checks real xdg-mime type/default queries.
+
+`install.sh --desktop` now routes the menu and associated files through
+`bin/triad-desktop`, a POSIX session that prompts for a program and keeps output
+and failures visible until `:quit` or EOF. Previously a menu launch passed no file
+to the seed, which printed usage and exited 2 immediately. Reinstall to refresh
+existing desktop entries. `bin/triad` still delegates directly to the seed.
+The full REPL required by SPEC.md §14 remains pending; this session runs files.
+Regression gate: `sh tests/desktop.sh`; seed gate: `sh verify.sh`.
+
+Validation: desktop integration PASS. On an untouched checkout of `83ca5ed`,
+conformance already fails `liste` (38/39 PASS), and probes fail 24/39, mostly
+missing ignored `*.expected.out` goldens. This patch restores the installer smoke
+golden (`test_simple.expected.out`, literal `test\n`, with a .gitignore exception);
+probes then fail 23/39. No other seed/golden behavior is changed. Those baseline
+failures remain open; conformance goldens were not rewritten to hide them.
 ## Objective
 Complete Triad 2.0 as a standalone and recognized language with its own standard, conformance suite, `.triad` extension, tooling editor, bootstrap without guest languages and self-hosting.
 ## Current status

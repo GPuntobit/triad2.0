@@ -14,7 +14,7 @@
 #       confrontato con cmp col golden tests/probes/test_simple.expected.out;
 #       un mismatch FA FALLIRE l'installazione (exit non-zero).
 #    4. Opzionale (--desktop): voce menu freedesktop.org ("Triad Program")
-#       per aprire i file .triad/.td con un editor.
+#       per eseguire file .triad/.td in una sessione terminale persistente.
 #
 #  Uso:
 #    ./install.sh [--prefix DIR] [--desktop] [--no-desktop]
@@ -205,20 +205,50 @@ want_desktop() {
 if [ "$DESKTOP" = "yes" ] || { [ "$DESKTOP" = "auto" ] && want_desktop; }; then
     APPS="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
     mkdir -p "$APPS"
-    EDITOR_CMD="${TRIAD_EDITOR:-${EDITOR:-xdg-open}}"
+    chmod +x "$ROOT/bin/triad-desktop"
+    # Exec ha due livelli di escaping freedesktop: stringa e argomento quotato.
+    # % letterale va raddoppiato per non diventare un field code.
+    desktop_exec=$(printf '%s' "$ROOT/bin/triad-desktop" |
+        sed 's/\\/\\\\/g; s/["`$]/\\&/g; s/\\/\\\\/g; s/%/%%/g')
     cat > "$APPS/triad.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=Triad Program
 Comment=Esegui un programma Triad (.triad/.td)
-Exec=$ROOT/bin/triad %f
+Exec="$desktop_exec" %f
 Terminal=true
 MimeType=text/x-triad;
 Categories=Development;
 EOF
-    # associazione mime di base (i file .td sono testo)
+    # MimeType nel .desktop non registra le estensioni: serve shared-mime-info.
+    MIME_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/mime"
+    mkdir -p "$MIME_DIR/packages"
+    cat > "$MIME_DIR/packages/triad.xml" <<'EOF_MIME'
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="text/x-triad">
+    <comment>Triad program</comment>
+    <sub-class-of type="text/plain"/>
+    <glob pattern="*.triad"/>
+    <glob pattern="*.td"/>
+  </mime-type>
+</mime-info>
+EOF_MIME
+    if command -v update-mime-database >/dev/null 2>&1; then
+        update-mime-database "$MIME_DIR" ||
+            echo "    (avviso) aggiornamento database MIME fallito" >&2
+    else
+        echo "    (avviso) esegui update-mime-database \"$MIME_DIR\" per riconoscere i file Triad" >&2
+    fi
     if command -v update-desktop-database >/dev/null 2>&1; then
         update-desktop-database "$APPS" 2>/dev/null || true
+    fi
+    if command -v xdg-mime >/dev/null 2>&1; then
+        mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}"
+        xdg-mime default triad.desktop text/x-triad ||
+            echo "    (avviso) associazione predefinita Triad non impostata" >&2
+    else
+        echo "    (avviso) scegli Triad Program in Apri con per i file .triad/.td" >&2
     fi
     echo "==> Voce menu installata: $APPS/triad.desktop"
 fi
