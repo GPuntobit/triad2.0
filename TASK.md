@@ -1,9 +1,10 @@
 # Task Triad 2.0
 
-## Release 0.8.0-beta.9 — 2026-11-07 (branch `release/v0.8.0-beta.9`)
+## Release 0.8.0-beta.9 — 2026-11-07 (branch `release/v0.8.0-beta.9`, PR #72 + PR #73)
 
 Preparazione e pubblicazione della release `v0.8.0-beta.9` (da `v0.8.0-beta.8`, 123 commit
-intermedi). Base: `origin/main` = `5d3078f`.
+intermedi). Tag `v0.8.0-beta.9` sul commit di merge `f30a0a2` (`main`).
+Release: https://github.com/GPuntobit/triad2.0/releases/tag/v0.8.0-beta.9
 
 ### File toccati
 - `VERSION` → `0.8.0-beta.9`.
@@ -320,11 +321,72 @@ pulito su Linux, `./install.sh` + `bin/triad program.td` funziona con zero dipen
   debug/autocomplete, accettazione) si decidono in uno sforzo proprio, quando deciso.
 - **Acceptance:** da definire alla decisione; finché non è decisa non blocca N15–N18.
 
-### Ordine (aggiornato 2026-11-03)
-1. **N15 → N16 → N17 → N18** (task principale: seed Linux nativo, senza Wine) →
-2. **N03** (e a seguire **N04+N05**) in un ciclo unico di rebuild PE/ELF + hash CI —
-   ora verificabile nativamente anche su Linux →
-3. **N02** e **N08** dopo le decisioni normative → 4. **N06+N07** (C3) → 5. **N19** (se deciso).
+### Ciclo di rebuild del seed per S1 — N20–N24 (decisione della mappa, 2026-11-07)
+
+Decisione: `.scratch/self-hosting-m6/issues/01-fork-architetturale-seed.md` (ticket risolto) —
+il seed resta interprete diretto (nessun fork AST/bytecode) ed è **veicolo di transizione
+per S1**; pavimento = §8 + le divergenze che la sorgente di S1 tocca + `liste` verde.
+Ricognizione misurata dei gap e dell'envelope: **ticket 01** (Fatti). N19 è già occupato
+(«Esperienza di sviluppo / IDE»): le slice nuove partono da N20.
+
+### N20 — Ri-proporzionamento dell'arena del seed
+- **Files:** `seed/dev/core.js` (costanti e offset), PE/ELF + `seed.hex`, hash in
+  `.github/workflows/ci.yml`.
+- **Work:** buffer sorgente 64 KiB → **1 MiB**; heap 64 KiB → **8 MiB** (bump, senza GC: il
+  GC è di S1, vedi ticket `03-gc-memoria`); `os_read` con `max` = dimensione del buffer
+  (errore oltre); **le liste restano a 64 elementi** (chunking = problema di S1, N07 resta
+  fuori ciclo). L'arena è allocata a runtime: nessun impatto sul layout del PE, cambiano i
+  byte del codice macchina (hash CI + diff tracciato, ADR 0001).
+- **Acceptance:** un programma > 64 KiB gira ed esce 0 (oggi: `seed: read error`); la
+  sorgente di S1 completa sta nell'arena con margente ×2; conformance invariata.
+
+### N21 — Primitivi §8 nel seed (`readfile`, `strlen`, `strbyte`, `strsub`)
+- **Files:** `seed/dev/core.js` (dispatch dei builtin), `tests/probes/`,
+  `seed/linux-x86_64/check_seed.sh`.
+- **Work:** implementare i §8 mancanti (`get` ed `exit` ci sono). `readfile` non è un
+  extra: è il modo in cui S1 legge il programma da interpretare (`SPEC-CORE.md` §8).
+- **Acceptance:** un probe per ciascun primitivo, confrontato byte-per-byte con il
+  riferimento JS; `readfile` restituisce il contenuto del file senza alterazioni.
+
+### N22 — Contratto del seed + guardie statiche sulla sorgente di S1
+- **Files:** `seed/README.md` (contratto), `seed/dev/certified-subset.txt` (elenco
+  macchina-leggibile), `tools/site-gen/lint.mjs`, `tests/probes/run_probes.sh`, CI.
+- **Work:** scrivere il **sottoinsieme certificato** del seed (cosa esegue, cosa rifiuta,
+  cosa esegue in modo divergente, con quali limiti d'infrastruttura) e le guardie che
+  presidiano la sorgente di S1 (`selfhost/*.td`, generatori in `tools/site-gen/`): le
+  costruzioni **rumorose** sono vietate dalla lint; le **divergenze silenziose** (scope
+  dinamico, cattura per valore, escape, `==` su stringhe, newline, scope di `while`,
+  `while` non-`Bool`) hanno regole dedicate. **Dipende dalla decisione del ticket
+  `.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md`** (quali regole, con
+  quale precisione, con quale fallback).
+- **Acceptance:** la sorgente S1 e i generatori passano le guardie; ogni violazione è
+  segnalata con un messaggio che nomina la regola e il costrutto.
+
+### N23 — Gate a 39/39 e chiusura del gap `liste`
+- **Files:** `conformance/gate.sh` (`KNOWN_GAP` svuotato), `conformance/core/cases/liste`,
+  CI.
+- **Work:** N03 (`xs[i]` 1-based) rende verde il caso `liste` → il gate non ha più gap
+  noti; correggere il commento di `gate.sh` che dice che il seed non implementa
+  `length(xs)` (**funziona**: misurato `length([1,2,3])` → `3`).
+- **Acceptance:** `sh verify.sh` → conformance **39/39**, gate senza gap noti.
+
+### N24 — Allineamento dei documenti alla ricognizione misurata dei gap
+- **Files:** `BOOTSTRAP.md` §10, `TASK.md` «Current status», `STATUS.md`.
+- **Work:** sostituire gli elenchi ottimistici (che dichiarano `elseif` e liste «complete»)
+  con la ricognizione misurata del ticket 01; aggiornare lo stato del seed e l'inventario
+  dei gap con la loro destinazione (nel seed / fuori contratto / vietati in S1).
+- **Acceptance:** nessun documento afferma più che `elseif` sia mancante né che le liste
+  siano «complete»; l'envelope del seed (1 MiB / 8 MiB / 64 elementi) è dichiarato.
+
+### Ordine (aggiornato 2026-11-07)
+1. ~~**N15 → N16 → N17 → N18**~~ (task principale: seed Linux nativo, senza Wine) — ✅
+2. **N20 + N21 + N03 + N04 + N06** in un ciclo unico di rebuild PE/ELF + hash CI
+   (contenuto del ciclo fissato dalla decisione del ticket 01) — ora verificabile
+   nativamente anche su Linux →
+3. **N22** (contratto del seed + guardie statiche) — dopo la decisione del ticket 12 →
+4. **N23** (gate a 39/39) →
+5. **N02** e **N08** dopo le decisioni normative; **N05**/**N07** quando decisi; **N19** (se
+   deciso).
 ---
 # Backlog: errors and checks
 This file collects confirmed problems and checks still to be done on the project.

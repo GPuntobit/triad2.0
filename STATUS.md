@@ -2,12 +2,17 @@
 
 ## Release 0.8.0-beta.9 — 2026-11-07
 
-Pubblicata la release `v0.8.0-beta.9` (tag `v0.8.0-beta.9`): seed Linux nativo, toolchain
-senza Node, desktop launcher. `VERSION` = `0.8.0-beta.9`; note di rilascio in
+Pubblicata la release `v0.8.0-beta.9` (tag `v0.8.0-beta.9`, commit `f30a0a2`):
+https://github.com/GPuntobit/triad2.0/releases/tag/v0.8.0-beta.9 — seed Linux nativo,
+toolchain senza Node, desktop launcher. `VERSION` = `0.8.0-beta.9`; note di rilascio in
 `docs/releases/RELEASE_NOTES_v0.8.0-beta.9.md` (EN) e `.it.md` (IT).
 
-Asset pubblicati: `seed.exe` (PE Windows), `seed-linux-x86_64` (ELF statico, 8774 byte),
-`triad-cli` (CLI dev standalone Linux, Node SEA) e `triad-cli.exe` (Windows, Node SEA).
+Asset pubblicati (SHA-256):
+- `seed.exe` — PE Windows x86-64, 25088 byte, `631f401ffe42f5f748bb92ab80c2886a7d68f9e00b09bd8dfde2de0c671fe219`
+- `seed-linux-x86_64` — ELF Linux x86-64 statico, 8499 byte, `c8c82bc9c77c69e603e07ab7287065076e04c8139a57ae3ee454a472cee2a0ce`
+- `triad-cli` — CLI dev standalone Linux (Node SEA), 119 MB, `337c5188ee5cfef7d50256f5b03ab510b47dedf15aac6aa14256e1bf2ebe9cb2`
+- `triad-cli.exe` — CLI dev standalone Windows (Node SEA), 83 MB, `d7ab6e05a538a7f1ffd571014c91c7f5029e6b21855e9db0843e15acabb06d5e`
+
 **Non** pubblicato `TriadDesktop.exe`: la GUI Windows punta ancora alla CLI Node pre-N18
 (`status` / `test`) e il suo probing della root cerca `conformance/run.mjs`, rimosso in N17 →
 ticket `.scratch/desktop-gui-windows/issues/01-gui-windows-alla-cli-posix.md`.
