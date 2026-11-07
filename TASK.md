@@ -1,5 +1,40 @@
 # Task Triad 2.0
 
+## Handoff — 2026-11-08 (bis): budget di sessione, tetto R2.5M + handoff entro R3.0M
+
+Sessione breve, **solo documentazione** (nessuna modifica a lessico, parser, tipi, valutazione
+o I/O → regola operativa 3 non attivata, nessun golden toccato).
+
+**Cosa è stato fatto** — `AGENTS.md`, regola operativa 8 riscritta:
+
+- il consumo di token di una sessione **non deve mai superare R2.5M** (tetto rigido, non soglia
+  di avviso: prima valeva R2.7M con «2.5M da considerare già raggiunta»);
+- al raggiungimento (o all'avvicinarsi) di R2.5M l'AI **si ferma immediatamente**;
+- il **riepilogo di handoff deve essere completato e consegnato entro R3.0M**: superare R3.0M
+  senza handoff scritto in `TASK.md` è una violazione della regola, al pari di superare R2.5M;
+- aggiunto l'**ordine di arresto** in 4 passi: stop → chiusura coerente del passo in corso →
+  scrittura dell'handoff in `TASK.md` → risposta finale con il comando di ripresa.
+
+**Cosa manca** — invariato rispetto all'handoff precedente: ciclo di rebuild del seed
+(N20 + N21 + N03 + N04 + N06), poi N23 (gate 39/39) e N24 (allineamento documenti);
+decisioni normative pending: N02 (newline), N08 (scope dei nomi), D21 (`while` non-`Bool`);
+ticket M6 aperti: 02–11.
+
+**File toccati** — `AGENTS.md` (regola 8), `TASK.md` (questa sezione).
+
+**Test di conformance** — non applicabili (nessuna modifica di linguaggio/runtime): PASS non
+applicabile.
+
+**Comando di ripresa**
+
+```sh
+cd /home/votlazam/Documenti/progetti/triad2.0 && git status --short && node tools/selfhost-guard/guard.mjs && node tools/selfhost-guard/test.mjs && node tools/selfhost-guard/differential.mjs && sed -n '1,40p' TASK.md
+```
+
+```
+Ripresa sessione: leggi la sezione "Handoff — 2026-11-08 (bis): budget di sessione, tetto R2.5M + handoff entro R3.0M" in TASK.md e continua da lì
+```
+
 ## Handoff — 2026-11-08 (ticket 12 risolto: guardie statiche + gate differenziale)
 
 ### Stato attuale e obiettivo della sessione

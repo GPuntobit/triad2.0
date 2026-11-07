@@ -30,14 +30,38 @@ function js(n) { reloc([0x0f, 0x88], n); }
 function jnz(n) { reloc([0x0f, 0x85], n); }
 function jmp(n) { reloc([0xe9], n); }
 function callL(n) { reloc([0xe8], n); }
-// maschera di stop dei blocchi, in coda al buffer sorgente (r14+0xF000)
-const DATA_SLOT = 0xF000;
+// ---------------------------------------------------------------- memory map
+// Arena unica del seed (bump allocator, senza GC): una sola regione
+// allocata a runtime, divisa in fasce:
+//   [0x000000, 0x100000)  sorgente  (1 MiB)
+//   [0x100000, 0x110000)  scratch   (maschera, flag, blocco, nothing, ...)
+//   [0x110000, 0x190000)  ambiente  (32 byte per binding)
+//   [0x190000, 0x200000)  funzioni  (128 byte per record)
+//   [0x200000, 0xA00000)  heap      (8 MiB: [bump][dati])
+// N20 (ri-proporzionamento dell'arena): la sorgente passa da 64 KiB a
+// 1 MiB e l'heap da 64 KiB a 8 MiB. Le liste restano a 64 elementi
+// (il chunking e' un problema di S1, non del seed: N07 resta fuori).
+const MEM = {
+  SRC_MAX: 0x100000,
+  SCRATCH: 0x100000,
+  ENV: 0x110000,
+  ENV_MAX: 16384,        // binding per ambiente (32 byte ciascuno)
+  FUNC: 0x190000,
+  FUNC_MAX: 3584,        // record funzione (128 byte ciascuno)
+  HEAP: 0x200000,
+  HEAP_SIZE: 0x7FFFF8,   // byte utilizzabili nell'heap (dal bump pointer)
+  REGION: 0xA00000,
+};
+// base dei dati dell'heap (subito dopo il bump pointer)
+const HEAP_DATA = MEM.HEAP + 8;
+// maschera di stop dei blocchi, in coda al buffer sorgente (r14+SCRATCH)
+const DATA_SLOT = MEM.SCRATCH;
 function leaRdxR14(d) { B(0x49, 0x8d, 0x96); B32(d); }
 function maskLoad() { leaRdxR14(DATA_SLOT); B(0x48, 0x8b, 0x02); }
 function maskStoreRax() { leaRdxR14(DATA_SLOT); B(0x48, 0x89, 0x02); }
 function maskStoreImm(v) { leaRdxR14(DATA_SLOT); B(0x48, 0xc7, 0x02); B32(v); }
-function blockLoad() { leaRdxR14(0xF010); B(0x48, 0x8b, 0x02); }
-function blockStoreRax() { leaRdxR14(0xF010); B(0x48, 0x89, 0x02); }
+function blockLoad() { leaRdxR14(MEM.SCRATCH + 0x10); B(0x48, 0x8b, 0x02); }
+function blockStoreRax() { leaRdxR14(MEM.SCRATCH + 0x10); B(0x48, 0x89, 0x02); }
 const cmpRaxImm32 = v => { B(0x48, 0x3d); B32(v); };
 const movMemRdxImm32 = (d, v) => { B(0x48, 0xc7, 0x42, d & 255); B32(v); };
 function leaRsp(reg, disp) {
@@ -82,6 +106,8 @@ const cmpEcxImm32 = v => { B(0x81, 0xf9); B32(v); };
 const movEcxMemRsp = d => { B(0x8b, 0x8c, 0x24); B32(d); };
 const movR13dMemRsp = d => { B(0x44, 0x8b, 0xac, 0x24); B32(d); };
 const cmpR13dImm32 = v => { B(0x41, 0x81, 0xfd); B32(v); };
+const cmpRcxImm32 = v => { B(0x48, 0x81, 0xf9); B32(v); };
+const cmpRbxImm32 = v => { B(0x48, 0x81, 0xfb); B32(v); };
 const addRdiR13 = () => B(0x4c, 0x01, 0xef);
 const subEdxImm = v => { B(0x83, 0xea, v & 255); };
 const addDlImm = v => { B(0x80, 0xc2, v & 255); };
@@ -207,10 +233,17 @@ const movR10dImm = v => { B(0x41, 0xba); B32(v); };
 const movRsiMemRspDisp = d => { B(0x48, 0x8b, 0x74, 0x24, d & 255); };
 const movMemRspDispRsi = d => { B(0x48, 0x89, 0x74, 0x24, d & 255); };
 const addRspImm24 = () => B(0x48, 0x83, 0xc4, 0x18);
-// chiusure (M3b2b3e): record da 128 byte in r14+0x30000
+// chiusure (M3b2b3e): record da 128 byte in r14+MEM.HEAP
 const leaRdiR14 = d => { B(0x49, 0x8d, 0xbe); B32(d); };
 const movRaxMemRdx = () => B(0x48, 0x8b, 0x02);
 const movMemRdxRax = () => B(0x48, 0x89, 0x02);
+// bump dell'heap: [rdx] = rax, con controllo di esaurimento (fail)
+function heapBumpStore() { cmpRaxImm32(MEM.HEAP_SIZE); jae('fail'); movMemRdxRax(); }
+// spazio nell'heap PRIMA della scrittura: fallisce se bump + r10 > HEAP_SIZE
+// (r10 = spazio richiesto, allineato a 16 byte)
+function heapRoomR10() { addRaxR10(); cmpRaxImm32(MEM.HEAP_SIZE); jae('fail'); subRaxR10(); }
+// idem con spazio immediato (record di dimensione fissa)
+function heapRoomImm(v) { addRaxImm(v); cmpRaxImm32(MEM.HEAP_SIZE); jae('fail'); subRaxImm(v); }
 const addRdiRax = () => B(0x48, 0x01, 0xc7);
 const movMemRdiR8 = () => B(0x4c, 0x89, 0x07);
 const movMemRdiR9_8 = () => B(0x4c, 0x89, 0x4f, 0x08);
@@ -218,6 +251,9 @@ const movMemRdiImm32 = (d, v) => { B(0x48, 0xc7, 0x47, d & 255); B32(v); };
 const movMemRdiR8_32 = () => B(0x4c, 0x89, 0x47, 0x20);
 const movMemRdiR9_40 = () => B(0x4c, 0x89, 0x4f, 0x28);
 const addRaxImm128 = () => B(0x48, 0x05, 0x80, 0x00, 0x00, 0x00);
+const addRaxImm = v => { B(0x48, 0x05); B32(v); };
+const subRaxImm = v => { B(0x48, 0x2d); B32(v); };
+const subRaxR10 = () => B(0x4c, 0x29, 0xd0);
 const orRaxImm2 = () => B(0x48, 0x83, 0xc8, 0x02);
 const andRaxImmFc = () => B(0x48, 0x83, 0xe0, 0xfc);
 const andRdiImmFc = () => B(0x48, 0x83, 0xe7, 0xfc);
@@ -226,12 +262,12 @@ const movRdxRax = () => B(0x48, 0x89, 0xc2);
 const movRaxRdi = () => B(0x48, 0x89, 0xf8);
 const xorEax = () => B(0x31, 0xc0);
 // cattura dell'ambiente nelle chiusure (M3b2b3f)
-function flagLoad() { leaRdxR14(0xF008); B(0x48, 0x8b, 0x02); }
-function flagStoreRax() { leaRdxR14(0xF008); B(0x48, 0x89, 0x02); }
-function flagStoreImm(v) { leaRdxR14(0xF008); B(0x48, 0xc7, 0x02); B32(v); }
-function breakFlagLoad() { leaRdxR14(0xF02C); B(0x48, 0x8b, 0x02); }
-function breakFlagStoreRax() { leaRdxR14(0xF02C); B(0x48, 0x89, 0x02); }
-function breakFlagStoreImm(v) { leaRdxR14(0xF02C); B(0x48, 0xc7, 0x02); B32(v); }
+function flagLoad() { leaRdxR14(MEM.SCRATCH + 0x08); B(0x48, 0x8b, 0x02); }
+function flagStoreRax() { leaRdxR14(MEM.SCRATCH + 0x08); B(0x48, 0x89, 0x02); }
+function flagStoreImm(v) { leaRdxR14(MEM.SCRATCH + 0x08); B(0x48, 0xc7, 0x02); B32(v); }
+function breakFlagLoad() { leaRdxR14(MEM.SCRATCH + 0x2C); B(0x48, 0x8b, 0x02); }
+function breakFlagStoreRax() { leaRdxR14(MEM.SCRATCH + 0x2C); B(0x48, 0x89, 0x02); }
+function breakFlagStoreImm(v) { leaRdxR14(MEM.SCRATCH + 0x2C); B(0x48, 0xc7, 0x02); B32(v); }
 const movRaxMemRspDisp = d => B(0x48, 0x8b, 0x44, 0x24, d & 255);
 const movRcxMemRdiDisp = d => B(0x48, 0x8b, 0x4f, d & 255);
 const movR8MemRdiDisp = d => B(0x4c, 0x8b, 0x47, d & 255);
@@ -345,7 +381,7 @@ const addRsp8 = v => { B(0x48, 0x83, 0xc4, v & 255); };
 // dalla chiamata stessa; il backend di piattaforma mappa gli slot sui propri
 // registri nell'ordine della lista. Le materializzazioni possono vivere in
 // blocchi separati (osSlot: copre il len caricato prima dei jmp).
-// Stato del corpo: r14 = base regione 0x40000, r12 = handle stdout (solo PE),
+// Stato del corpo: r14 = base regione (MEM.REGION), r12 = handle stdout (solo PE),
 // rbx = handle file, r13 = conteggio. Errori: exit 1 = fail/read/open,
 // exit 2 = usage — etichette condivise 'fail', 'read_fail', 'open_fail',
 // 'usage', 'no_arg'.
@@ -377,23 +413,23 @@ function emitBody() {
 subRsp(BODY_FRAME);                      // frame del corpo: path [rsp+0x100], locals
 osCall('arg', [['buf', rsp(0x100)]]);    // argv[1] in [rsp+0x100]; vuoto -> usage
 osCall('open', [['path', rsp(0x100)]]);  // esito: handle in rbx; errore -> exit 1
-osCall('alloc', [['size', imm(0x40000)]]); // esito: base in rax
+osCall('alloc', [['size', imm(MEM.REGION)]]); // esito: base in rax
 movR14Rax();                             // corpo: base regione in r14 (Q2/Q5)
-osCall('read', [['handle', reg('rbx')], ['buf', reg('r14')], ['max', imm(0x10000)],
+osCall('read', [['handle', reg('rbx')], ['buf', reg('r14')], ['max', imm(MEM.SRC_MAX)],
   ['nwritten'], ['overlapped']]);        // esito: byte letti in r13, handle chiuso
 
-cmpR13dImm32(0xF000); jae('read_fail');// corpo: sorgente troppo grande (slot maschera a +0xF000)
+cmpR13dImm32(MEM.SRC_MAX); jae('read_fail'); // corpo: sorgente troppo grande
 movRdiR14(); addRdiR13(); movByteRdiImm(0);
 xorEbX();                               // rbx = numero di variabili in ambiente
-leaR15R14(0x10000);                     // r15 = base ambiente (dopo i 64 KiB di sorgente)
-leaR13R14(0x20000);                     // r13 = base tabella funzioni
+leaR15R14(MEM.ENV);                     // r15 = base ambiente
+leaR13R14(MEM.FUNC);                    // r13 = base tabella funzioni
 xorEcx(); movMemR13Rcx();               // funzioni = 0
-leaRdxR14(0x30000); xorEax(); movMemRdxRax(); // heap chiusure: bump = 0
+leaRdxR14(MEM.HEAP); xorEax(); movMemRdxRax(); // heap chiusure: bump = 0
 movRsiR14();
 maskStoreImm(0);                        // maschera di stop dei blocchi
 flagStoreImm(0);                        // dentro una funzione/chiusura?
 breakFlagStoreImm(0);                    // stato break
-leaRdxR14(0xF028); movMemRdxImm32(0, 0); // inline print mode
+leaRdxR14(MEM.SCRATCH + 0x28); movMemRdxImm32(0, 0); // inline print mode
 callL('parse_program');
 osCall('exit', [['code', imm(0)]]);      // uscita pulita
 
@@ -527,7 +563,8 @@ blockStoreRax();
 jmp('pp_loop');
 
 L('st_func');
-movRcxMemR13(); shlRcx7(); leaRdxR13Rcx8();   // entry = r13+8+count*128
+movRcxMemR13(); cmpRcxImm32(MEM.FUNC_MAX); jae('fail');
+shlRcx7(); leaRdxR13Rcx8();   // entry = r13+8+count*128
 popR9(); popR8();
 movMemRdxR8(); movMemRdx8R9();
 movMemRdxImm32(0x60, 0);
@@ -716,7 +753,8 @@ addRsiImm(8);
 callL('skip_ws');
 callL('parse_ident');
 pushR8(); pushR9();
-movRcxMemR13(); shlRcx7(); leaRdxR13Rcx8();
+movRcxMemR13(); cmpRcxImm32(MEM.FUNC_MAX); jae('fail');
+shlRcx7(); leaRdxR13Rcx8();
 popR9(); popR8();
 movMemRdxR8(); movMemRdx8R9();
 movMemRdxImm32(0x60, 0);
@@ -952,10 +990,10 @@ andRcxImmFc(); andRaxImmFc();
 movRdxMemRcx(); B(0x48,0x83,0xfa,0x01); jne('fail');
 movRdxMemRax(); B(0x48,0x83,0xfa,0x01); jne('fail');
 pushRsi(); pushRcx(); pushRax(); movR8MemRcx8(); movR9MemRax8(); movR10R8(); addR10R9(); pushR10();
-leaRdxR14(0x30000); movRaxMemRdx();
-leaRdiR14(0x30008); addRdiRax();
+leaRdxR14(MEM.HEAP); movRaxMemRdx();
+leaRdiR14(HEAP_DATA); addRdiRax();
 movMemRdiImm32(0, 1); movRcxR10(); movMemRdiRcx8();
-leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); movMemRdxRax();
+leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); heapBumpStore();
 popR10(); popRax(); popRcx();
 leaR9Rdi16();
 leaRsiRcx16(); movRcxR8();
@@ -1011,11 +1049,12 @@ cmpByteRsiImm('9'); jbe('pf_number');
 jmp('pf_ident');
 L('pf_list');
 incRsi(); callL('skip_ws');
-leaRdxR14(0x30000); movRaxMemRdx();
-leaRdiR14(0x30008); addRdiRax();
+leaRdxR14(MEM.HEAP); movRaxMemRdx();
+heapRoomImm(0x210);                          // 64 slot da 8 byte + header
+leaRdiR14(HEAP_DATA); addRdiRax();
 movMemRdiImm32(0, 2); movMemRdiImm32(8, 0);
 B(0x48, 0x05, 0x10, 0x02, 0x00, 0x00); // 64 valori da 8 byte + header
-leaRdxR14(0x30000); movMemRdxRax();
+leaRdxR14(MEM.HEAP); heapBumpStore();
 movRaxRdi(); orRaxImm3(); pushRax();
 cmpByteRsiImm(']'); je('pf_list_empty');
 L('pf_list_loop');
@@ -1073,10 +1112,11 @@ incRsi(); jmp('sym_scan');
 L('sym_end');
 movRcxRsi(); popR8(); subRcxR8();
 pushRsi();
-leaRdxR14(0x30000); movRaxMemRdx();
-leaRdiR14(0x30008); addRdiRax();
+leaRdxR14(MEM.HEAP); movRaxMemRdx();
+leaR10Rcx31(); andR10ImmNeg16(); heapRoomR10();
+leaRdiR14(HEAP_DATA); addRdiRax();
 movMemRdiImm32(0, 1); movMemRdiRcx8();
-leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); movMemRdxRax();
+leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); heapBumpStore();
 leaR9Rdi16();
 L('sym_copy');
 testRcx(); jz('sym_done');
@@ -1093,11 +1133,12 @@ cmpByteRsiImm('"'); je('ps_found');
 incRsi(); jmp('ps_scan');
 L('ps_found');
 movRcxRsi(); popR8(); subRcxR8(); incRsi(); pushRsi();
-leaRdxR14(0x30000); movRaxMemRdx();
-leaRdiR14(0x30008); addRdiRax();
+leaRdxR14(MEM.HEAP); movRaxMemRdx();
+leaR10Rcx31(); andR10ImmNeg16(); heapRoomR10();
+leaRdiR14(HEAP_DATA); addRdiRax();
 movMemRdiImm32(0, 1);
 movMemRdiRcx8();
-leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); movMemRdxRax();
+leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); heapBumpStore();
 leaR9Rdi16();
 L('ps_copy');
 testRcx(); jz('ps_done');
@@ -1126,7 +1167,7 @@ movEaxMemR8(); cmpEaxImm32(0x68746f6e); jne('pf_not_nothing');
 cmpByteR8DispImm(4, 'i'); jne('pf_not_nothing');
 cmpByteR8DispImm(5, 'n'); jne('pf_not_nothing');
 cmpByteR8DispImm(6, 'g'); jne('pf_not_nothing');
-leaRaxR14(0xF020); movMemRaxImm32(4); orRaxImm3(); ret();
+leaRaxR14(MEM.SCRATCH + 0x20); movMemRaxImm32(4); orRaxImm3(); ret();
 L('pf_not_nothing');
 callL('skip_ws');
 cmpByteRsiImm('('); je('pf_call');
@@ -1145,13 +1186,14 @@ ret();
 L('pf_lambda');
 addRsiImm(2);
 callL('skip_ws');
-leaRdxR14(0x30000); movRaxMemRdx();      // bump
-leaRdiR14(0x30008); addRdiRax();         // record
+leaRdxR14(MEM.HEAP); movRaxMemRdx();      // bump
+heapRoomImm(128);                          // record da 128 byte
+leaRdiR14(HEAP_DATA); addRdiRax();         // record
 movMemRdiR8(); movMemRdiR9_8();          // nome parametro
 movMemRdiImm32(0x10, 1);                 // param count
 movMemRdiRsi24();                        // body
 movMemRdiR8_32(); movMemRdiR9_40();      // parametro
-addRaxImm128(); movMemRdxRax();          // bump aggiornato
+addRaxImm128(); heapBumpStore();          // bump aggiornato
 movMemRdiImm32(0x60, 0);
 flagLoad(); testRax(); jz('pf_lambda_nocap');
 testRbx(); jz('pf_lambda_nocap');
@@ -1247,8 +1289,10 @@ xorEdx(); divRcx(); addDlImm(0x30); decR10(); B(0x41, 0x88, 0x12); testRax(); jn
 testR8d(); je('pbs_neg'); decR10(); B(0x41, 0xc6, 0x02, 0x2d);
 L('pbs_neg');
 B(0x48, 0x8d, 0x7d, 0xf8); B(0x4c, 0x29, 0xd7); B(0x48, 0x89, 0xf9);  // rdi=rbp-8; sub rdi,r10; mov rcx,rdi (len)
-leaRdxR14(0x30000); movRaxMemRdx(); leaRdiR14(0x30008); addRdiRax();
-movMemRdiImm32(0, 1); movMemRdiRcx8(); leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); movMemRdxRax();
+leaRdxR14(MEM.HEAP); movRaxMemRdx();
+leaR10Rcx31(); andR10ImmNeg16(); heapRoomR10();
+leaRdiR14(HEAP_DATA); addRdiRax();
+movMemRdiImm32(0, 1); movMemRdiRcx8(); leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); heapBumpStore();
 leaR9Rdi16(); B(0x4c, 0x8d, 0x55, 0xf8); B(0x49, 0x29, 0xca);  // r10 = (rbp-8)-len = inizio cifre
 L('pbs_copy');
 testRcx(); jz('pbs_done'); movDlMemR10(); movMemR9Dl(); incR10(); incR9(); decRcx(); jmp('pbs_copy');
@@ -1422,6 +1466,7 @@ movRaxMemRdx16();
 ret();
 
 L('env_store');
+cmpRbxImm32(MEM.ENV_MAX); jae('fail');   // ambiente esaurito
 leaRdxRbx3(); shlRdx3(); addRdxR15();
 movMemRdxR8(); movMemRdx8R9(); movMemRdxRax16();
 incRbx();
@@ -1484,7 +1529,7 @@ testR8d(); je('pi_sign_done');
 decRdi(); movByteRdiImm(0x2d);          // '-'
 L('pi_sign_done');
 leaRsp('r8', 0x50); movR9R8(); subR9Rdi();
-leaRdxR14(0xF028); movRaxMemRdx(); testRax(); jz('pi_int_write');
+leaRdxR14(MEM.SCRATCH + 0x28); movRaxMemRdx(); testRax(); jz('pi_int_write');
 B(0x49, 0xff, 0xc9);
 L('pi_int_write');
 osCall('write', [['handle'], ['buf', reg('rdi')], ['len', reg('r9d')],
@@ -1518,9 +1563,9 @@ L('pi_list_item');
 B(0x48, 0x8b, 0x55, 0xf8); B(0x48, 0x8b, 0x4d, 0xe8);
 B(0x48, 0x8b, 0x44, 0xca, 0x10);          // valore all'indice corrente
 testAlImm(3); jne('fail');                 // elementi interi nel seed
-leaRdxR14(0xF028); movMemRdxImm32(0, 1);
+leaRdxR14(MEM.SCRATCH + 0x28); movMemRdxImm32(0, 1);
 callL('print_int');
-leaRdxR14(0xF028); movMemRdxImm32(0, 0);
+leaRdxR14(MEM.SCRATCH + 0x28); movMemRdxImm32(0, 0);
 B(0x48, 0xff, 0x45, 0xe8); jmp('pi_list_loop');
 L('pi_list_done');
 movByteRspImm(0x30, ']'); movByteRspImm(0x31, 10);

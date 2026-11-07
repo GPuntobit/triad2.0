@@ -62,10 +62,13 @@ Estensione canonica dei file: `.triad` (alias storico `.td`).
 7. **Per il benchmark `ai/`**: quando il compito è generare una soluzione, restituire **solo un
    unico blocco di codice Triad**, senza spiegazioni né markdown, conforme a `ai/SYSTEM_PROMPT.md`,
    e verificare con `node cli/triad-cli.mjs ai verify`.
-8. **Budget di sessione e handoff.** Il consumo di token di una sessione **non deve superare
-   2.7 milioni di token (R2.7M)**. Raggiunta la soglia R2.7M (da considerare già raggiunta
-   a 2.5M), l'AI **si ferma**: chiude in modo coerente il passo di lavoro in corso e produce un
-   **riepilogo di handoff da aggiungere in `TASK.md`** per la sessione successiva, sotto
+8. **Budget di sessione e handoff.** Il consumo di token di una sessione **non deve mai superare
+   2.5 milioni di token (R2.5M)**: è un **tetto rigido**, non una soglia di avviso.
+   Raggiunta la soglia R2.5M (o quando ci si avvicina), l'AI **si ferma immediatamente** e
+   chiude in modo coerente il passo di lavoro in corso; il **riepilogo di handoff deve essere
+   completato e consegnato entro R3.0M** (3.0 milioni di token) — superare R3.0M senza
+   handoff scritto in `TASK.md` è una violazione della regola, come superare R2.5M.
+   Il riepilogo di handoff va aggiunto in `TASK.md` per la sessione successiva, sotto
    un'intestazione `## Handoff — <data/ora>` e contenente almeno:
    - stato attuale del lavoro e obiettivo perseguito;
    - **cosa è stato fatto** (lavoro concluso, decisioni prese, file toccati e modifiche);
@@ -84,7 +87,9 @@ Estensione canonica dei file: `.triad` (alias storico `.td`).
    ```
 
    Non proseguire "a spron battuto" oltre la soglia: meglio un handoff pulito che una sessione
-   troncata a metà modifica.
+   troncata a metà modifica. Ordine di arresto: **(1)** stop al lavoro appena R2.5M è raggiunto
+   o previsto; **(2)** chiusura coerente del passo in corso; **(3)** scrittura dell'handoff in
+   `TASK.md` entro R3.0M; **(4)** risposta finale con il comando di ripresa.
 
 ## 4. Formato della risposta richiesto agli agenti
 
