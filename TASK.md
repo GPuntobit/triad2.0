@@ -1,5 +1,129 @@
 # Task Triad 2.0
 
+## Handoff — 2026-11-07 22:40 (ter): N03/N04 nel seed — indicizzazione `xs[i]` (WIP, **non committato**)
+
+### Stato attuale e obiettivo della sessione
+
+Ripresa dall'handoff «2026-11-08 (bis)»: obiettivo = **ciclo di rebuild del seed**
+(N20 già committato in `9d22de3`; N03, N04 in lavorazione; N21/N06 rinviati) e quindi
+**N23** (gate 39/39) e **N24** (allineamento documenti).
+
+Il working tree contiene **un solo file modificato**: `seed/dev/core.js` (+134 righe, WIP
+**non committato**). I dump committati (PE/ELF) **non** sono stati rigenerati → il check
+anti-drift della CI (`gen_seed.js` + `cmp`) **fallisce** finché il ciclo non è chiuso.
+Sugli artefatti **committati** `sh verify.sh` resta verde (conformance 38/39 con il gap
+noto `liste`, probe 39/39).
+
+### Cosa è stato fatto
+
+1. **Diagnosi del WIP lasciato dalla sessione precedente** (il diff non committato conteneva
+   `parse_postfix`/`index_apply`): il generatore non compilava (`movRcxRax` non definito) e,
+   una volta completato, produceva codice errato. Bug trovati e corretti:
+   - `cmpEdxImm32` usava l'opcode `0x83` (forma imm8) **con** un immediato a 32 bit: 4 byte
+     in più nel flusso → **segfault**;
+   - **convenzione di chiamata**: dentro una routine gli operandi spinti dal chiamante
+     stanno *sotto* l'indirizzo di ritorno (`[rsp+8]`, `[rsp+16]`, …): il WIP assumeva
+     `[rsp]` → leggeva l'indirizzo di ritorno come se fosse il valore;
+   - **etichetta dei valori**: `and $3` *prima* dello shift distruggeva `n<<2` (n diventava
+     0) → l'indice risultava sempre fuori range; ora il tag si controlla senza distruggere
+     il valore (`test dl,3`, opcode `F6 C2 ib` — non `84 D2`, che è `test dl,dl`) e poi si
+     applica `sar rdx,2`;
+   - `mov r10,rax` era codificato con i bit REX sbagliati (`4C 89 C2` = `mov rdx,r8`).
+2. **N03 — indicizzazione `xs[i]` (1-based)**: `parse_postfix` (`primary { "[" expr "]" }`),
+   `index_apply` (lettura) e `index_store` (scrittura `xs[i] = v`), con i controlli di
+   `SPEC-CORE.md` §5/§7/§9 (indice `Int`, `1 ≤ n ≤ length`, tipo lista, errore di esecuzione
+   con exit 1 fuori range).
+3. **N04 — `-=` e `*=`**: `st_sub_check` / `st_mul_check` (simmetriche a `st_add_check`),
+   con wrap-around a 64 bit come `+=`.
+4. Helper di codegen aggiunti: `movRcxRax`, `movR10Rax`, `movR10MemRax`, `movR9MemRax`,
+   `movR11MemRax`, `cmpR10Imm32`, `cmpR11Imm32`, `movMemRaxR10`, `movRaxMemRsp8/16`,
+   `movR10MemRsp8`, `movR11MemRsp16/24`, `addRspImm16`, `testDlImm`.
+
+### Scoperta cruciale (blocca N23)
+
+Il caso `liste` **non** si chiude solo con l'indicizzazione: usa `push!(xs, 4)` come
+**statement**. Il seed non supporta le chiamate come statement: in `stmt_assign` un nome
+seguito da `(` finisce in `st_func` (definizione di funzione) e, senza `=`, il seed va in
+`fail` (exit 1). Servono quindi **due** capability: (a) `xs[i]`, (b) **chiamata come
+statement**.
+
+### Test di conformance eseguiti ed esito
+
+- `node seed/dev/gen_seed.js linux /tmp/seed_test.hex` → compila ✓ (ELF 9245 byte in `/tmp`).
+- `/tmp/seed_test` su programma di prova: `xs[1]` → `1` ✓, `xs[3]` → `3` ✓,
+  `length(xs)` → `3` ✓ (stessi valori del riferimento JS `seed/dev/triad_core.cjs`);
+  `push!(xs, 4)` → `seed: error` (exit 1) ✗ → è la chiamata-statement mancante.
+- `sh verify.sh` (artefatti **committati**) → **OK**: conformance 38/39 (unico FAIL `liste`,
+  gap noto N03), probe 39/39.
+- Nessun golden riscritto; nessun caso di conformance aggiunto.
+
+### Cosa manca (ordine consigliato)
+
+1. **Chiamata come statement** nel seed: in `st_func`, dopo la lista parametri, se il
+   carattere successivo non è `=` → è una chiamata → ri-parsare lo statement come
+   espressione (riposizionare `rsi` all'inizio dello statement, `parse_expr`,
+   `blockStoreRax`, `popRsi`). Attenzione: un argomento di chiamata può **non** essere un
+   identificatore (`f(g(1))`): la lista parametri va controllata *prima* (primo carattere
+   non alfabetico → è una chiamata), altrimenti `parse_ident` va in `fail`. Poi N03 chiude
+   il caso `liste` → N23.
+2. **Rigenerare i dump** PE + ELF (`node seed/dev/gen_seed.js all`) e aggiornare gli hash in
+   `.github/workflows/ci.yml`, `seed/README.md`, `seed/dev/README.md`,
+   `seed/windows-x86_64/README.md`, `seed/linux-x86_64/README.md` (ADR 0001: diff tracciato).
+3. **Contratto e guardie**: togliere `D13` da `seed/dev/certified-subset.txt` (l'indicizzazione
+   esiste) → la regola `G-D13` in `tools/selfhost-guard/rules.mjs` si spegne da sola, ma vanno
+   rimossi il fixture `tools/selfhost-guard/fixtures/d13_indicizzazione.td` e il caso in
+   `tools/selfhost-guard/test.mjs` (il test «il contratto spegne la regola» usa D13: va
+   spostato su un'altra divergenza, es. D14). Se `xs[i] += v` resta non supportato → **nuova
+   divergenza D23 (noisy)** con la regola corrispondente (AST `indexassign` con op ≠ `=`).
+4. **Probe**: `tests/probes/bad_lista_indice.td` (che registra oggi l'assenza
+   dell'indicizzazione) va ribaltato in `ok_*` con i golden sidecar; aggiungere un probe per
+   l'errore fuori range (exit 1) e per `xs[i] = v`; aggiornare la matrice dei limiti in
+   `tests/probes/README.md`.
+5. **N23**: `conformance/gate.sh` → `KNOWN_GAP` vuoto e correggere il commento (dice che
+   `length(xs)` manca: **funziona già**); `conformance/README.md` (righe 47 e 55).
+6. **N24**: `BOOTSTRAP.md` §10, `STATUS.md`, «Current status» di questo file, `CHANGELOG.md`
+   — togliere le affermazioni ottimistiche su `elseif` e liste «complete».
+7. **N21/N06** (rinviati): §8 (`readfile`, `strlen`, `strbyte`, `strsub`) e stringhe
+   (escape, `==`, `+=`).
+
+### File toccati
+
+| File | Modifica |
+|---|---|
+| `seed/dev/core.js` | N03 (postfix: lettura e scrittura `xs[i]`), N04 (`-=`, `*=`), helper di codegen, correzione di `cmpEdxImm32` (WIP **non committato**) |
+| `TASK.md` | questo handoff |
+
+### Decisioni prese
+
+1. **Convenzione di chiamata**: gli operandi passati sullo stack stanno sotto l'indirizzo di
+   ritorno → letture con `mov r??,[rsp+8+N]` (`movRaxMemRsp8`, `movR11MemRsp16`, …).
+2. **Tag dei valori**: si controlla senza distruggere il valore (`test dl,3` + `sar`), non
+   con `and $3` + `sar`.
+3. **Nessun nuovo caso in `conformance/core/cases/`**: il conteggio «39» è cablato in ~15
+   documenti (guide incluse, più versioni linguistiche); la copertura dell'indicizzazione
+   resta il caso `liste` già presente, e le capability nuove (scrittura, fuori range) vanno
+   nei **probe** (`tests/probes/`), che è il luogo previsto per i limiti del runtime.
+   Da rivalutare in una sessione dedicata se si preferisce un 40° caso.
+
+### Problemi aperti / noti
+
+- Il seed rigenerato **non** è ancora conforme: senza la chiamata-statement il caso `liste`
+  resta FAIL → il gate resta 38/39.
+- Il WIP non committato rende **rotto il check anti-drift** della CI (dump rigenerato ≠ dump
+  committato): chiudere il ciclo (punto 1–2) prima di committare.
+- `xs[i] += v` (assegnazione composta a indice) non è previsto: va dichiarato come
+  divergenza (D23) o implementato.
+
+### Comando di ripresa
+
+```sh
+cd /home/votlazam/Documenti/progetti/triad2.0 && git status --short && node seed/dev/gen_seed.js linux /tmp/seed_test.hex && xxd -r -p /tmp/seed_test.hex /tmp/seed_test && chmod +x /tmp/seed_test && printf 'xs = [1, 2, 3]\nprintln(xs[1])\n' > /tmp/t.td && /tmp/seed_test /tmp/t.td
+```
+
+```
+Ripresa sessione: leggi la sezione "Handoff — 2026-11-07 22:40 (ter)" in TASK.md e continua da lì
+```
+
 ## Handoff — 2026-11-08 (bis): budget di sessione, tetto R2.5M + handoff entro R3.0M
 
 Sessione breve, **solo documentazione** (nessuna modifica a lessico, parser, tipi, valutazione
