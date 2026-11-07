@@ -32,12 +32,19 @@ linker, compilatore o runtime esterno nel percorso. `SPEC-CORE.md` non cambia di
   contratto `os_*`, parità/CI, zero-install, immutabilità del PE) restano **vincolanti**
   finché non ridecisi esplicitamente qui.
 - **Solo decisioni**: le slice di esecuzione restano in `TASK.md` (N03–N05 = ciclo rebuild
-  PE/ELF + hash CI; N16–N18 = porta Linux del seed; sezione «Bootstrap Tasks (S2-S4)») e
-  vanno referenziate, mai duplicate.
+  PE/ELF + hash CI; N16–N18 = porta Linux del seed, **chiuse** il 2026-11-05; dal 2026-11-07
+  N20–N24 = ciclo di rebuild del seed per S1, scaturito dalla decisione
+  [01](issues/01-fork-architetturale-seed.md); sezione «Bootstrap Tasks (S2-S4)») e vanno
+  referenziate, mai duplicate.
+- **Il seed dopo la decisione [01](issues/01-fork-architetturale-seed.md)**: è **veicolo di
+  transizione per S1**, non implementazione Core conforme; envelope ri-proporzionato
+  (buffer sorgente 1 MiB, heap 8 MiB, liste a 64 elementi), **sottoinsieme certificato**
+  in `seed/README.md` + `seed/dev/certified-subset.txt`.
 - **Skill da consultare**: `grilling` + `domain-modeling` per i ticket `grilling`;
   `prototype` per i ticket `prototype`; `research` per i ticket `research`.
 - **Glossario**: quando un termine cristallizza in un ticket, aggiornare `GLOSSARY.md`
-  subito (questa sessione: *Catena S0→S4*, *Punto fisso*, *Self-hosting*, *Seed ritirato*).
+  subito (2026-11-05: *Catena S0→S4*, *Punto fisso*, *Self-hosting*, *Seed ritirato*;
+  2026-11-07: *Sottoinsieme certificato*, *Divergenza silenziosa*).
 
 ## Decisions so far
 
@@ -53,6 +60,21 @@ linker, compilatore o runtime esterno nel percorso. `SPEC-CORE.md` non cambia di
   (Rust `src/stage0`, Go 1.4, snapshot); nessuno ritira lo stadio 0. La nostra definizione
   di punto fisso è più forte di ogni precedente. Findings su branch `research/10-punto-fisso`;
   sblocca 08 e informa 04.
+- [01 — Fork architetturale del seed: gap reali e AST/bytecode](issues/01-fork-architetturale-seed.md):
+  il seed **non** viene forkato con un livello AST/bytecode (la motivazione di
+  `BOOTSTRAP.md` §10 è misurata obsoleta) e resta un **veicolo di transizione per S1**, non
+  un'implementazione Core conforme: pavimento = §8 (`readfile` incluso, senza il quale S1
+  non può leggere il programma) + le divergenze che la sorgente di S1 tocca + `liste` verde
+  (39/39); il resto **fuori contratto**. Le costruzioni *rumorose* (exit 1) sono **vietate
+  nella sorgente di S1** (guardie statiche), le *silenziose* (scope dinamico, cattura per
+  valore, escape, `==` su stringhe, newline, scope di `while`, `while` non-`Bool`) hanno
+  **guardie statiche dedicate**, con chirurgia nel seed solo se non presidabili. Il
+  **riferimento JS** è l'autorità semantica di sviluppo, il seed è il gate di esecuzione.
+  L'**arena va ri-proporzionata** (buffer sorgente 64 KiB → 1 MiB, heap 64 KiB → 8 MiB:
+  l'envelope attuale non ospita S1; le liste restano a 64 elementi). Criterio di riapertura
+  del fork: costo **misurato**. Il contratto del seed vive in `seed/README.md` + elenco
+  macchina-leggibile (`seed/dev/certified-subset.txt`), termine canonico *sottoinsieme
+  certificato*. Slice in `TASK.md` N20–N24.
 
 ## Not yet specified
 

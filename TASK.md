@@ -1,5 +1,168 @@
 # Task Triad 2.0
 
+## Handoff — 2026-11-07 17:40 (soglia di budget R2.7M raggiunta)
+
+### Stato attuale e obiettivo della sessione
+
+Sessione dedicata alla **decisione architetturale [01] della mappa self-hosting M6**
+(skill `grilling`): «il seed va forkato con un livello AST/bytecode?». Obiettivo:
+riconoscere i **gap reali** del seed (misurati, non dedotti), decidere il **pavimento
+(contratto)** del seed per la catena S0→S4 e tradurre la decisione in slice di esecuzione
+numerate (`TASK.md` N20–N24). Sessione chiusa per raggiungimento della soglia di budget
+(R2.7M): nessuna modifica a codice del seed, solo documentazione, ticket e glossario.
+
+Punto di partenza: `HEAD` = `1612c44` (release `v0.8.0-beta.9`, dati di pubblicazione),
+con la release pubblicata e la CI verde. La sezione «Ciclo di rebuild del seed per S1 —
+N20–N24» in questo file è **già committata** (in `1612c44`); il lavoro di questa sessione è
+il **corpo decisionale** che la precede.
+
+### Cosa è stato fatto
+
+1. **Ticket [01 — Fork architetturale del seed](.scratch/self-hosting-m6/issues/01-fork-architetturale-seed.md)
+   → `Status: resolved`** (file modificato, non ancora committato):
+   - **ricognizione misurata** sul seed ELF nativo: tabella **D1–D22** (divergenze semantiche
+     rispetto a `SPEC-CORE.md`), sezione **F** (funzionalità mancanti: N03–N07), sezione **R**
+     (limiti di risorsa), sezione **E** (envelope dell'arena: sorgente 64 KiB, heap 64 KiB senza
+     `free`, liste 64 elementi, funzioni 64 B/record → max 4 parametri);
+   - **risposta alla grilling Q1–Q6**: nessun fork AST/bytecode (la motivazione di
+     `BOOTSTRAP.md` §10 è *misurata* obsoleta: `elseif` esiste, le liste sono parziali, il
+     vero ostacolo è lo **scope dinamico**); il seed resta **interprete diretto** e diventa
+     **veicolo di transizione per S1**, non implementazione Core conforme; **pavimento** =
+     §8 completi (`readfile` incluso) + divergenze toccate dalla sorgente di S1 + `liste` verde
+     (39/39); **fuori contratto** il resto (`typeof`, `Int()`, `Symbol()`, `:+`, forward ref…);
+     costruzioni *rumorose* → **vietate** nella sorgente di S1 (guardie statiche), divergenze
+     *silenziose* → **guardie dedicate**; **riferimento JS** (`seed/dev/triad_core.cjs`) =
+     autorità semantica di sviluppo, **seed** = gate di esecuzione; **arena da
+     ri-proporzionare** (buffer sorgente 64 KiB → **1 MiB**, heap 64 KiB → **8 MiB**, liste a 64
+     elementi invariate); criterio di riapertura del fork = **costo misurato**, non principio;
+   - **correzione documentale**: `length(xs)` **funziona già** (misurato `length([1,2,3])` → `3`)
+     → il commento di `conformance/gate.sh` che lo dichiarava mancante è sbagliato.
+2. **`.scratch/self-hosting-m6/map.md`** (modificato): decisione [01] inserita in
+   «Decisions so far»; il seed post-decisione è **veicolo di transizione**; envelope
+   ri-proporzionato e **sottoinsieme certificato** in `seed/README.md` +
+   `seed/dev/certified-subset.txt`; slice N20–N24 referenziate (mai duplicate).
+3. **`GLOSSARY.md`** (modificato): due termini canonici nuovi — *Sottoinsieme certificato*,
+   *Divergenza silenziosa*.
+4. **Nuovo ticket [12 — Guardie statiche per la sorgente di S1](.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md)**
+   (file **nuovo, non versionato**): 4 decisioni aperte — quale regola presidia quale
+   divergenza silenziosa (e con quale precisione), dove stanno le guardie (lint esistente
+   `tools/site-gen/lint.mjs` vs controllore dedicato alla sorgente S1), **criterio di
+   «non presidabile»** (⇒ chirurgia nel seed) e ruolo del riferimento JS nella CI
+   (confronto seed↔JS come gate?).
+5. **`AGENTS.md`** (modificato): soglia di budget di sessione aggiornata a **R2.7M** (era
+   1.5–2M) e formato del riepilogo di handoff esplicitato su «cosa è stato fatto / cosa manca».
+
+### Cosa manca
+
+**Esecuzione (slice già definite in questo file, ordine in «Ordine» 2026-11-07):**
+
+- **N20** — ri-proporzionamento dell'arena (buffer sorgente 1 MiB, heap 8 MiB): senza questo
+  l'envelope attuale **non ospita S1**.
+- **N21** — primitivi §8 nel seed (`readfile`, `strlen`, `strbyte`, `strsub`): `readfile` non è
+  un extra, è il modo in cui S1 legge il programma da interpretare.
+- **N03** — `xs[i]` 1-based (sblocca il caso `liste`, **unico FAIL** del gate: 38/39).
+- **N04** — `-=` / `*=`. **N05** — funzioni con > 4 parametri.
+  → tutti e quattro in **un solo ciclo di rebuild PE/ELF + hash CI** (ADR 0001: diff tracciato).
+- **N22** — contratto del seed (`seed/README.md` + `seed/dev/certified-subset.txt`) e guardie
+  statiche sulla sorgente di S1 → **dipende dalla decisione del ticket 12**.
+- **N23** — gate a **39/39** (`KNOWN_GAP` vuoto in `conformance/gate.sh`).
+- **N24** — allineamento dei documenti (`BOOTSTRAP.md` §10, «Current status» di questo file,
+  `STATUS.md`) alla **ricognizione misurata** (via le affermazioni ottimistiche su `elseif` e
+  liste «complete»).
+
+**Decisioni normative ancora da prendere (regola operativa 1: non inventare semantica):**
+
+- **N02** — newline: quando continua l'espressione e quando separa gli statement (D19).
+- **N08** — scope dei nomi: lessicale (`SPEC-CORE.md` §5) o dinamico (comportamento del seed)
+  (D1); una delle due implementazioni va allineata.
+- **D21** — condizione `while` non-`Bool`: il seed **salta il corpo** (divergenza silenziosa);
+  il caso negativo di conformance resta sospeso in attesa della decisione.
+
+**Mappa M6 (ticket ancora aperti):** `02-architettura-s1`, `03-gc-memoria`,
+`04-linguaggio-sorgente-s2`, `05-forma-artefatti`, `06-architettura-codegen-compilatore`,
+`07-certificazione-pe`, `08-certificazione-punto-fisso-ci`, `09-toolchain-alla-destinazione`,
+`10-ricerca-punto-fisso-root`, `11-ricerca-gc-bootstrap`, `12-guardie-statiche-sorgente-s1`.
+
+**Fuori dal bootstrap (trasversali, da non confondere con la catena S0→S4):** GUI Windows
+(`TriadDesktop.exe` non pubblicata: ticket `.scratch/desktop-gui-windows/issues/01`),
+traduzione EN del libro, `Q01–Q06` (matrice requisiti→test, allineamento documenti, tool AI,
+packaging Julia, editor, pulizia repo).
+
+### File toccati in questa sessione
+
+| File | Modifica |
+|---|---|
+| `.scratch/self-hosting-m6/issues/01-fork-architetturale-seed.md` | `Status: open` → `resolved`; aggiunte sezioni Fatti (D1–D22, F, R, E), metodo di misura, risposta Q1–Q6 |
+| `.scratch/self-hosting-m6/map.md` | decisione [01] in «Decisions so far»; seed = veicolo di transizione; slice N20–N24 |
+| `.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md` | **nuovo** ticket (grilling) sulle guardie statiche della sorgente di S1 |
+| `GLOSSARY.md` | + *Sottoinsieme certificato*, + *Divergenza silenziosa* |
+| `TASK.md` | questa sezione di handoff |
+| `AGENTS.md` | soglia di budget R2.7M + formato del riepilogo (cosa fatto / cosa manca) |
+
+Nessuna modifica a codice (seed, parser, evaluator, harness, CI): la regola operativa 3
+(conformance) non è stata attivata perché non c'è stata alcuna modifica a lessico, parser,
+tipi, valutazione o I/O.
+
+### Decisioni prese (con riferimento agli ADR)
+
+1. **Nessun fork AST/bytecode del seed** — criterio di riapertura: costo **misurato**
+   (giorni di codice macchina × regressioni sui 38 casi verdi) vs nucleo AST/bytecode.
+2. **Il seed è veicolo di transizione per S1**, non implementazione Core conforme; il suo
+   *pavimento* è §8 + divergenze toccate da S1 + `liste` verde (39/39).
+3. **Guardie statiche sulla sorgente di S1** invece di chirurgia nel seed per le costruzioni
+   *rumorose*; regole dedicate per le *silenziose*; chirurgia solo se «non presidabile».
+4. **Riferimento JS = autorità semantica**; **seed = gate di esecuzione**.
+5. **Arena ri-proporzionata** (1 MiB / 8 MiB): modifica di costanti e offset, **nessun impatto
+   sul layout del PE** → cambia i byte del codice macchina → hash CI + diff tracciato
+   (**ADR 0001**, `docs/adr/0001-immutabilita-pe-riproducibilita-dump.md`); parità PE/ELF
+   verificata senza il PE (**ADR 0002**, `docs/adr/0002-verifica-parita-senza-pe.md`).
+6. **Nessun nuovo ADR** in questa sessione: le decisioni stanno nei ticket della mappa M6
+   (che è il posto previsto per le decisioni, `docs/agents/issue-tracker.md`).
+
+### Test di conformance eseguiti ed esito
+
+- `sh verify.sh` → **OK**: gate conformance **38/39** (l'unico FAIL è `liste`, gap noto **N03**,
+  escluso in modo esplicito e rumoroso da `conformance/gate.sh`) + probe **39/39 PASS**.
+- Nessun nuovo caso di conformance in questa sessione (sessione decisionale: nessuna modifica
+  al comportamento → nessun golden da aggiungere, **nessun golden riscritto**).
+- Working tree: modifiche solo a documenti/ticket (nessun codice) → nessuna regressione
+  possibile sul seed.
+
+### Prossimi passi concordati
+
+1. **Risolvere il ticket 12** (grilling) → Q: regole per divergenza, sede delle guardie,
+   criterio di «non presidabile», ruolo del confronto seed↔JS in CI.
+2. **Ciclo di rebuild unico** N20 + N21 + N03 + N04 + N05 → PE + ELF + hash CI + diff
+   tracciato; poi N23 (gate 39/39) e N22 (contratto + guardie).
+3. **N24**: allineare `BOOTSTRAP.md` §10, «Current status» e `STATUS.md` alla misura.
+4. Solo dopo: ticket M6 `02` (architettura di S1) e `03` (GC/memoria).
+
+### Problemi aperti / noti
+
+- **N03**: caso `liste` ancora FAIL → il gate è 38/39, non 39/39.
+- L'**envelope** del seed non ospita S1 (sorgente > 64 KiB, heap 64 KiB) → N20 è bloccante
+  per ogni lavoro su S1.
+- `readfile` **assente** nel seed: S1 non può ancora leggere il programma da interpretare.
+- Divergenze **silenziose** ancora non presidiate: D1 (scope dinamico), D2 (cattura per valore),
+  D3 (escape), D4 (`==` su stringhe), D19 (newline), D20 (scope del corpo `while`),
+  D21 (`while` non-`Bool`).
+- `TASK.md` «Current status» è **ottimistico e superato** dalla misura (N24).
+- `TriadDesktop.exe` non pubblicato (GUI Windows legata alla CLI Node pre-N18).
+- N10 (rotazione del PAT esposto) resta **azione umana** fuori dal repo.
+
+### Comando di ripresa
+
+```sh
+cd /home/votlazam/Documenti/progetti/triad2.0 && git status --short && git diff --stat && sed -n '1,120p' TASK.md && cat .scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md
+```
+
+Prossimo lavoro: **ticket 12** (grilling sulle guardie statiche) → poi ciclo di rebuild
+N20+N21+N03+N04+N05.
+
+```
+Ripresa sessione: leggi la sezione "Handoff — 2026-11-07 17:40" in TASK.md e continua da lì
+```
+
 ## Release 0.8.0-beta.9 — 2026-11-07 (branch `release/v0.8.0-beta.9`, PR #72 + PR #73)
 
 Preparazione e pubblicazione della release `v0.8.0-beta.9` (da `v0.8.0-beta.8`, 123 commit

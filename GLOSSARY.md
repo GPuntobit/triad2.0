@@ -74,6 +74,18 @@ Il controllo il cui esito decide la validità del lavoro: tutte le suite di rife
 verde sui golden.
 _Avoid_: CI (è il meccanismo che lo esegue), test (generico)
 
+**Sottoinsieme certificato**:
+L'insieme dei programmi Triad-Core che il seed nativo esegue con semantica identica a
+quella specificata. Ciò che ne sta fuori o è **rifiutato** (errore esplicito) o è
+**divergente** (risultato diverso, senza errore): le due cose vanno distinte.
+_Avoid_: sottoinsieme supportato (non distingue il rifiuto dalla divergenza), feature del seed
+
+**Divergenza silenziosa**:
+La differenza di comportamento rispetto alla specifica che produce un risultato sbagliato
+**senza** segnalare errore. È più insidiosa del rifiuto esplicito: non si vede, e quindi
+non può essere scoperta da un errore a runtime.
+_Avoid_: bug (non è un difetto occasionale ma una non conformità misurata), mismatch
+
 ## Bootstrap
 
 **Catena S0→S4**:
