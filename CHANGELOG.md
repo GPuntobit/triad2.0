@@ -1,5 +1,14 @@
 # Changelog — standard Triad
 
+## Merge `origin/main` — 2026-11-07
+
+Il ramo `fix/desktop-cli-session` è stato riallineato a `origin/main` (merge `45c7d7d`).
+Conflitti risolti: config Codacy (`.codacy/codacy.config.json`,
+`.codacy/codacy.config.baseline.json`) prese da `origin/main` (config remota
+`GPuntobit/triad2.0`); `bin/triad-desktop` tenuta nella versione del ramo (sessione POSIX con
+`:quit`, exit code preservato, mode `755`); istruzioni Codacy allineate a
+`repository: triad2.0`. Nessuna modifica alla semantica del linguaggio né ai goldens.
+
 ## Desktop launcher — 2026-11-07
 
 Double-click follow-up: install.sh now registers shared-mime-info globs for

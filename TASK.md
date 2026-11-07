@@ -1,5 +1,30 @@
 # Task Triad 2.0
 
+## Merge `origin/main` — 2026-11-07 (branch `fix/desktop-cli-session`)
+
+Merge commit `45c7d7d` (base `83ca5ed`). Three conflicts resolved:
+
+- `.codacy/codacy.config.json`, `.codacy/codacy.config.baseline.json` → **versione di
+  `origin/main`** (`source: remote`, provider `gh`, org `GPuntobit`, repo `triad2.0`).
+  La versione del ramo era `source: auto` (config "auto" rigenerata senza remoto); quella di
+  `main` è la config remota effettiva e include i linguaggi presenti nel repo (`Lua`, `Swift`,
+  `XML`). Il contenuto è identico a quello rigenerato localmente da `codacy-cli`, salvo i
+  timestamp `createdAt`/`updatedAt`.
+- `bin/triad-desktop` → **versione del ramo** (sessione POSIX che chiede il percorso del
+  programma, preserva l'exit code e `:quit`/EOF). La versione di `main` è il launcher
+  pre-sessione: usciva subito con exit 2 quando lanciato senza file. Modalità file: `755`.
+- `.github/instructions/codacy.instructions.md` → `repository: triad2.0` (allineato a `main`
+  e al `repositoryName` della baseline Codacy; il ramo puntava a `triad2.0.wiki`, che è il
+  repo wiki, non quello analizzato).
+
+Le modifiche locali non committate (rigenerazione `codacy-cli` con path assoluti della macchina,
+`.codacy/generated/*`) sono state scartate: sono artefatti machine-specific e sovrascriverebbero
+i file con path Windows già versionati.
+
+Validazione post-merge: `sh verify.sh` → 38/39 PASS, l'unico FAIL è `liste` (gap **N03**,
+`xs[i]` 1-based non ancora implementato nel seed), preesistente su `17796ce`; `sh tests/desktop.sh`
+→ PASS.
+
 ## Desktop launcher — 2026-11-07
 
 Double-click follow-up: install.sh now registers shared-mime-info globs for
