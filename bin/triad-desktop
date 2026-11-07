@@ -1,0 +1,12 @@
+#!/bin/sh
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+
+"$SCRIPT_DIR/triad" "$@"
+status=$?
+
+printf '\nTriad terminato con codice %s. Premi Invio per chiudere...' "$status"
+IFS= read -r _
+printf '\n'
+
+exit "$status"

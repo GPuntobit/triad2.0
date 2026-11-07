@@ -32,6 +32,12 @@ Exit code = quello del comando delegato; exit 2 = errori d'uso.
 Esempio di output di `status` (deterministico, senza colori):
 
 ```
+ _______  _____  ___   ___  ______
+|__   __||  ___||   \\ /   ||  ____|
+  | |   | |__  | |\\ V /| || |__
+  | |   |  __| | | \\_/ | ||  __|
+  | |   | |___ | |     | || |____
+  |_|   |_____||_|     |_||______|
 Triad toolchain status
   root: /home/user/triad2.0
   system: Linux x86_64
