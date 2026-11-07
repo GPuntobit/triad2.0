@@ -30,6 +30,15 @@ Full change list in [CHANGELOG.md](../../CHANGELOG.md). Highlights below.
 ### Changed
 - **CI on native Linux only** (decision 04): the Windows legs were removed; the PE side is
   still guaranteed by the `seed.hex` hash gate and the frozen goldens (ADR 0002).
+- **CI restored** — `ci.yml` contained an unquoted scalar with `": "`, so GitHub could not
+  start any job (it only reported "this run likely failed because of a workflow file issue").
+  Fixed, plus a new regression test (`tests/security/workflows_yaml.test.py`) asserting that
+  every workflow file is valid YAML.
+- **Conformance gate with explicit known gaps** — `conformance/gate.sh` runs the oracle
+  `conformance/run.sh` and tolerates **only** the already documented failures (`liste`, gap
+  N03), always printing them; any other failure fails the gate. `verify.sh` and
+  `triad-cli test conformance` use the gate; the pure oracle is still reachable with
+  `triad-cli test conformance --strict`.
 - **Seed generator** — single entry point `gen_seed.js <windows|linux|all>`: shared codegen
   core + `backend_pe` / `backend_elf`; the `os_*` boundary isolates the system calls.
   The regenerated PE dump stays byte-identical.
@@ -45,8 +54,9 @@ Full change list in [CHANGELOG.md](../../CHANGELOG.md). Highlights below.
 ## Known issues
 
 - The `liste` conformance case still fails on the seed (**38/39** green): the historical gap
-  is recorded by the harness (exit 1, empty stdout) and the CI excludes it explicitly.
-  Probes are **39/39**. No golden was rewritten to hide the gap.
+  is recorded by the harness (exit 1, empty stdout) and the gate `conformance/gate.sh`
+  excludes it explicitly and loudly. Probes are **39/39**. No golden was rewritten to hide
+  the gap.
 - The Windows GUI launcher (`TriadDesktop.exe`) is **not** shipped in this release: it still
   targets the pre-beta.9 Node CLI (`status` / `test`), which the POSIX `bin/triad-cli` has
   replaced. It must be ported and rebuilt on Windows (`cli/windows-gui/build.ps1`).

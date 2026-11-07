@@ -16,8 +16,8 @@ jobs:
         run: |
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Conformance Core (harness POSIX `run.sh`, 39 casi senza skip)
-        run: sh conformance/run.sh
+      - name: "Conformance Core (gate POSIX: 39 casi, gap noti esclusi)"
+        run: sh conformance/gate.sh
       - name: Sorgenti selfhost validi Triad-Core
         run: |
           for f in selfhost/*.td; do

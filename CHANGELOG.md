@@ -36,6 +36,17 @@ Dettaglio completo nelle sezioni datate qui sotto, in `docs/releases/RELEASE_NOT
   PE resta garantito dal gate hash di `seed.hex` + golden congelati (ADR 0002). Job:
   `conformance-core`, `site-gen`, `seed-linux` (con anti-drift dei dump PE **ed** ELF),
   `linux-toolchain` (senza `setup-node`), `security`.
+- **Gate di conformità con gap noti espliciti** — `conformance/gate.sh` (nuovo): esegue
+  l'oracle `conformance/run.sh` e tollera **solo** i fallimenti già documentati (`liste`,
+  gap N03), stampandoli sempre; ogni altro fallimento fa fallire il gate. `verify.sh` e
+  `triad-cli test conformance` usano il gate; l'oracle puro resta raggiungibile con
+  `triad-cli test conformance --strict` (o `sh conformance/run.sh`). Nessun golden è
+  stato riscritto per mascherare il gap.
+- **CI ripristinata** — `.github/workflows/ci.yml` aveva uno scalare non quotato contenente
+  `": "` (`- name: Verify (harness senza Node: ...)`): YAML non valido, GitHub non avviava
+  alcun job («this run likely failed because of a workflow file issue») dal 2026-11-06.
+  Nome dello step quotato + nuova regressione `tests/security/workflows_yaml.test.py`
+  (check 8 di `tests/security/run.sh`): ogni workflow deve essere YAML valido.
 - **Generatore del seed** — `seed/dev/gen_seed.js` con unico entry point
   `gen_seed.js <windows|linux|all>`: core del codegen condiviso + backend `backend_pe` /
   `backend_elf`; il confine `os_*` isola le chiamate di sistema (N16). Il dump PE resta
@@ -52,7 +63,8 @@ Dettaglio completo nelle sezioni datate qui sotto, in `docs/releases/RELEASE_NOT
 
 ### Known issues
 - Il caso di conformance **`liste`** fallisce sul seed (38/39 verdi): il gap storico è
-  registrato nell'harness (exit 1 + stdout vuoto) e la CI lo esclude esplicitamente.
+  registrato nell'harness (exit 1 + stdout vuoto) e il gate `conformance/gate.sh` lo esclude
+  **in modo esplicito e rumoroso** (l'eccezione è elencata nel gate e in questo CHANGELOG).
   I probe sono **39/39** verdi. Nessun golden è stato riscritto per mascherare il gap.
 
 ## Merge `origin/main` — 2026-11-07

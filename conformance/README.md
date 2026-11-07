@@ -39,6 +39,7 @@ Triad, run by the implementation under test.
 ```sh
 sh conformance/run.sh            # verify (Core profile, 39 cases, wired suite)
 sh conformance/run.sh --update   # regenerate expected.out/expected.code
+sh conformance/gate.sh           # gate: run.sh + esclusione esplicita dei gap noti
 ```
 
 The suite is **wired**: no `--cases`/`--skip`/`--strict` flags (ticket
@@ -48,6 +49,13 @@ not skipped: the runner freezes it as `exit 1 + empty stdout` and fails if the
 seed behaviour changes. The same entry point runs on any runtime through
 `TRIAD_SEED` (default `seed/linux-x86_64/seed`); no JS fallback and no
 dependency on `install.sh`: the gate runs on a bare checkout.
+
+`gate.sh` is the wrapper used by CI and by `verify.sh`: it runs the oracle
+above and tolerates **only** the failures listed in its `KNOWN_GAP` block
+(today: `liste`, gap N03 — the seed has no 1-based `xs[i]` nor `length`).
+Every other failure fails the gate. The exclusion is always printed, so a
+skip can never hide a regression silently; no golden is ever rewritten to
+mask the gap.
 `run.mjs`, `run.test.mjs` (Node) have been removed in one shot (ticket 08, Q4).
 
 Golden: per case `expected.out` + `expected.code` (exit code), compared byte-exact

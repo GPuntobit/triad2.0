@@ -31,6 +31,15 @@ Elenco completo delle modifiche in [CHANGELOG.md](../../CHANGELOG.md). Sintesi q
 ### Changed
 - **CI solo su Linux nativo** (decisione 04): eliminate le gambe Windows; il lato PE resta
   garantito dal gate hash di `seed.hex` e dai golden congelati (ADR 0002).
+- **CI ripristinata** — `ci.yml` conteneva uno scalare non quotato con `": "`: GitHub non
+  avviava alcun job (riportava solo «this run likely failed because of a workflow file
+  issue»). Corretto, più la nuova regressione `tests/security/workflows_yaml.test.py`:
+  ogni workflow deve essere YAML valido.
+- **Gate di conformità con gap noti espliciti** — `conformance/gate.sh` esegue l'oracle
+  `conformance/run.sh` e tollera **solo** i fallimenti già documentati (`liste`, gap N03),
+  stampandoli sempre; ogni altro fallimento fa fallire il gate. `verify.sh` e
+  `triad-cli test conformance` usano il gate; l'oracle puro resta con
+  `triad-cli test conformance --strict`.
 - **Generatore del seed** — entry point unico `gen_seed.js <windows|linux|all>`: core del
   codegen condiviso + `backend_pe` / `backend_elf`; il confine `os_*` isola le chiamate di
   sistema. Il dump PE rigenerato resta byte-identico.
@@ -46,8 +55,9 @@ Elenco completo delle modifiche in [CHANGELOG.md](../../CHANGELOG.md). Sintesi q
 ## Problemi noti
 
 - Il caso di conformance `liste` fallisce ancora sul seed (**38/39** verdi): il gap storico
-  è registrato dall'harness (exit 1, stdout vuoto) e la CI lo esclude esplicitamente.
-  I probe sono **39/39**. Nessun golden è stato riscritto per mascherare il gap.
+  è registrato dall'harness (exit 1, stdout vuoto) e il gate `conformance/gate.sh` lo
+  esclude in modo esplicito e rumoroso. I probe sono **39/39**. Nessun golden è stato
+  riscritto per mascherare il gap.
 - Il launcher GUI per Windows (`TriadDesktop.exe`) **non** è pubblicato in questa release:
   punta ancora alla CLI Node pre-beta.9 (`status` / `test`), sostituita dalla CLI POSIX
   `bin/triad-cli`. Va portato e ricostruito su Windows (`cli/windows-gui/build.ps1`).
