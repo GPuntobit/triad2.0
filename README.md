@@ -77,6 +77,12 @@ triad tuo_programma.td             # runs a Triad program
 mismatch**. No dependencies beyond a POSIX shell: the seed is decoded with
 `printf` alone.
 
+To install or refresh the application menu entry, run `./install.sh --desktop`.
+The menu opens a persistent terminal session: enter a `.triad`/`.td` file path
+without quotes, or `:quit` to close it. Opening an associated file runs it and
+keeps results and errors visible. The seed currently requires a file; the REPL
+specified in SPEC.md §14 remains unimplemented.
+
 ### 2. CLI
 
 ```sh

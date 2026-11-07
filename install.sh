@@ -14,7 +14,7 @@
 #       confrontato con cmp col golden tests/probes/test_simple.expected.out;
 #       un mismatch FA FALLIRE l'installazione (exit non-zero).
 #    4. Opzionale (--desktop): voce menu freedesktop.org ("Triad Program")
-#       per aprire i file .triad/.td con un editor.
+#       per eseguire file .triad/.td in una sessione terminale persistente.
 #
 #  Uso:
 #    ./install.sh [--prefix DIR] [--desktop] [--no-desktop]
@@ -205,13 +205,17 @@ want_desktop() {
 if [ "$DESKTOP" = "yes" ] || { [ "$DESKTOP" = "auto" ] && want_desktop; }; then
     APPS="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
     mkdir -p "$APPS"
-    EDITOR_CMD="${TRIAD_EDITOR:-${EDITOR:-xdg-open}}"
+    chmod +x "$ROOT/bin/triad-desktop"
+    # Exec ha due livelli di escaping freedesktop: stringa e argomento quotato.
+    # % letterale va raddoppiato per non diventare un field code.
+    desktop_exec=$(printf '%s' "$ROOT/bin/triad-desktop" |
+        sed 's/\\/\\\\/g; s/["`$]/\\&/g; s/\\/\\\\/g; s/%/%%/g')
     cat > "$APPS/triad.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=Triad Program
 Comment=Esegui un programma Triad (.triad/.td)
-Exec=$ROOT/bin/triad %f
+Exec="$desktop_exec" %f
 Terminal=true
 MimeType=text/x-triad;
 Categories=Development;

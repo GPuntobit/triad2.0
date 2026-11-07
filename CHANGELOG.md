@@ -1,4 +1,21 @@
 # Changelog — standard Triad
+
+## Desktop launcher — 2026-11-07
+
+`install.sh --desktop` now routes the menu and associated files through
+`bin/triad-desktop`, a POSIX session that prompts for a program and keeps output
+and failures visible until `:quit` or EOF. Previously a menu launch passed no file
+to the seed, which printed usage and exited 2 immediately. Reinstall to refresh
+existing desktop entries. `bin/triad` still delegates directly to the seed.
+The full REPL required by SPEC.md §14 remains pending; this session runs files.
+Regression gate: `sh tests/desktop.sh`; seed gate: `sh verify.sh`.
+
+Validation: desktop integration PASS. On an untouched checkout of `83ca5ed`,
+conformance already fails `liste` (38/39 PASS), and probes fail 24/39, mostly
+missing ignored `*.expected.out` goldens. This patch restores the installer smoke
+golden (`test_simple.expected.out`, literal `test\n`, with a .gitignore exception);
+probes then fail 23/39. No other seed/golden behavior is changed. Those baseline
+failures remain open; conformance goldens were not rewritten to hide them.
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 

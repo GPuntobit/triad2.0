@@ -103,6 +103,8 @@ jobs:
           export PATH="$RUNNER_TEMP/triad-bin:$PATH"
           triad tests/probes/test_let.td | grep -q '^15$'
           triad-cli status
+      - name: Sessione desktop (installazione e persistenza dopo errori)
+        run: sh tests/desktop.sh
       - name: Smoke test negativo (golden diverso => installazione fallisce)
         run: |
           cp tests/probes/test_simple.expected.out "$RUNNER_TEMP/golden.bak"

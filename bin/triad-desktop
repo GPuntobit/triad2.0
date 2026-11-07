@@ -1,0 +1,34 @@
+#!/bin/sh
+# Sessione desktop POSIX: il seed richiede un file e non offre ancora un REPL.
+# Separata da bin/triad per preservare exit code e delega diretta del launcher.
+set -u
+self=$0
+while [ -L "$self" ]; do
+    link=$(readlink "$self" 2>/dev/null) || break
+    case $link in
+        /*) self=$link ;;
+        *) self=$(dirname "$self")/$link ;;
+    esac
+done
+ROOT=$(CDPATH= cd -- "$(dirname -- "$self")/.." && pwd -P) || exit 1
+
+run_file() {
+    "$ROOT/bin/triad" "$@"
+    result=$?
+    printf '\nProgramma terminato (codice %s).\n' "$result"
+}
+
+printf 'Triad — sessione desktop\n'
+printf 'Il seed esegue file .triad/.td; il REPL di SPEC.md §14 non è ancora disponibile.\n'
+if [ "$#" -gt 0 ]; then
+    run_file "$@"
+fi
+while :; do
+    printf '\nPercorso del programma (senza virgolette), oppure :quit per uscire: '
+    IFS= read -r file || { printf '\n'; break; }
+    case $file in
+        :quit) break ;;
+        '') continue ;;
+        *) run_file "$file" ;;
+    esac
+done
