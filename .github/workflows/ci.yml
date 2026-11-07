@@ -16,8 +16,8 @@ jobs:
         run: |
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Conformance Core (harness POSIX `run.sh`, 39 casi senza skip)
-        run: sh conformance/run.sh
+      - name: "Conformance Core (gate POSIX: 39 casi, gap noti esclusi)"
+        run: sh conformance/gate.sh
       - name: Sorgenti selfhost validi Triad-Core
         run: |
           for f in selfhost/*.td; do
@@ -79,7 +79,7 @@ jobs:
           cmp /tmp/seed-pe-repro.hex seed/windows-x86_64/seed.hex
           node seed/dev/gen_seed.js linux /tmp/seed-repro.hex
           cmp /tmp/seed-repro.hex seed/linux-x86_64/seed.hex
-      - name: Verify (harness senza Node: conformance + probe + golden S1 + smoke)
+      - name: "Verify (harness senza Node: conformance + probe + golden S1 + smoke)"
         # Gate ripristinate sull'ELF alla parita' N17 (ticket 04): probe
         # ok_*/test_* (incluso `test_get`), golden selfhost/source.td e
         # smoke selfhost/main.td — esattamente cio' che correva sulle gambe

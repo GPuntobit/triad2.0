@@ -31,7 +31,7 @@ Estensione canonica dei file: `.triad` (alias storico `.td`).
 | `SPEC.md` | Specifica **normativa** di Triad-Full (standard 0.2.0). Appendice A: influenze (Julia, Prolog, Lisp) come note informative, non dipendenze. |
 | `SPEC-CORE.md` | Profilo normativo **Triad-Core**: sottoinsieme eseguibile dal seed in machine code (S0) e in cui è scritto l'interprete self-hosted (S1). Tutto il Full extra-Core è sugar implementato in Core. |
 | `BOOTSTRAP.md` | Piano S0→S4: seed in machine code scritto a mano (PE x86-64 Windows + ELF Linux), poi interprete Triad-Core, poi Triad-Full senza linguaggi host. |
-| `conformance/` | Suite golden test (`expected.out` / `expected.code`). Stato: Triad-Core 37/37 verdi; Triad-Full passa solo il caso `errore`. |
+| `conformance/` | Suite golden test (`expected.out` / `expected.code`). Stato: Triad-Core **38/39** verdi sul seed (il caso `liste` è il gap noto N03: `xs[i]` 1-based e `length` non implementati nel seed); il gate `conformance/gate.sh` lo esclude in modo esplicito e rumoroso. Triad-Full passa solo il caso `errore`. |
 | `ai/` | Benchmark di generazione codice Triad da parte di LLM: `SYSTEM_PROMPT.md` + `tasks/*/task.md`, soluzione in `solution.triad`, verifica con `node cli/triad-cli.mjs ai verify`. |
 | `bin/triad`, `bin/triad-cli`, `cli/triad-cli.mjs` | Launcher e CLI (SPEC.md §14). L'implementazione Julia è stata **rimossa**: il runtime è il seed in machine code. `bin/triad` esegue sempre il seed (Linux ELF nativo); `bin/triad-cli` è la CLI POSIX senza Node (`run`/`test`/`status`); `cli/triad-cli.mjs` resta la CLI Node dei soli comandi dev (`seed`/`ai`/`ext`). |
 | `editors/` | Grammar VS Code, Vim/Neovim, entry GitHub Linguist. |
@@ -45,8 +45,11 @@ Estensione canonica dei file: `.triad` (alias storico `.td`).
    esterni nel seed S0. Strumenti di sviluppo (runner Node per la conformance) sono tollerati ma
    restano fuori dalla catena S0→S4.
 3. **Conformance prima di tutto.** Ogni modifica a lessico, parser, tipi, valutazione o I/O deve
-   essere accompagnata da casi in `conformance/` e deve mantenere verdi i 39 casi Triad-Core.
-   Verificare con: `sh verify.sh` (oppure `sh conformance/run.sh`).
+   essere accompagnata da casi in `conformance/` e deve mantenere verdi i 39 casi Triad-Core
+   (l'unica eccezione ammessa è il gap noto `liste` — N03 — elencato in `conformance/gate.sh`;
+   nessun golden va riscritto per mascherarlo).
+   Verificare con: `sh verify.sh` (gate) oppure `sh conformance/run.sh` (oracle puro, fallisce
+   anche sul gap noto).
 4. **Triad-Core ⊂ Triad-Full.** Ogni programma Core (esclusi i primitivi §8 di SPEC-CORE.md) deve
    comportarsi identicamente anche in un'implementazione Full. Non aggiungere al Core feature non
    implementabili in machine code scritto a mano.

@@ -7,7 +7,7 @@ Dettaglio completo nelle sezioni datate qui sotto, in `docs/releases/RELEASE_NOT
 
 ### Added
 - **Seed Linux nativo (N17, E2b)** — `seed/linux-x86_64/seed`: interprete Triad-Core completo
-  in ELF statico senza libc (8774 byte), con parità **byte-esatta** rispetto al PE Windows
+  in ELF statico senza libc (8499 byte), con parità **byte-esatta** rispetto al PE Windows
   (interi, variabili, funzioni, ricorsione, Bool, operatori, `if`/`elseif`/`else`, `while`,
   `let`, `begin`, lambda/closure, stringhe, `nothing`, simboli, liste). Nessun Wine, nessun
   runtime esterno: su Linux il linguaggio si esegue **nativamente**.
@@ -36,12 +36,36 @@ Dettaglio completo nelle sezioni datate qui sotto, in `docs/releases/RELEASE_NOT
   PE resta garantito dal gate hash di `seed.hex` + golden congelati (ADR 0002). Job:
   `conformance-core`, `site-gen`, `seed-linux` (con anti-drift dei dump PE **ed** ELF),
   `linux-toolchain` (senza `setup-node`), `security`.
+- **Gate di conformità con gap noti espliciti** — `conformance/gate.sh` (nuovo): esegue
+  l'oracle `conformance/run.sh` e tollera **solo** i fallimenti già documentati (`liste`,
+  gap N03), stampandoli sempre; ogni altro fallimento fa fallire il gate. `verify.sh` e
+  `triad-cli test conformance` usano il gate; l'oracle puro resta raggiungibile con
+  `triad-cli test conformance --strict` (o `sh conformance/run.sh`). Nessun golden è
+  stato riscritto per mascherare il gap.
+- **CI ripristinata** — `.github/workflows/ci.yml` aveva uno scalare non quotato contenente
+  `": "` (`- name: Verify (harness senza Node: ...)`): YAML non valido, GitHub non avviava
+  alcun job («this run likely failed because of a workflow file issue») dal 2026-11-06.
+  Nome dello step quotato + nuova regressione `tests/security/workflows_yaml.test.py`
+  (check 8 di `tests/security/run.sh`): ogni workflow deve essere YAML valido.
+- **Golden dei probe e del front-end S1 versionati** — `tests/probes/*.expected.out` e
+  `selfhost/*.expected.out` erano esclusi da git (`*.out` senza eccezioni): in un checkout
+  pulito il harness dei probe falliva con «golden mancante» su 23 probe su 39. Ora sono
+  versionati (eccezioni in `.gitignore`), come i golden di `conformance/` e `ai/`.
 - **Generatore del seed** — `seed/dev/gen_seed.js` con unico entry point
   `gen_seed.js <windows|linux|all>`: core del codegen condiviso + backend `backend_pe` /
   `backend_elf`; il confine `os_*` isola le chiamate di sistema (N16). Il dump PE resta
   byte-identico.
 - **Riferimento JS** — `seed/dev/triad_core.cjs` allineato al seed (`get(xs, i)` 0-based,
   newline ammessi nei letterali di lista, ternario con `:` attaccato).
+
+### Fixed
+- **Seed: rimosso il codegen rotto dell'indicizzazione `xs[i]`** — il tentativo del
+  2026-11-06 leggeva il campo tipo della lista nel registro che teneva il puntatore
+  (`mov rdx, [rdx]`): la lettura falliva con parse error e la scrittura `xs[i] = v`
+  terminava con **SIGSEGV**. Il codegen torna allo stato documentato (il gap N03 resta
+  aperto: `xs[i]` 1-based non e' implementato nel seed) e i dump PE/ELF tornano coincidere
+  con i gate hash della CI (PE `4235a707…`, ELF `0e121db8…`); il binario PE committato non
+  cambia (`631f401f…`).
 
 ### Security
 - **Credential-storage hardening** — il PAT GitHub in chiaro presente nella working tree è
@@ -52,7 +76,8 @@ Dettaglio completo nelle sezioni datate qui sotto, in `docs/releases/RELEASE_NOT
 
 ### Known issues
 - Il caso di conformance **`liste`** fallisce sul seed (38/39 verdi): il gap storico è
-  registrato nell'harness (exit 1 + stdout vuoto) e la CI lo esclude esplicitamente.
+  registrato nell'harness (exit 1 + stdout vuoto) e il gate `conformance/gate.sh` lo esclude
+  **in modo esplicito e rumoroso** (l'eccezione è elencata nel gate e in questo CHANGELOG).
   I probe sono **39/39** verdi. Nessun golden è stato riscritto per mascherare il gap.
 
 ## Merge `origin/main` — 2026-11-07

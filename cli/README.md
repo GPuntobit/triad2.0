@@ -5,7 +5,8 @@ La toolchain a riga di comando di Triad 2.0 è divisa in due livelli
 
 - **`bin/triad-cli`** — CLI **POSIX, senza Node**, per il percorso utente:
   `run` / `test` / `status`, pura delega su `bin/triad` e sugli harness
-  (`conformance/run.sh`, `tests/probes/run_probes.sh`, `verify.sh`).
+  (`conformance/gate.sh`, `conformance/run.sh`, `tests/probes/run_probes.sh`,
+  `verify.sh`).
 - **`cli/triad-cli.mjs`** — CLI **Node di sviluppo**, solo comandi dev:
   `seed generate`, `ai verify`, `ext check|package`.
 
@@ -21,7 +22,9 @@ Comandi (`bin/triad-cli`, invocabile da qualunque directory):
 
 ```bash
 triad-cli run <file> [-- args]     # esegue un programma Triad (.triad/.td)
-triad-cli test conformance [--update]  # suite di conformità (39 casi Core)
+triad-cli test conformance        # suite Core (39 casi; gap noti esclusi, vedi conformance/gate.sh)
+triad-cli test conformance --strict   # oracle puro: fallisce su QUALSIASI caso non verde
+triad-cli test conformance --update   # rigenera i golden (uso dev)
 triad-cli test probes              # probe ok_*/test_*/bad_* + golden
 triad-cli test all                 # gate completo (verify.sh)
 triad-cli status                   # stato della toolchain e dell'ambiente

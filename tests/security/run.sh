@@ -38,4 +38,7 @@ node --test tests/security/incomplete_sanitization.test.mjs
 echo "== 7. Nessun token reale nel working tree, nessun token negli URL di git =="
 python3 tests/security/no_live_tokens.test.py
 
+echo "== 8. Workflow: ogni file e' YAML valido (la CI deve poter partire) =="
+python3 tests/security/workflows_yaml.test.py
+
 echo "ALL SECURITY VERIFICATIONS PASSED"

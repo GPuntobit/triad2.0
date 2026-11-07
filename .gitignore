@@ -45,6 +45,10 @@ node_modules/
 !conformance/**/expected.out
 !conformance/**/expected.code
 !ai/**/expected.out
+# Probe e golden S1 (devono essere versionati: senza di loro la CI
+# fallisce con "golden mancante" su ogni probe)
+!tests/probes/*.expected.out
+!selfhost/*.expected.out
 
 # Python virtualenv
 .venv/

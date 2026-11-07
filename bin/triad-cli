@@ -46,7 +46,7 @@ usage() {
     echo ""
     echo "comandi:"
     echo "  run <file> [-- args]        esegue un programma Triad (.triad/.td)"
-    echo "  test conformance [--update] suite di conformità (39 casi Core)"
+    echo "  test conformance [--strict|--update] suite Core (39 casi, gap noti esclusi)"
     echo "  test probes                 probe ok_*/test_*/bad_* + golden"
     echo "  test all                    gate completo (verify.sh)"
     echo "  status                      stato della toolchain e dell'ambiente"
@@ -75,7 +75,18 @@ case "$cmd" in
         shift
         case "$sub" in
             conformance)
-                exec sh "$ROOT/conformance/run.sh" "$@"
+                # --update rigenera i golden (oracle diretto); --strict usa
+                # l'oracle senza tolleranza dei gap noti; default = gate.
+                case "${1:-}" in
+                    --update) exec sh "$ROOT/conformance/run.sh" --update ;;
+                    --strict) exec sh "$ROOT/conformance/run.sh" ;;
+                    "")      exec sh "$ROOT/conformance/gate.sh" ;;
+                    *)
+                        echo "triad-cli test conformance: opzione sconosciuta: $1" >&2
+                        echo "  uso: triad-cli test conformance [--strict|--update]" >&2
+                        exit 2
+                        ;;
+                esac
                 ;;
             probes)
                 [ $# -eq 0 ] || { echo "triad-cli test probes: nessuna opzione prevista" >&2; exit 2; }

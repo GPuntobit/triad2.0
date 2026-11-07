@@ -12,8 +12,18 @@ Asset pubblicati: `seed.exe` (PE Windows), `seed-linux-x86_64` (ELF statico, 877
 (`status` / `test`) e il suo probing della root cerca `conformance/run.mjs`, rimosso in N17 →
 ticket `.scratch/desktop-gui-windows/issues/01-gui-windows-alla-cli-posix.md`.
 
-Validazione al tag: `sh verify.sh` → 38/39 (unico FAIL `liste`, gap storico N03),
-`sh tests/probes/run_probes.sh` → 39/39, `sh tests/desktop.sh` → PASS.
+Validazione al tag: `sh verify.sh` → OK (gate 38/39 con il gap noto `liste` escluso in
+modo esplicito, probe 39/39), `sh tests/desktop.sh` → PASS, `sh tests/security/run.sh` →
+PASS (8 check), CI GitHub Actions → **verde** (5 job: conformance-core, security, site-gen,
+seed-linux, linux-toolchain).
+
+Correzioni incluse nella release (la CI era rotta dal 2026-11-06 e non avviava alcun job):
+- `ci.yml` aveva uno scalare non quotato con `": "` → YAML non valido; nome dello step
+  quotato + regressione `tests/security/workflows_yaml.test.py`.
+- i golden dei probe e del golden S1 erano esclusi da git → versionati (23 probe su 39
+  fallivano con «golden mancante» in un checkout pulito).
+- il seed aveva un codegen rotto per `xs[i]` (SIGSEGV in scrittura, parse error in
+  lettura): revert allo stato documentato; i gate hash PE/ELF della CI tornano coerenti.
 
 Nota di build: il binario standalone SEA è costruito su base **Node 22.23.4** (Linux e
 Windows); con Node 26 l'iniezione del blob tramite `postject@1.0.0-alpha.6` produce un

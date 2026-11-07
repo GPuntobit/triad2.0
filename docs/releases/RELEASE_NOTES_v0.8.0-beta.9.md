@@ -30,6 +30,26 @@ Full change list in [CHANGELOG.md](../../CHANGELOG.md). Highlights below.
 ### Changed
 - **CI on native Linux only** (decision 04): the Windows legs were removed; the PE side is
   still guaranteed by the `seed.hex` hash gate and the frozen goldens (ADR 0002).
+- **CI restored** — `ci.yml` contained an unquoted scalar with `": "`, so GitHub could not
+  start any job (it only reported "this run likely failed because of a workflow file issue").
+  Fixed, plus a new regression test (`tests/security/workflows_yaml.test.py`) asserting that
+  every workflow file is valid YAML.
+- **Conformance gate with explicit known gaps** — `conformance/gate.sh` runs the oracle
+  `conformance/run.sh` and tolerates **only** the already documented failures (`liste`, gap
+  N03), always printing them; any other failure fails the gate. `verify.sh` and
+  `triad-cli test conformance` use the gate; the pure oracle is still reachable with
+  `triad-cli test conformance --strict`.
+- **Probe and S1 goldens versioned** — `tests/probes/*.expected.out` and
+  `selfhost/*.expected.out` were excluded by git, so a clean checkout failed 23 of the 39
+  probes with "golden mancante". They are now versioned, like the `conformance/` goldens.
+
+### Fixed
+- **Seed: the broken `xs[i]` codegen is gone** — the November attempt read the list type
+  field into the register holding the list pointer (`mov rdx, [rdx]`): reading failed with a
+  parse error and writing (`xs[i] = v`) ended in a **SIGSEGV**. The codegen is back to the
+  documented state (gap N03 stays open: 1-based `xs[i]` is not implemented in the seed) and
+  the PE/ELF dumps match the CI hash gates again (PE `4235a707…`, ELF `0e121db8…`). The
+  committed PE binary is unchanged (`631f401f…`).
 - **Seed generator** — single entry point `gen_seed.js <windows|linux|all>`: shared codegen
   core + `backend_pe` / `backend_elf`; the `os_*` boundary isolates the system calls.
   The regenerated PE dump stays byte-identical.
@@ -45,8 +65,9 @@ Full change list in [CHANGELOG.md](../../CHANGELOG.md). Highlights below.
 ## Known issues
 
 - The `liste` conformance case still fails on the seed (**38/39** green): the historical gap
-  is recorded by the harness (exit 1, empty stdout) and the CI excludes it explicitly.
-  Probes are **39/39**. No golden was rewritten to hide the gap.
+  is recorded by the harness (exit 1, empty stdout) and the gate `conformance/gate.sh`
+  excludes it explicitly and loudly. Probes are **39/39**. No golden was rewritten to hide
+  the gap.
 - The Windows GUI launcher (`TriadDesktop.exe`) is **not** shipped in this release: it still
   targets the pre-beta.9 Node CLI (`status` / `test`), which the POSIX `bin/triad-cli` has
   replaced. It must be ported and rebuilt on Windows (`cli/windows-gui/build.ps1`).
@@ -56,7 +77,7 @@ Full change list in [CHANGELOG.md](../../CHANGELOG.md). Highlights below.
 | Asset | Platform | Size | SHA-256 |
 |---|---|---|---|
 | `seed.exe` | Windows x86-64 runtime (PE) | 25 KB | `631f401ffe42f5f748bb92ab80c2886a7d68f9e00b09bd8dfde2de0c671fe219` |
-| `seed-linux-x86_64` | Linux x86-64 runtime (static ELF, no libc) | 8.6 KB | `ab60c0c2c4bd5384d141bd50c5429fa0d13cca781d7103cf7453dd8dca3119c5` |
+| `seed-linux-x86_64` | Linux x86-64 runtime (static ELF, no libc) | 8.3 KB | `c8c82bc9c77c69e603e07ab7287065076e04c8139a57ae3ee454a472cee2a0ce` |
 | `triad-cli` | Linux x86-64 standalone dev CLI (Node SEA) | 119 MB | `337c5188ee5cfef7d50256f5b03ab510b47dedf15aac6aa14256e1bf2ebe9cb2` |
 | `triad-cli.exe` | Windows x86-64 standalone dev CLI (Node SEA) | 83 MB | `d7ab6e05a538a7f1ffd571014c91c7f5029e6b21855e9db0843e15acabb06d5e` |
 
