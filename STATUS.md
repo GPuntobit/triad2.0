@@ -1,5 +1,24 @@
 # Triad and S0 bootstrap status
 
+## Release 0.8.0-beta.9 — 2026-11-07
+
+Pubblicata la release `v0.8.0-beta.9` (tag `v0.8.0-beta.9`): seed Linux nativo, toolchain
+senza Node, desktop launcher. `VERSION` = `0.8.0-beta.9`; note di rilascio in
+`docs/releases/RELEASE_NOTES_v0.8.0-beta.9.md` (EN) e `.it.md` (IT).
+
+Asset pubblicati: `seed.exe` (PE Windows), `seed-linux-x86_64` (ELF statico, 8774 byte),
+`triad-cli` (CLI dev standalone Linux, Node SEA) e `triad-cli.exe` (Windows, Node SEA).
+**Non** pubblicato `TriadDesktop.exe`: la GUI Windows punta ancora alla CLI Node pre-N18
+(`status` / `test`) e il suo probing della root cerca `conformance/run.mjs`, rimosso in N17 →
+ticket `.scratch/desktop-gui-windows/issues/01-gui-windows-alla-cli-posix.md`.
+
+Validazione al tag: `sh verify.sh` → 38/39 (unico FAIL `liste`, gap storico N03),
+`sh tests/probes/run_probes.sh` → 39/39, `sh tests/desktop.sh` → PASS.
+
+Nota di build: il binario standalone SEA è costruito su base **Node 22.23.4** (Linux e
+Windows); con Node 26 l'iniezione del blob tramite `postject@1.0.0-alpha.6` produce un
+binario che va in segfault al primo avvio.
+
 ## Desktop launcher — 2026-11-07
 
 Double-click follow-up: install.sh now registers shared-mime-info globs for
