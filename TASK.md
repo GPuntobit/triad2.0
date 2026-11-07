@@ -36,9 +36,29 @@ intermedi). Base: `origin/main` = `5d3078f`.
    dall'harness e escluso dalla CI.
 
 ### Validazione
-- `sh verify.sh` → **38/39 PASS** (unico FAIL `liste`, gap N03 preesistente).
+- `sh verify.sh` → **OK** (gate: 38/39 con il gap noto `liste` escluso esplicitamente,
+  probe 39/39).
 - `sh tests/probes/run_probes.sh` → **39/39 PASS**.
 - `sh tests/desktop.sh` → **PASS**.
+- `sh tests/security/run.sh` → **PASS** (8 check).
+- Checkout pulito (clone): `verify.sh`, `check_seed.sh`, gate hash PE/ELF, anti-drift dei
+  dump, `install.sh` (prefix temporaneo), `triad-cli test all`, `site-gen` lint + check,
+  security → tutti verdi.
+- CI GitHub Actions sul branch → **verde** (5 job).
+
+### Correzioni fatte durante la release (la CI era rotta e non partiva)
+1. **`ci.yml` non valido** — `- name: Verify (harness senza Node: ...)` era uno scalare
+   plain non quotato con `": "` → YAML non valido, GitHub non avviava alcun job dal
+   2026-11-06. Nome quotato + regressione `tests/security/workflows_yaml.test.py` (check 8).
+2. **Golden dei probe e S1 non versionati** — `*.out` era ignorato senza eccezioni: in un
+   checkout pulito 23 probe su 39 fallivano con «golden mancante». Ora versionati.
+3. **Seed: codegen rotto di `xs[i]`** — il tentativo del 2026-11-06 leggeva il campo tipo
+   della lista nel registro del puntatore: lettura → parse error, scrittura → SIGSEGV.
+   Revert allo stato documentato (gap N03 aperto); i gate hash PE (`4235a707…`) ed ELF
+   (`0e121db8…`) tornano coerenti con i dump committati.
+4. **Gate con gap noti** — `conformance/gate.sh`: esegue l'oracle e tollera **solo** i
+   fallimenti documentati (`liste`), stampandoli; `verify.sh` e `triad-cli test
+   conformance` lo usano, l'oracle puro resta con `--strict`.
 
 ### Prossimi passi
 - Portare e ricostruire la GUI Windows (ticket `.scratch/desktop-gui-windows/issues/01`).

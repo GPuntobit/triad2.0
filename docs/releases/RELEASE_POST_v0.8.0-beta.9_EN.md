@@ -21,7 +21,7 @@ Windows PE, and the whole toolchain — installer, launcher, CLI, test harness �
 runs **without Node.js**.
 
 ### 🐧 Native Linux
-- `seed-linux-x86_64`: static ELF (8.6 KB, no libc) running the whole Triad-Core
+- `seed-linux-x86_64`: static ELF (8.3 KB, no libc) running the whole Triad-Core
   language — byte-exact parity with the Windows PE (probes 39/39, conformance 38/39,
   the `liste` gap is historical and documented).
 - `./install.sh` → `bin/triad` → `triad program.td`: no Node, no runtime, no Wine.
@@ -45,7 +45,7 @@ runs **without Node.js**.
 | Asset | Platform | SHA-256 |
 |---|---|---|
 | `seed.exe` (25 KB) | Windows x86-64 runtime | `631f401ffe42f5f748bb92ab80c2886a7d68f9e00b09bd8dfde2de0c671fe219` |
-| `seed-linux-x86_64` (8.6 KB) | Linux x86-64 runtime (static ELF) | `ab60c0c2c4bd5384d141bd50c5429fa0d13cca781d7103cf7453dd8dca3119c5` |
+| `seed-linux-x86_64` (8.3 KB) | Linux x86-64 runtime (static ELF) | `c8c82bc9c77c69e603e07ab7287065076e04c8139a57ae3ee454a472cee2a0ce` |
 | `triad-cli` (119 MB) | Linux x86-64 standalone dev CLI | `337c5188ee5cfef7d50256f5b03ab510b47dedf15aac6aa14256e1bf2ebe9cb2` |
 | `triad-cli.exe` (83 MB) | Windows x86-64 standalone dev CLI | `d7ab6e05a538a7f1ffd571014c91c7f5029e6b21855e9db0843e15acabb06d5e` |
 

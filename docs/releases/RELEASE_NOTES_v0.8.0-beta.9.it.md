@@ -40,6 +40,18 @@ Elenco completo delle modifiche in [CHANGELOG.md](../../CHANGELOG.md). Sintesi q
   stampandoli sempre; ogni altro fallimento fa fallire il gate. `verify.sh` e
   `triad-cli test conformance` usano il gate; l'oracle puro resta con
   `triad-cli test conformance --strict`.
+- **Golden dei probe e del golden S1 versionati** — `tests/probes/*.expected.out` e
+  `selfhost/*.expected.out` erano esclusi da git: in un checkout pulito il harness dei
+  probe falliva con «golden mancante» su 23 probe su 39. Ora sono versionati, come i
+  golden di `conformance/`.
+
+### Fixed
+- **Seed: rimosso il codegen rotto di `xs[i]`** — il tentativo del 6 novembre leggeva il
+  campo tipo della lista nel registro che teneva il puntatore (`mov rdx, [rdx]`): la
+  lettura falliva con parse error e la scrittura `xs[i] = v` terminava con **SIGSEGV**.
+  Il codegen torna allo stato documentato (il gap N03 resta aperto: `xs[i]` 1-based non è
+  implementato nel seed) e i dump PE/ELF tornano coincidere con i gate hash della CI
+  (PE `4235a707…`, ELF `0e121db8…`); il binario PE committato non cambia (`631f401f…`).
 - **Generatore del seed** — entry point unico `gen_seed.js <windows|linux|all>`: core del
   codegen condiviso + `backend_pe` / `backend_elf`; il confine `os_*` isola le chiamate di
   sistema. Il dump PE rigenerato resta byte-identico.
@@ -67,7 +79,7 @@ Elenco completo delle modifiche in [CHANGELOG.md](../../CHANGELOG.md). Sintesi q
 | Asset | Piattaforma | Dimensione | SHA-256 |
 |---|---|---|---|
 | `seed.exe` | Runtime Windows x86-64 (PE) | 25 KB | `631f401ffe42f5f748bb92ab80c2886a7d68f9e00b09bd8dfde2de0c671fe219` |
-| `seed-linux-x86_64` | Runtime Linux x86-64 (ELF statico, senza libc) | 8,6 KB | `ab60c0c2c4bd5384d141bd50c5429fa0d13cca781d7103cf7453dd8dca3119c5` |
+| `seed-linux-x86_64` | Runtime Linux x86-64 (ELF statico, senza libc) | 8,3 KB | `c8c82bc9c77c69e603e07ab7287065076e04c8139a57ae3ee454a472cee2a0ce` |
 | `triad-cli` | CLI dev standalone Linux x86-64 (Node SEA) | 119 MB | `337c5188ee5cfef7d50256f5b03ab510b47dedf15aac6aa14256e1bf2ebe9cb2` |
 | `triad-cli.exe` | CLI dev standalone Windows x86-64 (Node SEA) | 83 MB | `d7ab6e05a538a7f1ffd571014c91c7f5029e6b21855e9db0843e15acabb06d5e` |
 
