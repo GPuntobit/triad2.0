@@ -78,6 +78,9 @@ mismatch**. No dependencies beyond a POSIX shell: the seed is decoded with
 `printf` alone.
 
 To install or refresh the application menu entry, run `./install.sh --desktop`.
+This also registers the `.triad`/`.td` MIME type and selects Triad Program as its
+default application for double-click opening (using `update-mime-database` and
+`xdg-mime` when available).
 The menu opens a persistent terminal session: enter a `.triad`/`.td` file path
 without quotes, or `:quit` to close it. Opening an associated file runs it and
 keeps results and errors visible. The seed currently requires a file; the REPL

@@ -2,6 +2,11 @@
 
 ## Desktop launcher — 2026-11-07
 
+Double-click follow-up: install.sh now registers shared-mime-info globs for
+`.triad`/`.td`, refreshes the MIME database and selects triad.desktop via xdg-mime.
+Previously MimeType in the desktop entry alone did not recognize these extensions.
+The isolated desktop regression also checks real xdg-mime type/default queries.
+
 `install.sh --desktop` now routes the menu and associated files through
 `bin/triad-desktop`, a POSIX session that prompts for a program and keeps output
 and failures visible until `:quit` or EOF. Previously a menu launch passed no file
