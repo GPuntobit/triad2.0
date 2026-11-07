@@ -13,7 +13,7 @@
 
 ## Release line
 
-Recent releases: v0.3.0 and v0.8.0-beta series up to beta.6+ (notes under [`docs/releases/`](../releases/)). The changelog is [`CHANGELOG.md`](../../CHANGELOG.md).
+Recent releases: v0.3.0 and v0.8.0-beta series up to beta.9 (notes under [`docs/releases/`](../releases/)). The changelog is [`CHANGELOG.md`](../../CHANGELOG.md).
 
 ## Repository health
 

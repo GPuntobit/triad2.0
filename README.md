@@ -77,6 +77,10 @@ triad tuo_programma.td             # runs a Triad program
 mismatch**. No dependencies beyond a POSIX shell: the seed is decoded with
 `printf` alone.
 
+Prebuilt seeds are attached to every beta release: `seed.exe` (Windows PE) and
+`seed-linux-x86_64` (static ELF, no libc — 8.6 KB, no Wine needed) — see the
+[releases page](https://github.com/GPuntobit/triad2.0/releases).
+
 To install or refresh the application menu entry, run `./install.sh --desktop`.
 This also registers the `.triad`/`.td` MIME type and selects Triad Program as its
 default application for double-click opening (using `update-mime-database` and

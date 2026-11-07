@@ -1,5 +1,60 @@
 # Changelog — standard Triad
 
+## 0.8.0-beta.9 — 2026-11-07: seed Linux nativo, toolchain senza Node, desktop launcher
+
+Riepilogo della release: da `v0.8.0-beta.8` (2026-10-31) a `v0.8.0-beta.9` (2026-11-07).
+Dettaglio completo nelle sezioni datate qui sotto, in `docs/releases/RELEASE_NOTES_v0.8.0-beta.9.md`.
+
+### Added
+- **Seed Linux nativo (N17, E2b)** — `seed/linux-x86_64/seed`: interprete Triad-Core completo
+  in ELF statico senza libc (8774 byte), con parità **byte-esatta** rispetto al PE Windows
+  (interi, variabili, funzioni, ricorsione, Bool, operatori, `if`/`elseif`/`else`, `while`,
+  `let`, `begin`, lambda/closure, stringhe, `nothing`, simboli, liste). Nessun Wine, nessun
+  runtime esterno: su Linux il linguaggio si esegue **nativamente**.
+- **Toolchain Linux senza Node (N18, E3)** — `install.sh` (decoder hex **sh-puro** con
+  `printf` ed escape ottali, anti-drift `cmp` del binario decodificato, launcher come
+  wrapper a percorso assoluto, smoke test byte-exatto), `bin/triad` che esegue **sempre il
+  seed**, CLI POSIX `bin/triad-cli` (`run` / `test` / `status`).
+- **Harness di verifica senza Node** — `conformance/run.sh`, `tests/probes/run_probes.sh`,
+  `verify.sh` (entry point unico) e `seed/linux-x86_64/check_seed.sh`.
+- **Launcher desktop** — `bin/triad-desktop` (sessione POSIX che mantiene output ed errori
+  visibili fino a `:quit`/EOF) e registrazione dei MIME `.triad`/`.td` in `install.sh --desktop`
+  (double-click → programma predefinito).
+- **Front-end S1** — `selfhost/source.td`: nuovo scanner + root-scan + discesa ricorsiva
+  derivati dal codice macchina del seed; stampa l'AST in pre-ordine (golden byte-identico
+  su seed PE e interprete JS di riferimento).
+- **Sito generato da sorgenti Triad** — `tools/site-gen/` (generatori `.td` + driver
+  `build.mjs` + `lint.mjs`): le pagine di `docs/` sono emesse dal linguaggio stesso.
+- **Libro: *Fondamenta*** — `docs/FONDAMENTA.it.md` (programmazione da zero) e ~900 esercizi
+  aggiunti ai capitoli conclusi; PDF 424 pagine, geometria KDP conforme.
+- **Governance del repository** — `GLOSSARY.md`, ADR `docs/adr/0001` (immutabilità del dump
+  PE) e `0002` (verifica di parità senza rieseguire il PE), issue tracker locale in
+  `.scratch/<sforzo>/`.
+
+### Changed
+- **CI solo Linux nativo (decisione 04)** — eliminate le gambe Windows del workflow; il lato
+  PE resta garantito dal gate hash di `seed.hex` + golden congelati (ADR 0002). Job:
+  `conformance-core`, `site-gen`, `seed-linux` (con anti-drift dei dump PE **ed** ELF),
+  `linux-toolchain` (senza `setup-node`), `security`.
+- **Generatore del seed** — `seed/dev/gen_seed.js` con unico entry point
+  `gen_seed.js <windows|linux|all>`: core del codegen condiviso + backend `backend_pe` /
+  `backend_elf`; il confine `os_*` isola le chiamate di sistema (N16). Il dump PE resta
+  byte-identico.
+- **Riferimento JS** — `seed/dev/triad_core.cjs` allineato al seed (`get(xs, i)` 0-based,
+  newline ammessi nei letterali di lista, ternario con `:` attaccato).
+
+### Security
+- **Credential-storage hardening** — il PAT GitHub in chiaro presente nella working tree è
+  stato rimosso e il template riportato alla cronologia; `tools/git-push-with-token.ps1`
+  non mette più il token nell'URL del remote ma in una `credential.helper` temporanea
+  alimentata dall'ambiente; nuovo test di regressione
+  `tests/security/no_live_tokens.test.py` (nessun token vivo nel repository né nelle URL).
+
+### Known issues
+- Il caso di conformance **`liste`** fallisce sul seed (38/39 verdi): il gap storico è
+  registrato nell'harness (exit 1 + stdout vuoto) e la CI lo esclude esplicitamente.
+  I probe sono **39/39** verdi. Nessun golden è stato riscritto per mascherare il gap.
+
 ## Merge `origin/main` — 2026-11-07
 
 Il ramo `fix/desktop-cli-session` è stato riallineato a `origin/main` (merge `45c7d7d`).
@@ -33,7 +88,7 @@ failures remain open; conformance goldens were not rewritten to hide them.
 Regulatory changes also update `VERSION`, the specification (`SPEC.md`) and, if it changes
 behavior, the goldens of `conformance/`.
 
-## Not released — 2026-11-05: toolchain Linux senza Node — install → run (N18, E3)
+## 2026-11-05: toolchain Linux senza Node — install → run (N18, E3)
 
 ### Added
 - `bin/triad-cli` — CLI **POSIX senza Node** a pura delega: `run <file> [-- args]` →
@@ -65,7 +120,7 @@ behavior, the goldens of `conformance/`.
 - `install.sh`: opzione `--no-symlink` (opzione sconosciuta → exit 2) e i rami decoder
   `xxd`/`python3`/`od`+`awk`.
 
-## Not released — 2026-11-05: seed Linux E2b — interprete Triad-Core nativo + harness senza Node (N17)
+## 2026-11-05: seed Linux E2b — interprete Triad-Core nativo + harness senza Node (N17)
 
 ### Added
 - `seed/linux-x86_64/seed` (ELF64 statico **E2**, 8499 byte, senza libc): interprete
@@ -97,7 +152,7 @@ behavior, the goldens of `conformance/`.
   (sostituiti dagli entry point sh); `seed/linux-x86_64/check_e1.sh` (rinominato
   `check_seed.sh`); file spurio `windows`.
 
-## Not released — 2026-11-05: CI senza gambe Windows (decisione 04)
+## 2026-11-05: CI senza gambe Windows (decisione 04)
 
 ### Changed
 - `.github/workflows/ci.yml`: rimosse le **gambe Windows** come da decisione 04 (ticket
@@ -111,7 +166,7 @@ behavior, the goldens of `conformance/`.
   `ok_*`/`test_*`, golden `selfhost/source.td`, probe `get`, smoke `selfhost/main.td`)
   rientreranno sull'ELF nativo alla parità N17.
 
-## Not released — 2026-11-05: confine `os_*` nel generatore del seed (N16)
+## 2026-11-05: confine `os_*` nel generatore del seed (N16)
 
 ### Changed
 - `seed/dev/gen_seed.js`: rifattorizzazione **solo strutturale** — il codegen dell'interprete
@@ -125,7 +180,7 @@ behavior, the goldens of `conformance/`.
 - `seed/dev/README.md`: descrizione della nuova struttura del generatore; hash di
   `seed.hex` corretto (era obsoleto: `3A75A21E…`).
 
-## Not released — 2026-11-05: seed Linux E1 — runner di un file `.td` (N15)
+## 2026-11-05: seed Linux E1 — runner di un file `.td` (N15)
 
 ### Added
 - `seed/linux-x86_64/check_e1.sh` — 7 casi di accettazione POSIX shell (echo
@@ -146,7 +201,7 @@ behavior, the goldens of `conformance/`.
 - `seed/linux-x86_64/README.md`, `seed/README.md`, `seed/dev/README.md`: comportamento,
   numeri, hash e limiti noti di E1.
 
-## Not released — 2026-11-02: chiusura righe 2–6 dei problemi aperti, A03/A04
+## 2026-11-02: chiusura righe 2–6 dei problemi aperti, A03/A04
 
 ### Changed
 - `SPEC-CORE.md`: §8 aggiunge `get(xs, i)` (primitiva di bootstrap, indice
@@ -177,7 +232,7 @@ behavior, the goldens of `conformance/`.
   `bad_identificatore_maiuscolo.td`, `bad_separatore_newline.td` — con le righe
   corrispondenti in `tests/probes/README.md`.
 
-## Not released — 2026-11-02: nuovo algoritmo per il codice sorgente (front-end S1)
+## 2026-11-02: nuovo algoritmo per il codice sorgente (front-end S1)
 
 ### Added
 - `selfhost/source.td` — nuovo algoritmo per il codice sorgente, derivato dal
@@ -214,7 +269,7 @@ behavior, the goldens of `conformance/`.
   `get`/`length`/`xs[i]` (la vecchia tabella li dava invertiti) e con i quattro
   nuovi limiti.
 
-## Not released — 2026-11-02: credential-storage hardening (security)
+## 2026-11-02: credential-storage hardening (security)
 
 ### Security
 - `.git-credentials` (working tree) — a live GitHub PAT stored in plaintext in the repository
@@ -233,7 +288,7 @@ behavior, the goldens of `conformance/`.
   binaries), no token in git URLs/remotes in the push tooling, `.gitignore` covers
   `.git-credentials`, and the template keeps the credential store out of the repository.
 
-## Not released — 2026-11-02: per-chapter exercises in the book
+## 2026-11-02: per-chapter exercises in the book
 
 ### Added
 - `docs/FONDAMENTA.it.md`, `docs/MANUALE.it.md`, `docs/tutorial/TUTORIAL.it.md` — every
@@ -248,7 +303,7 @@ behavior, the goldens of `conformance/`.
   `libro.docx` regenerated from the updated sources; KDP margin check passes (gutter 19.05mm,
   minimum 19.05mm for 401–500 pages).
 
-## Not released — 2026-11-01: the site rebuilt from Triad sources
+## 2026-11-01: the site rebuilt from Triad sources
 
 ### Added
 - `tools/site-gen/site_pages.td`, `tools/site-gen/site_playground.td`,
@@ -308,7 +363,7 @@ forward reference, and a literal containing the substring `if` inside a block br
 block nesting counter. The reference interpreter implements the whole Triad-Core, so a
 divergence between the two runtimes is a defect of the program, not of the seed.
 
-## Not released — 2026-11-01: libro — Fondamenta per principianti, PDF rigenerato
+## 2026-11-01: libro — Fondamenta per principianti, PDF rigenerato
 
 ### Added
 - `docs/FONDAMENTA.it.md` — nuova parte del *Libro di Triad*, "Fondamenta: programmare da zero
@@ -364,7 +419,7 @@ divergence between the two runtimes is a defect of the program, not of the seed.
   Restano come differenze volute le intestazioni di tabella ripetute a fine pagina nel PDF
   (comportamento di stampa) e i puntini elenco aggiunti dal Word nella conversione in testo.
 
-## Not released — 2026-11-01: folder reorganization
+## 2026-11-01: folder reorganization
 
 ### Changed
 - Repository tree tidied without touching the contractual paths (`SPEC*.md`, `BOOTSTRAP.md`,
@@ -563,7 +618,7 @@ updates from v0.2.0 to today (also contained in v0.3.0, superseded).
   to `.gitignore` as the generated artifact.
 ### Documentation
 - Added Pull Request description in `PULL_REQUEST.md`.
-## Not released — 2026-10-26
+## 2026-10-26
 - **Conformance**: new Core `gcd` case (Euclid, recursion and `%`); the Core suite has 37 cases.
 - **Golden versioned**: `.gitignore` no longer excludes `conformance/**/expected.out` and
   `expected.code`; the runner accepts `expected.golden` as a backup.
@@ -572,7 +627,7 @@ updates from v0.2.0 to today (also contained in v0.3.0, superseded).
   empty stdout; removed the golden `gcd` written in the runner code.
 - **Julia removed**: `triad.jl`, `syntax.jl`, `test/` and `bin/build_standalone.jl` no longer do
   part of the repository; the CI uses only Node and the seed.
-## Not released — 2026-10-22
+## 2026-10-22
 - **Open source**: added `LICENSE` MIT; seed binaries included in the repository
   (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) and lockfiles
   (`Manifest.toml`, `Cargo.lock`); Updated `.gitignore` and `.gitattributes`.

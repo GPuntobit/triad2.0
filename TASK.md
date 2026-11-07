@@ -1,5 +1,49 @@
 # Task Triad 2.0
 
+## Release 0.8.0-beta.9 — 2026-11-07 (branch `release/v0.8.0-beta.9`)
+
+Preparazione e pubblicazione della release `v0.8.0-beta.9` (da `v0.8.0-beta.8`, 123 commit
+intermedi). Base: `origin/main` = `5d3078f`.
+
+### File toccati
+- `VERSION` → `0.8.0-beta.9`.
+- `CHANGELOG.md`: nuova sezione di rilascio in testa; le sezioni «Not released — …» sono
+  state rinominate in sezioni datate (tutto ciò che precede è ora rilasciato).
+- `AGENTS.md`, `PROJECT_PROMPT.md`, `docs/wiki/Project-Status.md`: riferimenti di versione.
+- `docs/releases/RELEASE_NOTES_v0.8.0-beta.9.md` (EN, corpo della GitHub Release) e
+  `RELEASE_NOTES_v0.8.0-beta.9.it.md` (IT).
+- `docs/releases/RELEASE_POST_v0.8.0-beta.9.md` / `_EN.md` (post social, da copiare).
+- `.codacy/codacy.config.json` e `.codacy/codacy.config.baseline.json`: nuovi file di
+  release aggiunti alla lista `exclude`.
+- `STATUS.md`: sezione di rilascio in testa.
+- `.scratch/desktop-gui-windows/issues/01-gui-windows-alla-cli-posix.md`: ticket di follow-up
+  per la GUI Windows (non pubblicata in questa release).
+
+### Decisioni
+1. **Versione `0.8.0-beta.9`** — semver pre-release, stesso canale delle beta precedenti.
+2. **Asset pubblicati**: `seed.exe`, `seed-linux-x86_64`, `triad-cli` (Linux ELF),
+   `triad-cli.exe` (Windows). Le release precedenti non pubblicavano il seed ELF: con N17
+   il runtime Linux è il percorso primario, quindi l'asset è essenziale.
+3. **`TriadDesktop.exe` non pubblicato** — la GUI Windows è stata scritta per la CLI Node
+   pre-N18 (`status` / `test`, rimossi) e il suo probing della root cerca
+   `conformance/run.mjs` (rimosso in N17); non è ricostruibile su Linux (serve .NET SDK
+   WinForms). Rischio di pubblicare un binario notamente rotto → escluso, con ticket.
+4. **SEA su base Node 22.23.4** — con Node 26 il blob iniettato con
+   `postject@1.0.0-alpha.6` (ultima versione disponibile) produce un eseguibile che va in
+   segfault all'avvio; la base 22.23.4 (Linux e Windows) funziona ed è smoke-testata
+   (`triad-cli --help` nativo, `wine triad-cli.exe --help`).
+5. **Nessun golden riscritto** — il caso `liste` resta il FAIL noto (38/39), registrato
+   dall'harness e escluso dalla CI.
+
+### Validazione
+- `sh verify.sh` → **38/39 PASS** (unico FAIL `liste`, gap N03 preesistente).
+- `sh tests/probes/run_probes.sh` → **39/39 PASS**.
+- `sh tests/desktop.sh` → **PASS**.
+
+### Prossimi passi
+- Portare e ricostruire la GUI Windows (ticket `.scratch/desktop-gui-windows/issues/01`).
+- Prossima milestone: self-hosting M6 (mappa `.scratch/self-hosting-m6/map.md`).
+
 ## Merge `origin/main` — 2026-11-07 (branch `fix/desktop-cli-session`)
 
 Merge commit `45c7d7d` (base `83ca5ed`). Three conflicts resolved:

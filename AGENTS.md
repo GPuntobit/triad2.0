@@ -12,7 +12,7 @@
 
 ## 1. Che cos'è Triad 2.0
 
-Linguaggio di programmazione autonomo, **indipendente da host language** (versione `0.8.0-beta.8`), con:
+Linguaggio di programmazione autonomo, **indipendente da host language** (versione `0.8.0-beta.9`), con:
 
 - **Sintassi a blocchi** (`function … end`), **tipi dichiarati** (`x :: Int`), **multiple dispatch**;
 - **Programmazione logica integrata** (stile Prolog): `fact`, `rule`, unificazione con occurs-check,
