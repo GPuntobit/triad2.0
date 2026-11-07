@@ -60,6 +60,25 @@ linker, compilatore o runtime esterno nel percorso. `SPEC-CORE.md` non cambia di
   (Rust `src/stage0`, Go 1.4, snapshot); nessuno ritira lo stadio 0. La nostra definizione
   di punto fisso è più forte di ogni precedente. Findings su branch `research/10-punto-fisso`;
   sblocca 08 e informa 04.
+- [12 — Guardie statiche per la sorgente di S1](issues/12-guardie-statiche-sorgente-s1.md):
+  le guardie stanno in un **controllore dedicato** (`tools/selfhost-guard/`) che riusa
+  l'AST del riferimento JS (nessun secondo parser) e consuma il **contratto del seed**
+  (`seed/dev/certified-subset.txt`): ogni regola è legata a una divergenza e **si spegne
+  da sola** quando la divergenza sparisce dal contratto (quando il seed viene corretto).
+  Criterio di precisione: una regola statica decide solo ciò che si vede nell'AST; le
+  divergenze che dipendono dai **tipi a runtime** (unica: D15, `string(x)`) **non** hanno
+  una regola statica aggressiva ma sono presidiate dal **gate differenziale** seed↔JS
+  (stesso stdout byte per byte, stesso exit code, per programma del corpus certificato);
+  se il differenziale trova una differenza la risposta è **chirurgia nel seed** (è il
+  criterio di «non presidabile»: silenziosa + non decidibile staticamente ⇒ chirurgia).
+  Il corpus certificato (`seed/dev/certified-corpus.txt`) elenca i programmi che il seed
+  deve eseguire (front-end di S1, smoke, generatori del sito); gli altri `.td` sono
+  **fuori contratto** e le loro violazioni sono avvisi, non errori. Misure: D20 ha due
+  casi (il nome *nuovo* è una divergenza vera fra i runtime, il nome *già legato* è
+  identico nei due runtime e resta una decisione normativa pending, famiglia N08); D18
+  non è una divergenza fra funzioni (il seed le risolve) ma solo a livello di file; D9
+  ammette `println` in posizione finale. Tre presidî nella CI: guardie statiche, self-test
+  (un fixture per regola), differenziale.
 - [01 — Fork architetturale del seed: gap reali e AST/bytecode](issues/01-fork-architetturale-seed.md):
   il seed **non** viene forkato con un livello AST/bytecode (la motivazione di
   `BOOTSTRAP.md` §10 è misurata obsoleta) e resta un **veicolo di transizione per S1**, non

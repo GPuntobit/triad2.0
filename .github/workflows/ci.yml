@@ -24,6 +24,18 @@ jobs:
             echo "check $f"
             node seed/dev/triad_core.cjs "$f" > /dev/null
           done
+      - name: Guardie statiche sulla sorgente di S1 (sottoinsieme certificato)
+        # Il guard presidia il corpus certificato (selfhost/certified.txt):
+        # i costrutti che il seed rifiuta o esegue in modo divergente sono
+        # vietati nella sorgente di S1 (contratto: seed/dev/certified-subset.txt).
+        run: node tools/selfhost-guard/guard.mjs
+      - name: Self-test delle guardie statiche
+        run: node tools/selfhost-guard/test.mjs
+      - name: Gate differenziale seed <-> riferimento JS (corpus certificato)
+        # Stesso programma, stesso stdout byte per byte e stesso exit code
+        # sui due runtime: presidio empirico delle divergenze che una regola
+        # statica non puo' decidere (dipendono dai tipi a runtime).
+        run: node tools/selfhost-guard/differential.mjs
 
   security:
     # Verifiche di sicurezza (tests/security/run.sh): isolamento Python,

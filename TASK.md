@@ -1,5 +1,173 @@
 # Task Triad 2.0
 
+## Handoff — 2026-11-08 (ticket 12 risolto: guardie statiche + gate differenziale)
+
+### Stato attuale e obiettivo della sessione
+
+Sessione dedicata alla **decisione [12 — Guardie statiche per la sorgente di S1]**
+(skill `grilling`) della mappa self-hosting M6: *quali* regole presidiano le divergenze
+del seed, *dove* stanno, *come* falliscono, e quale è il criterio di «non presidabile».
+La sessione non è solo decisionale: la decisione è **implementata e verificata** (guardie,
+contratto del seed, gate differenziale, self-test, CI).
+
+Punto di partenza: `HEAD` = `889282f` (dopo la release `v0.8.0-beta.9`), working tree
+pulito. Il ticket 01 (fork architetturale) era risolto; il ticket 12 era l'ultimo
+prerequisito della slice **N22**.
+
+### Cosa è stato fatto
+
+1. **Ticket [12 — Guardie statiche per la sorgente di S1](.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md)
+   → `Status: resolved`** (file modificato): le quattro domande (Q1–Q4) sono risposte con
+   **misure**, non deduzioni, e la risposta è implementata.
+2. **Misure seed↔JS** (seed ELF nativo vs riferimento JS, programmi in `/tmp`): D1 (scope
+   dinamico: 7 vs 100), D2 (cattura per valore: 1 vs 2), D3 (escape), D4 (`==` fra stringhe),
+   D15 (`string(true)` → `1` vs `true`), D19 (newline: 3 vs errore di parse), D20 (nome
+   creato in `if`/`while`: 5 vs «undefined variable»), D21 (`while` non-Bool: salta vs errore),
+   D9 (chiamata in posizione finale), D18. **Correzioni alle misure precedenti** (ticket 01):
+   - **D9**: `println` **è** ammesso in posizione finale (solo gli altri builtin e le
+     funzioni utente no);
+   - **D18**: il seed **risolve** i riferimenti in avanti *fra funzioni*; rifiuta solo la
+     chiamata **a livello di file** che precede la definizione;
+   - **D20**: il problema è dei **corpi di blocco in generale** (`if`/`while` non creano un
+     ambiente; `let`/`begin` sì) e ha **due** casi: il nome *nuovo* è una divergenza vera fra
+     i runtime, il nome *già legato* è identico nei due runtime (resta una decisione
+     normativa pending, famiglia N08);
+   - **D22**: le keyword cieche contano **solo dentro un corpo di blocco**; il caso peggiore
+     è un identificatore che **inizia** con una keyword.
+3. **Contratto del seed** — `seed/dev/certified-subset.txt` (fatti macchina-leggibili:
+   envelope, primitivi §8 disponibili, elenco delle divergenze con la classe `silent`/`noisy`)
+   + `seed/dev/certified-corpus.txt` (i programmi che il seed deve eseguire) + la sezione
+   «Contratto del seed» in `seed/README.md` (la versione leggibile, con la tabella D1–D22).
+4. **Il controllore** — `tools/selfhost-guard/`: `guard.mjs` (CLI), `rules.mjs` (una regola
+   per divergenza: `G-D01`…`G-D22`, più le regole d'envelope `G-E01`–`G-E03`),
+   `analysis.mjs` (albero degli ambienti sull'AST), `scan.mjs` (scanner grezzo: escape,
+   keyword cieche, fine riga, corpi dei blocchi), `contract.mjs`, `differential.mjs`
+   (gate seed↔JS), `test.mjs` (self-test), `fixtures/` (un fixture per regola + `pulito.td`),
+   `README.md`. Il guard **riusa l'AST del riferimento JS** (`seed/dev/triad_core.cjs`): nessun
+   secondo parser.
+5. **Gate differenziale** — `differential.mjs`: per ogni programma del corpus certificato,
+   seed e riferimento JS devono dare lo **stesso stdout byte per byte** e lo **stesso exit
+   code**. Copre il corpus certificato completo (front-end di S1, smoke, i quattro generatori
+   attivi del sito): **0 differenze**.
+6. **CI** (`.github/workflows/ci.yml`, job `conformance-core`): tre passi nuovi — guardie
+   statiche, self-test delle guardie, gate differenziale.
+7. **Documenti**: `GLOSSARY.md` (+ *Corpus certificato*, *Contratto del seed*, *Gate
+   differenziale*), `TASK.md` (N22 chiusa, ordine aggiornato, questo handoff),
+   `.scratch/self-hosting-m6/map.md` (decisione [12] in «Decisions so far»).
+
+### Cosa manca
+
+- **Ciclo di rebuild del seed** (N20 + N21 + N03 + N04 + N06): ri-proporzionamento dell'arena
+  (buffer sorgente 1 MiB, heap 8 MiB), primitivi §8 (`readfile`, `strlen`, `strbyte`,
+  `strsub`), `xs[i]` 1-based (sblocca il caso `liste`), `-=`/`*=`, escape/`==`/`+=` su
+  stringhe — **un solo ciclo** PE/ELF + hash CI + diff tracciato (ADR 0001).
+- **N23**: gate a 39/39 (`KNOWN_GAP` vuoto in `conformance/gate.sh`) e correzione del
+  commento di `gate.sh` su `length(xs)` (funziona già).
+- **N24**: allineare `BOOTSTRAP.md` §10, «Current status» di `TASK.md` e `STATUS.md` alla
+  ricognizione misurata (restano ottimistici).
+- **Decisioni normative pending**: **N02** (newline: quando continua l'espressione — la
+  regola `G-D19` è già scritta sul minimo comune delle due letture), **N08** (scope: lessicale
+  vs dinamico; include il caso D20 «nome già legato»).
+- **Mappa M6**: ticket `02` (architettura di S1), `03` (GC/memoria), `04`–`11` ancora aperti.
+  Il prossimo ticket per numero, dopo il 12 risolto, è **02**.
+- **Fuori dal bootstrap**: GUI Windows, traduzione EN del libro, `Q01–Q06`.
+
+### File toccati in questa sessione
+
+| File | Modifica |
+|---|---|
+| `.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md` | `Status: open` → `resolved`; sezione «Answer» con Q1–Q4, tabella delle regole, misure, limiti noti |
+| `.scratch/self-hosting-m6/map.md` | decisione [12] in «Decisions so far» |
+| `seed/dev/certified-subset.txt` | **nuovo**: contratto del seed (envelope, §8 disponibili, divergenze e classe) |
+| `seed/dev/certified-corpus.txt` | **nuovo**: corpus certificato (S1 + generatori del sito) |
+| `seed/README.md` | nuova sezione «Contratto del seed» (tabella D1–D22, fuori contratto) |
+| `tools/selfhost-guard/guard.mjs` | **nuovo**: CLI del controllore |
+| `tools/selfhost-guard/rules.mjs` | **nuovo**: le regole (una per divergenza + envelope) |
+| `tools/selfhost-guard/analysis.mjs` | **nuovo**: analisi degli ambienti sull'AST del riferimento JS |
+| `tools/selfhost-guard/scan.mjs` | **nuovo**: scanner grezzo (escape, keyword cieche, corpi dei blocchi) |
+| `tools/selfhost-guard/contract.mjs` | **nuovo**: lettore del contratto |
+| `tools/selfhost-guard/differential.mjs` | **nuovo**: gate differenziale seed↔JS |
+| `tools/selfhost-guard/test.mjs` | **nuovo**: self-test (un fixture per regola) |
+| `tools/selfhost-guard/fixtures/*.td` | **nuovi**: 24 fixture (uno per regola + `pulito.td`) |
+| `tools/selfhost-guard/README.md` | **nuovo**: contratto del controllore |
+| `.github/workflows/ci.yml` | job `conformance-core`: tre passi nuovi (guardie, self-test, differenziale) |
+| `GLOSSARY.md` | + *Corpus certificato*, *Contratto del seed*, *Gate differenziale* |
+| `TASK.md` | N22 chiusa, ordine aggiornato, questo handoff |
+
+Nessuna modifica a **codice del seed, lessico, parser, tipi, valutazione o I/O** del
+linguaggio: la regola operativa 3 (conformance) non è stata attivata per il linguaggio; i
+golden esistenti non sono stati toccati.
+
+### Decisioni prese (con riferimento agli ADR)
+
+1. **Le guardie stanno in un controllore dedicato** (`tools/selfhost-guard/`), che riusa
+   l'AST del riferimento JS; il lint di `tools/site-gen/lint.mjs` **resta dov'è** (presidia
+   un altro contratto: il sottoinsieme portabile per il browser) e non viene duplicato.
+2. **Il contratto del seed guida le regole**: ogni regola è legata a una divergenza ed è
+   attiva solo se la divergenza è ancora in `seed/dev/certified-subset.txt` → quando il
+   seed viene corretto, la regola si spegne da sola.
+3. **Criterio di precisione**: le regole statiche decidono solo ciò che si vede nell'AST;
+   le divergenze che dipendono dai tipi a runtime (D15) **non** hanno una regola statica
+   aggressiva ma il **gate differenziale**.
+4. **Criterio di «non presidabile»**: decidibile dall'AST **e** regola che la presidia
+   **e** fixture sintetico che la fa scattare; altrimenti il presidio è il differenziale e,
+   se il differenziale trova una differenza, la risposta è la **chirurgia nel seed**.
+5. **Corpus certificato dichiarato** (`seed/dev/certified-corpus.txt`); i file fuori
+   manifesto sono *fuori contratto*: le violazioni sono avvisi, non errori (e non sono
+   silenziate).
+6. **Nessun nuovo ADR**: le decisioni stanno nei ticket della mappa M6 (il posto previsto,
+   `docs/agents/issue-tracker.md`); il rebuild del seed resta sotto ADR 0001 (byte del PE) e
+   ADR 0002 (parità senza PE).
+
+### Test di conformance eseguiti ed esito
+
+- `sh verify.sh` → **OK**: gate conformance **38/39** (l'unico FAIL è `liste`, gap noto
+  **N03**, escluso in modo esplicito e rumoroso da `conformance/gate.sh`) + probe **39/39
+  PASS** + golden S1.
+- `node tools/selfhost-guard/test.mjs` → **26 test, 0 falliti** (un fixture per regola, il
+  corpus pulito, la disattivazione per contratto, la copertura delle divergenze).
+- `node tools/selfhost-guard/guard.mjs` → **17 file, 0 errori, 11 avvisi** (gli avvisi sono
+  tutti su file *fuori contratto*).
+- `node tools/selfhost-guard/differential.mjs` → **6 file, 0 differenze** (corpus certificato:
+  seed e riferimento JS, stesso stdout byte per byte e stesso exit code).
+- Nessun golden riscritto; nessun caso di conformance aggiunto (nessuna modifica al
+  comportamento del linguaggio).
+
+### Prossimi passi concordati
+
+1. **Ciclo di rebuild unico** N20 + N21 + N03 + N04 + N06 → PE + ELF + hash CI + diff
+   tracciato; poi N23 (gate 39/39) e N24 (allineamento dei documenti).
+2. **Decisioni normative** N02 (newline) e N08 (scope, incluso il caso D20 «nome già
+   legato»): le regole `G-D19`/`G-D20` vanno riesaminate dopo.
+3. Poi i ticket M6 `02` (architettura di S1) e `03` (GC/memoria).
+
+### Problemi aperti / noti
+
+- **N03**: il caso `liste` resta FAIL → il gate è 38/39.
+- L'**envelope** del seed non ospita S1 (sorgente > 64 KiB, heap 64 KiB) → N20 è bloccante
+  per ogni lavoro su S1.
+- `readfile` **assente**: S1 non può ancora leggere il programma da interpretare.
+- **D20 «nome già legato»**: i due runtime coincidono e la lettera di `SPEC-CORE.md` §5 è
+  ambigua (la lettura stretta renderebbe impossibile scrivere un ciclo) → decisione
+  normativa pending (N08).
+- Le guardie sono **sintattiche**: non provano i tipi (D15 resta al differenziale).
+- `examples/` non è nel corpus certificato (i programmi di esempio girano sul riferimento
+  JS; sul seed solo se sono nel manifesto).
+- `TASK.md` «Current status» e `BOOTSTRAP.md` §10 restano **ottimistici** (N24).
+- `TriadDesktop.exe` non pubblicato; N10 (rotazione del PAT esposto) resta **azione umana**.
+
+### Comando di ripresa
+
+```sh
+cd /home/votlazam/Documenti/progetti/triad2.0 && git status --short && node tools/selfhost-guard/guard.mjs && node tools/selfhost-guard/test.mjs && node tools/selfhost-guard/differential.mjs && sed -n '1,40p' TASK.md
+```
+
+Prossimo lavoro: **ciclo di rebuild del seed** (N20 + N21 + N03 + N04 + N06), poi N23/N24.
+
+```
+Ripresa sessione: leggi la sezione "Handoff — 2026-11-08" in TASK.md e continua da lì
+```
+
 ## Handoff — 2026-11-07 17:40 (soglia di budget R2.7M raggiunta)
 
 ### Stato attuale e obiettivo della sessione
@@ -512,18 +680,26 @@ Ricognizione misurata dei gap e dell'envelope: **ticket 01** (Fatti). N19 è gi�
   riferimento JS; `readfile` restituisce il contenuto del file senza alterazioni.
 
 ### N22 — Contratto del seed + guardie statiche sulla sorgente di S1
-- **Files:** `seed/README.md` (contratto), `seed/dev/certified-subset.txt` (elenco
-  macchina-leggibile), `tools/site-gen/lint.mjs`, `tests/probes/run_probes.sh`, CI.
-- **Work:** scrivere il **sottoinsieme certificato** del seed (cosa esegue, cosa rifiuta,
-  cosa esegue in modo divergente, con quali limiti d'infrastruttura) e le guardie che
-  presidiano la sorgente di S1 (`selfhost/*.td`, generatori in `tools/site-gen/`): le
-  costruzioni **rumorose** sono vietate dalla lint; le **divergenze silenziose** (scope
-  dinamico, cattura per valore, escape, `==` su stringhe, newline, scope di `while`,
-  `while` non-`Bool`) hanno regole dedicate. **Dipende dalla decisione del ticket
-  `.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md`** (quali regole, con
-  quale precisione, con quale fallback).
-- **Acceptance:** la sorgente S1 e i generatori passano le guardie; ogni violazione è
-  segnalata con un messaggio che nomina la regola e il costrutto.
+- **Files:** `seed/README.md` (contratto), `seed/dev/certified-subset.txt` (contratto
+  macchina-leggibile), `seed/dev/certified-corpus.txt` (corpus certificato),
+  `tools/selfhost-guard/` (il controllore: `guard.mjs`, `rules.mjs`, `analysis.mjs`,
+  `scan.mjs`, `contract.mjs`, `differential.mjs`, `test.mjs`, `fixtures/`), CI.
+- **Work:** ✅ **guardie fatte 2026-11-08** (decisione del ticket
+  `.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md`, risolto):
+  contratto del seed scritto (fatti: envelope, primitivi §8, divergenze e classe) e
+  guardie implementate in un **controllore dedicato** che riusa l'AST del riferimento JS
+  (nessun secondo parser) e consuma il contratto: ogni regola è legata a una divergenza e
+  si spegne da sola quando la divergenza sparisce dal contratto. Le divergenze non
+  decidibili staticamente (tipi a runtime) sono presidiate dal **gate differenziale**
+  seed↔JS (`differential.mjs`, per programma del corpus certificato): se il differenziale
+  trova una differenza, la risposta è la **chirurgia nel seed**. Il lint di
+  `tools/site-gen/lint.mjs` **resta dov'è** (presidia un altro contratto: il sottoinsieme
+  portabile per il browser) e non viene duplicato.
+- **Acceptance:** ✅ il corpus certificato (`selfhost/source.td`, `selfhost/main.td`, i
+  quattro generatori attivi di `tools/site-gen/`) passa le guardie e il differenziale
+  (0 differenze); ogni violazione è segnalata con un messaggio che nomina la regola
+  (`G-Dxx`) e il costrutto; il self-test (`tools/selfhost-guard/test.mjs`) ha un fixture
+  per ogni regola e verifica che ogni divergenza del contratto sia presidiata.
 
 ### N23 — Gate a 39/39 e chiusura del gap `liste`
 - **Files:** `conformance/gate.sh` (`KNOWN_GAP` svuotato), `conformance/core/cases/liste`,
@@ -541,12 +717,14 @@ Ricognizione misurata dei gap e dell'envelope: **ticket 01** (Fatti). N19 è gi�
 - **Acceptance:** nessun documento afferma più che `elseif` sia mancante né che le liste
   siano «complete»; l'envelope del seed (1 MiB / 8 MiB / 64 elementi) è dichiarato.
 
-### Ordine (aggiornato 2026-11-07)
+### Ordine (aggiornato 2026-11-08)
 1. ~~**N15 → N16 → N17 → N18**~~ (task principale: seed Linux nativo, senza Wine) — ✅
 2. **N20 + N21 + N03 + N04 + N06** in un ciclo unico di rebuild PE/ELF + hash CI
    (contenuto del ciclo fissato dalla decisione del ticket 01) — ora verificabile
    nativamente anche su Linux →
-3. **N22** (contratto del seed + guardie statiche) — dopo la decisione del ticket 12 →
+3. ~~**N22** (contratto del seed + guardie statiche)~~ — ✅ **fatto 2026-11-08**
+   (decisione del ticket 12: `tools/selfhost-guard/`, contratto in
+   `seed/dev/certified-subset.txt`, corpus in `seed/dev/certified-corpus.txt`) →
 4. **N23** (gate a 39/39) →
 5. **N02** e **N08** dopo le decisioni normative; **N05**/**N07** quando decisi; **N19** (se
    deciso).

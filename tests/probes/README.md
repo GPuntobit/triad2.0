@@ -106,3 +106,25 @@ repo; nessun fallback JS. Lo stesso entry point copre la parità PE via wine:
 
 I limiti sono anche codificati nel lint del generatore:
 `node tools/site-gen/lint.mjs`.
+
+## Il contratto del seed e i suoi presidî (2026-11-08)
+
+Questa matrice è la misura; il **contratto** del seed la dichiara in forma
+machine-leggibile (`seed/dev/certified-subset.txt`, leggibile in `seed/README.md`) e i
+presidî la applicano:
+
+- `node tools/selfhost-guard/guard.mjs` — guardie statiche: una regola per divergenza
+  (`G-D01`…`G-D22`), attive solo se la divergenza è ancora nel contratto (quando il seed
+  viene corretto, la regola si spegne da sola); il corpus certificato è
+  `seed/dev/certified-corpus.txt`;
+- `node tools/selfhost-guard/differential.mjs` — gate differenziale: per ogni programma
+  del corpus certificato, seed e riferimento JS devono dare lo **stesso stdout byte per
+  byte** e lo **stesso exit code** (è il presidio delle divergenze che una regola statica
+  non può decidere, perché dipendono dai tipi a runtime).
+
+Correzioni a questa matrice, misurate il 2026-11-08: `println` **è** ammesso in posizione
+finale (gli altri builtin e le funzioni utente no); il seed **risolve** i riferimenti in
+avanti *fra funzioni* (rifiuta solo la chiamata a livello di file che precede la
+definizione); i corpi di `if`/`while` non hanno un ambiente proprio (`let`/`begin` sì), e il
+caso del nome *già legato* coincide nei due runtime (decisione normativa pending); le
+keyword cieche contano solo dentro un corpo di blocco.

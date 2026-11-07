@@ -1,0 +1,75 @@
+# =====================================================================
+#  certified-subset.txt — CONTRATTO DEL SEED (sottoinsieme certificato)
+#
+#  Formato: sezioni [nome] + righe "chiave = valore"; '#' = commento.
+#  Consumatore: tools/selfhost-guard/guard.mjs (guardie statiche) e
+#  tools/selfhost-guard/differential.mjs (gate differenziale seed↔JS).
+#
+#  Questo file è la dichiarazione *macchina-leggibile* dello stato del
+#  seed.  Ogni volta che il seed cambia (un gap chiuso, un limite
+#  cambiato, un primitivo aggiunto) il file va aggiornato nello stesso
+#  commit: le guardie statiche si disattivano da sole quando la
+#  divergenza corrispondente sparisce da [divergence].
+#
+#  NON è la specifica: SPEC-CORE.md descrive il linguaggio, questo
+#  file descrive *un'implementazione* (il seed).  Vedi seed/README.md
+#  (sezione "Contratto del seed") e il ticket 01 della mappa M6.
+# =====================================================================
+
+[meta]
+version = 1
+seed.version = 0.8.0-beta.9
+updated = 2026-11-08
+
+# --- Limiti strutturali dell'arena (misurati) --------------------------
+# source.max_bytes: buffer sorgente (os_read); oltre -> "seed: read error"
+# heap.max_bytes:   heap bump senza free (nessuna riciclicita')
+# list.max_items:   elementi per lista (blocco fisso da 64 slot)
+# function.max_params: record funzione da 64 B, 16 B per parametro
+[envelope]
+source.max_bytes = 65536
+heap.max_bytes = 65536
+list.max_items = 64
+function.max_params = 4
+
+# --- Primitivi §8 (SPEC-CORE.md §8) presenti nel seed ------------------
+# yes = il seed lo implementa; no = assente (exit 1).
+# readfile e' il modo in cui S1 legge il programma da interpretare:
+# entra nel "pavimento" del seed (decisione 01, Q1).
+[available]
+get = yes
+exit = yes
+readfile = no
+strlen = no
+strbyte = no
+strsub = no
+
+# --- Divergenze dal comportamento di SPEC-CORE.md, misurate ------------
+# classe: silent = risultato sbagliato senza errore (chiede guardia
+#         statica dedicata); noisy = exit 1 (chiede il veto della
+#         guardia statica).
+# Una divergenza sparisce da questo elenco quando il seed la risolve:
+# in quel caso la regola corrispondente si disattiva da sola.
+[divergence]
+D1 = silent
+D2 = silent
+D3 = silent
+D4 = silent
+D5 = noisy
+D6 = noisy
+D7 = noisy
+D8 = noisy
+D9 = noisy
+D10 = noisy
+D11 = noisy
+D12 = noisy
+D13 = noisy
+D14 = noisy
+D15 = silent
+D16 = noisy
+D17 = noisy
+D18 = noisy
+D19 = silent
+D20 = silent
+D21 = silent
+D22 = noisy

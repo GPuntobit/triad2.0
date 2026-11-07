@@ -1,5 +1,44 @@
 # Changelog — standard Triad
 
+## Non rilasciato — 2026-11-08: guardie statiche e gate differenziale sul corpus certificato
+
+Decisione [12] della mappa self-hosting M6 (`.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md`):
+*come* si presidia il sottoinsieme certificato del seed.
+
+### Added
+- **Contratto del seed** — `seed/dev/certified-subset.txt` (macchina-leggibile: envelope,
+  primitivi §8 disponibili, divergenze D1–D22 con la classe `silent`/`noisy`) e la sezione
+  «Contratto del seed» in `seed/README.md` (la versione leggibile, con la tabella delle
+  divergenze e l'elenco di ciò che è *fuori contratto*).
+- **Corpus certificato** — `seed/dev/certified-corpus.txt`: i programmi che il seed deve
+  poter eseguire (front-end di S1, smoke, i quattro generatori attivi di `tools/site-gen/`).
+- **Guardie statiche sulla sorgente di S1** — `tools/selfhost-guard/`: CLI `guard.mjs`,
+  regole `G-D01`…`G-D22` (una per divergenza) più le regole d'envelope `G-E01`–`G-E03`,
+  analisi degli ambienti sull'AST del riferimento JS (`analysis.mjs`), scanner grezzo del
+  sorgente (`scan.mjs`), lettore del contratto (`contract.mjs`), self-test con un fixture per
+  regola (`test.mjs`, `fixtures/`).
+- **Gate differenziale seed ↔ riferimento JS** — `tools/selfhost-guard/differential.mjs`: per
+  ogni programma del corpus certificato, seed e riferimento JS devono dare lo **stesso stdout
+  byte per byte** e lo **stesso exit code**.
+- **CI** (job `conformance-core`): tre passi nuovi — guardie statiche, self-test, gate
+  differenziale.
+
+### Changed
+- Il lint di `tools/site-gen/lint.mjs` **resta dov'è** (presidia un altro contratto: il
+  sottoinsieme portabile per il browser) e non viene duplicato: le regole nuove sono *del
+  seed* e consumano il suo contratto.
+- Ogni regola è **legata a una divergenza**: quando il seed viene corretto e la divergenza
+  sparisce da `certified-subset.txt`, la regola si spegne da sola.
+
+### Fixed (misure corrette)
+- `println` **è** ammesso in posizione finale (D9): la regola iniziale era troppo larga.
+- Il seed **risolve** i riferimenti in avanti *fra funzioni* (D18 rifiuta solo la chiamata a
+  livello di file che precede la definizione).
+- Lo scope dei corpi di blocco riguarda `if`/`while` (`let`/`begin` lo fanno già) e ha due
+  casi: il nome *nuovo* è una divergenza vera fra i runtime, il nome *già legato* è identico
+  nei due runtime (decisione normativa pending, famiglia N08).
+- Le keyword cieche del seed contano **solo dentro un corpo di blocco** (D22).
+
 ## 0.8.0-beta.9 — 2026-11-07: seed Linux nativo, toolchain senza Node, desktop launcher
 
 Riepilogo della release: da `v0.8.0-beta.8` (2026-10-31) a `v0.8.0-beta.9` (2026-11-07).

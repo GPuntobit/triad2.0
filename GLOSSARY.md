@@ -86,6 +86,26 @@ La differenza di comportamento rispetto alla specifica che produce un risultato 
 non può essere scoperta da un errore a runtime.
 _Avoid_: bug (non è un difetto occasionale ma una non conformità misurata), mismatch
 
+**Corpus certificato**:
+L'insieme dei programmi che il seed deve poter eseguire, dichiarato in
+`seed/dev/certified-corpus.txt`. Un programma nel corpus certificato è soggetto a tutti i
+presidî (guardie statiche, gate differenziale seed↔JS); un programma che ne è fuori è
+«fuori contratto»: viene comunque segnalato, ma come avviso.
+_Avoid_: sorgenti S1 (il corpus certificato include anche i generatori del sito)
+
+**Contratto del seed**:
+La dichiarazione *machine-readable* di cosa il seed esegue, rifiuta o esegue in modo
+divergente (`seed/dev/certified-subset.txt`, leggibile in `seed/README.md`). Le guardie
+statiche sono legate alle sue voci: quando una divergenza sparisce dal contratto, la
+regola corrispondente si spegne da sola.
+_Avoid_: specifica del seed (il contratto descrive un'implementazione, non il linguaggio)
+
+**Gate differenziale**:
+Il confronto *byte per byte* dell'output di uno stesso programma su due runtime (il seed e
+il riferimento JS), con confronto del codice di uscita. È il presidio delle divergenze che
+una regola statica non può decidere (quelle che dipendono dai tipi a runtime).
+_Avoid_: test (non confronta un risultato atteso, confronta due implementazioni)
+
 ## Bootstrap
 
 **Catena S0→S4**:

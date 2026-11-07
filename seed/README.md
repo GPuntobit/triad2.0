@@ -10,6 +10,55 @@ The complete chain is described in [`../BOOTSTRAP.md`](../BOOTSTRAP.md).
 | M2 — reads the file from the first argument and writes its bytes | Windows x86-64 (PE) | ✅ |
 | M3 — Triad-Core interpreter | Windows x86-64 (PE) | in progress: M3b1 ✅, M3b2a ✅, M3b2b1 ✅, M3b2b2 ✅, M3b2b3a-e ✅, **M3b2b3f** ⚠️ (unstable capture), **M3b2b3g** ✅ (`!`, `&&`, `||`, `+=`), **M3b2b3h** ✅ (`function … end`), **M3b2b3i** ✅ (multi-statement body), **M3b2b3j** ✅ (lexical frames, `let`; `scope`), **M3b2b3k** ✅ (closures; `closure`/`closures`), **M3b2b3l** ✅ (`begin`/`end`), **M3b2b3m** ✅ (base strings), **M3b2b3n** ✅ (`nothing`), **M3b2b3o** ✅ (concatenation), **M3b2b3p** ✅ (symbols `:name`; `base_symbols`); `string()`, multi-binding capture, `elseif`, lists | remain
 | M7 — Linux port (ELF) | Linux x86-64 | ✅ **E0 → E1 → E2 → E3**: minimal ELF (write/exit) → file runner (argv + I/O) → **Triad-Core interpreter** (8499 byte, parità byte-exatta col PE: conformance 39/39 + probe 39/39 + golden S1) → **toolchain senza Node** (`install.sh` → `bin/triad`/`bin/triad-cli`, CI `seed-linux` nativa) |
+## Contratto del seed
+Il seed **non** è un'implementazione Triad-Core completa: è un interprete diretto
+(scannerless) scritto in codice macchina, e fa da *veicolo di transizione* per S1 (il
+front-end scritto in Triad-Core). «Sottoinsieme certificato» = l'insieme dei programmi
+Triad-Core che il seed esegue con la semantica di `SPEC-CORE.md`.
+
+Il contratto è in due pezzi:
+
+- **`dev/certified-subset.txt`** — il contratto *macchina-leggibile*: l'envelope
+  (buffer sorgente 64 KiB, heap 64 KiB, liste da 64 elementi, funzioni da 4 parametri),
+  i primitivi §8 presenti (`get`, `exit`; `readfile`/`strlen`/`strbyte`/`strsub` non
+  ancora) e l'elenco delle **divergenze** dal comportamento della specifica, con la loro
+  classe (`silent` = risultato sbagliato senza errore, `noisy` = exit 1);
+- **questa sezione** — la versione leggibile.
+
+Le guardie statiche sulla sorgente di S1 (`tools/selfhost-guard/`) e il gate differenziale
+seed↔JS consumano il contratto: ogni regola è legata a una divergenza e si spegne da
+sola quando la divergenza sparisce dal contratto.
+
+Divergenze note dal comportamento di `SPEC-CORE.md` (misurate sul seed):
+
+| # | costrutto | `SPEC-CORE.md` | seed |
+|---|---|---|---|
+| D1 | scope dei nomi | §5 lessicale | **dinamico**: il callee vede i locali del chiamante |
+| D2 | chiusure | §5 cattura condivisa | cattura **per valore** |
+| D3 | escape nelle stringhe | §2 interpretati | non interpretati |
+| D4 | `==` su stringhe | §5 per valore | sempre `false` |
+| D5 | `continue` | §4/§6 | assente (exit 1) |
+| D6 | `-=`, `*=` | §6 | assenti (exit 1) |
+| D7 | `while` come valore | §4 | assente (exit 1) |
+| D8 | `if` come valore | §5 | assente (exit 1) |
+| D9 | chiamata in posizione finale | §4 | non valutata (exit 1) |
+| D10 | `return` in funzione a blocco | §4/§5 | assente (exit 1) |
+| D11 | blocco-lambda `function (x) … end` | §4 | assente (exit 1) |
+| D12 | `let` multi-binding | §4 | assente (exit 1) |
+| D13 | indicizzazione `xs[i]` (1-based) | §7 | assente (exit 1) |
+| D14 | `typeof`, `Int()`, `Symbol()` | §7 | assenti (exit 1) |
+| D15 | `string(x)` | §7 | solo `Int`/`String` (le altre forme sbagliano) |
+| D16 | `readfile`, `strlen`, `strbyte`, `strsub` | §8 | assenti (exit 1) |
+| D17 | simboli operatore `:+` | §2 | rifiutati (exit 1) |
+| D18 | chiamata a livello di file prima della definizione | §4 | rifiutata (exit 1) |
+| D19 | newline dopo un operatore | §2 separatore | **prosegue** l'espressione |
+| D20 | corpo di `if`/`while` | §5 ambiente proprio | **nessun** ambiente proprio (il nome resta visibile fuori) |
+| D21 | condizione `while` non-`Bool` | §5 solo `Bool` | **salta** il corpo in silenzio |
+| D22 | keyword dentro un letterale o un identificatore | §2 | contate dai byte grezzi: l'annidamento dei blocchi sbaglia |
+
+Fuori contratto (dichiarato, non implementato): `typeof`, `Int()`, `Symbol()`,
+`string()` per `Bool`/`Symbol`/`Nothing`, `:+`, `get` come indicizzazione 1-based.
+
 ## Build (no compiler)
 Windows:
 ```powershell

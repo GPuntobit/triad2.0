@@ -1,5 +1,37 @@
 # Triad and S0 bootstrap status
 
+## Guardie statiche e gate differenziale sul corpus certificato — 2026-11-08
+
+La decisione [12] della mappa M6 (`.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md`)
+fissa *come* si presidia il sottoinsieme certificato del seed:
+
+- **contratto del seed** — `seed/dev/certified-subset.txt` (envelope, primitivi §8
+  disponibili, divergenze D1–D22 con la classe `silent`/`noisy`), leggibile in
+  `seed/README.md` («Contratto del seed»);
+- **corpus certificato** — `seed/dev/certified-corpus.txt`: i programmi che il seed deve
+  poter eseguire (front-end di S1, smoke, i quattro generatori attivi di `tools/site-gen/`);
+  gli altri `.td` sono *fuori contratto* (le violazioni sono avvisi, non errori);
+- **guardie statiche** — `tools/selfhost-guard/` (CLI `guard.mjs`, regole `G-D01`…`G-D22`
+  + envelope `G-E01`–`G-E03`): riusano l'AST del riferimento JS, ogni regola è legata a una
+  divergenza e **si spegne da sola** quando la divergenza sparisce dal contratto; self-test
+  con un fixture per regola (`node tools/selfhost-guard/test.mjs`);
+- **gate differenziale** — `tools/selfhost-guard/differential.mjs`: per ogni programma del
+  corpus certificato, seed e riferimento JS devono dare lo **stesso stdout byte per byte** e
+  lo **stesso exit code**; è il presidio delle divergenze che una regola statica non può
+  decidere (dipendono dai tipi a runtime, es. `string(true)` → il seed stampa `1`).
+
+CI (job `conformance-core`): tre passi nuovi — guardie statiche, self-test, differenziale.
+Il guard e il differenziale sono strumenti di sviluppo (Node), fuori dalla catena S0→S4:
+`verify.sh` resta senza Node.
+
+Correzioni alle misure precedenti (ticket 01), misurate oggi: `println` **è** ammesso in
+posizione finale (D9); il seed **risolve** i riferimenti in avanti fra funzioni (D18 rifiuta
+solo la chiamata a livello di file che precede la definizione); il problema di scope dei
+blocchi riguarda `if`/`while` (non `let`/`begin`) e ha due casi — il nome *nuovo* è una
+divergenza vera fra i runtime, il nome *già legatto* è identico nei due runtime (decisione
+normativa pending, famiglia N08); le keyword cieche del seed contano **solo dentro un corpo
+di blocco** (D22).
+
 ## Release 0.8.0-beta.9 — 2026-11-07
 
 Pubblicata la release `v0.8.0-beta.9` (tag `v0.8.0-beta.9`, commit `f30a0a2`):
@@ -164,6 +196,9 @@ sh verify.sh                       # gate unico: conformance/run.sh + tests/prob
 sh conformance/run.sh              # Core, 39 casi, byte-exatti sull'ELF nativo
 sh tests/probes/run_probes.sh      # 39 probe (ok_*/test_* + bad_* + selfhost golden)
 sh seed/linux-x86_64/check_seed.sh # errori/limiti del seed (7 casi)
+node tools/selfhost-guard/guard.mjs        # guardie statiche sul corpus certificato
+node tools/selfhost-guard/test.mjs         # self-test delle guardie (un fixture per regola)
+node tools/selfhost-guard/differential.mjs  # gate differenziale seed <-> riferimento JS
 ```
 
 Triad-Full (`conformance/cases`) resta fuori dal gate (ticket 08 Q3); da eseguire con la
