@@ -1,5 +1,14 @@
 # Task Triad 2.0
 
+## Release v0.8.0-beta.10 — 2026-11-08
+
+Preparata prerelease con S1 logico, desktop automatico, fix Core/output e
+cleanup integrati fino alla PR #84. Versione e metadati allineati; note
+in docs/releases/RELEASE_NOTES_v0.8.0-beta.10.md. Nuovo workflow Release:
+build nativi Linux/Windows, CLI standalone e desktop Windows, archivio
+sorgente, SHA256SUMS e pubblicazione solo dopo i job di build/verifica.
+
+
 ## Registro dettagliato di rimozioni e aggiunte — cleanup PR #83
 
 Riferimenti: PR #83, commit `be0ddc1d9edab99bc11d653b2794cb63538ec1d6`,
