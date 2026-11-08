@@ -1,1 +1,1 @@
-/home/votlazam/Documenti/progetti/triad2.0/seed/dev/core.js
+/home/votlazam/Documenti/progetti/triad2.0/tools/selfhost-guard/differential.mjs
