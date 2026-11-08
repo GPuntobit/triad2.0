@@ -1,5 +1,4 @@
 # S1 logic engine. Written in Triad-Core; SPEC.md section 6.
-lnames = []
 lchars = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F"]
 lchars2 = ["G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9","_"]
 
@@ -466,7 +465,6 @@ function atom()
                         tstep = tn
                     end
                 elseif to == kw_trace
-                    ppos_unused = 0
                     lp[1] = lp[1] + 1
                     ttrace = true
                 else
@@ -1342,7 +1340,6 @@ function lrun()
         end
         if sn == kw_fact
             sc = expr()
-            sm = lv_new()
             sh = lc_term(sc, 0)
             lv_add(lclauses, [sh, [37, 1]])
         elseif sn == kw_struct
