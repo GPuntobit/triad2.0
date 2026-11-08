@@ -58,11 +58,7 @@ trap 'rm -rf "$tmp"' EXIT
 if [ "$update" = 1 ]; then
   echo "ATTENZIONE: i golden si rigenerano solo per cambi semantici" >&2
   echo "           deliberati da SPEC-CORE.md (ticket 08, Q6)." >&2
-  echo "ATTENZIONE: i casi con gap noto (liste, ternario_simbolo) NON si" >&2
-  echo "           rigenerano dal seed: il loro golden e' quello della" >&2
-  echo "           specifica (riferimento JS) e il seed li rifiuta —" >&2
-  echo "           rigenerarli riscriverebbe la verita' (vedi" >&2
-  echo "           conformance/gate.sh, KNOWN_GAP)." >&2
+
 fi
 
 # confronto byte-exatto di un caso col suo golden; esito in $result

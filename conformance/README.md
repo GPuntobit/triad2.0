@@ -39,23 +39,18 @@ Triad, run by the implementation under test.
 ```sh
 sh conformance/run.sh            # verify (Core profile, 40 cases, wired suite)
 sh conformance/run.sh --update   # regenerate expected.out/expected.code
-sh conformance/gate.sh           # gate: run.sh + esclusione esplicita dei gap noti
+sh conformance/gate.sh           # gate: tutti i casi, senza esclusioni
 ```
 
 The suite is **wired**: no `--cases`/`--skip`/`--strict` flags (ticket
-`.scratch/seed-linux-nativo/issues/08`, Q9). The known seed gap (`liste`:
-`xs[i]` and `push!`-statement, S0.2 lacunae of `SPEC-CORE.md`) is *registered*,
-not skipped: the runner freezes it as `exit 1 + empty stdout` and fails if the
-seed behaviour changes. The same entry point runs on any runtime through
+`.scratch/seed-linux-nativo/issues/08`, Q9). The same entry point runs on any runtime through
 `TRIAD_SEED` (default `seed/linux-x86_64/seed`); no JS fallback and no
 dependency on `install.sh`: the gate runs on a bare checkout.
 
-`gate.sh` is the wrapper used by CI and by `verify.sh`: it runs the oracle
-above and tolerates **only** the failures listed in its `KNOWN_GAP` block
-(today: `liste`, gap N03 — the seed has no 1-based `xs[i]` nor `length`).
-Every other failure fails the gate. The exclusion is always printed, so a
-skip can never hide a regression silently; no golden is ever rewritten to
-mask the gap.
+`gate.sh` is the wrapper used by CI and `verify.sh`: it delegates directly
+to the oracle and preserves its exit code. All 40 Core cases are required,
+including `liste` and `ternario_simbolo`; there is no tolerated-failure list.
+No golden is rewritten to hide a failure.
 `run.mjs`, `run.test.mjs` (Node) have been removed in one shot (ticket 08, Q4).
 
 Golden: per case `expected.out` + `expected.code` (exit code), compared byte-exact
