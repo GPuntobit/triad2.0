@@ -32,8 +32,14 @@ test('S1 rejects invalid syntax and source beyond its explicit capacity', () => 
   const syntax = launch(['--logic', '-'], 'fact (\n');
   assert.equal(syntax.status, 1);
   assert.match(syntax.stdout, /SYNTAX ERROR/);
-  const large = launch(['--logic', '-'], ' '.repeat(4095));
+  const large = launch(['--logic', '-'], ' '.repeat(65536));
   assert.equal(large.status, 1);
   assert.match(large.stderr, /source limit/);
   assert.equal(launch(['--logic']).status, 2);
+});
+
+test('S1 transports sources larger than the old 4094-byte limit', () => {
+  const r = launch(['--logic', '-'], '# ' + 'x'.repeat(10000) + '\n' + sample);
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout, '[:a]\n');
 });

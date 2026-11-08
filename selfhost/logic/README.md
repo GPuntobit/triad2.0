@@ -45,13 +45,12 @@ selects this first S1 profile; it is not a claim of complete Triad-Full support.
 
 ## Explicit limits of this stage
 
-This profile is not the complete Full evaluator. User-defined Boolean function
-calls as goals, structs, `trace`, escaped/Unicode strings, arbitrary Core
+This profile is not the complete Full evaluator. Escaped/Unicode strings and arbitrary Core
 statements/functions inside a logic input, and expression-valued query options
 are not implemented. Syntax outside the profile is rejected, not sent to a host
 runtime. Error values currently carry their kind, not Full diagnostic payloads.
 
-Source input is limited to 4094 bytes. Internal vectors hold at most 4096 values,
+Source input uses compact 64-byte pages and is limited to 65535 bytes. Internal vectors hold at most 4096 values,
 compound arity at most 64, and allocations use the seed's finite 8 MiB bump heap.
 A capacity/heap limit can be reached before the default one-million-step search
 budget; this stage is not suitable for unbounded production queries. The `depth`
@@ -75,3 +74,20 @@ sh verify.sh
 `reference.sh` is a development oracle for the same S1 source. It is never a
 fallback in the runtime path. The dedicated suite freezes the logic profile's
 supported behavior without changing the existing Full suite's goldens.
+
+## Extensions after the initial engine
+
+- `solve ... trace` returns `.result` and `.trace`; events expose `.port`,
+  `.goal`, `.depth`, with call/exit/redo/fail/depth ports. Comprehensions
+  may filter events: `[e.goal for e in t.trace if e.port == :call]`.
+- `struct Point` with newline-separated fields, optionally `x :: Int`,
+  supports construction, field access and logic patterns. Built-in field
+  types and nested struct types are checked at construction.
+- Boolean functions can be declared as `even(x) = x % 2 == 0` or with
+  `function even(x)` / optional `return` / one Boolean goal / `end`.
+  They lower to logic clauses and retain iterative goal resolution.
+
+This is still not a complete Full evaluator. Arbitrary function statements,
+control-flow bodies, overload dispatch and non-Boolean function returns are
+not implemented by that lowering. General Full semantics and diagnostic
+payloads remain separate work. Finite S0 heap/vector limits still apply.

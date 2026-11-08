@@ -1,5 +1,24 @@
 # Plan to complete Triad 2.0 - Updated status
 
+## Estensioni S1: trace, struct, funzioni booleane e sorgenti paginati
+
+Sopra il commit 36e07f4, il profilo --logic ora supporta solve trace con
+record di eventi e accesso result/trace/port/goal/depth, comprensioni
+filtrate, struct con campi opzionalmente tipizzati, costruttori e pattern,
+funzioni booleane brevi o a blocco con un solo goal/return. Il trasporto
+paginato estende il limite di sorgente da 4094 a 65535 byte.
+
+Test: 25 casi logici sui due runtime e 4 test launcher, incluso input
+oltre 10 KB. Nessun dump o golden precedente modificato; i test trace
+verificano ordine call/exit/redo/fail e filtro delle porte.
+
+Lavoro residuo esplicito: evaluator Full generale per corpi funzione
+con statement arbitrari, dispatch e ritorni non Booleani; stringhe con
+escape/Unicode, payload diagnostici completi, opzioni query come
+espressioni. I limiti finiti di heap/vettori S0 restano. Non dichiarata
+conformità completa a SPEC.md. Dettagli: selfhost/logic/README.md.
+
+
 ## Motore logico S1 eseguibile — 2026-11-08
 
 Checkpoint: `checkpoint/before-logic-engine-2026-11-08` a `34ab261`.

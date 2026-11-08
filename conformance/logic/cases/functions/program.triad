@@ -1,0 +1,7 @@
+fact n(2)
+fact n(3)
+even(x) = x % 2 == 0
+function big(x)
+ return x > 1
+end
+println([s.x for s in solve n(?x), even(?x), big(?x)])

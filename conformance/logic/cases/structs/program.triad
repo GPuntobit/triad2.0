@@ -1,0 +1,8 @@
+struct Point
+x
+y
+end
+p = Point(2, 3)
+fact pos(p)
+println([s.x for s in solve pos(Point(?x, ?y))])
+println(p.y)
