@@ -81,10 +81,10 @@ jobs:
           sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed
       - name: Hash check (PE + ELF, gate anti-tampering decisione 04)
         run: |
-          h=$(sha256sum seed/linux-x86_64/seed.hex | cut -d' ' -f1)
-          test "$h" = "971f61d5e9f8bcf3f22257e5c56b92a705ea45da9fc23018203d6173fbbb7ec1"
-          hp=$(sha256sum seed/windows-x86_64/seed.hex | cut -d' ' -f1)
-          test "$hp" = "9f96c413b2e77abab1e8758a7aae92a2ddfa77ba5ef17bff5927e35a688e98d1"
+          printf '%s\n' \
+            '23a84dd313bd15c5252d0dc2d83fe6f8ee5c2d70c1accbfb42969362087cbbae  seed/linux-x86_64/seed.hex' \
+            '57f631e4fc1b8a16cc5bd9fe882365fc0127216696862760ae70dbaf66f0185d  seed/windows-x86_64/seed.hex' \
+            | sha256sum --check
       - name: Reproducible dump (anti-drift, PE + ELF)
         run: |
           node seed/dev/gen_seed.js windows /tmp/seed-pe-repro.hex

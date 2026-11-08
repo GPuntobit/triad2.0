@@ -34,8 +34,8 @@ repo; nessun fallback JS. Lo stesso entry point copre la parità PE via wine:
 | `let` con un solo binding | sì | sì | `ok_let_singolo.td` |
 | `let` con più binding | **no** | sì | `bad_let_multiplo.td` |
 | `get(xs, i)` (indice 0-based) | sì | sì | `test_get.td` |
-| `length(xs)` su lista | sì | sì | `bad_lista_indice.td` |
-| indice di lista `xs[i]` | **no** | sì | `bad_lista_indice.td` |
+| `length(xs)` su lista | sì | sì | `ok_lista_indice.td` |
+| indice di lista `xs[i]` | sì (probe misurato) | sì | `ok_lista_indice.td` |
 | letterali di lista: ~60 valutazioni per esecuzione | **no** (528 byte fissi per valutazione, heap 64 KB: ~250 fanno crashare il processo) | sì | `bad_lista_alloc.td` |
 | letterale di lista su più righe | sì | sì | `ok_lista_multiriga.td` |
 | scope dei nomi nelle funzioni | **dinamico** (il callee vede i locali del chiamante) | lessicale | `bad_scope_dinamico.td` |
@@ -47,9 +47,9 @@ repo; nessun fallback JS. Lo stesso entry point copre la parità PE via wine:
 | newline come separatore di statement dopo un operatore | divergente (prosegue l'espressione) | separa gli statement | `bad_separatore_newline.td` |
 | funzione a blocco, valore = ultima espressione | sì | sì | `ok_funzione_valore.td` |
 | `return` dentro una funzione a blocco | **no** | sì | `bad_return_blocco.td` |
-| `if`/`else` come *valore* del corpo | **no** | sì | `bad_if_valore_funzione.td` |
-| chiamata come *ultima espressione* del corpo | **no** | sì | `bad_chiamata_ultima_espressione.td` |
-| chiamata annidata con argomento Int | **no** | sì | `bad_chiamata_nested_int.td` |
+| `if`/`else` come *valore* del corpo | sì (probe misurato) | sì | `ok_if_valore_funzione.td` |
+| chiamata come *ultima espressione* del corpo | sì (probe misurato) | sì | `ok_chiamata_ultima_espressione.td` |
+| chiamata annidata con argomento Int | sì (probe misurato) | sì | `ok_chiamata_nested_int.td` |
 | chiamata annidata con argomento String | sì | sì | `ok_chiamata_in_concatenazione.td` |
 | chiamata assegnata a variabile, poi restituita | sì | sì | `ok_chiamata_assegnata.td` |
 | ricorsione (pattern "assegna e restituisci") | sì | sì | `ok_ricorsione.td` |
@@ -71,9 +71,9 @@ repo; nessun fallback JS. Lo stesso entry point copre la parità PE via wine:
    seed conta anche le occorrenze della sottostringa `if` nel *testo* del
    letterale: il blocco sembra più annidato e il programma termina con exit 1.
    Il testo lungo va quindi stampato a livello di programma.
-2. **Chiamata come ultima espressione.** Il seed non valuta una chiamata nella
-   posizione finale del corpo di una funzione. Il pattern sicuro è
-   `r = inner(x)` e poi `r`.
+2. **Chiamata come ultima espressione.** Con i dump di `ff222c2`, il probe
+   `ok_chiamata_ultima_espressione.td` passa: stdout `4` + newline, exit 0,
+   identico al riferimento JS. Il precedente rifiuto non è più atteso.
 3. **Nessun escape nelle stringhe.** Il seed stampa `\n` come due caratteri e
    fallisce su `\"`: ogni riga generata deve essere un `println` separato.
 4. Sono limiti **del seed in codice macchina**, non della specifica:
@@ -128,3 +128,23 @@ avanti *fra funzioni* (rifiuta solo la chiamata a livello di file che precede la
 definizione); i corpi di `if`/`while` non hanno un ambiente proprio (`let`/`begin` sì), e il
 caso del nome *già legato* coincide nei due runtime (decisione normativa pending); le
 keyword cieche contano solo dentro un corpo di blocco.
+
+## Riallineamento dei probe ai dump `ff222c2` — 2026-11-08
+
+Quattro programmi validi secondo SPEC-CORE §§4–7 erano ancora classificati
+`bad_*`, ma il seed attuale li esegue correttamente. Ora sono `ok_*`, con
+golden derivati dal riferimento JS e verificati sul seed ELF:
+
+| Probe | stdout (ogni valore termina con newline) | exit |
+|---|---|---|
+| `ok_chiamata_nested_int` | `11` | 0 |
+| `ok_chiamata_ultima_espressione` | `4` | 0 |
+| `ok_if_valore_funzione` | `55`, `5` | 0 |
+| `ok_lista_indice` | `1`, `3` | 0 |
+
+Il runner esistente li scopre come positivi e verifica stdout byte per byte
+e codice di uscita. Nessuna eccezione aggiunta al runner e nessun golden
+preesistente modificato. Queste misure riguardano i quattro programmi:
+le guardie conservative del corpus certificato e le altre divergenze del
+contratto richiedono una verifica separata prima di essere rimosse.
+La parità eseguibile PE non è stata rieseguita (ADR 0002).

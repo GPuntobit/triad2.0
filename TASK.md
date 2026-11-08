@@ -1,5 +1,37 @@
 # Task Triad 2.0
 
+## Correzione gate probe dopo `ff222c2` — 2026-11-08
+
+I quattro probe `bad_chiamata_nested_int`, `bad_chiamata_ultima_espressione`,
+`bad_if_valore_funzione`, `bad_lista_indice` verificavano il rifiuto di programmi
+validi (SPEC-CORE §§4–7). Sui dump attuali coincidono con il riferimento JS:
+stdout rispettivamente `11\n`, `4\n`, `55\n5\n`, `1\n3\n`, exit 0.
+Rinominati `ok_*`, con nuovi sidecar derivati dal riferimento: il runner
+verifica stdout byte-esatto ed exit code senza eccezioni nuove. Nessun
+golden preesistente, dump o generatore modificato. Aggiornata la matrice
+in tests/probes/README.md. Il fallimento dei quattro probe registrato nella
+nota hash precedente è risolto; D23 resta un gap noto. Le guardie conservative
+del corpus certificato restano in attesa di una verifica più ampia.
+Verifica: `verify.sh` e CLI installata `triad-cli test all` PASS (exit 0);
+`probes: 39 probe, OK`, gate Core PASS con il solo fallimento noto D23.
+
+
+## Correzione CI hash seed — 2026-11-08
+
+Il commit `ff222c2` ha aggiornato i dump PE/ELF senza aggiornare gli hash in CI.
+Il controllo ora usa SHA-256 dei dump committati (ELF `23a84dd3…`, PE `57f631e4…`)
+e `sha256sum --check`, che identifica il file in caso di mismatch. Nessun dump,
+generatore o golden modificato; nessuna modifica normativa a SPEC.md/SPEC-CORE.md.
+
+Verifiche: hash PE/ELF PASS; rebuild dei due dump + `cmp` PASS;
+`check_seed.sh` PASS (7 casi); gate Core PASS (39/40, D23 ancora escluso).
+`verify.sh` FAIL: quattro probe negativi accettati dal seed corrente
+(`bad_chiamata_nested_int`, `bad_chiamata_ultima_espressione`,
+`bad_if_valore_funzione`, `bad_lista_indice`). Restano da riallineare al contratto
+nel lavoro sul seed; nessun golden riscritto. L'anti-drift dei dump attuali passa:
+le note storiche sul suo fallimento si riferiscono ai dump precedenti a `ff222c2`.
+
+
 ## Handoff — 2026-11-08 03:30: ternario con simbolo — divergenza `D23` del seed (1 e 2 della lista)
 
 ### Stato attuale e obiettivo della sessione
