@@ -1,5 +1,21 @@
 # Triad and S0 bootstrap status
 
+## Correzione gate probe dopo `ff222c2` — 2026-11-08
+
+I quattro probe `bad_chiamata_nested_int`, `bad_chiamata_ultima_espressione`,
+`bad_if_valore_funzione`, `bad_lista_indice` verificavano il rifiuto di programmi
+validi (SPEC-CORE §§4–7). Sui dump attuali coincidono con il riferimento JS:
+stdout rispettivamente `11\n`, `4\n`, `55\n5\n`, `1\n3\n`, exit 0.
+Rinominati `ok_*`, con nuovi sidecar derivati dal riferimento: il runner
+verifica stdout byte-esatto ed exit code senza eccezioni nuove. Nessun
+golden preesistente, dump o generatore modificato. Aggiornata la matrice
+in tests/probes/README.md. Il fallimento dei quattro probe registrato nella
+nota hash precedente è risolto; D23 resta un gap noto. Le guardie conservative
+del corpus certificato restano in attesa di una verifica più ampia.
+Verifica: `verify.sh` e CLI installata `triad-cli test all` PASS (exit 0);
+`probes: 39 probe, OK`, gate Core PASS con il solo fallimento noto D23.
+
+
 ## Correzione CI hash seed — 2026-11-08
 
 Il commit `ff222c2` ha aggiornato i dump PE/ELF senza aggiornare gli hash in CI.
