@@ -1,0 +1,14 @@
+struct Point
+x::Float
+y::Float
+end
+p = Point(3, 4.5)
+println(p.x)
+println(p.y)
+println(Point(:a, 2.0))
+area(x::Point) = :punto
+area(x::Any) = :altro
+println(area(p))
+println(area(2))
+println(solve 1.0 == 1.00)
+println(solve 1 < 2.5)

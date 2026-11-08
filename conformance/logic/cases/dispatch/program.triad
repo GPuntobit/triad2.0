@@ -1,0 +1,9 @@
+area(n::Number) = :numero
+area(n::Int) = :intero
+println(area(2))
+println(area(2.5))
+println(area(:a))
+area(n::Int) = :nuovo
+println(area(2))
+println(area(2.5))
+println(area())

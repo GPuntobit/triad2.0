@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 const root = fileURLToPath(new URL('../', import.meta.url));
 for (const [name, source, expected] of [
+  ['typed method', 'area(n::Int) = :intero', 'logic'],
   ['facts', 'fact parent(:a,:b)', 'logic'],
   ['query', 'println(solve ?x = 1)', 'logic'],
   ['struct', 'struct Point\nx\nend', 'logic'],
