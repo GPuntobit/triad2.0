@@ -2469,3 +2469,10 @@ senza conferma).
 1. **N12** (chiude l'alert già fixato, commit + push) → 2. **N11** (stessa
   rimediazione, sweep meccanico) → 3. **N13** (decisione + commit della
   politica sul libro) → 4. **N14** (decisione umana, indipendente).
+
+### Release beta.10: correzione packaging Windows
+
+Prima build Linux PASS; Windows ENOENT per node_modules/.bin/esbuild.
+Corretto cli/build-exe.mjs con API esbuild e invocazione Node del CLI
+postject, portabili sui due sistemi. Tag preliminare beta.10 riallineato
+prima della pubblicazione, mantenendo il vecchio commit in cronologia.

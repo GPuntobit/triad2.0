@@ -12,6 +12,7 @@
   `:auto` restores automatic selection.
 - Fixed ternary symbols, indexed assignment looping forever, obsolete seed
   hashes/probe expectations, and truncated output from the JS reference.
+- Cross-platform standalone CLI packaging no longer depends on Unix-only npm launchers.
 - Core conformance now requires every case without tolerated failures.
 - Removed abandoned development scripts and inactive guard code. TASK.md
   records removals, additions and recovery commands.
