@@ -253,8 +253,22 @@ EOF_MIME
     fi
     if command -v xdg-mime >/dev/null 2>&1; then
         mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}"
-        xdg-mime default triad.desktop text/x-triad ||
-            echo "    (avviso) associazione predefinita Triad non impostata" >&2
+        # Some xdg-utils versions call qtpaths on KDE 5/6 before writing
+        # the standard mimeapps.list, even when the helper is absent.
+        # Use their generic backend only for this invocation in that case.
+        mime_generic=no
+        case "${KDE_SESSION_VERSION:-}" in
+            [5-9]|[1-9][0-9]*)
+                command -v qtpaths >/dev/null 2>&1 || mime_generic=yes ;;
+        esac
+        if [ "$mime_generic" = yes ]; then
+            KDE_SESSION_VERSION=0 XDG_CURRENT_DESKTOP=X-Generic \
+                xdg-mime default triad.desktop text/x-triad ||
+                echo "    (avviso) associazione predefinita Triad non impostata" >&2
+        else
+            xdg-mime default triad.desktop text/x-triad ||
+                echo "    (avviso) associazione predefinita Triad non impostata" >&2
+        fi
     else
         echo "    (avviso) scegli Triad Program in Apri con per i file .triad/.td" >&2
     fi

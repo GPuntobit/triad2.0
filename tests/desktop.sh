@@ -78,4 +78,18 @@ grep -q 'codice 0, profilo logic' "$tmp/auto-reset.log"
 printf ':quit\n' | "$root/bin/triad-desktop" \
     "$root/conformance/logic/cases/typed_declarations/program.triad" > "$tmp/typed.log" 2>&1
 grep -q 'codice 0, profilo logic' "$tmp/typed.log"
+if command -v xdg-mime >/dev/null 2>&1; then
+# KDE without qtpaths must still register the generic MIME default quietly.
+mkdir -p "$tmp/kde-config"
+printf '[Default Applications]\ntext/plain=example-editor.desktop;\n' > "$tmp/kde-config/mimeapps.list"
+KDE_SESSION_VERSION=6 XDG_CURRENT_DESKTOP=KDE LC_ALL=C \
+    XDG_CONFIG_HOME="$tmp/kde-config" \
+    sh "$root/install.sh" --prefix "$tmp/bin" --desktop > "$tmp/kde-install.log" 2> "$tmp/kde-error.log"
+if grep -E 'qtpaths.*(not found|command not found)' "$tmp/kde-error.log"; then
+    echo 'FAIL: KDE MIME registration depends on missing qtpaths' >&2
+    exit 1
+fi
+grep -q '^text/plain=example-editor.desktop;' "$tmp/kde-config/mimeapps.list"
+[ "$(KDE_SESSION_VERSION=0 XDG_CURRENT_DESKTOP=X-Generic XDG_CONFIG_HOME="$tmp/kde-config" xdg-mime query default text/x-triad)" = triad.desktop ]
+fi
 echo 'desktop: PASS (install, MIME, auto/Core/logic, switch, errori, EOF)'
