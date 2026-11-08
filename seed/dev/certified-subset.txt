@@ -65,10 +65,13 @@ strsub = no
 # Divergenze aggiunte il 2026-11-08:
 #   D24 (noisy)  — l'assegnazione composta a indice `xs[i] += v` non e'
 #                  implementata: exit 1 (la forma `xs[i] = v` funziona).
-#   D25 (silent) — gli interi sono rappresentati con il tag nel bit basso:
-#                  il range utile e' +/- (2^61 - 1), non 64 bit signed come
-#                  in SPEC-CORE.md §5: oltre, il risultato e' sbagliato
-#                  senza errore (wrap a 62 bit).
+#   D25 (noisy)  — gli interi sono rappresentati con il tag nel bit basso:
+#                  il range utile e' [-2^61, 2^61-1], non 64 bit signed come
+#                  in SPEC-CORE.md §5. Il seed **rifiuta** (exit 1) un
+#                  letterale o un risultato aritmetico fuori range, invece
+#                  di produrre un numero sbagliato in silenzio.
+#                  Decisione: docs/adr/0003-range-interi-del-seed.md
+#                  (il 64 bit resta un vincolo per S1, che gira sul seed).
 [divergence]
 D1 = silent
 D2 = silent
@@ -90,4 +93,4 @@ D20 = silent
 D21 = silent
 D22 = noisy
 D24 = noisy
-D25 = silent
+D25 = noisy

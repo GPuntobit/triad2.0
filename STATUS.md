@@ -1,5 +1,35 @@
 # Triad and S0 bootstrap status
 
+## D25: l'overflow degli interi del seed diventa rumoroso (exit 1) — 2026-11-08
+
+Il seed rappresenta `Int` come `n<<2` (2 bit di tag): il payload utile è un intero
+signed a **62 bit**, `[-2^61, 2^61-1]`, mentre `SPEC-CORE.md` §5 chiede 64 bit signed
+con wrap. Finora la divergenza `D25` era **silenziosa**: un valore fuori range
+produceva un numero sbagliato **senza errore** (la classe più insidiosa, cfr.
+`GLOSSARY.md` «Divergenza silenziosa»).
+
+Decisione (`docs/adr/0003-range-interi-del-seed.md`): la specifica **non** si muove, il
+seed mantiene i 62 bit (i 64 bit veri richiederebbero una ridisegnazione della
+rappresentazione dei valori — `Int` boxed o bignum con aritmetica a 128 bit — sproporzionata
+per un veicolo di transizione), ma **il seed smette di mentire**: un letterale o un
+risultato aritmetico fuori range è un errore di esecuzione (exit 1, diagnostica
+`overflow`: `seed: integer overflow` su stderr ELF, PE muto). `D25` passa da `silent` a
+`noisy` nel contratto del seed.
+
+Implementazione: controllo di range in `seed/dev/core.js` (subroutine `int_chk62`:
+shift aritmetico di **61** bit, perché il segno di un payload a 62 bit è il bit 61),
+applicato a `+`, `-`, `*`, `^`, alla negazione unaria e al letterale decimale (con
+controllo dell'overflow dell'accumulo a 64 bit). Ciclo di rebuild completo: dump PE
+(25088 byte) ed ELF (9858 byte), binari, hash CI (ELF `53DF6969…`, PE `4E805465…`).
+
+Verifiche PASS: conformance **42/42**, probe **47/47** (ELF nativo e PE via wine,
+parità byte-esatta), logica **29/29**, guardie 25 test, differenziale 0 differenze,
+`check_seed.sh` 7 casi, anti-drift `cmp` e hash CI verdi. Nessun golden riscritto.
+
+Conseguenza per S1: i 64 bit di `SPEC-CORE.md` §5 sono un **vincolo per S1**, che gira
+sul seed e deve quindi implementare la semantica a 64 bit da sé (non ereditare il range
+dell'host): registrato in `BOOTSTRAP.md` §3.
+
 ## Ciclo di rebuild del seed: `-=` corretto, `xs[i]` e chiamata in posizione finale chiusi — 2026-11-08
 
 Chiuso il ciclo di rebuild avviato dal checkpoint delle 17:45: `seed/dev/core.js` →
@@ -558,8 +588,8 @@ identically to the PE (known limits included), `BOOTSTRAP.md` §4/§5/§6/§9 (M
 
 ```sh
 sh verify.sh                       # gate unico: conformance/run.sh + tests/probes/run_probes.sh
-sh conformance/run.sh              # Core, 39 casi, byte-exatti sull'ELF nativo
-sh tests/probes/run_probes.sh      # 39 probe (ok_*/test_* + bad_* + selfhost golden)
+sh conformance/run.sh              # Core, 42 casi, byte-exatti sull'ELF nativo
+sh tests/probes/run_probes.sh      # 47 probe (ok_*/test_* + bad_* + selfhost golden)
 sh seed/linux-x86_64/check_seed.sh # errori/limiti del seed (7 casi)
 node tools/selfhost-guard/guard.mjs        # guardie statiche sul corpus certificato
 node tools/selfhost-guard/test.mjs         # self-test delle guardie (un fixture per regola)

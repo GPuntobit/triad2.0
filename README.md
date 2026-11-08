@@ -48,7 +48,7 @@ Triad-Full: see [supported syntax and limits](selfhost/logic/README.md).
   <img src="docs/assets/img/learning-curve.svg" alt="Learning curve and learning threshold for Triad 2.0" width="900">
 </p>
 
-Derived from the chapters in [docs/tutorial/TUTORIAL.md](docs/tutorial/TUTORIAL.md) and [docs/MANUALE.md](docs/MANUALE.md): Triad-Core is learned by doing (39/39 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
+Derived from the chapters in [docs/tutorial/TUTORIAL.md](docs/tutorial/TUTORIAL.md) and [docs/MANUALE.md](docs/MANUALE.md): Triad-Core is learned by doing (42/42 executable cases), while Triad-Full can only be studied at present (1/12). At the Triad-Full threshold, actual mastery plateaus around 39%. Full analysis on the website: [Learning curve and threshold](https://gpuntobit.github.io/triad2.0/pages/apprendimento.html).
 
 https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
 <p align="center">
@@ -158,7 +158,7 @@ sh tests/probes/run_probes.sh      # probes ok_*/test_*/bad_* + S1 golden
 
 The harness runs the native seed in the repository (`seed/linux-x86_64/seed`;
 override with `TRIAD_SEED`), with byte-exact `cmp` against the golden sidecars.
-Status: Core 39/39 green byte-exact on both the PE and the ELF seeds; Full only
+Status: Core 42/42 green byte-exact on both the PE and the ELF seeds; Full only
 `error` passes (the rest of the Full language is not yet implemented). If a case
 fails with a missing golden, the checkout lacks `expected.out`: run `git pull`.
 

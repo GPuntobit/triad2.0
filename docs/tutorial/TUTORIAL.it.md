@@ -3746,7 +3746,7 @@ PE come falso positivo (la CI aggiunge un'esclusione).
 
 ## 36. Il seed Linux (E2)
 
-`seed/linux-x86_64/seed` è un ELF64 statico di **9647 byte** generato da
+`seed/linux-x86_64/seed` è un ELF64 statico di **9858 byte** generato da
 `seed/dev/gen_seed.js linux`: entry `0x400078`, un solo `PT_LOAD` R|X, syscall dirette
 (`openat`/`read`/`write`/`exit`, isolate nelle routine `os_*`). È l'**interprete Triad-Core**
 completo: stessa macchina del seed Windows, stdout byte-identico sui golden condivisi

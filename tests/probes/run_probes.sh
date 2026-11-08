@@ -16,9 +16,9 @@
 #
 #  Eccezioni misurate ai `bad_*` (registrazione, non semantica nuova):
 #    - bad_confronto_stringa, bad_escape_stringa, bad_scope_dinamico,
-#      bad_separatore_newline, bad_intero_64bit: esito deterministico ma
-#      FUORI dalla regola Q5 (exit 0 e/o stdout non vuoto): congelati come
-#      golden sidecar, meccanismo unico di verita' (Q1/Q11);
+#      bad_separatore_newline: esito deterministico ma FUORI dalla regola
+#      Q5 (exit 0 e/o stdout non vuoto): congelati come golden sidecar,
+#      meccanismo unico di verita' (Q1/Q11);
 #    - bad_stringa_plus_equals: `+=` su stringhe e' spazzatura
 #      non deterministica (puntatori leakati, ASLR): nessun confronto di
 #      stdout possibile, si registra solo "exit 0" (il programma non
@@ -121,7 +121,7 @@ for f in tests/probes/bad_*.td; do
   base=${f%.td}
   run_seed "$f"
   case "${f##*/}" in
-    bad_confronto_stringa.td|bad_escape_stringa.td|bad_scope_dinamico.td|bad_separatore_newline.td|bad_intero_64bit.td)
+    bad_confronto_stringa.td|bad_escape_stringa.td|bad_scope_dinamico.td|bad_separatore_newline.td)
       check_sidecar "$base" ;;
     bad_stringa_plus_equals.td)
       # spazzatura non deterministica (ASLR): solo "non crasha"

@@ -28,6 +28,7 @@ function ja(n) { reloc([0x0f, 0x87], n); }
 function jns(n) { reloc([0x0f, 0x89], n); }
 function js(n) { reloc([0x0f, 0x88], n); }
 function jl(n) { reloc([0x0f, 0x8c], n); }
+function jo(n) { reloc([0x0f, 0x80], n); }   // jump if overflow (flag OF)
 function jg(n) { reloc([0x0f, 0x8f], n); }
 function jnz(n) { reloc([0x0f, 0x85], n); }
 function jmp(n) { reloc([0xe9], n); }
@@ -215,6 +216,21 @@ const sarRax1 = () => B(0x48, 0xc1, 0xf8, 0x02);
 const sarRcx1 = () => B(0x48, 0xc1, 0xf9, 0x02);
 const incRax = () => B(0x48, 0xff, 0xc0);
 const testAlImm = v => { B(0xa8, v & 255); };
+// --- D25: range degli interi (payload a 62 bit) ---
+// Int = n<<2 (2 bit di tag): il payload utile e' un intero signed a 62 bit,
+// [-2^61, 2^61-1]. Il segno del payload e' il bit 61: `sar x, 61` vale 0
+// (non negativo) o -1 (negativo) se il valore e' nel range, e un altro
+// valore (1, 2, -2, ...) se e' fuori: la differenza e' l'overflow.
+const sarRcx61 = () => B(0x48, 0xc1, 0xf9, 0x3d);   // rcx = rcx >> 61 (aritmetico)
+const sarRdx61 = () => B(0x48, 0xc1, 0xfa, 0x3d);   // rdx = rdx >> 61 (aritmetico)
+const movRcxFromRax = () => B(0x48, 0x89, 0xc1);    // rcx = rax
+const movRdxFromR8 = () => B(0x4c, 0x89, 0xc2);     // rdx = r8 (REX.W|R: rm=rdx, reg=r8)
+const cmpRcxRdx = () => B(0x48, 0x39, 0xd1);        // cmp rcx, rdx
+const movRdxImm64 = v => {
+  const b = BigInt(v);
+  B(0x48, 0xba);                                   // mov rdx, imm64
+  for (let i = 0; i < 8; i++) B(Number((b >> BigInt(8 * i)) & 0xffn));
+};
 const movByteRspImm = (d, v) => { B(0xc6, 0x84, 0x24); B32(d); B(cc(v) & 255); };
 // operatori extra / Bool letterali
 const movR8Rax = () => B(0x49, 0x89, 0xc0);
@@ -572,7 +588,7 @@ cmpByteRsiDispImm(1, '='); jne('st_expr');
 addRsiImm(2); callL('skip_ws'); callL('parse_expr');
 popR9(); popR8(); pushRax();
 callL('env_lookup'); popRcx();
-sarRax1(); sarRcx1(); addRaxRcx(); shlRax1();
+sarRax1(); sarRcx1(); addRaxRcx(); callL('int_chk62'); shlRax1();
 callL('env_assign'); addRspImm8(); jmp('pp_loop');
 L('st_sub_check');
 cmpByteRsiDispImm(1, '='); jne('st_expr');
@@ -580,6 +596,7 @@ addRsiImm(2); callL('skip_ws'); callL('parse_expr');
 popR9(); popR8(); pushRax();
 callL('env_lookup'); popRcx();
 sarRax1(); sarRcx1(); subRaxRcx();             // rax = vecchio - nuovo
+callL('int_chk62');
 shlRax1();
 callL('env_assign'); addRspImm8(); jmp('pp_loop');
 L('st_mul_check');
@@ -587,7 +604,7 @@ cmpByteRsiDispImm(1, '='); jne('st_expr');
 addRsiImm(2); callL('skip_ws'); callL('parse_expr');
 popR9(); popR8(); pushRax();
 callL('env_lookup'); popRcx();
-sarRax1(); sarRcx1(); imulRaxRcx(); shlRax1();
+sarRax1(); sarRcx1(); imulRaxRcx(); callL('int_chk62'); shlRax1();
 callL('env_assign'); addRspImm8(); jmp('pp_loop');
 
 // statement-espressione: il valore dell'espressione e' il valore del
@@ -1121,9 +1138,9 @@ cmpByteRsiImm('+'); je('pe_add');
 cmpByteRsiImm('-'); je('pe_sub');
 popRax(); ret();
 L('pe_add');
-incRsi(); callL('parse_term'); popRcx(); sarRax1(); sarRcx1(); addRaxRcx(); shlRax1(); pushRax(); jmp('pe_loop');
+incRsi(); callL('parse_term'); popRcx(); sarRax1(); sarRcx1(); addRaxRcx(); callL('int_chk62'); shlRax1(); pushRax(); jmp('pe_loop');
 L('pe_sub');
-incRsi(); callL('parse_term'); popRcx(); sarRax1(); sarRcx1(); B(0x48, 0x29, 0xc1); movRaxRcx(); shlRax1(); pushRax(); jmp('pe_loop');
+incRsi(); callL('parse_term'); popRcx(); sarRax1(); sarRcx1(); B(0x48, 0x29, 0xc1); movRaxRcx(); callL('int_chk62'); shlRax1(); pushRax(); jmp('pe_loop');
 
 L('parse_term');
 callL('parse_factor');
@@ -1155,8 +1172,8 @@ L('pt_c2'); testRcx(); jz('pt_c2d'); movDlMemRsi(); movMemR9Dl(); incRsi(); incR
 L('pt_c2d');
 popRsi(); movRaxRdi(); orRaxImm3(); pushRax(); jmp('pt_loop');
 L('pt_mul_num');
-sarRax1(); sarRcx1(); imulRaxRcx(); shlRax1(); pushRax(); jmp('pt_loop');
-sarRax1(); sarRcx1(); imulRaxRcx(); shlRax1(); pushRax(); jmp('pt_loop');
+sarRax1(); sarRcx1(); imulRaxRcx(); callL('int_chk62'); shlRax1(); pushRax(); jmp('pt_loop');
+sarRax1(); sarRcx1(); imulRaxRcx(); callL('int_chk62'); shlRax1(); pushRax(); jmp('pt_loop');
 L('pt_mod');
 incRsi(); callL('parse_factor'); popRcx(); sarRax1(); sarRcx1();
 movR8Rax(); movRaxRcx(); cqo(); idivR8(); movRaxRdx(); shlRax1(); pushRax(); jmp('pt_loop');
@@ -1171,7 +1188,7 @@ cmpByteRsiImm('!'); je('pf_not');
 callL('parse_power'); ret();
 L('pf_not'); incRsi(); callL('parse_unary'); xorRaxImm4(); ret();
 L('pf_neg2');
-incRsi(); callL('parse_unary'); sarRax1(); negRax(); shlRax1(); ret();
+incRsi(); callL('parse_unary'); sarRax1(); negRax(); callL('int_chk62'); shlRax1(); ret();
 L('parse_power');
 callL('parse_postfix');
 pushRax();
@@ -1185,7 +1202,14 @@ testRax(); js('fail');
 movR8d(1);
 L('ppow_mul');
 testRax(); jz('ppow_done');
-imulR8Rcx(); decRax(); jmp('ppow_mul');
+imulR8Rcx(); decRax();
+// D25: l'accumulatore (r8, payload non taggato) deve restare nel range dei
+// 62 bit: rcx e' occupato dalla base, il controllo usa rdx.
+movRdxFromR8(); sarRdx61();
+cmpRdxImm32(0); je('ppow_ok'); cmpRdxImm32(-1); je('ppow_ok');
+jmp('overflow_fail');
+L('ppow_ok');
+jmp('ppow_mul');
 L('ppow_done');
 movRaxR8(); shlRax1(); pushRax(); jmp('ppow_loop');
 
@@ -1300,12 +1324,18 @@ L('pf_num_loop');
 cmpByteRsiImm('0'); jb('pf_num_done');
 cmpByteRsiImm('9'); ja('pf_num_done');
 imulRcx10();
+jo('overflow_fail');                   // accumulo oltre 64 bit: rifiuto
 movzxEdxRsi();
 subEdxImm(0x30);
 addRcxRdx();
+jo('overflow_fail');
 incRsi();
 jmp('pf_num_loop');
 L('pf_num_done');
+// D25: il letterale deve stare nel range dei 62 bit (<= 2^61-1)
+movRdxImm64(0x2000000000000000n);      // 2^61
+cmpRcxRdx();
+jae('overflow_fail');
 movRaxRcx(); shlRax1(); ret();
 L('pf_paren');
 incRsi(); callL('parse_expr'); callL('skip_ws');
@@ -1796,6 +1826,21 @@ osSlot('write', 'len', imm(8)); jmp('pi_bool_write');
 
 // helper: xor r8d,r8d (non definito sopra)
 function xorR8dBits() { B(0x45, 0x31, 0xc0); }
+
+// int_chk62: controllo di overflow del payload Int (D25).
+// Il seed rappresenta Int come n<<2: il payload utile e' un intero signed a
+// 62 bit, [-2^61, 2^61-1]. Se il risultato (gia' untaggato, in rax) esce da
+// quel range, il seed **rifiuta** il programma (exit 1, diagnostica
+// 'overflow') invece di restituire un numero sbagliato in silenzio.
+// In: rax = payload; Out: rax = payload (invariato), rcx = clobbered.
+L('int_chk62');
+movRcxFromRax();
+sarRcx61();
+cmpRcxImm32(0); je('ic_ok');
+cmpRcxImm32(-1); je('ic_ok');
+jmp('overflow_fail');
+L('ic_ok');
+ret();
 }
 
 // ---------------------------------------------------------------- core: etichette di uscita
@@ -1810,6 +1855,7 @@ function exitAt(label, code, diag) {
 }
 function emitExitLabels() {
   exitAt('fail', 1, 'fail');
+  exitAt('overflow_fail', 1, 'overflow');   // D25: intero fuori range (62 bit)
   exitAt('read_fail', 1, 'read_fail');
   exitAt('open_fail', 1, 'open_fail');
   exitAt('usage', 2, 'usage');

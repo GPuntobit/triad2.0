@@ -75,6 +75,12 @@ Defined normatively in [`SPEC-CORE.md`](SPEC-CORE.md). Synthesis:
 The seed implements **only** Triad-Core; S1 uses Triad-Core to implement the rest
 (Prolog, dispatch, macros, contracts, effects, budgets, tracks, REPL). The cases
 `conformance/core/` only use the subset shared with Triad-Full.
+- **integer range**: `SPEC-CORE.md` §5 asks for 64-bit signed `Int` with wrap. The seed's
+  tagged word spends 2 bits on the tag, so its payload is a 62-bit signed integer
+  (`[-2^61, 2^61-1]`): the seed **refuses** (exit 1) a literal or an arithmetic result
+  outside that range instead of producing a wrong value. S1 runs *on* the seed, so it must
+  implement the 64-bit semantics itself (e.g. `Int` as two 31-bit words) rather than
+  inherit the host's range: `docs/adr/0003-range-interi-del-seed.md`.
 ## 4. Representation, memory, code generation
 - Values: 64-bit tagged word (tagged in low bits), block heap with header; lists like
   dynamic vectors; strings like (ptr,len) immutable.
@@ -165,7 +171,7 @@ The goldens are generated one-off with stage0 (`conformance/run.mjs --update`) a
   **M3b2b3f** ⚠️ unstable capture. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ multi-statement body; **M3b2b3j** ✅ lexical frames and `let`; **M3b2b3k** ✅ closures; **M3b2b3l** ✅ `begin`/`end` and **CI**; **M3b2b3m** ✅ basic heap strings; **M3b2b3n** ✅ `nothing`; **M3b2b3o/p/q** ✅ concat/symboli/coverage; **M7/E0** ✅ Minimal ELF Linux. Needs AST/bytecode for multi-binding capture, `elseif`, lists.
   Next: `elseif` (case `control`), lists (cases `lists` and `values`), capture multi-binding.
 - [x] **M7 — Linux port E1/E2/E3** ✅ (2026-11-05, TASK.md N15–N18): E1 file runner (argv +
-  native I/O), E2 Triad-Core interpreter (8499-byte ELF, same machine as the PE,
-  **byte-exact parity**: conformance 39/39 + probes 39/39 + S1 golden), E3 toolchain
+  native I/O), E2 Triad-Core interpreter (9858-byte ELF, same machine as the PE,
+  **byte-exact parity**: conformance 42/42 + probes 47/47 + S1 golden), E3 toolchain
   without Node (`./install.sh` → `bin/triad`/`bin/triad-cli`, byte-exact smoke test,
   CI `seed-linux` native without Wine, Node-free harness `verify.sh`).

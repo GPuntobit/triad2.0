@@ -106,6 +106,14 @@ il riferimento JS), con confronto del codice di uscita. È il presidio delle div
 una regola statica non può decidere (quelle che dipendono dai tipi a runtime).
 _Avoid_: test (non confronta un risultato atteso, confronta due implementazioni)
 
+**Range degli interi del seed**:
+L'intervallo numerico che il seed sa rappresentare: `Int` è una parola taggata e i bit del
+tag ne rubano due, quindi il payload è un intero signed a **62 bit**,
+`[-2^61, 2^61-1]`. Un valore fuori range è **rifiutato** (exit 1), non prodotto
+sbagliato: i 64 bit signed con wrap di `SPEC-CORE.md` §5 sono un vincolo per S1, che gira
+sul seed e deve implementarli da sé.
+_Avoid_: interi a 64 bit (non è vero per il seed), overflow silenzioso (il seed rifiuta)
+
 ## Bootstrap
 
 **Catena S0→S4**:

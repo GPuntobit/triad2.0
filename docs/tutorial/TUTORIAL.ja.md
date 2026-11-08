@@ -2453,7 +2453,7 @@ cmpByteRsiImm(0x22); jne('q_loop');
 
 ## 36. Linuxのseed（E2）
 
-`seed/linux-x86_64/seed`は`seed/dev/gen_seed.js linux`が生成した**9647バイト**の静的ELF64である。entry`0x400078`、R/Xの`PT_LOAD`は1つだけで、直接syscall（`openat`/`read`/`write`/`exit`、`os_*`ルーチンに隔離）を使う。完全な**Triad-Coreインタプリタ**であり、Windows seedと同じマシンで、共有golden上でstdoutはバイト単位で一致する（conformance 42/42 + probe + golden S1）。マイルストーンM7（Linux移植）は完了している：E0（最小）→ E1（ファイル読み込み）→ E2（インタプリタ）→ E3（Nodeなしのツールチェーン、`./install.sh`）。
+`seed/linux-x86_64/seed`は`seed/dev/gen_seed.js linux`が生成した**9858バイト**の静的ELF64である。entry`0x400078`、R/Xの`PT_LOAD`は1つだけで、直接syscall（`openat`/`read`/`write`/`exit`、`os_*`ルーチンに隔離）を使う。完全な**Triad-Coreインタプリタ**であり、Windows seedと同じマシンで、共有golden上でstdoutはバイト単位で一致する（conformance 42/42 + probe + golden S1）。マイルストーンM7（Linux移植）は完了している：E0（最小）→ E1（ファイル読み込み）→ E2（インタプリタ）→ E3（Nodeなしのツールチェーン、`./install.sh`）。
 
 ```sh
 node seed/dev/gen_seed.js linux seed/linux-x86_64/seed.hex   # dumpを再生成（再現可能）

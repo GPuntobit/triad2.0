@@ -52,7 +52,10 @@ Estensione canonica dei file: `.triad` (alias storico `.td`).
    comportarsi identicamente anche in un'implementazione Full. Non aggiungere al Core feature non
    implementabili in machine code scritto a mano.
 5. **Output deterministico.** Gli stdout dei golden test sono esatti (newline finali e exit code
-   inclusi). Il seed usa interi a 64 bit signed con aritmetica wrapped (two's complement).
+   inclusi). `SPEC-CORE.md` §5 vuole interi a 64 bit signed con wrap: il **seed** ne
+   rappresenta solo 62 (2 bit di tag) e **rifiuta** (exit 1) ogni valore fuori range invece
+   di produrlo sbagliato in silenzio — i 64 bit sono un vincolo per S1, che gira sul seed
+   (`docs/adr/0003-range-interi-del-seed.md`).
 6. **Lessico Core**: identifier `[A-Za-z_][A-Za-z0-9_]*` con `!` finale consentito; interi `42`,
    `1_000`; stringhe `"`…`"` con escape `\n \t \" \\` e **senza** interpolazione `$`; simboli
    `:name` / `:+`; commenti `#` e `#= … =#`; separatori newline o `;`; operatori

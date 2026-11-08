@@ -1,5 +1,28 @@
 # Changelog — standard Triad
 
+## D25: l'overflow degli interi del seed è un errore, non un numero sbagliato — 2026-11-08
+
+Il seed rappresenta `Int` con 2 bit di tag: il suo range utile è `[-2^61, 2^61-1]`,
+mentre `SPEC-CORE.md` §5 vuole interi a 64 bit signed con wrap. Finora un valore fuori
+range veniva prodotto **sbagliato in silenzio** (divergenza `D25 = silent`): ora il
+seed lo **rifiuta** (exit 1, `seed: integer overflow` su stderr ELF) — la divergenza
+`D25` diventa `noisy`. Decisione e alternative: `docs/adr/0003-range-interi-del-seed.md`
+(i 64 bit restano un vincolo per S1, che gira sul seed).
+
+- **fix (seed)**: controllo di range sui risultati aritmetici (`+`, `-`, `*`, `^`,
+  negazione unaria) e sui letterali decimali, in `seed/dev/core.js` (`int_chk62`);
+- **contratto**: `D25` passa da `silent` a `noisy` in `seed/dev/certified-subset.txt`;
+- **diagnostica**: nuova uscita `overflow` (exit 1);
+- **probe**: `bad_intero_64bit` da divergenza silenziosa a rifiuto; nuovi
+  `bad_intero_overflow_add`, `bad_intero_overflow_mul`, `bad_intero_overflow_pow`
+  (44 → 47 probe);
+- **artefatti**: dump PE (25088 byte) ed ELF (9858 byte) rigenerati, hash CI aggiornati
+  (PE `4E805465…`, ELF `53DF6969…`).
+
+Verifiche PASS: conformance 42/42, probe 47/47 (ELF e PE via wine), logica 29/29,
+guardie 25 test, differenziale 0 differenze, anti-drift e hash CI verdi. Nessun golden
+riscritto.
+
 ## Ciclo di rebuild del seed: `-=` corretto, `xs[i]` e chiamata in posizione finale chiusi — 2026-11-08
 
 Chiuso il ciclo di rebuild del seed (`core.js` → dump PE/ELF → binari → hash CI →

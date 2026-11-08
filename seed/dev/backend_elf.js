@@ -71,6 +71,7 @@ const MSG = {
   open_fail: 'seed: cannot open file\n',
   read_fail: 'seed: read error\n',
   fail: 'seed: error\n',
+  overflow: 'seed: integer overflow\n',      // D25: fuori range dei 62 bit
 };
 const usedMsgs = new Set();
 

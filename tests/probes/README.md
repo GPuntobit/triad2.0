@@ -40,7 +40,7 @@ repo; nessun fallback JS. Lo stesso entry point copre la parità PE via wine:
 | `-=`, `*=` a nome | sì | sì | `ok_composta_sottrai.td` |
 | `xs[i] += v` (composta a indice) | **no** (exit 1) | sì | `bad_lista_indice_composta.td` |
 | indice fuori range | **errore** (exit 1) | errore (exit 1) | `bad_lista_indice_fuori_range.td` |
-| interi oltre ±(2^61 − 1) | **sbagliato in silenzio** | sì (64 bit, §5) | `bad_intero_64bit.td` |
+| interi oltre ±(2^61 − 1) | **rifiutato** (exit 1, `overflow`) | sì (64 bit, §5) | `bad_intero_64bit.td` |
 | letterali di lista: ~60 valutazioni per esecuzione | **no** (528 byte fissi per valutazione, heap 64 KB: ~250 fanno crashare il processo) | sì | `bad_lista_alloc.td` |
 | letterale di lista su più righe | sì | sì | `ok_lista_multiriga.td` |
 | scope dei nomi nelle funzioni | **dinamico** (il callee vede i locali del chiamante) | lessicale | `bad_scope_dinamico.td` |
@@ -168,7 +168,7 @@ byte per byte su stdout + exit code:
 | scrittura `xs[i] = v` (1-based) | sì | sì | `ok_lista_indice_scrittura.td` |
 | `xs[i] += v` (assegnazione composta a indice) | **no** (exit 1, D24) | sì | `bad_lista_indice_composta.td` |
 | indice fuori range | **errore di esecuzione** (exit 1, SPEC-CORE §9) | idem | `bad_lista_indice_fuori_range.td` |
-| interi oltre ±(2^61 − 1) | **sbagliato senza errore** (D25) | corretto (64 bit, §5) | `bad_intero_64bit.td` |
+| interi oltre ±(2^61 − 1) | **rifiutato** (exit 1, D25) | corretto (64 bit, §5) | `bad_intero_64bit.td` |
 
 Note:
 
@@ -183,11 +183,35 @@ Note:
    contratto (`seed/dev/certified-subset.txt`) e vietata dalla guardia
    statica `G-D24` sulla sorgente di S1.
 3. **Il range degli interi è di 62 bit (D25)**: il tag del tipo occupa il bit
-   basso, quindi il seed rappresenta al massimo ±(2^61 − 1); oltre, il
-   risultato è sbagliato **senza errore** (wrap a 62 bit). Divergenza
-   *silent*, decidibile solo a runtime: presidio nel gate differenziale.
+   basso, quindi il seed rappresenta al massimo `[-2^61, 2^61 − 1]`; oltre, il
+   seed **rifiuta** il programma (exit 1, diagnostica `overflow`) invece di
+   produrre un numero sbagliato: divergenza *noisy*, decidibile solo a
+   runtime (presidio nel gate differenziale). Decisione e alternative:
+   `docs/adr/0003-range-interi-del-seed.md`. I 64 bit di `SPEC-CORE.md` §5
+   restano un **vincolo per S1**, che gira sul seed e deve quindi implementare
+   la semantica a 64 bit da sé.
 4. Il rebuild ha anche chiuso `D6` (`-=`, `*=`), `D9` (chiamata in posizione
    finale) e `D13` (indicizzazione `xs[i]`, scrittura `xs[i] = v`): non sono
    più nel contratto, e le guardie `G-D06`/`G-D09`/`G-D13` sono state
    rimosse (i fixture che le facevano scattare sono diventati fixture
    «ammessi»).
+
+## Ciclo D25: l'overflow degli interi diventa rumoroso — 2026-11-08
+
+Il seed non può rappresentare gli interi a 64 bit di `SPEC-CORE.md` §5 (il tag
+del tipo ne ruba due bit): prima del intervento, un valore fuori range
+produceva un numero **sbagliato senza errore** (divergenza *silent*, la classe
+più insidiosa). Ora il seed **rifiuta**: letterale fuori range, risultato
+aritmetico fuori range e potenza fuori range sono un errore di esecuzione
+(exit 1, `seed: integer overflow` su stderr ELF; il PE resta muto).
+
+| Costrutto | seed | interprete JS | probe |
+|---|---|---|---|
+| letterale `9223372036854775807` | **rifiutato** (exit 1, D25) | 9223372036854775807 | `bad_intero_64bit.td` |
+| `x + 1` con `x = 2^61 − 1` | **rifiutato** (exit 1, D25) | 2^61 | `bad_intero_overflow_add.td` |
+| `x * 2` con `x = 2^60` | **rifiutato** (exit 1, D25) | 2^61 | `bad_intero_overflow_mul.td` |
+| `3 ^ 40` | **rifiutato** (exit 1, D25) | 12157665459056928801 | `bad_intero_overflow_pow.td` |
+
+Il letterale decimale è ammesso fino a `2^61 − 1`; il risultato aritmetico
+deve stare in `[-2^61, 2^61 − 1]`. Nessun golden di conformance è stato
+riscritto (nessun caso Core usa valori fuori range).
