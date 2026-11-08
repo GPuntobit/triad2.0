@@ -31,8 +31,6 @@
 /home/votlazam/Documenti/progetti/triad2.0/seed/dev/backend_pe.js
 /home/votlazam/Documenti/progetti/triad2.0/seed/dev/core.js
 /home/votlazam/Documenti/progetti/triad2.0/seed/dev/gen_seed.js
-/home/votlazam/Documenti/progetti/triad2.0/seed/dev/run_all.cjs
-/home/votlazam/Documenti/progetti/triad2.0/seed/dev/test_small.mjs
 /home/votlazam/Documenti/progetti/triad2.0/seed/dev/triad_core.cjs
 /home/votlazam/Documenti/progetti/triad2.0/tools/selfhost-guard/analysis.mjs
 /home/votlazam/Documenti/progetti/triad2.0/tools/selfhost-guard/contract.mjs
