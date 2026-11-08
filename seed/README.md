@@ -55,11 +55,12 @@ Divergenze note dal comportamento di `SPEC-CORE.md` (misurate sul seed):
 | D20 | corpo di `if`/`while` | §5 ambiente proprio | **nessun** ambiente proprio (il nome resta visibile fuori) |
 | D21 | condizione `while` non-`Bool` | §5 solo `Bool` | **salta** il corpo in silenzio |
 | D22 | keyword dentro un letterale o un identificatore | §2 | contate dai byte grezzi: l'annidamento dei blocchi sbaglia |
-| D23 | ternario con simbolo nel ramo *then* | §4 (`SPEC.md` §1: il separatore è un `:` circondato da spazi) | **rifiutato** (exit 1): lo scanner prende il `:` del simbolo come separatore |
 
 Fuori contratto (dichiarato, non implementato): `typeof`, `Int()`, `Symbol()`,
-`string()` per `Bool`/`Symbol`/`Nothing`, `:+`, `get` come indicizzazione 1-based,
-ternario con simbolo nel ramo *then* (D23).
+`string()` per `Bool`/`Symbol`/`Nothing`, `:+`, `get` come indicizzazione 1-based.
+
+D23 risolta: il ternario distingue `:nome` dal separatore; il caso
+`ternario_simbolo` è obbligatorio nel gate (SPEC.md §1, SPEC-CORE.md §4).
 
 ## Build (no compiler)
 Windows:

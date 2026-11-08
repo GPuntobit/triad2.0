@@ -27,12 +27,12 @@ exit non-zero with empty stdout, identically to the PE; the known PE limits stay
 limits (see [`tests/probes/README.md`](../../tests/probes/README.md) and the registered gap
 `liste` in [`conformance/run.sh`](../../conformance/run.sh)).
 ## Numbers
-- **ELF file:** 8736 bytes (`0x2220`)
+- **ELF file:** 9644 bytes (`0x25AC`)
 - **Base:** `0x400000`; **entry:** `0x400078`
-- **Program header:** a single `PT_LOAD` R|X, offset 0, filesz/memsz `0x2220`, align `0x1000`
+- **Program header:** a single `PT_LOAD` R|X, offset 0, filesz/memsz `0x25AC`, align `0x1000`
   (no section headers, like the PE dump: the artifact is pure machine code)
-- **sha256 of `seed.hex`:** `971F61D5E9F8BCF3F22257E5C56B92A705EA45DA9FC23018203D6173FBBB7EC1`
-- **sha256 of the decoded ELF:** `7140778137C37F89C9DF5E397DA4E81DD275E531D9023D1BEF5FA8A51D28E547`
+- **sha256 of `seed.hex`:** `7EA8C8499200E07C5AAAFD6CEF3DBBEC3C46280B9EA88DBFA935DDDD2996130D`
+- **sha256 of the decoded ELF:** `762CF43453C11E79AE420B841307F11257424260B394EAEA2AE490155F49ED91`
 ## Build and test (Linux)
 ```sh
 cd seed/linux-x86_64
@@ -42,7 +42,7 @@ chmod +x seed
 echo $?          # 0
 sh check_seed.sh # 7 acceptance cases (error/limits contract), byte-exact
 ```
-Full gate from the repository root (conformance 39 + probes + golden S1 + smoke):
+Full gate from the repository root (conformance 40 + probes + golden S1 + smoke):
 ```sh
 sh verify.sh
 ```

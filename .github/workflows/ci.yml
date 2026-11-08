@@ -82,8 +82,8 @@ jobs:
       - name: Hash check (PE + ELF, gate anti-tampering decisione 04)
         run: |
           printf '%s\n' \
-            '23a84dd313bd15c5252d0dc2d83fe6f8ee5c2d70c1accbfb42969362087cbbae  seed/linux-x86_64/seed.hex' \
-            '57f631e4fc1b8a16cc5bd9fe882365fc0127216696862760ae70dbaf66f0185d  seed/windows-x86_64/seed.hex' \
+            '7ea8c8499200e07c5aaafd6cef3dbbec3c46280b9ea88dbfa935dddd2996130d  seed/linux-x86_64/seed.hex' \
+            'df026e6f46bac7786a1ecb40d5c0ec4a060152695ecf1de08734acb6747609f1  seed/windows-x86_64/seed.hex' \
             | sha256sum --check
       - name: Reproducible dump (anti-drift, PE + ELF)
         run: |

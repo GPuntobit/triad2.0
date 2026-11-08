@@ -1,5 +1,28 @@
 # Task Triad 2.0
 
+## D23 risolta: ternario con simbolo reinserito nel gate — 2026-11-08
+
+`seed/dev/core.js`, scanner `pt_colon`: un `:` seguito dall'inizio di un
+identificatore (`A-Z`, `a-z`, `_`) appartiene a un simbolo e non decrementa
+la profondità dei ternari. Restano accettati i separatori compatti già
+verificati dai probe (`:7`). Riferimenti: SPEC.md §1, SPEC-CORE.md §§2,4–6.
+
+Rimossa l'esclusione `ternario_simbolo` da conformance/gate.sh e D23 dal
+contratto; il self-test verifica che G-D23 sia disattivata. Esteso il caso
+con entrambi i rami, maiuscole/underscore, annidamento e short circuit: le
+tre righe originali del golden restano invariate, le nuove derivano dal JS.
+Rigenerati i due dump e le decodifiche ELF/PE (incluso seed_decoded.exe);
+aggiornati hash CI e README. Cambio semantico deliberato, con diff dei
+dump tracciato, secondo ADR 0001; nessuna esecuzione del PE (ADR 0002).
+
+Verifiche PASS: conformance **40/40**, probe **39/39**, verify.sh, 27
+self-test guardie, guardie sul corpus (0 errori; 11 avvisi fuori contratto),
+differenziale (6 file, 0 differenze), limiti/errori seed (7 casi), rebuild
+PE/ELF + cmp, suite security. Il vecchio skip `liste` resta conservativo,
+ma il suo caso passa sul dump attuale; gli altri limiti non sono certificati
+come risolti da questa modifica. Le note D23 precedenti sono storiche.
+
+
 ## Correzione gate probe dopo `ff222c2` — 2026-11-08
 
 I quattro probe `bad_chiamata_nested_int`, `bad_chiamata_ultima_espressione`,

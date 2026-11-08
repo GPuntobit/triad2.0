@@ -48,7 +48,6 @@ const CASES = [
   ['d20_scope_corpo_blocco.td', 'G-D20'],
   ['d21_while_non_bool.td', 'G-D21'],
   ['d22_keyword_cieca.td', 'G-D22'],
-  ['d23_ternario_simbolo.td', 'G-D23'],
   ['e02_troppi_parametri.td', 'G-E02'],
   ['e03_lista_troppo_lunga.td', 'G-E03'],
 ];
@@ -71,6 +70,12 @@ for (const [fixture, rule] of CASES) {
   const hit = findings.find((f) => f.rule === rule);
   ok(`${fixture} -> ${rule}`, !!hit,
     hit ? '' : `nessuna violazione ${rule}; trovate: ${findings.map((f) => f.rule).join(', ') || 'nessuna'}`);
+}
+
+// D23 is fixed: the former rejecting fixture must now be allowed.
+{
+  const findings = checkFile(path.join(FIXTURES, 'd23_ternario_simbolo.td'), contract);
+  ok('D23 risolta -> ternario con simbolo ammesso', !findings.some((f) => f.rule === 'G-D23'));
 }
 
 // il corpus pulito non deve produrre violazioni
@@ -103,5 +108,5 @@ for (const [fixture, rule] of CASES) {
     `senza presidio: ${missing.join(', ')}`);
 }
 
-console.log(`\n${CASES.length + 3} test, ${failed} falliti`);
+console.log(`\n${CASES.length + 4} test, ${failed} falliti`);
 process.exit(failed ? 1 : 0);
