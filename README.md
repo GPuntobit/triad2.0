@@ -30,6 +30,18 @@ Syntax and semantics are defined by Triad, not by other languages. Influences ar
 
 They are part of the language, not a library: errors as data (Err), contracts (requires/ensures), budgets (with budget), traces (with trace), and declared effects (!io, !state).
 
+## Logic engine (first S1 profile)
+
+The facts/rules example can now run without a host-language runtime:
+
+```sh
+./bin/triad --logic program.triad
+```
+
+The profile supports unification with occurs-check, iterative backtracking,
+recursive rules, solution access and comprehensions. It is not complete
+Triad-Full: see [supported syntax and limits](selfhost/logic/README.md).
+
 ## Learning curve
 
 <p align="center">

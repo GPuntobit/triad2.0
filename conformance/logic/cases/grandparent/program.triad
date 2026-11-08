@@ -1,0 +1,4 @@
+fact parent(:alice, :bob)
+fact parent(:bob, :dave)
+rule grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)
+println([s.z for s in solve grandparent(:alice, ?z)])

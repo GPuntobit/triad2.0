@@ -1,0 +1,5 @@
+fact p(:a)
+fact p(:b)
+rule r(?x) :- p(?x), ?x = :b
+println([s.x for s in solve r(?x)])
+println([s.x for s in solve (p(?x), false) || p(?x)])

@@ -38,6 +38,12 @@ while [ -L "$self" ]; do
 done
 TRIAD_HOME="$(cd "$(dirname "$self")/.." && pwd)"
 
+# Explicit S1 logic profile; the regular Core path remains native S0.
+if [ "${1:-}" = "--logic" ]; then
+    shift
+    exec sh "$TRIAD_HOME/scripts/run-logic.sh" "$@"
+fi
+
 # --- Ricerca del seed (unico runtime ammesso) -----------------------
 # TRIAD_SEED permette di forzare un seed specifico (usato anche dalla CI).
 if [ -n "${TRIAD_SEED:-}" ]; then

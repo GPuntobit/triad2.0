@@ -7,7 +7,7 @@
 #  Q4 transizione + Q9 interfaccia).
 #
 #  Contratto:
-#    - suite cablata: conformance/core/cases (41 casi); niente flag
+#    - suite cablata: conformance/core/cases (42 casi); niente flag
 #      --cases/--skip/--strict (Q9);
 #    - oracle: golden committati expected.out + expected.code per ogni
 #      caso, confronto byte-exatto con `cmp`, nessuna normalizzazione

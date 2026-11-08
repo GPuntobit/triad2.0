@@ -1,0 +1,7 @@
+who = :a
+fact p(who)
+who = :b
+fact p(who)
+sols = solve p(?x)
+println([s.x for s in sols])
+println([s.x for s in solve p(?x), p(?_)])

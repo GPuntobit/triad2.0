@@ -16,7 +16,7 @@ jobs:
         run: |
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: "Conformance Core (gate POSIX: tutti i 41 casi, senza esclusioni)"
+      - name: "Conformance Core (gate POSIX: tutti i 42 casi, senza esclusioni)"
         run: sh conformance/gate.sh
       - name: Reference interpreter pipe output regression tests
         run: node --test tests/reference-output.test.mjs
@@ -38,6 +38,21 @@ jobs:
         # sui due runtime: presidio empirico delle divergenze che una regola
         # statica non puo' decidere (dipendono dai tipi a runtime).
         run: node tools/selfhost-guard/differential.mjs
+
+  logic-engine:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '20'
+      - name: S1 logic on native machine-code seed
+        run: |
+          sh conformance/logic/run.sh
+          node --test tests/logic-launcher.test.mjs
+      - name: Same S1 logic on development reference
+        run: TRIAD_SEED="$PWD/conformance/logic/reference.sh" sh conformance/logic/run.sh
 
   security:
     # Verifiche di sicurezza (tests/security/run.sh): isolamento Python,
@@ -84,8 +99,8 @@ jobs:
       - name: Hash check (PE + ELF, gate anti-tampering decisione 04)
         run: |
           printf '%s\n' \
-            '7ea8c8499200e07c5aaafd6cef3dbbec3c46280b9ea88dbfa935dddd2996130d  seed/linux-x86_64/seed.hex' \
-            'df026e6f46bac7786a1ecb40d5c0ec4a060152695ecf1de08734acb6747609f1  seed/windows-x86_64/seed.hex' \
+            '79480611b4c492ae6fce7f3e3337aff4e5283a491727ce5f27e13d161a41e1dd  seed/linux-x86_64/seed.hex' \
+            'a44b7e200254fe570f812e430eefe79ff327853f60310267b1882fc480e5a13a  seed/windows-x86_64/seed.hex' \
             | sha256sum --check
       - name: Reproducible dump (anti-drift, PE + ELF)
         run: |

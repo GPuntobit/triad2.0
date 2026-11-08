@@ -2,6 +2,15 @@
 Status: **phase 0** (compliance contract + plan). Objective: Triad that does not depend on
 Julia nor by any other programming language, at any stage (runtime,
 bootstrap, build).
+## S1 logic milestone (2026-11-08)
+
+`bin/triad --logic FILE` executes the first logic profile implemented in
+Triad-Core (`selfhost/logic/`). The shell launcher transports bytes; the
+native seed executes the lexer, parser and iterative solver. The dedicated
+logic suite runs on both native S0 and the development oracle. This is a
+working S1 milestone, not completion of the Full evaluator or S2 compiler.
+See `selfhost/logic/README.md` for supported constructs and finite bounds.
+
 ## 0. Requirement and consequence
 The "no other languages" requirement excludes obvious shortcuts:
 | Shortcut | Why it is excluded |

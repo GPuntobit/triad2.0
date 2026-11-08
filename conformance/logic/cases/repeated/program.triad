@@ -1,0 +1,4 @@
+fact pair(:a, :b)
+fact pair(:b, :b)
+println([s.x for s in solve pair(?x, ?x)])
+println(solve pair(:a, :a))

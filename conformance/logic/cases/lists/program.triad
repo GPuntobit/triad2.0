@@ -1,0 +1,3 @@
+fact vals([:a, :b, :c])
+println([s.h for s in solve vals([?h | ?t])])
+println([s.t for s in solve vals([?h | ?t])])
