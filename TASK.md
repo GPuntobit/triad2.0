@@ -1,5 +1,62 @@
 # Task Triad 2.0
 
+## Registro dettagliato di rimozioni e aggiunte — cleanup PR #83
+
+Riferimenti: PR #83, commit `be0ddc1d9edab99bc11d653b2794cb63538ec1d6`,
+integrato in `fc7442a`. Stato precedente recuperabile da `48564e1`.
+Questo registro integra il riepilogo «Cleanup del codice inutilizzato» qui sotto.
+
+### Rimosso
+
+| File | Codice rimosso | Motivo e possibile riuso |
+|---|---|---|
+| `seed/dev/test_small.mjs` | intero script: `console.log("hello")` | smoke provvisorio senza richiami; non verificava il runtime |
+| `seed/dev/run_all.cjs` | intero vecchio runner della conformance | path Windows personali, normalizzazione CRLF e verifica del solo exit 0; riutilizzabile come spunto dopo adattamento, ma gli harness attuali verificano già output byte-esatto ed expected.code |
+| `selfhost/logic/engine.td` | inizializzazione `lnames = []` | sovrascritta da init.td prima delle letture |
+| `selfhost/logic/engine.td` | assegnazione `ppos_unused = 0` | nessuna lettura |
+| `selfhost/logic/engine.td` | allocazione `sm = lv_new()` nel ramo fact | vettore mai usato |
+| `tools/selfhost-guard/rules.mjs` | regola `G-D23` e helper esclusivo `hasTopLevelSymbol` | D23 risolta e assente dal contratto; recuperabili come esempio per nuove guardie, non da riattivare sul seed corretto |
+
+### Aggiunto o aggiornato
+
+- **Aggiunto** `docs/unused-code-audit.md`: evidenze delle rimozioni, codice mantenuto,
+  limiti dell'analisi e verifiche eseguite.
+- **Aggiornati** `STATUS.md`, `TASK.md`, `CHANGELOG.md`, `plan.md`: riepilogo del cleanup
+  e collegamento all'audit.
+- **Aggiornati** `engine.td` e `rules.mjs` mediante le sole rimozioni sopra:
+  nessuna nuova funzionalità runtime aggiunta dal cleanup.
+- Questo aggiornamento aggiunge il registro dettagliato in `TASK.md`; non ripristina
+  automaticamente codice obsoleto.
+
+### Mantenuto e recuperabilità
+
+- Prototipi `selfhost/*.td`: mantenuti, perché validati dalla CI e richiamati dai tutorial;
+  restano disponibili per sviluppo o riuso.
+- Fixture/test di regressione D23 e caso Core `ternario_simbolo`: mantenuti.
+- Duplicato irraggiungibile in `seed/dev/core.js`, blocco `pt_mul_num`: segnalato,
+  non rimosso perché cambierebbe il layout macchina (ADR 0001).
+- Nessun golden, generatore, dump, hash CI o binario modificato dal cleanup.
+
+Per esaminare o recuperare i contenuti precedenti senza modificare il checkout:
+
+```sh
+git show 48564e1:seed/dev/run_all.cjs
+git show 48564e1:seed/dev/test_small.mjs
+git show 48564e1:tools/selfhost-guard/rules.mjs
+git show 48564e1:selfhost/logic/engine.td
+git show --stat be0ddc1
+git diff 48564e1 be0ddc1 -- seed/dev selfhost/logic/engine.td tools/selfhost-guard/rules.mjs
+```
+
+Prima di ripristinare un elemento, verificarne il bisogno reale e adattarlo ai
+contratti correnti; il recupero dalla cronologia non implica riattivare vecchi bug
+o sostituire i golden.
+
+Verifiche del cleanup già eseguite: Core 42/42, probe 39/39, logica 25/25 sui due
+runtime, 27 self-test guardie, differenziale, desktop e sicurezza PASS.
+Questa aggiunta è soltanto documentale e non richiede una nuova esecuzione dei test.
+
+
 ## Cleanup del codice inutilizzato — 2026-11-08
 
 Rimossi due script non richiamati (test_small.mjs, run_all.cjs con path
