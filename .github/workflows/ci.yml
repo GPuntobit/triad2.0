@@ -16,8 +16,10 @@ jobs:
         run: |
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: "Conformance Core (gate POSIX: tutti i 40 casi, senza esclusioni)"
+      - name: "Conformance Core (gate POSIX: tutti i 41 casi, senza esclusioni)"
         run: sh conformance/gate.sh
+      - name: Reference interpreter pipe output regression tests
+        run: node --test tests/reference-output.test.mjs
       - name: Sorgenti selfhost validi Triad-Core
         run: |
           for f in selfhost/*.td; do

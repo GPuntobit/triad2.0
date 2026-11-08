@@ -22,7 +22,7 @@ Comandi (`bin/triad-cli`, invocabile da qualunque directory):
 
 ```bash
 triad-cli run <file> [-- args]     # esegue un programma Triad (.triad/.td)
-triad-cli test conformance        # suite Core (40 casi; gap noti esclusi, vedi conformance/gate.sh)
+triad-cli test conformance        # suite Core completa (41 casi, nessuna esclusione)
 triad-cli test conformance --strict   # oracle puro: fallisce su QUALSIASI caso non verde
 triad-cli test conformance --update   # rigenera i golden (uso dev)
 triad-cli test probes              # probe ok_*/test_*/bad_* + golden
@@ -131,3 +131,9 @@ cli/
   Windows): `bin/triad` lo esegue sempre, senza fallback JS né logica di
   stub. Il riferimento JS (`seed/dev/triad_core.cjs`) resta solo nel
   tooling di sviluppo.
+
+## Test di sviluppo Node
+
+`npm test --prefix cli` esegue i test del riferimento (output su pipe e codici
+di uscita) e del tool di audit AI. Il vecchio comando `test run` della CLI
+Node è stato rimosso: i test utente completi restano `triad-cli test all`.

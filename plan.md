@@ -1,5 +1,35 @@
 # Plan to complete Triad 2.0 - Updated status
 
+## Audit runtime: output JS troncato su pipe — 2026-11-08
+
+Checkpoint: branch `checkpoint/runtime-audit-2026-11-08`, base main
+`d76821f` (dopo l'integrazione di #77). Core 40/40, probe 39/39,
+desktop e sicurezza erano verdi; sito e differenziale fallivano in modo
+intermittente perché `process.exit()` terminava il riferimento JS prima
+dello svuotamento di stdout su pipe (riprodotto con lettore lento).
+
+`seed/dev/triad_core.cjs` ora restituisce il codice di uscita al CLI,
+che imposta process.exitCode e lascia svuotare gli stream. `exit(n)`
+interrompe la valutazione con un segnale interno intercettato al confine
+del programma. Lo stesso vale per errori e caricamento Node --require.
+Riferimenti: SPEC-CORE §§5,7 (stdout deterministico), §§8–10 (exit e CLI).
+Nessun dump o generatore macchina modificato.
+
+Aggiunti 5 test Node (prima: 4 FAIL/1 PASS; dopo: 5 PASS): output lungo,
+exit esplicito, errore runtime, entry point preloaded e codici/diagnostiche
+CLI. Nuovo caso Core output_pipe con golden deterministico: 41/41.
+Test Node collegati alla CI; corretto npm test della CLI che invocava
+un comando rimosso. Il file tools/webcmd-graphify/tests.js è un comando
+plugin e non una suite di test: la peer dependency non installata non
+è stata classificata come bug del runtime.
+
+Validazione: Core 41/41, probe 39/39, verify.sh, CLI installata, limiti
+seed (7 casi), desktop, 27 self-test guardie, guardie corpus (0 errori),
+differenziale (6 file, 0 differenze), sito (13 file identici), sicurezza,
+test audit AI e test Node PASS. Restano i limiti già dichiarati dai bad_*;
+questo audit non dimostra conformità a tutte le funzionalità Triad-Full.
+
+
 ## Checkpoint e suite complete senza esclusioni — 2026-11-08
 
 Checkpoint remoto del codice iniziale non funzionante: branch
