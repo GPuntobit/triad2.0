@@ -206,6 +206,13 @@ if [ "$DESKTOP" = "yes" ] || { [ "$DESKTOP" = "auto" ] && want_desktop; }; then
     APPS="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
     mkdir -p "$APPS"
     chmod +x "$ROOT/bin/triad-desktop"
+    ICON_THEME="${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor"
+    ICON_APPS="$ICON_THEME/256x256/apps"
+    mkdir -p "$ICON_APPS"
+    cp "$ROOT/assets/icons/triad.png" "$ICON_APPS/triad.png"
+    if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+        gtk-update-icon-cache -f -t "$ICON_THEME" >/dev/null 2>&1 || true
+    fi
     # Exec ha due livelli di escaping freedesktop: stringa e argomento quotato.
     # % letterale va raddoppiato per non diventare un field code.
     desktop_exec=$(printf '%s' "$ROOT/bin/triad-desktop" |
@@ -214,6 +221,7 @@ if [ "$DESKTOP" = "yes" ] || { [ "$DESKTOP" = "auto" ] && want_desktop; }; then
 [Desktop Entry]
 Type=Application
 Name=Triad Program
+Icon=triad
 Comment=Esegui un programma Triad (.triad/.td)
 Exec="$desktop_exec" %f
 Terminal=true
