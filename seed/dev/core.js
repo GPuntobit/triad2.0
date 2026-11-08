@@ -27,6 +27,8 @@ function jae(n) { reloc([0x0f, 0x83], n); }
 function ja(n) { reloc([0x0f, 0x87], n); }
 function jns(n) { reloc([0x0f, 0x89], n); }
 function js(n) { reloc([0x0f, 0x88], n); }
+function jl(n) { reloc([0x0f, 0x8c], n); }
+function jg(n) { reloc([0x0f, 0x8f], n); }
 function jnz(n) { reloc([0x0f, 0x85], n); }
 function jmp(n) { reloc([0xe9], n); }
 function callL(n) { reloc([0xe8], n); }
@@ -233,6 +235,8 @@ const movR10dImm = v => { B(0x41, 0xba); B32(v); };
 const movRsiMemRspDisp = d => { B(0x48, 0x8b, 0x74, 0x24, d & 255); };
 const movMemRspDispRsi = d => { B(0x48, 0x89, 0x74, 0x24, d & 255); };
 const addRspImm24 = () => B(0x48, 0x83, 0xc4, 0x18);
+const addRspImm16 = () => B(0x48, 0x83, 0xc4, 0x10);
+const testDlImm = v => { B(0xf6, 0xc2, v & 255); };   // test dl,imm8 (F6 /0)
 // chiusure (M3b2b3e): record da 128 byte in r14+MEM.HEAP
 const leaRdiR14 = d => { B(0x49, 0x8d, 0xbe); B32(d); };
 const movRaxMemRdx = () => B(0x48, 0x8b, 0x02);
@@ -339,6 +343,32 @@ const incR9 = () => B(0x49, 0xff, 0xc1);
 const orRaxImm3 = () => B(0x48, 0x83, 0xc8, 0x03);
 const andRdxImm3 = () => B(0x48, 0x83, 0xe2, 0x03);
 const cmpEdxImm3 = () => B(0x83, 0xfa, 0x03);
+const cmpEdxImm32 = v => { B(0x81, 0xfa); B32(v); };
+const cmpRdxR9 = () => B(0x4c, 0x39, 0xca);
+const cmpRdxImm32 = v => { B(0x48, 0x81, 0xfa); B32(v); };
+const sarRdx1 = () => B(0x48, 0xc1, 0xfa, 0x02);
+const decRdx = () => B(0x48, 0xff, 0xca);
+const andRcxImm3 = () => B(0x48, 0x83, 0xe1, 0x03);
+const leaRaxRaxRdx8 = () => B(0x48, 0x8d, 0x44, 0xd0, 0x10); // lea rax,[rax+rdx*8+16]
+const movRaxMemRax = () => B(0x48, 0x8b, 0x00);              // mov rax,[rax]
+const movRcxRax = () => B(0x48, 0x89, 0xc1);                 // mov rcx,rax
+const movR10Rax = () => B(0x49, 0x89, 0xc2);                 // mov r10,rax
+const movR10MemRax = () => B(0x4c, 0x8b, 0x10);              // mov r10,[rax]
+const movR9MemRax = () => B(0x4c, 0x8b, 0x08);               // mov r9,[rax]
+const movR11MemRax = () => B(0x4c, 0x8b, 0x18);              // mov r11,[rax]
+const cmpR10Imm32 = v => { B(0x49, 0x81, 0xfa); B32(v); };   // cmp r10,imm32
+const cmpR11Imm32 = v => { B(0x49, 0x81, 0xfb); B32(v); };   // cmp r11,imm32
+const movMemRaxR10 = () => B(0x4c, 0x89, 0x10);              // mov [rax],r10
+// letture dalla cornice del chiamante: dentro una routine gli operandi
+// spinti dal chiamante stanno *sotto* l'indirizzo di ritorno ([rsp+8],
+// [rsp+16], ...).
+const movRaxMemRsp8 = () => B(0x48, 0x8b, 0x44, 0x24, 0x08);
+const movRaxMemRsp16 = () => B(0x48, 0x8b, 0x44, 0x24, 0x10);
+const movR10MemRsp8 = () => B(0x4c, 0x8b, 0x54, 0x24, 0x08);
+const movR11MemRsp16 = () => B(0x4c, 0x8b, 0x5c, 0x24, 0x10);
+const movR11MemRsp24 = () => B(0x4c, 0x8b, 0x5c, 0x24, 0x18);
+const movR11Rsi = () => B(0x49, 0x89, 0xf3);              // mov r11, rsi
+const cmpByteR11Imm = v => { B(0x41, 0x80, 0x3b, cc(v) & 255); }; // cmp byte [r11], imm8
 const movRcxMemRax8 = () => B(0x48, 0x8b, 0x48, 0x08);
 const movRaxMemRsp = () => B(0x48, 0x8b, 0x04, 0x24);
 const movRcxRbp = () => B(0x48, 0x89, 0xe9);
@@ -533,6 +563,9 @@ callL('skip_ws');
 cmpByteRsiImm('='); je('st_assign_eq');
 cmpByteRsiImm('('); je('st_func');
 cmpByteRsiImm('+'); je('st_add_check');
+cmpByteRsiImm('-'); je('st_sub_check');
+cmpByteRsiImm('*'); je('st_mul_check');
+cmpByteRsiImm('['); je('st_index_check');
 jmp('st_expr');
 L('st_add_check');
 cmpByteRsiDispImm(1, '='); jne('st_expr');
@@ -541,6 +574,60 @@ popR9(); popR8(); pushRax();
 callL('env_lookup'); popRcx();
 sarRax1(); sarRcx1(); addRaxRcx(); shlRax1();
 callL('env_assign'); addRspImm8(); jmp('pp_loop');
+L('st_sub_check');
+cmpByteRsiDispImm(1, '='); jne('st_expr');
+addRsiImm(2); callL('skip_ws'); callL('parse_expr');
+popR9(); popR8(); pushRax();
+callL('env_lookup'); popRcx();
+sarRax1(); sarRcx1(); B(0x48, 0x29, 0xc1);   // rax = vecchio - nuovo
+shlRax1();
+callL('env_assign'); addRspImm8(); jmp('pp_loop');
+L('st_mul_check');
+cmpByteRsiDispImm(1, '='); jne('st_expr');
+addRsiImm(2); callL('skip_ws'); callL('parse_expr');
+popR9(); popR8(); pushRax();
+callL('env_lookup'); popRcx();
+sarRax1(); sarRcx1(); imulRaxRcx(); shlRax1();
+callL('env_assign'); addRspImm8(); jmp('pp_loop');
+
+// statement-espressione: il valore dell'espressione e' il valore del
+// blocco (SPEC-CORE.md §5).  Serve alle chiamate in posizione di
+// statement (`push!(xs, 4)`) e all'indicizzazione usata come espressione
+// (`xs[1]`): in entrambi i casi lo statement e' gia' stato consumato
+// (nome + parentesi), quindi si riparte dall'inizio dello statement.
+// La cornice e' [rsp]=r9 (len), [rsp+8]=r8 (nome), [rsp+16]=rsi (inizio).
+L('st_expr_stmt');
+movRsiMemRspDisp(16);            // rsi = inizio dello statement
+addRspImm24();                   // rimuove r9, r8 e rsi
+callL('parse_expr');
+blockStoreRax();
+jmp('pp_loop');
+
+// xs[i] = v : il seed scrive nell'elemento (indice 1-based, SPEC-CORE.md §7)
+L('st_index_check');
+// `xs[i] = v` (assegnazione) oppure `xs[i]` (espressione): si decide
+// guardando il token dopo la ']' di chiusura (come il riferimento JS).
+callL('scan_close');             // r11 = dopo la ']' corrispondente
+callL('eq_after');               // rax = 1 se segue un '='
+testRax(); jz('st_expr_stmt');
+L('st_index_assign');
+incRsi(); callL('skip_ws');
+callL('env_lookup');             // rax = valore lista (nome in r8/r9)
+pushRax();                       // lista
+callL('parse_expr');             // rax = indice
+pushRax();                       // indice
+callL('skip_ws');
+cmpByteRsiImm(']'); jne('fail');
+incRsi(); callL('skip_ws');
+cmpByteRsiImm('='); jne('fail');
+incRsi(); callL('skip_ws');
+callL('parse_expr');             // rax = valore
+pushRax();                       // valore
+callL('skip_ws');
+callL('index_store');            // scrive valore, indice, lista
+addRspImm24();                   // rimuove i tre valori spinti
+popR9(); popR8(); popRsi();
+jmp('pp_loop');
 
 L('st_assign_eq');
 incRsi();
@@ -562,7 +649,60 @@ callL('parse_expr');
 blockStoreRax();
 jmp('pp_loop');
 
+// scan_close: rsi punta a una parentesi di apertura; alla fine r11 punta
+// subito dopo la parentesi di chiusura corrispondente.  Le stringhe
+// letterali sono skippate (nessun escape: come il lexer del seed).
+L('scan_close');
+movR11Rsi();                     // r11 = puntatore di scansione
+incR11();                        // salta la parentesi di apertura
+movR10dImm(1);                   // profondita'
+L('sc2_loop');
+cmpByteR11Imm(0); je('fail');
+cmpByteR11Imm('"'); je('sc2_str');
+cmpByteR11Imm('('); je('sc2_open');
+cmpByteR11Imm('['); je('sc2_open');
+cmpByteR11Imm(')'); je('sc2_close');
+cmpByteR11Imm(']'); je('sc2_close');
+incR11(); jmp('sc2_loop');
+L('sc2_open'); incR10(); incR11(); jmp('sc2_loop');
+L('sc2_close'); decR10(); jz('sc2_done'); incR11(); jmp('sc2_loop');
+L('sc2_str');
+incR11();
+L('sc2_str_loop');
+cmpByteR11Imm(0); je('fail');
+cmpByteR11Imm('"'); je('sc2_str_done');
+incR11(); jmp('sc2_str_loop');
+L('sc2_str_done'); incR11(); jmp('sc2_loop');
+L('sc2_done'); incR11(); ret();          // r11 = dopo la parentesi di chiusura
+
+// eq_after: r11 punta subito dopo una parentesi; rax = 1 se il token
+// successivo (scartando spazi e commenti) e' '=', altrimenti rax = 0.
+L('eq_after');
+L('eq_ws');
+cmpByteR11Imm(0x20); je('eq_adv');
+cmpByteR11Imm(0x09); je('eq_adv');
+cmpByteR11Imm(0x0a); je('eq_adv');
+cmpByteR11Imm(0x0d); je('eq_adv');
+cmpByteR11Imm(0x3b); je('eq_adv');
+cmpByteR11Imm('#'); je('eq_com');
+cmpByteR11Imm('='); je('eq_yes');
+xorEax(); ret();
+L('eq_adv'); incR11(); jmp('eq_ws');
+L('eq_com');
+incR11();
+cmpByteR11Imm(0); je('eq_no');
+cmpByteR11Imm(0x0a); je('eq_adv');
+jmp('eq_com');
+L('eq_no'); xorEax(); ret();
+L('eq_yes'); movEaxImm(1); ret();
+
 L('st_func');
+// `f(x, ...) = e` e' una definizione; `f(x, ...)` da solo e' una chiamata
+// in posizione di statement (SPEC-CORE.md §4: stmt = ... | expr).  Il
+// riferimento JS decide allo stesso modo (guarda il token dopo la ')').
+callL('scan_close');             // rsi -> '(' ; r11 = dopo la ')' corrispondente
+callL('eq_after');               // rax = 1 se segue un '='
+testRax(); jz('st_expr_stmt');
 movRcxMemR13(); cmpRcxImm32(MEM.FUNC_MAX); jae('fail');
 shlRcx7(); leaRdxR13Rcx8();   // entry = r13+8+count*128
 popR9(); popR8();
@@ -1022,7 +1162,7 @@ L('pf_not'); incRsi(); callL('parse_unary'); xorRaxImm4(); ret();
 L('pf_neg2');
 incRsi(); callL('parse_unary'); sarRax1(); negRax(); shlRax1(); ret();
 L('parse_power');
-callL('parse_primary');
+callL('parse_postfix');
 pushRax();
 L('ppow_loop');
 callL('skip_ws');
@@ -1037,6 +1177,73 @@ testRax(); jz('ppow_done');
 imulR8Rcx(); decRax(); jmp('ppow_mul');
 L('ppow_done');
 movRaxR8(); shlRax1(); pushRax(); jmp('ppow_loop');
+
+// postfix = primary { "[" expr "]" }  (SPEC-CORE.md §4): il seed
+// implementa l'indicizzazione `xs[i]` con indice 1-based (§7).
+L('parse_postfix');
+callL('parse_primary');
+L('pfix_loop');
+callL('skip_ws');
+cmpByteRsiImm('['); jne('pfix_done');
+incRsi(); callL('skip_ws');
+pushRax();                       // valore della lista
+callL('parse_expr');             // rax = indice
+pushRax();                       // indice
+callL('skip_ws');
+cmpByteRsiImm(']'); jne('fail');
+incRsi();
+callL('index_apply');            // legge indice e lista dalla cornice
+addRspImm16();                   // rimuove i due valori spinti
+jmp('pfix_loop');
+L('pfix_done');
+ret();
+
+// index_apply: indice e lista sono spinti dal chiamante (in quest'ordine):
+// dentro la routine [rsp+8] = indice, [rsp+16] = lista.  Restituisce
+// l'elemento in rax (indice 1-based: fuori range = errore di esecuzione,
+// SPEC-CORE.md §5/§7/§9).
+L('index_apply');
+movRaxMemRsp8();                 // rax = indice
+movR11MemRsp16();                // r11 = lista
+movRdxRax();                     // rdx = indice taggato
+testDlImm(3); jne('fail');       // l'indice deve essere Int (tag 0)
+sarRdx1();                       // rdx = n (1-based)
+cmpRdxImm32(1); jl('fail');      // n >= 1
+movRaxR11();                     // rax = valore lista
+movRcxRax();
+andRcxImm3(); cmpEcxImm32(3); jne('fail');   // tag 3: oggetto heap
+andRaxImmFc();                   // rax = header
+movR9MemRax8();                  // r9 = lunghezza
+cmpRdxR9(); jg('fail');          // n <= len
+movR9MemRax();                   // r9 = tipo
+cmpR9Imm(2); jne('fail');        // tipo 2 = lista
+decRdx();                        // n-1 (0-based)
+leaRaxRaxRdx8();                 // rax = &elemento
+movRaxMemRax();                  // rax = elemento
+ret();
+
+// index_store: valore, indice e lista sono spinti dal chiamante (in quest'ordine):
+// dentro la routine [rsp+8] = valore, [rsp+16] = indice, [rsp+24] = lista.
+L('index_store');
+movR10MemRsp8();                 // r10 = valore
+movRaxMemRsp16();                // rax = indice
+movR11MemRsp24();                // r11 = lista
+movRdxRax();                     // rdx = indice taggato
+testDlImm(3); jne('fail');
+sarRdx1();
+cmpRdxImm32(1); jl('fail');
+movRaxR11();                     // rax = valore lista
+movRcxRax();
+andRcxImm3(); cmpEcxImm32(3); jne('fail');
+andRaxImmFc();                   // rax = header
+movR9MemRax8();                  // r9 = lunghezza
+cmpRdxR9(); jg('fail');
+movR9MemRax();                   // r9 = tipo
+cmpR9Imm(2); jne('fail');
+decRdx();
+leaRaxRaxRdx8();                 // rax = &elemento
+movMemRaxR10();                  // [rax] = valore
+ret();
 
 L('parse_primary');
 callL('skip_ws');
