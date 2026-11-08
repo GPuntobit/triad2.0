@@ -1,0 +1,4 @@
+fact num(1)
+fact num(3)
+println([s.y for s in solve num(?x), ?y is ?x * 2 + 1, ?y > 4])
+println(solve ?x is ?y + 1)

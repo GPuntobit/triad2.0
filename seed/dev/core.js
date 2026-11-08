@@ -626,7 +626,8 @@ pushRax();                       // valore
 callL('skip_ws');
 callL('index_store');            // scrive valore, indice, lista
 addRspImm24();                   // rimuove i tre valori spinti
-popR9(); popR8(); popRsi();
+// Keep the cursor after the assignment: restoring the statement start loops.
+popR9(); popR8(); addRspImm8();
 jmp('pp_loop');
 
 L('st_assign_eq');

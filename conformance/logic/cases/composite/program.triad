@@ -1,0 +1,3 @@
+fact p(f(:a, 3))
+println([s.x for s in solve p(f(?x, ?n))])
+println(solve ?x = f(?y), ?y = :a)

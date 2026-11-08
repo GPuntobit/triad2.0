@@ -22,7 +22,7 @@ Comandi (`bin/triad-cli`, invocabile da qualunque directory):
 
 ```bash
 triad-cli run <file> [-- args]     # esegue un programma Triad (.triad/.td)
-triad-cli test conformance        # suite Core completa (41 casi, nessuna esclusione)
+triad-cli test conformance        # suite Core completa (42 casi, nessuna esclusione)
 triad-cli test conformance --strict   # oracle puro: fallisce su QUALSIASI caso non verde
 triad-cli test conformance --update   # rigenera i golden (uso dev)
 triad-cli test probes              # probe ok_*/test_*/bad_* + golden
@@ -137,3 +137,10 @@ cli/
 `npm test --prefix cli` esegue i test del riferimento (output su pipe e codici
 di uscita) e del tool di audit AI. Il vecchio comando `test run` della CLI
 Node è stato rimosso: i test utente completi restano `triad-cli test all`.
+
+## Motore logico S1
+
+`triad --logic programma.triad` esegue il profilo logico S1 sul seed
+nativo, senza Node/Julia. `triad --logic -` legge da stdin. Sintassi
+supportata, esempio completo e limiti: [selfhost/logic](../selfhost/logic/README.md).
+La suite logica è inclusa in `triad-cli test all`.

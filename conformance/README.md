@@ -26,7 +26,7 @@ verified.
 ## Profiles
 
 - **Triad-Full** — `cases/` (12 cases; today only `errore` passes, the rest of Triad-Full is not implemented): the whole language of `SPEC.md`.
-- **Triad-Core** — `core/cases/` (41 cases, 38 green on the seed + 2 known gaps): only the normative subset of
+- **Triad-Core** — `core/cases/` (42 cases, 38 green on the seed + 2 known gaps): only the normative subset of
 [`SPEC-CORE.md`](../SPEC-CORE.md), shared with Triad-Full; bootstrap primitives are
 not covered by this suite.
 
@@ -37,7 +37,7 @@ Triad, run by the implementation under test.
 - Current (phase 0, without Node): `run.sh`, POSIX shell harness:
 
 ```sh
-sh conformance/run.sh            # verify (Core profile, 41 cases, wired suite)
+sh conformance/run.sh            # verify (Core profile, 42 cases, wired suite)
 sh conformance/run.sh --update   # regenerate expected.out/expected.code
 sh conformance/gate.sh           # gate: tutti i casi, senza esclusioni
 ```
@@ -48,7 +48,7 @@ The suite is **wired**: no `--cases`/`--skip`/`--strict` flags (ticket
 dependency on `install.sh`: the gate runs on a bare checkout.
 
 `gate.sh` is the wrapper used by CI and `verify.sh`: it delegates directly
-to the oracle and preserves its exit code. All 41 Core cases are required,
+to the oracle and preserves its exit code. All 42 Core cases are required,
 including `liste` and `ternario_simbolo`; there is no tolerated-failure list.
 No golden is rewritten to hide a failure.
 `run.mjs`, `run.test.mjs` (Node) have been removed in one shot (ticket 08, Q4).

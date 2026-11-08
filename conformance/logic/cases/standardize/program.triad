@@ -1,0 +1,4 @@
+fact edge(:a, :b)
+fact edge(:b, :c)
+rule step(?x, ?y) :- edge(?x, ?y)
+println([s.z for s in solve step(:a, ?y), step(?y, ?z)])

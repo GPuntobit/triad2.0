@@ -1,5 +1,39 @@
 # Plan to complete Triad 2.0 - Updated status
 
+## Motore logico S1 eseguibile — 2026-11-08
+
+Checkpoint: `checkpoint/before-logic-engine-2026-11-08` a `34ab261`.
+Nuovo profilo `triad --logic FILE` (oppure `-` per stdin), scritto in
+Triad-Core in selfhost/logic/engine.td + init.td. Lo shell trasporta solo
+byte con od/printf: nessun interprete Node/Julia nel percorso runtime.
+Riferimenti: BOOTSTRAP.md S1 e SPEC.md §6. L'esempio parent/grandparent
+stampa `[:dave]` sul seed nativo.
+
+Implementati: facts/rules, unificazione iterativa con occurs-check,
+variabili fresche e anonime, choice stack e trail, ricorsione dei
+predicati senza ricorsione del solver, congiunzione/disgiunzione/negazione,
+liste e code, solve come valore, projection e comprensioni, cattura
+valori e $(expr), is/arithmetic, predicati come Bool, limit/depth/steps.
+Errori supportati restituiti come valori Err con kind.
+
+Corretto un prerequisito reale del seed: dopo xs[i] = valore il cursore
+veniva ripristinato all'inizio dello statement, causando un loop infinito.
+Ora avanza; nuovo caso Core list_store, golden invariati altrove. Rebuild
+deliberato PE/ELF e decodifiche (ADR 0001), con hash CI aggiornati.
+Nessuna esecuzione PE; test sul seed ELF nativo (ADR 0002).
+
+Validazione: suite logica 21/21 su seed e JS, launcher 3/3, Core 42/42,
+probe 39/39 e verify.sh PASS. Suite logica inclusa in verify.sh e job CI
+separato con oracle di sviluppo. Nessun fallback host nel launcher.
+
+Limiti espliciti in selfhost/logic/README.md: profilo S1 iniziale, non Full
+completo; no trace/struct/funzioni utente nei goal, input ASCII semplice,
+4094 byte di sorgente, vettori di 4096 celle, arità 64, heap finito del
+seed (può esaurirsi prima del budget predefinito di un milione di passi).
+Restano da completare payload diagnostici Full e integrazione generale
+con l'evaluator Full; il percorso Core normale resta invariato.
+
+
 ## Audit runtime: output JS troncato su pipe — 2026-11-08
 
 Checkpoint: branch `checkpoint/runtime-audit-2026-11-08`, base main

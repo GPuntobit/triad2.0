@@ -1,0 +1,7 @@
+fact p(:a)
+s = 99
+println([s.x for s in solve p(?x)])
+println(s)
+println([v.x for v in solve p(?x)])
+y = 12
+println(y)

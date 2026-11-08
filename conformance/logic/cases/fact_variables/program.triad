@@ -1,0 +1,3 @@
+fact same(?x, ?x)
+println([s.x for s in solve same(:a, ?x)])
+println(solve same(:a, :b))

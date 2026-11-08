@@ -1,0 +1,6 @@
+fact edge(:a, :b)
+fact edge(:b, :c)
+fact edge(:c, :d)
+rule path(?a, ?b) :- edge(?a, ?b)
+rule path(?a, ?b) :- edge(?a, ?c), path(?c, ?b)
+println([s.x for s in solve path(:a, ?x)])

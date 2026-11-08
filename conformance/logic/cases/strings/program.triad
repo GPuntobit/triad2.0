@@ -1,0 +1,3 @@
+fact name("alice")
+println([s.x for s in solve name(?x)])
+println(solve name("bob"))

@@ -1,0 +1,4 @@
+n = 3
+fact age(:alice, $(n * 2 + 1))
+println([s.y for s in solve age(:alice, ?y)])
+println([s.y for s in solve ?y = $(n + 2)])
