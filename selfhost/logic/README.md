@@ -91,3 +91,11 @@ This is still not a complete Full evaluator. Arbitrary function statements,
 control-flow bodies, overload dispatch and non-Boolean function returns are
 not implemented by that lowering. General Full semantics and diagnostic
 payloads remain separate work. Finite S0 heap/vector limits still apply.
+
+## Sessione desktop
+
+La sessione desktop parte in Core. Per i programmi logici digita `:logic`,
+poi il percorso del file senza virgolette. `:core` torna al profilo Core;
+`:quit` chiude la sessione. Il profilo rimane selezionato anche dopo un errore.
+Per aprire direttamente un file logico: `bin/triad-desktop --logic FILE`.
+La selezione del profilo non abilita un REPL e non amplia la sintassi S1.

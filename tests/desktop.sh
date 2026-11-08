@@ -44,4 +44,23 @@ grep -q 'codice 1' "$tmp/error.log"
 grep -q 'Percorso del programma' "$tmp/error.log"
 "$root/bin/triad-desktop" < /dev/null > "$tmp/eof.log"
 grep -q 'Percorso del programma' "$tmp/eof.log"
-echo 'desktop: PASS (install, MIME .triad/.td, app predefinita, menu, file con spazi, errori, EOF)'
+# Explicit logic selection must reach S1 through the real desktop launcher.
+logic_file="$tmp/logic with spaces.triad"
+cat > "$logic_file" <<'LOGIC'
+fact parent(:alice, :bob)
+fact parent(:bob, :dave)
+rule grandparent(?x, ?z) :- parent(?x, ?y), parent(?y, ?z)
+println([s.z for s in solve grandparent(:alice, ?z)])
+LOGIC
+printf ':quit\n' | "$root/bin/triad-desktop" --logic "$logic_file" > "$tmp/logic-open.log" 2>&1
+grep -Fqx '[:dave]' "$tmp/logic-open.log"
+grep -q 'codice 0, profilo logic' "$tmp/logic-open.log"
+# Switching profiles persists, failures remain recoverable, EOF still exits.
+printf ':logic\n%s\n%s\n:core\n%s\n:quit\n' \
+    "$tmp/missing.triad" "$logic_file" "$program" |
+    "$root/bin/triad-desktop" > "$tmp/profiles.log" 2>&1
+grep -Fq '[:dave]' "$tmp/profiles.log"
+grep -q 'desktop-pass' "$tmp/profiles.log"
+grep -q 'codice 0, profilo logic' "$tmp/profiles.log"
+grep -q 'codice 0, profilo core' "$tmp/profiles.log"
+echo 'desktop: PASS (install, MIME, file con spazi, Core/logic, switch, errori, EOF)'

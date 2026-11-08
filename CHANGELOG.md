@@ -1,5 +1,19 @@
 # Changelog — standard Triad
 
+## Desktop: selezione esplicita del profilo logico S1
+
+La sessione desktop passava sempre i file a triad FILE (Core), quindi un
+programma fact/rule/solve falliva con seed: error anche se S1 era installato.
+Aggiunti :logic / :core persistenti e avvio --logic FILE / --core FILE.
+Il banner e il risultato mostrano il profilo; un errore in Core suggerisce
+la selezione logica. Nessun rilevamento euristico o retry del programma.
+Il REPL Full rimane fuori scope.
+
+Test desktop reali PASS: esempio parent/grandparent -> [:dave], percorsi
+con spazi, switch Core/logic, ripresa dopo file assente, avvio diretto e
+EOF. verify.sh PASS: Core 42/42, probe 39/39, logica 25/25.
+
+
 ## Estensioni S1: trace, struct, funzioni booleane e sorgenti paginati
 
 Sopra il commit 36e07f4, il profilo --logic ora supporta solve trace con
