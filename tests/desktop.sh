@@ -12,6 +12,8 @@ sh "$root/install.sh" --prefix "$tmp/bin" --desktop > "$tmp/install.log"
 entry="$tmp/data/applications/triad.desktop"
 grep -Fqx "Exec=\"$root/bin/triad-desktop\" %f" "$entry"
 grep -qx 'Terminal=true' "$entry"
+grep -Fqx 'Icon=triad' "$entry"
+cmp "$root/assets/icons/triad.png" "$tmp/data/icons/hicolor/256x256/apps/triad.png"
 if command -v desktop-file-validate >/dev/null 2>&1; then
     desktop-file-validate "$entry"
 fi

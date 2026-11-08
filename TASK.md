@@ -1,5 +1,19 @@
 # Task Triad 2.0
 
+## Logo nella voce desktop Triad Program — 2026-11-08
+
+Aggiunto assets/icons/triad.png (PNG 256x256 estratto senza modifiche
+dall'icona Windows esistente). install.sh --desktop lo installa nel
+tema hicolor dell'utente e genera Icon=triad nella voce del menu,
+aggiornando la cache icone quando disponibile. Nessuna dipendenza di
+conversione necessaria all'installazione.
+
+Test desktop PASS: voce Icon=triad e confronto byte-esatto del PNG
+installato, oltre ai controlli precedenti di associazione e profili.
+Per aggiornare un'installazione esistente, rieseguire install.sh --desktop
+con il prefix già scelto. Nessun runtime o golden modificato.
+
+
 ## Parametri tipizzati e dispatch S1 — 2026-11-08
 
 Risolto l'errore del programma struct Point con campi Float e metodi
