@@ -1,0 +1,3 @@
+[:a, :b]
+[:call, :exit, :redo, :exit, :redo, :fail]
+[:call]
