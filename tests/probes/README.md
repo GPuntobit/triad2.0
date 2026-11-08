@@ -65,7 +65,12 @@ repo; nessun fallback JS. Lo stesso entry point copre la parità PE via wine:
 | letterale con `if` a livello di programma | sì | sì | `ok_stringa_toplevel.td` |
 | letterale con `end` dentro un blocco | sì | sì | `ok_stringa_end_in_blocco.td` |
 | confronto fra stringhe con `==` | **no** (sempre `false`) | sì | `bad_confronto_stringa.td` |
-| `readfile` | **no** | sì | `bad_readfile.td` |
+| `readfile` | sì (max 1 MiB, path max 1024 byte) | sì | `ok_readfile.td` |
+| `strlen`, `strbyte`, `strsub` (§8) | sì | sì | `ok_strlen.td`, `ok_strbyte.td`, `ok_strsub.td` |
+| `exit(n)` | sì (codice a 8 bit) | sì | `ok_exit.td` |
+| `strlen`/`strbyte`/`strsub` su un **simbolo** | **errore** (exit 1) | errore (exit 1) | `bad_strlen_simbolo.td` |
+| `strbyte`/`strsub` fuori range | **errore** (exit 1) | errore (exit 1) | `bad_strbyte_fuori_range.td`, `bad_strsub_fuori_range.td` |
+| `readfile` su file non leggibile | **errore** (exit 1) | errore (exit 1) | `bad_readfile_inesistente.td` |
 | riferimento in avanti a una funzione | **no** | no | `bad_riferimento_avanti.td` |
 | costruzione di stringhe con pattern "builder" | sì | sì | `ok_builder.td`, `ok_elenco_funzione.td` |
 | front-end S1 (scanner + parser, `selfhost/source.td`) | sì | sì | golden `selfhost/source.expected.out` (eseguito da `run_probes.sh`) |

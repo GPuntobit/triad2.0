@@ -1,5 +1,36 @@
 # Changelog — standard Triad
 
+## D16 risolta: i primitivi §8 (`readfile`, `strlen`, `strbyte`, `strsub`) sono nel seed — 2026-11-08
+
+Il seed dichiarava `exit` disponibile **senza implementarlo** (`exit(1)` usciva con
+exit 1) e non implementava gli altri primitivi §8: senza `readfile` S1 non può
+nemmeno caricare il programma da interpretare (ticket
+`.scratch/self-hosting-m6/issues/01`, decisione Q1).
+
+- **seed**: `strlen(s)`, `strbyte(s, i)`, `strsub(s, a, b)` (byte, 1-based),
+  `readfile(path)` (max 1 MiB, path max 1024 byte; file non leggibile o troppo
+  grande → exit 1) e `exit(n)` (codice a 8 bit);
+- **fix (seed)**: un **simbolo** non è più una stringa (tipo 5 invece di 1): `strlen(:x)`
+  e `"a" * :b` falliscono come sul riferimento JS, e `string(:x)` copia i byte del
+  simbolo in una `Stringa`;
+- **fix (generatore)**: le etichette locali di `os_read` erano ridefinite a ogni
+  chiamata (i fixup dei salti puntavano all'ultima: il body leggeva il sorgente dal
+  posto sbagliato); corretti anche alcuni helper con codificazioni invertite;
+- **contratto**: `D16` esce da `seed/dev/certified-subset.txt`; `[available]` dichiara
+  `readfile`/`strlen`/`strbyte`/`strsub` disponibili; nuovi limiti in `[envelope]`
+  (`file.max_bytes`, `path.max_bytes`);
+- **guardie**: `G-D16` si spegne da sola (il contratto non la dichiara più); il
+  fixture «rifiutato» è diventato «ammesso» (`risolto_bootstrap.td`);
+- **probe**: `bad_readfile` diventa `ok_readfile`; nuovi `ok_strlen`, `ok_strbyte`,
+  `ok_strsub`, `ok_exit`, `bad_readfile_inesistente`, `bad_strbyte_fuori_range`,
+  `bad_strsub_fuori_range`, `bad_strlen_simbolo` (47 → 55 probe);
+- **artefatti**: dump PE (25088 byte) ed ELF (11465 byte) rigenerati, hash CI aggiornati
+  (PE `0432C4CA…`, ELF `A5FA3E50…`).
+
+Verifiche PASS: conformance 42/42, probe 55/55 (ELF e PE via wine), logica 29/29,
+guardie 24 test, differenziale 0 differenze, anti-drift e hash CI verdi. Nessun golden
+riscritto.
+
 ## D25: l'overflow degli interi del seed è un errore, non un numero sbagliato — 2026-11-08
 
 Il seed rappresenta `Int` con 2 bit di tag: il suo range utile è `[-2^61, 2^61-1]`,

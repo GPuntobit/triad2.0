@@ -18,7 +18,7 @@ The hex dump is [`seed.hex`](seed.hex).
 - **Section:** `.text`, RVA `0x1000`, file offset `0x200`, 24576 bytes, characteristics `0xE0000020`
 - **Image:** base `0x140000000`, `SizeOfImage` `0x7000`, header `0x200`, subsystem console, ASLR disabled
 - **Code:** 8755 bytes
-- **sha256 of `seed.hex`:** `4E805465250B5D7427F3B25486AD218B262839C6369D0096299AC0FCFAD8C086`
+- **sha256 of `seed.hex`:** `0432C4CA79C110E43D8B3621A8EBAF66DED4E4855ADCB761FAC98D823B300FD4`
 ## File layout
 | offset/RVA | what |
 |---|---|

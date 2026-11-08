@@ -17,6 +17,11 @@ const {
   cmpByteRsiImm, movByteRdiImm, incRsi, incRdi,
 } = core;
 
+// helper locali: slot con argomento in un registro (readfile/exit)
+const movRcxR8 = () => B(0x4c, 0x89, 0xc1);                // mov rcx, r8
+const movRdxR8 = () => B(0x4c, 0x89, 0xc2);                // mov rdx, r8
+const movEcxR8d = () => B(0x41, 0x8b, 0xc8);                // mov ecx, r8d
+
 // ---------------------------------------------------------------- backend PE: layout + fixup
 const IAT = 0x4000;
 const SEC_RAW = 0x6000;                 // .text 24576 byte, RVA 0x1000..0x7000
@@ -66,12 +71,20 @@ function peSlot(routine, slot, arg) {
     case 'write:nwritten': return leaRspR9(PE_WRITTEN_WRITE);
     case 'write:overlapped': return movMemRspImm(PE_OVERLAPPED, 0);
     case 'read:handle': if (arg.kind === 'reg' && arg.r === 'rbx') return movRcxRbx(); break;
-    case 'read:buf': if (arg.kind === 'reg' && arg.r === 'r14') return movRdxR14(); break;
+    case 'read:buf':
+      if (arg.kind === 'reg' && arg.r === 'r14') return movRdxR14();
+      if (arg.kind === 'reg' && arg.r === 'r8') return movRdxR8();
+      break;
     case 'read:max': return movR8d(arg.v);
     case 'read:nwritten': return leaRspR9(PE_WRITTEN_READ);
     case 'read:overlapped': return movMemRspImm(PE_OVERLAPPED, 0);
-    case 'open:path': return leaRsp('rcx', arg.d);
-    case 'exit:code': return arg.v === 0 ? xorEcx() : movEcx(arg.v);
+    case 'open:path':
+      if (arg.kind === 'rsp') return leaRsp('rcx', arg.d);
+      if (arg.kind === 'reg' && arg.r === 'r8') return movRcxR8();
+      break;
+    case 'exit:code':
+      if (arg.kind === 'reg' && arg.r === 'r8d') return movEcxR8d();
+      return arg.v === 0 ? xorEcx() : movEcx(arg.v);
   }
   throw new Error('slot os_* non mappato: ' + routine + ':' + slot);
 }

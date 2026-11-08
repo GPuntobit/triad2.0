@@ -46,6 +46,8 @@ const addRsiRax = () => B(0x48, 0x01, 0xc6);              // add rsi, rax
 const subRdxRax = () => B(0x48, 0x29, 0xc2);              // sub rdx, rax
 const movR10Rsi = () => B(0x49, 0x89, 0xf2);              // mov r10, rsi
 const movRsiR10 = () => B(0x49, 0x8b, 0xf2);              // mov rsi, r10
+const movRsiR8 = () => B(0x4c, 0x89, 0xc6);                // mov rsi, r8
+const movEdiR8d = () => B(0x41, 0x8b, 0xf8);                // mov edi, r8d
 const syscall = () => B(0x0f, 0x05);
 // lea rsi, [rip+label] (fixup d'etichetta, per i messaggi diagnostici)
 function leaRsiRip(label) {
@@ -74,6 +76,8 @@ const MSG = {
   overflow: 'seed: integer overflow\n',      // D25: fuori range dei 62 bit
 };
 const usedMsgs = new Set();
+// contatore delle etichette locali di os_read (una coppia per chiamata)
+let readSeq = 0;
 
 // dispatch: materializza gli slot nell'ordine della lista, poi la chiamata.
 // os_arg, os_alloc e os_exit hanno emissione indivisibile (le costanti e la
@@ -120,12 +124,20 @@ function elfSlot(routine, slot, arg) {
     case 'write:nwritten': return;                // nessuno scratch: write non torna n
     case 'write:overlapped': return;              // slot solo PE (lpOverlapped)
     case 'read:handle': if (arg.kind === 'reg' && arg.r === 'rbx') return movRdiRbx(); break;
-    case 'read:buf': if (arg.kind === 'reg' && arg.r === 'r14') return movRsiR14(); break;
+    case 'read:buf':
+      if (arg.kind === 'reg' && arg.r === 'r14') return movRsiR14();
+      if (arg.kind === 'reg' && arg.r === 'r8') return movRsiR8();
+      break;
     case 'read:max': return movEdx(arg.v);
     case 'read:nwritten': return xorR13d();       // esito: totale byte letti in r13
     case 'read:overlapped': return;               // slot solo PE
-    case 'open:path': return leaRsp('rsi', arg.d);
-    case 'exit:code': return arg.v === 0 ? xorEdi() : movEdi(arg.v);
+    case 'open:path':
+      if (arg.kind === 'rsp') return leaRsp('rsi', arg.d);
+      if (arg.kind === 'reg' && arg.r === 'r8') return movRsiR8();
+      break;
+    case 'exit:code':
+      if (arg.kind === 'reg' && arg.r === 'r8d') return movEdiR8d();
+      return arg.v === 0 ? xorEdi() : movEdi(arg.v);
   }
   throw new Error('slot os_* ELF non mappato: ' + routine + ':' + slot);
 }
@@ -139,17 +151,22 @@ function elfCall(routine) {
       syscall();
       return;
     case 'read':                                  // loop read + close (contratto 03)
-      L('elf_read_loop');
+      // etichette univoche per ogni chiamata: os_read e' usato piu' volte
+      // (corpo del seed e primitivo `readfile`): un'etichetta condivisa
+      // verrebbe ridefinita e i fixup dei salti punterebbero all'ultima.
+      const loop = 'elf_read_loop_' + (readSeq++);
+      const done = 'elf_read_done_' + readSeq;
+      L(loop);
       xorEax();                                   // sys_read(handle, buf, max)
       syscall();
       testRax();
       js('read_fail');                            // errore -> exit 1 (come il PE)
-      jz('elf_read_done');                        // EOF
+      jz(done);                                   // EOF
       addR13Rax();                                // totale += n
       addRsiRax();                                // buf += n
       subRdxRax();                                // max -= n
-      jnz('elf_read_loop');                       // buffer pieno -> chiudi
-      L('elf_read_done');
+      jnz(loop);                                  // buffer pieno -> chiudi
+      L(done);
       movEaxImm(SYS_CLOSE);                       // os_read chiude l'handle
       syscall();                                  // rdi = handle ancora impostato
       return;
@@ -285,6 +302,6 @@ module.exports = {
   name: 'linux',
   emitOs: elfEmit,
   emitTrailer: elfEmitTrailer,
-  reset() { usedMsgs.clear(); },
+  reset() { usedMsgs.clear(); readSeq = 0; },
   build: elfBuild,
 };

@@ -24,7 +24,7 @@ Il dump esadecimale è [`seed.hex`](https://github.com/GPuntobit/triad2.0/blob/m
 - **Sezione:** `.text`, RVA `0x1000`, file offset `0x200`, 24576 byte, caratteristiche `0xE0000020`
 - **Immagine:** base `0x140000000`, `SizeOfImage` `0x7000`, header `0x200`, subsystem console, ASLR disattivata
 - **Codice:** 8755 byte
-- **sha256 di `seed.hex`:** `4E805465250B5D7427F3B25486AD218B262839C6369D0096299AC0FCFAD8C086`
+- **sha256 di `seed.hex`:** `0432C4CA79C110E43D8B3621A8EBAF66DED4E4855ADCB761FAC98D823B300FD4`
 
 ## Layout del file
 

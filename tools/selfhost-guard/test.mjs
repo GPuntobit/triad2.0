@@ -38,7 +38,6 @@ const CASES = [
   ['d11_lambda_blocco.td', 'G-D11'],
   ['d12_let_multi.td', 'G-D12'],
   ['d14_primitivi_assenti.td', 'G-D14'],
-  ['d16_bootstrap_assente.td', 'G-D16'],
   ['d17_simbolo_operatore.td', 'G-D17'],
   ['d18_riferimento_avanti.td', 'G-D18'],
   ['d19_newline_operatore.td', 'G-D19'],
@@ -82,6 +81,7 @@ for (const [fixture, what] of [
   ['risolto_composta.td', 'D6 risolta -> `-=`/`*=` ammessi'],
   ['risolto_chiamata_finale.td', 'D9 risolta -> chiamata in posizione finale ammessa'],
   ['risolto_indicizzazione.td', 'D13 risolta -> indicizzazione `xs[i]` ammessa'],
+  ['risolto_bootstrap.td', 'D16 risolta -> primitivi §8 ammessi'],
 ]) {
   const findings = checkFile(path.join(FIXTURES, fixture), contract);
   ok(what, findings.length === 0,

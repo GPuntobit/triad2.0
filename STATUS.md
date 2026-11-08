@@ -1,5 +1,44 @@
 # Triad and S0 bootstrap status
 
+## D16 risolta: i primitivi §8 (`readfile`, `strlen`, `strbyte`, `strsub`) sono nel seed — 2026-11-08
+
+Il seed implementava i soli primitivi §8 `get` ed `exit`, e **dichiarava `exit` disponibile
+mentre non esisteva** (`exit(1)` usciva con exit 1): il contratto del seed
+(`seed/dev/certified-subset.txt`, sezione `[available]`) era dunque *smentito* su un punto.
+`readfile` era assente: senza di esso S1 non può nemmeno caricare il programma da
+interpretare (ticket `.scratch/self-hosting-m6/issues/01`, decisione Q1).
+
+Ora il seed implementa i quattro primitivi §8 assenti **e** `exit(n)`:
+
+- `strlen(s)` — numero di byte della stringa;
+- `strbyte(s, i)` — byte alla posizione `i` (1-based), errore fuori range;
+- `strsub(s, a, b)` — byte da `a` a `b` inclusi (1-based), errore fuori range;
+- `readfile(path)` — contenuto del file come `Stringa`; file non leggibile → exit 1;
+  file oltre 1 MiB → **rifiutato** (exit 1), non troncato; path oltre 1024 byte → exit 1;
+- `exit(n)` — termina il processo con il codice `n & 0xff`.
+
+Correzione collegata (divergenza **non dichiarata**, cioè bug): nel seed un **simbolo**
+era una stringa (stesso tipo 1). Ora il simbolo ha tipo 5: `strlen(:x)` fallisce (come
+sul riferimento JS), `"a" * :b` fallisce (prima produceva `ab`), e `string(:x)` copia i
+byte del simbolo in una `Stringa` (prima restituiva il simbolo stesso).
+
+Implementazione: `seed/dev/core.js` (nuove routine `str_check`, `make_string`,
+`pf_builtin_strlen`, `pf_builtin_strbyte`, `pf_builtin_strsub`, `pf_builtin_readfile`,
+`pf_builtin_exit`; il path è copiato in un buffer scratch NUL-terminato e il contenuto
+è letto direttamente nell'oggetto `Stringa` dell'heap), `seed/dev/backend_elf.js` e
+`seed/dev/backend_pe.js` (slot `os_*` con argomento in un registro: `open:path`,
+`read:buf`, `exit:code`). Due bug del generatore sono stati corretti lungo la strada:
+le etichette locali di `os_read` erano **ridefinite** a ogni chiamata (i fixup dei
+salti puntavano all'ultima: il body del seed leggeva il file sorgente dal posto
+sbagliato) e le codificazioni di alcuni helper erano invertite.
+
+Ciclo di rebuild completo: dump PE (25088 byte) ed ELF (11465 byte), binari, hash CI
+(ELF `a5fa3e50…`, PE `0432c4ca…`).
+
+Verifiche PASS: conformance **42/42**, probe **55/55** (ELF nativo e PE via wine, parità
+byte-esatta), logica **29/29**, guardie 24 test, differenziale 0 differenze,
+`check_seed.sh` 7 casi, anti-drift `cmp` e hash CI verdi. Nessun golden riscritto.
+
 ## D25: l'overflow degli interi del seed diventa rumoroso (exit 1) — 2026-11-08
 
 Il seed rappresenta `Int` come `n<<2` (2 bit di tag): il payload utile è un intero
@@ -589,7 +628,7 @@ identically to the PE (known limits included), `BOOTSTRAP.md` §4/§5/§6/§9 (M
 ```sh
 sh verify.sh                       # gate unico: conformance/run.sh + tests/probes/run_probes.sh
 sh conformance/run.sh              # Core, 42 casi, byte-exatti sull'ELF nativo
-sh tests/probes/run_probes.sh      # 47 probe (ok_*/test_* + bad_* + selfhost golden)
+sh tests/probes/run_probes.sh      # 55 probe (ok_*/test_* + bad_* + selfhost golden)
 sh seed/linux-x86_64/check_seed.sh # errori/limiti del seed (7 casi)
 node tools/selfhost-guard/guard.mjs        # guardie statiche sul corpus certificato
 node tools/selfhost-guard/test.mjs         # self-test delle guardie (un fixture per regola)

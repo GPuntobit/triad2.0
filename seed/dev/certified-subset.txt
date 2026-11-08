@@ -29,6 +29,8 @@ updated = 2026-11-08
 # function.max_params: record funzione da 64 B, 16 B per parametro
 # env.max_bindings: binding per ambiente (32 B ciascuno); oltre -> errore
 # function.max_records: record funzione (128 B ciascuno); oltre -> errore
+# file.max_bytes:   byte massimi letti da `readfile`; oltre -> errore
+# path.max_bytes:   byte massimi del path passato a `readfile`
 [envelope]
 source.max_bytes = 1048576
 heap.max_bytes = 8388600
@@ -36,6 +38,8 @@ list.max_items = 64
 function.max_params = 4
 env.max_bindings = 16384
 function.max_records = 3584
+file.max_bytes = 1048576
+path.max_bytes = 1024
 
 # --- Primitivi §8 (SPEC-CORE.md §8) presenti nel seed ------------------
 # yes = il seed lo implementa; no = assente (exit 1).
@@ -44,10 +48,10 @@ function.max_records = 3584
 [available]
 get = yes
 exit = yes
-readfile = no
-strlen = no
-strbyte = no
-strsub = no
+readfile = yes
+strlen = yes
+strbyte = yes
+strsub = yes
 
 # --- Divergenze dal comportamento di SPEC-CORE.md, misurate ------------
 # classe: silent = risultato sbagliato senza errore (chiede guardia
@@ -60,7 +64,17 @@ strsub = no
 #   D6  — `-=` e `*=` (assegnazione composta a nome) sono implementati;
 #   D9  — la chiamata in posizione finale e' valutata;
 #   D13 — l'indicizzazione `xs[i]` (1-based) e la scrittura `xs[i] = v`
-#         sono implementate (fuori range -> exit 1).
+#         sono implementate (fuori range -> exit 1);
+#   D16 — i primitivi §8 `readfile`, `strlen`, `strbyte`, `strsub` sono
+#         implementati (vedi [available]); `exit(n)` era gia' dichiarato
+#         disponibile ma mancava davvero: ora esiste (codice a 8 bit).
+#
+# Correzioni senza id (divergenze *non dichiarate*, cioe' bug):
+#   - i simboli non sono piu' stringhe: un oggetto simbolo ha tipo 5 (non
+#     1), quindi `strlen(:x)` fallisce come sul riferimento JS e la
+#     concatenazione `"a" * :b` fallisce invece di produrre "ab";
+#   - `string(:x)` copia i byte del simbolo in una Stringa (come il
+#     riferimento JS), invece di restituire il simbolo stesso.
 #
 # Divergenze aggiunte il 2026-11-08:
 #   D24 (noisy)  — l'assegnazione composta a indice `xs[i] += v` non e'
@@ -85,7 +99,6 @@ D11 = noisy
 D12 = noisy
 D14 = noisy
 D15 = silent
-D16 = noisy
 D17 = noisy
 D18 = noisy
 D19 = silent

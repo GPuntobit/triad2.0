@@ -9,7 +9,7 @@ The complete chain is described in [`../BOOTSTRAP.md`](../BOOTSTRAP.md).
 | M1 — prints a line and exits with 0 | Windows x86-64 (PE) | ✅ |
 | M2 — reads the file from the first argument and writes its bytes | Windows x86-64 (PE) | ✅ |
 | M3 — Triad-Core interpreter | Windows x86-64 (PE) | in progress: M3b1 ✅, M3b2a ✅, M3b2b1 ✅, M3b2b2 ✅, M3b2b3a-e ✅, **M3b2b3f** ⚠️ (unstable capture), **M3b2b3g** ✅ (`!`, `&&`, `||`, `+=`), **M3b2b3h** ✅ (`function … end`), **M3b2b3i** ✅ (multi-statement body), **M3b2b3j** ✅ (lexical frames, `let`; `scope`), **M3b2b3k** ✅ (closures; `closure`/`closures`), **M3b2b3l** ✅ (`begin`/`end`), **M3b2b3m** ✅ (base strings), **M3b2b3n** ✅ (`nothing`), **M3b2b3o** ✅ (concatenation), **M3b2b3p** ✅ (symbols `:name`; `base_symbols`); `string()`, multi-binding capture, `elseif`, lists | remain
-| M7 — Linux port (ELF) | Linux x86-64 | ✅ **E0 → E1 → E2 → E3**: minimal ELF (write/exit) → file runner (argv + I/O) → **Triad-Core interpreter** (9858 byte, parità byte-exatta col PE: conformance 42/42 + probe 47/47 + golden S1) → **toolchain senza Node** (`install.sh` → `bin/triad`/`bin/triad-cli`, CI `seed-linux` nativa) |
+| M7 — Linux port (ELF) | Linux x86-64 | ✅ **E0 → E1 → E2 → E3**: minimal ELF (write/exit) → file runner (argv + I/O) → **Triad-Core interpreter** (11465 byte, parità byte-exatta col PE: conformance 42/42 + probe 55/55 + golden S1) → **toolchain senza Node** (`install.sh` → `bin/triad`/`bin/triad-cli`, CI `seed-linux` nativa) |
 ## Contratto del seed
 Il seed **non** è un'implementazione Triad-Core completa: è un interprete diretto
 (scannerless) scritto in codice macchina, e fa da *veicolo di transizione* per S1 (il
@@ -20,9 +20,11 @@ Il contratto è in due pezzi:
 
 - **`dev/certified-subset.txt`** — il contratto *macchina-leggibile*: l'envelope
   (buffer sorgente 1 MiB, heap 8 MiB, liste da 64 elementi, funzioni da 4 parametri),
-  i primitivi §8 presenti (`get`, `exit`; `readfile`/`strlen`/`strbyte`/`strsub` non
-  ancora) e l'elenco delle **divergenze** dal comportamento della specifica, con la loro
-  classe (`silent` = risultato sbagliato senza errore, `noisy` = exit 1);
+  i primitivi §8 presenti (`get`, `exit`, `readfile`, `strlen`, `strbyte`, `strsub`),
+  l'envelope (buffer sorgente 1 MiB, heap 8 MiB, liste da 64 elementi, funzioni da 4
+  parametri, file da 1 MiB, path da 1024 byte) e l'elenco delle **divergenze** dal
+  comportamento della specifica, con la loro classe (`silent` = risultato sbagliato
+  senza errore, `noisy` = exit 1);
 - **questa sezione** — la versione leggibile.
 
 Le guardie statiche sulla sorgente di S1 (`tools/selfhost-guard/`) e il gate differenziale
@@ -45,7 +47,6 @@ Divergenze note dal comportamento di `SPEC-CORE.md` (misurate sul seed):
 | D12 | `let` multi-binding | §4 | assente (exit 1) |
 | D14 | `typeof`, `Int()`, `Symbol()` | §7 | assenti (exit 1) |
 | D15 | `string(x)` | §7 | solo `Int`/`String` (le altre forme sbagliano) |
-| D16 | `readfile`, `strlen`, `strbyte`, `strsub` | §8 | assenti (exit 1) |
 | D17 | simboli operatore `:+` | §2 | rifiutati (exit 1) |
 | D18 | chiamata a livello di file prima della definizione | §4 | rifiutata (exit 1) |
 | D19 | newline dopo un operatore | §2 separatore | **prosegue** l'espressione |
@@ -57,7 +58,13 @@ Divergenze note dal comportamento di `SPEC-CORE.md` (misurate sul seed):
 
 Divergenze **risolte** dal seed (non sono più nel contratto): **D6** (`-=`, `*=` a nome),
 **D9** (chiamata in posizione finale: viene valutata), **D13** (indicizzazione `xs[i]`
-1-based e scrittura `xs[i] = v`), **D23** (ternario con simbolo).
+1-based e scrittura `xs[i] = v`), **D16** (primitivi §8 `readfile`, `strlen`, `strbyte`,
+`strsub`), **D23** (ternario con simbolo).
+
+Correzioni senza id (divergenze *non dichiarate*, cioè bug): `exit(n)` era dichiarato
+disponibile ma **non esisteva** (exit 1); i **simboli non sono più stringhe** (un
+simbolo ha tipo 5: `strlen(:x)` fallisce e `"a" * :b` fallisce, come sul riferimento
+JS) e `string(:x)` copia i byte del simbolo in una Stringa.
 
 Fuori contratto (dichiarato, non implementato): `typeof`, `Int()`, `Symbol()`,
 `string()` per `Bool`/`Symbol`/`Nothing`, `:+`, `get` come indicizzazione 1-based.
@@ -126,7 +133,7 @@ chmod +x seed/linux-x86_64/seed
 ./seed/linux-x86_64/seed               # usage su stderr, exit 2
 ./seed/linux-x86_64/seed non_esiste.td # errore su stderr, exit 1
 sh seed/linux-x86_64/check_seed.sh     # 7 casi (contratto errori/limiti)
-sh verify.sh                           # gate completo: conformance 42 + probe 47 + golden S1
+sh verify.sh                           # gate completo: conformance 42 + probe 55 + golden S1
 ```
 
 The Windows PE and the Linux ELF cover the **same machine-code domain** and pass

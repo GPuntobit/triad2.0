@@ -2458,7 +2458,7 @@ cmpByteRsiImm(0x22); jne('q_loop');
 
 ## 36. Linux seed（E2）
 
-`seed/linux-x86_64/seed` 是一个 **9858 字节**的静态 ELF64，由 `seed/dev/gen_seed.js linux` 生成：入口 `0x400078`，只有一个 R|X 的 `PT_LOAD`，直接使用系统调用（`openat`/`read`/`write`/`exit`，隔离在 `os_*` 例程中）。它是完整的 **Triad-Core 解释器**：与 Windows seed 同一套机器，在共享 golden 上 stdout 逐字节一致（conformance 42/42 + probe + golden S1）。里程碑 M7（Linux 移植）已完成：E0（极简）→ E1（读文件）→ E2（解释器）→ E3（无 Node 的工具链，`./install.sh`）。
+`seed/linux-x86_64/seed` 是一个 **11465 字节**的静态 ELF64，由 `seed/dev/gen_seed.js linux` 生成：入口 `0x400078`，只有一个 R|X 的 `PT_LOAD`，直接使用系统调用（`openat`/`read`/`write`/`exit`，隔离在 `os_*` 例程中）。它是完整的 **Triad-Core 解释器**：与 Windows seed 同一套机器，在共享 golden 上 stdout 逐字节一致（conformance 42/42 + probe + golden S1）。里程碑 M7（Linux 移植）已完成：E0（极简）→ E1（读文件）→ E2（解释器）→ E3（无 Node 的工具链，`./install.sh`）。
 
 ```sh
 node seed/dev/gen_seed.js linux seed/linux-x86_64/seed.hex   # 重新生成 dump（可复现）

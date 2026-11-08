@@ -33,6 +33,17 @@ function jg(n) { reloc([0x0f, 0x8f], n); }
 function jnz(n) { reloc([0x0f, 0x85], n); }
 function jmp(n) { reloc([0xe9], n); }
 function callL(n) { reloc([0xe8], n); }
+// confronto del nome chiamato (puntatore in r8, lunghezza in r9) con una
+// stringa ASCII: se coincide salta a `match`, altrimenti prosegue (il
+// fall-through).  Ogni confronto usa un'etichetta propria.
+let nameEqSeq = 0;
+function emitNameEq(s, match) {
+  const ne = 'name_ne_' + (nameEqSeq++);
+  cmpR9Imm(s.length); jne(ne);
+  for (let i = 0; i < s.length; i++) { cmpByteR8DispImm(i, s.charCodeAt(i)); jne(ne); }
+  jmp(match);
+  L(ne);
+}
 // ---------------------------------------------------------------- memory map
 // Arena unica del seed (bump allocator, senza GC): una sola regione
 // allocata a runtime, divisa in fasce:
@@ -57,6 +68,14 @@ const MEM = {
 };
 // base dei dati dell'heap (subito dopo il bump pointer)
 const HEAP_DATA = MEM.HEAP + 8;
+// --- limiti dei primitivi §8 (readfile) --------------------------------
+// FILE_MAX: byte massimi letti da `readfile` (1 MiB, come la sorgente);
+//   un file piu' grande e' **rifiutato** (exit 1), non troncato.
+// PATH_MAX: byte massimi del path passato a `readfile`.
+// PATH_BUF: buffer del path (NUL-terminato) nella fascia scratch della regione.
+const FILE_MAX = 0x100000;
+const PATH_MAX = 1024;
+const PATH_BUF = MEM.SCRATCH + 0x40;
 // maschera di stop dei blocchi, in coda al buffer sorgente (r14+SCRATCH)
 const DATA_SLOT = MEM.SCRATCH;
 function leaRdxR14(d) { B(0x49, 0x8d, 0x96); B32(d); }
@@ -337,6 +356,10 @@ const movR10R8 = () => B(0x4d, 0x89, 0xc2);
 const movRdxMemRax = () => B(0x48, 0x8b, 0x10);
 const pushR10 = () => B(0x41, 0x52);
 const popR10 = () => B(0x41, 0x5a);
+const pushR11 = () => B(0x41, 0x53);
+const popR11 = () => B(0x41, 0x5b);
+const pushR13 = () => B(0x41, 0x55);
+const popR13 = () => B(0x41, 0x5d);
 const leaRsiRcx16 = () => B(0x48, 0x8d, 0x71, 0x10);
 const leaRsiRax16 = () => B(0x48, 0x8d, 0x70, 0x10);
 const movRcxR8 = () => B(0x4c, 0x89, 0xc1);
@@ -375,6 +398,51 @@ const movR11MemRax = () => B(0x4c, 0x8b, 0x18);              // mov r11,[rax]
 const cmpR10Imm32 = v => { B(0x49, 0x81, 0xfa); B32(v); };   // cmp r10,imm32
 const cmpR11Imm32 = v => { B(0x49, 0x81, 0xfb); B32(v); };   // cmp r11,imm32
 const movMemRaxR10 = () => B(0x4c, 0x89, 0x10);              // mov [rax],r10
+// --- helper per i primitivi §8 (readfile/strlen/strbyte/strsub) ---
+const movRaxMemRax8 = () => B(0x48, 0x8b, 0x40, 0x08);      // mov rax,[rax+8]
+const movR11MemRax8 = () => B(0x4c, 0x8b, 0x58, 0x08);      // mov r11,[rax+8]
+const movzxEaxMemRax = () => B(0x0f, 0xb6, 0x00);           // movzx eax,byte [rax]
+const movR8Rcx = () => B(0x49, 0x89, 0xc8);                 // mov r8,rcx
+const movR8Rdx = () => B(0x49, 0x89, 0xd0);                 // mov r8,rdx
+const movRdxR8 = () => B(0x4c, 0x89, 0xc2);                 // mov rdx,r8
+const movRdxR11 = () => B(0x4c, 0x89, 0xda);                // mov rdx,r11
+const movR8R9 = () => B(0x4d, 0x89, 0xc8);                  // mov r8,r9
+const movR9Rax = () => B(0x49, 0x89, 0xc1);                 // mov r9,rax
+const movR9Rdx = () => B(0x49, 0x89, 0xd1);                 // mov r9,rdx
+const movR9R11 = () => B(0x4d, 0x89, 0xd9);                 // mov r9,r11
+const movR10Rdx = () => B(0x49, 0x89, 0xd2);                // mov r10,rdx
+const movR10R11 = () => B(0x4d, 0x89, 0xda);                // mov r10,r11
+const movR10R13 = () => B(0x4d, 0x89, 0xea);                // mov r10,r13
+const movR11Rdx = () => B(0x49, 0x89, 0xd3);                // mov r11,rdx
+const movR11R8 = () => B(0x4d, 0x89, 0xc3);                 // mov r11,r8
+const movR11R9 = () => B(0x4d, 0x89, 0xcb);                 // mov r11,r9
+const movR11R13 = () => B(0x4d, 0x89, 0xeb);                // mov r11,r13
+const movR11R10 = () => B(0x4d, 0x89, 0xd3);                // mov r11,r10
+const movRcxR11 = () => B(0x4c, 0x89, 0xd9);                // mov rcx,r11
+const movRcxRdi = () => B(0x48, 0x89, 0xf9);                 // mov rcx,rdi
+const movMemRdiR11_8 = () => B(0x4c, 0x89, 0x5f, 0x08);     // mov [rdi+8],r11
+const movMemRdxRcx = () => B(0x48, 0x89, 0x0a);              // mov [rdx],rcx
+const movMemRdiR13_8 = () => B(0x4c, 0x89, 0x6f, 0x08);     // mov [rdi+8],r13d
+const movMemR10Dl = () => B(0x41, 0x88, 0x12);              // mov [r10],dl
+const addR8Imm = v => { B(0x49, 0x83, 0xc0, v & 255); };    // add r8,imm8
+const addR9Rcx = () => B(0x49, 0x01, 0xc9);                 // add r9,rcx
+const addR10Imm = v => { B(0x49, 0x83, 0xc2, v & 255); };   // add r10,imm8
+const addRaxRdx = () => B(0x48, 0x01, 0xd0);                // add rax,rdx
+const addRcxR10 = () => B(0x4c, 0x01, 0xd1);                // add rcx,r10
+const addRcxImm = v => { B(0x48, 0x83, 0xc1, v & 255); };   // add rcx,imm8
+const movDlMemRcx = () => B(0x8a, 0x11);                   // mov dl,[rcx]
+const subR8R11 = () => B(0x4d, 0x29, 0xd8);                 // sub r8,r11
+const subR11R10 = () => B(0x4d, 0x29, 0xd3);                // sub r11,r10
+const subRcxRdx = () => B(0x48, 0x29, 0xd1);                // sub rcx,rdx
+const cmpRdxR11 = () => B(0x4c, 0x39, 0xda);                // cmp rdx,r11
+const cmpRdxR10 = () => B(0x4c, 0x39, 0xd2);                // cmp rdx,r10
+const cmpR8R9 = () => B(0x4d, 0x39, 0xc8);                  // cmp r8,r9
+const decR11 = () => B(0x49, 0xff, 0xcb);                   // dec r11
+const testR11 = () => B(0x4d, 0x85, 0xdb);                  // test r11,r11
+const andR8dImm = v => { B(0x41, 0x83, 0xe0, v & 255); };  // and r8d,imm8
+const leaR10Rdi = () => B(0x4c, 0x8d, 0x57, 0x10);          // lea r10,[rdi+16]
+const leaR8Rdi = () => B(0x4c, 0x8d, 0x47, 0x10);           // lea r8,[rdi+16]
+const leaR8R14 = d => { B(0x4d, 0x8d, 0x86); B32(d); };     // lea r8,[r14+disp32]
 // letture dalla cornice del chiamante: dentro una routine gli operandi
 // spinti dal chiamante stanno *sotto* l'indirizzo di ritorno ([rsp+8],
 // [rsp+16], ...).
@@ -1363,7 +1431,7 @@ pushRsi();
 leaRdxR14(MEM.HEAP); movRaxMemRdx();
 leaR10Rcx31(); andR10ImmNeg16(); heapRoomR10();
 leaRdiR14(HEAP_DATA); addRdiRax();
-movMemRdiImm32(0, 1); movMemRdiRcx8();
+movMemRdiImm32(0, 5); movMemRdiRcx8();   // tipo 5 = simbolo (NON e' una stringa)
 leaR10Rcx31(); andR10ImmNeg16(); addRaxR10(); heapBumpStore();
 leaR9Rdi16();
 L('sym_copy');
@@ -1523,7 +1591,16 @@ orRaxImm3();
 ret();
 
 L('pbs_str');
-ret();
+// `string(x)`: una stringa resta se stessa; un simbolo (tipo 5) viene
+// copiato in una nuova Stringa (il simbolo non e' una stringa).
+andRaxImmFc();                                          // rax = header
+movR11MemRax8();                                        // r11 = len
+movRdxMemRax();                                         // rdx = tipo
+cmpEdxImm32(1); je('pbs_ident');
+cmpEdxImm32(5); jne('fail');                            // solo stringa o simbolo
+jmp('make_string');                                     // copia in una Stringa
+L('pbs_ident');
+orRaxImm3(); ret();
 
 L('pbs_int');
 // Int in decimale: usa buffer stack, poi alloca heap
@@ -1547,7 +1624,185 @@ testRcx(); jz('pbs_done'); movDlMemR10(); movMemR9Dl(); incR10(); incR9(); decRc
 L('pbs_done');
 movRaxRdi(); orRaxImm3(); movRspRbp(); popRbp(); ret();
 
+// ---------------------------------------------------------------- §8: primitivi di bootstrap
+// SPEC-CORE.md §8: `readfile`, `strlen`, `strbyte`, `strsub` (e `exit`).
+// Sono i primitivi con cui S1 legge e analizza il sorgente Triad: senza
+// `readfile` l'interprete self-hosted non puo' nemmeno caricare il programma
+// da interpretare (ticket .scratch/self-hosting-m6/issues/01, decisione Q1).
+//
+// Rappresentazione (vedi "valori taggati" piu' sopra):
+//   Stringa = oggetto heap [tipo=1][len][byte...]  (byte inline a +16)
+//   Simbolo = oggetto heap [tipo=5][len][byte...]  (stessa forma, tipo diverso:
+//             un simbolo NON e' una stringa — `strlen(:x)` deve fallire)
+//   Int = n<<2 (tag 00), Bool = 1/5, chiusura = ptr|2, oggetto = ptr|3
+//
+// str_check: rax = valore taggato -> rax = header dell'oggetto String.
+// Fallisce (exit 1) se il valore non e' una stringa.
+L('str_check');
+movRdxRax(); andRdxImm3(); cmpEdxImm3(); jne('fail');   // tag 3 = oggetto heap
+andRaxImmFc();                                          // rax = header
+movRdxMemRax(); cmpEdxImm32(1); jne('fail');            // tipo 1 = stringa
+ret();
+
+// make_string: copia i byte di una stringa in un NUOVO oggetto String.
+// In: rax = header sorgente, r11 = lunghezza in byte.
+// Out: rax = nuovo oggetto (ptr|3).  Clobber: rax, rcx, rdx, r8, r9, r10, r11, rdi.
+L('make_string');
+movRcxRax(); addRcxImm(16);                             // rcx = sorgente + 16 (i byte)
+movR10R11(); addR10Imm(31); andR10ImmNeg16();           // r10 = 16 + align16(len)
+leaRdxR14(MEM.HEAP); movRaxMemRdx();                    // rax = bump, rdx = &bump
+heapRoomR10();
+leaRdiR14(HEAP_DATA); addRdiRax();                      // rdi = nuovo oggetto
+movMemRdiImm32(0, 1);                                   // tipo 1 = stringa
+movMemRdiR11_8();                                       // [rdi+8] = len
+addRaxR10(); heapBumpStore();                           // bump += spazio
+leaR10Rdi();                                            // r10 = destinazione + 16
+L('ms_copy');
+testR11(); jz('ms_done');
+movDlMemRcx(); movMemR10Dl(); incRcx(); incR10(); decR11(); jmp('ms_copy');
+L('ms_done');
+movRaxRdi(); orRaxImm3(); ret();
+
+// strlen(s): numero di byte della stringa.
+L('pf_builtin_strlen');
+incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws');
+cmpByteRsiImm(')'); jne('fail'); incRsi();
+callL('str_check');
+movRaxMemRax8();                                        // rax = len in byte
+shlRax1();                                              // valore Int (n<<2)
+ret();
+
+// strbyte(s, i): byte alla posizione i (1-based).
+L('pf_builtin_strbyte');
+incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws'); pushRax();
+cmpByteRsiImm(','); jne('fail'); incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws');
+cmpByteRsiImm(')'); jne('fail'); incRsi();
+movR8Rax(); popRax();                                   // r8 = indice, rax = stringa
+callL('str_check');                                     // rax = header
+movRdxR8(); testDlImm(3); jne('fail');                  // l'indice deve essere Int (tag 00)
+sarRdx1();                                              // rdx = n (1-based)
+cmpRdxImm32(1); jl('fail');                             // n >= 1
+movR9MemRax8();                                         // r9 = len
+cmpRdxR9(); jg('fail');                                 // n <= len
+addRdxImm(15);                                          // 16 (header) + (n-1)
+addRaxRdx();                                            // rax = &byte
+movzxEaxMemRax();                                       // eax = byte
+shlRax1();
+ret();
+
+// strsub(s, a, b): sottostringa dai byte a..b inclusi (1-based).
+L('pf_builtin_strsub');
+incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws'); pushRax();
+cmpByteRsiImm(','); jne('fail'); incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws'); pushRax();
+cmpByteRsiImm(','); jne('fail'); incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws');
+cmpByteRsiImm(')'); jne('fail'); incRsi();
+movR8Rax();                                             // r8 = b (taggato)
+popRax();                                               // rax = a (taggato)
+movR11Rax();                                            // r11 = a (taggato)
+popRax();                                               // rax = s (taggato)
+callL('str_check');                                     // rax = header sorgente
+movR9MemRax8();                                         // r9 = len sorgente
+movRdxR11(); testDlImm(3); jne('fail'); sarRdx1();       // a deve essere Int
+cmpRdxImm32(1); jl('fail');                             // a >= 1
+movR10Rdx();                                            // r10 = a
+movRdxR8(); testDlImm(3); jne('fail'); sarRdx1();         // b deve essere Int
+movR8Rdx();                                             // r8 = b
+movRdxR8(); cmpRdxR10(); jl('fail');                    // b >= a
+cmpR8R9(); jg('fail');                                  // b <= len
+movR11R8(); subR11R10(); incR11();                      // r11 = b - a + 1
+movRcxRax(); addRcxImm(16);                             // rcx = header + 16
+decR10(); addRcxR10();                                  // rcx = &byte[a-1]
+movR10R11(); addR10Imm(31); andR10ImmNeg16();           // r10 = 16 + align16(len)
+leaRdxR14(MEM.HEAP); movRaxMemRdx();                    // rax = bump, rdx = &bump
+heapRoomR10();
+leaRdiR14(HEAP_DATA); addRdiRax();                      // rdi = nuovo oggetto
+movMemRdiImm32(0, 1);                                   // tipo 1 = stringa
+movMemRdiR11_8();                                       // [rdi+8] = len
+addRaxR10(); heapBumpStore();                           // bump += spazio
+leaR10Rdi();                                            // r10 = destinazione + 16
+L('sub_copy');
+testR11(); jz('sub_done');
+movDlMemRcx(); movMemR10Dl(); incRcx(); incR10(); decR11(); jmp('sub_copy');
+L('sub_done');
+movRaxRdi(); orRaxImm3(); ret();
+
+// readfile(path): il contenuto del file come Stringa.
+// File non leggibile -> exit 1 (etichetta 'open_fail'/'read_fail'); file
+// piu' grande di FILE_MAX -> exit 1 (etichetta 'fail').
+L('pf_builtin_readfile');
+incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws');
+cmpByteRsiImm(')'); jne('fail'); incRsi();
+callL('str_check');                                     // rax = header
+movR9MemRax8();                                         // r9 = len del path
+movR11R9(); cmpR11Imm32(PATH_MAX); jae('fail');         // path troppo lungo
+// cornice: le chiamate del PE (IAT) vogliono rsp allineato a 16; gli slot
+// [rsp+0x20]/[rsp+0x40] del PE (OVERLAPPED/byte letti) restano dentro la
+// cornice, non nei dati del chiamante.
+pushRbp(); movRbpRsp(); andRspM16();
+pushRsi(); pushRbx(); pushR13(); pushR11();              // cursore, env, funzioni
+subRsp(0x60);
+// copia il path in un buffer scratch NUL-terminato
+leaRdiR14(PATH_BUF);                                    // destinazione
+movR8Rax(); addR8Imm(16);                               // sorgente = header + 16
+movR11R9();                                             // contatore = len
+L('rf_path_copy');
+testR11(); jz('rf_path_done');
+movDlMemR8(); movPtrRdiDl(); incR8(); incRdi(); decR11(); jmp('rf_path_copy');
+L('rf_path_done');
+movByteRdiImm(0);                                       // terminatore NUL
+// prenota lo spazio per il contenuto (16 + FILE_MAX): il bump viene
+// riallineato alla fine sulla lunghezza effettiva.
+leaRdxR14(MEM.HEAP); movRaxMemRdx();                    // rax = bump, rdx = &bump
+movR10dImm(FILE_MAX + 16);                              // spazio massimo
+heapRoomR10();
+leaRdxR14(MEM.HEAP); movRaxMemRdx();                    // rax = bump
+leaRdiR14(HEAP_DATA); addRdiRax();                      // rdi = oggetto String
+// apertura (confine os_*): il path passa in r8
+leaR8R14(PATH_BUF);
+osCall('open', [['path', reg('r8')]]);
+// lettura: la chiamata ha sovrascritto rdi -> ricalcolo l'oggetto
+leaRdxR14(MEM.HEAP); movRaxMemRdx();                    // rax = bump (invariato)
+leaRdiR14(HEAP_DATA); addRdiRax();                      // rdi = oggetto String
+leaR8Rdi();                                              // r8 = buffer del contenuto
+osCall('read', [['handle', reg('rbx')], ['buf', reg('r8')], ['max', imm(FILE_MAX)],
+  ['nwritten'], ['overlapped']]);
+movR10R13();                                            // r10 = byte letti
+addRsp(0x60);                                           // libera la cornice
+popR11(); popR13(); popRbx(); popRsi();                 // ripristina i registri
+cmpR10Imm32(FILE_MAX); jae('fail');                     // file troppo grande
+// bump finale = bump_start + 16 + align16(n)
+movR11R10();                                            // r11 = n
+movRcxR11(); leaR10Rcx31(); andR10ImmNeg16();           // r10 = 16 + align16(n)
+leaRdxR14(MEM.HEAP); movRaxMemRdx();                    // rax = bump
+leaRdiR14(HEAP_DATA); addRdiRax();                      // rdi = oggetto
+leaRdxR14(HEAP_DATA);
+movRcxRdi(); subRcxRdx();                               // rcx = bump_start
+addRcxR10();                                            // rcx = bump nuovo
+leaRdxR14(MEM.HEAP); movMemRdxRcx();                    // [HEAP] = bump nuovo
+movMemRdiImm32(0, 1);                                   // tipo 1 = stringa
+movMemRdiR11_8();                                       // [rdi+8] = n
+movRaxRdi(); orRaxImm3();
+movRspRbp(); popRbp(); ret();
+
+// exit(n): termina il processo con il codice n (8 bit).
+L('pf_builtin_exit');
+incRsi(); callL('skip_ws'); callL('parse_expr'); callL('skip_ws');
+cmpByteRsiImm(')'); jne('fail'); incRsi();
+movRdxRax(); testDlImm(3); jne('fail');                 // il codice deve essere Int
+sarRdx1();                                              // rdx = n
+movR8Rdx();
+andR8dImm(0xff);                                        // il codice e' un byte
+pushRbp(); movRbpRsp(); andRspM16(); subRsp(0x20);
+osCall('exit', [['code', reg('r8d')]]);                  // non ritorna mai
+movRspRbp(); popRbp(); ret();
+
 L('pf_call');
+// §8: i primitivi di bootstrap hanno il precedimento sulle funzioni utente
+emitNameEq('readfile', 'pf_builtin_readfile');
+emitNameEq('strlen', 'pf_builtin_strlen');
+emitNameEq('strbyte', 'pf_builtin_strbyte');
+emitNameEq('strsub', 'pf_builtin_strsub');
+emitNameEq('exit', 'pf_builtin_exit');
 cmpR9Imm(3); jne('pfc_len');
 cmpByteR8DispImm(0, 'g'); jne('pfc_norm');
 cmpByteR8DispImm(1, 'e'); jne('pfc_norm');
@@ -1791,7 +2046,9 @@ L('pi_object');
 andRaxImmFc();
 B(0x48,0x8b,0x10); B(0x48,0x83,0xfa,0x04); je('pi_nothing');
 B(0x48,0x83,0xfa,0x02); je('pi_list');
-B(0x48,0x83,0xfa,0x01); jne('fail');
+B(0x48,0x83,0xfa,0x01); je('pi_str');    // tipo 1 = stringa
+B(0x48,0x83,0xfa,0x05); jne('fail');    // tipo 5 = simbolo
+L('pi_str');
 osCall('write', [['len', m8()], ['buf', m16()], ['handle'], ['nwritten'], ['overlapped']]);
 movByteRspImm(0x30,10);                                // corpo: newline nel buffer
 osCall('write', [['handle'], ['buf', rsp(0x30)], ['len', imm(1)], ['nwritten'], ['overlapped']]);
