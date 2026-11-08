@@ -579,7 +579,7 @@ cmpByteRsiDispImm(1, '='); jne('st_expr');
 addRsiImm(2); callL('skip_ws'); callL('parse_expr');
 popR9(); popR8(); pushRax();
 callL('env_lookup'); popRcx();
-sarRax1(); sarRcx1(); B(0x48, 0x29, 0xc1);   // rax = vecchio - nuovo
+sarRax1(); sarRcx1(); subRaxRcx();             // rax = vecchio - nuovo
 shlRax1();
 callL('env_assign'); addRspImm8(); jmp('pp_loop');
 L('st_mul_check');

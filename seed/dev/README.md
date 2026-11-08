@@ -21,12 +21,12 @@ placements per the `os_*` contract), the system constants and the executable bui
 
 Current output:
 - **windows:** 25088 byte PE, sha256 of `seed.hex` (verified by CI):
-  `4235A70790BAA6784DC3D944616705B37E76ED2263CE73210BCC20E53639B8F7`
-- **linux** (E2, Triad-Core interpreter): 8499 byte ELF (entry `0x400078`, single
+  `C4A25D2CFA12A9CBE8769A6CE396AFD76ABC0CCF3B752237635096FB9B8E3D33`
+- **linux** (E2, Triad-Core interpreter): 9647 byte ELF (entry `0x400078`, single
   `PT_LOAD` R|X), sha256 of `seed.hex`:
-  `41580ADEB58F4BD9B982AB1FBE3877E9B8B3E3439DFC34D085C850C1D6E3AA1B`,
+  `96789450E25BF2DFD96B27AAC756DE08C3891FA70BCA9A6113B16A3A948652B6`,
   sha256 of the decoded ELF:
-  `AB60C0C2C4BD5384D141BD50C5429FA0D13CCA781D7103CF7453DD8DCA3119C5`
+  `95CC7E248D55F98670C688655E1F2FA1AE5E7DC62E05AFE03CDBDC6809D396B7`
 ## Because they are versioned
 Writing a byte interpreter by hand without a generator is impractical beyond a few
 instructions; losing the generator blocks the seed extension. Keeping them here makes the work

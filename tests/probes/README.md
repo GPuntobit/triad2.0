@@ -36,6 +36,11 @@ repo; nessun fallback JS. Lo stesso entry point copre la parità PE via wine:
 | `get(xs, i)` (indice 0-based) | sì | sì | `test_get.td` |
 | `length(xs)` su lista | sì | sì | `ok_lista_indice.td` |
 | indice di lista `xs[i]` | sì (probe misurato) | sì | `ok_lista_indice.td` |
+| scrittura `xs[i] = v` (1-based) | sì | sì | `ok_lista_indice_scrittura.td` |
+| `-=`, `*=` a nome | sì | sì | `ok_composta_sottrai.td` |
+| `xs[i] += v` (composta a indice) | **no** (exit 1) | sì | `bad_lista_indice_composta.td` |
+| indice fuori range | **errore** (exit 1) | errore (exit 1) | `bad_lista_indice_fuori_range.td` |
+| interi oltre ±(2^61 − 1) | **sbagliato in silenzio** | sì (64 bit, §5) | `bad_intero_64bit.td` |
 | letterali di lista: ~60 valutazioni per esecuzione | **no** (528 byte fissi per valutazione, heap 64 KB: ~250 fanno crashare il processo) | sì | `bad_lista_alloc.td` |
 | letterale di lista su più righe | sì | sì | `ok_lista_multiriga.td` |
 | scope dei nomi nelle funzioni | **dinamico** (il callee vede i locali del chiamante) | lessicale | `bad_scope_dinamico.td` |
@@ -114,7 +119,7 @@ machine-leggibile (`seed/dev/certified-subset.txt`, leggibile in `seed/README.md
 presidî la applicano:
 
 - `node tools/selfhost-guard/guard.mjs` — guardie statiche: una regola per divergenza
-  (`G-D01`…`G-D22`), attive solo se la divergenza è ancora nel contratto (quando il seed
+  (`G-D01`…`G-D22`, `G-D24`), attive solo se la divergenza è ancora nel contratto (quando il seed
   viene corretto, la regola si spegne da sola); il corpus certificato è
   `seed/dev/certified-corpus.txt`;
 - `node tools/selfhost-guard/differential.mjs` — gate differenziale: per ogni programma
@@ -148,3 +153,41 @@ preesistente modificato. Queste misure riguardano i quattro programmi:
 le guardie conservative del corpus certificato e le altre divergenze del
 contratto richiedono una verifica separata prima di essere rimosse.
 La parità eseguibile PE non è stata rieseguita (ADR 0002).
+
+## Ciclo di rebuild N03/N04: `-=`, `xs[i]`, `xs[i] = v` — 2026-11-08
+
+Il rebuild del dump (core.js → `seed.hex` → binari) ha chiuso le capability che
+erano state implementate solo nel generatore, e ne ha misurato i limiti reali
+confrontando il seed con il riferimento JS (`seed/dev/triad_core.cjs`),
+byte per byte su stdout + exit code:
+
+| Costrutto | seed | interprete JS | probe |
+|---|---|---|---|
+| `-=` a nome | sì | sì | `ok_composta_sottrai.td` |
+| `*=` a nome | sì | sì | `ok_composta_sottrai.td` |
+| scrittura `xs[i] = v` (1-based) | sì | sì | `ok_lista_indice_scrittura.td` |
+| `xs[i] += v` (assegnazione composta a indice) | **no** (exit 1, D24) | sì | `bad_lista_indice_composta.td` |
+| indice fuori range | **errore di esecuzione** (exit 1, SPEC-CORE §9) | idem | `bad_lista_indice_fuori_range.td` |
+| interi oltre ±(2^61 − 1) | **sbagliato senza errore** (D25) | corretto (64 bit, §5) | `bad_intero_64bit.td` |
+
+Note:
+
+1. **`-=` era sbagliato in silenzio.** Il codegen emetteva `sub rcx, rax`
+   (`48 29 c1`) invece di `sub rax, rcx` (`48 29 c8`): il risultato era il
+   valore *vecchio* (`x = 10; x -= 3` → `10`, non `7`). Divergenza *silent*
+   (risultato sbagliato senza errore): la più insidiosa classe. Corretto in
+   `seed/dev/core.js` con l'helper canonico `subRaxRcx()`.
+2. **`xs[i] += v` resta una divergenza rumorosa (D24)**: la grammatica di
+   Core (SPEC-CORE §4) non prevede l'assegnazione a indice, quindi la forma
+   `xs[i] = v` è un'estensione del seed e quella composta no: dichiarata nel
+   contratto (`seed/dev/certified-subset.txt`) e vietata dalla guardia
+   statica `G-D24` sulla sorgente di S1.
+3. **Il range degli interi è di 62 bit (D25)**: il tag del tipo occupa il bit
+   basso, quindi il seed rappresenta al massimo ±(2^61 − 1); oltre, il
+   risultato è sbagliato **senza errore** (wrap a 62 bit). Divergenza
+   *silent*, decidibile solo a runtime: presidio nel gate differenziale.
+4. Il rebuild ha anche chiuso `D6` (`-=`, `*=`), `D9` (chiamata in posizione
+   finale) e `D13` (indicizzazione `xs[i]`, scrittura `xs[i] = v`): non sono
+   più nel contratto, e le guardie `G-D06`/`G-D09`/`G-D13` sono state
+   rimosse (i fixture che le facevano scattare sono diventati fixture
+   «ammessi»).

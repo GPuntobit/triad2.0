@@ -1,5 +1,287 @@
 # Task Triad 2.0
 
+## Handoff — 2026-11-08 18:20: ciclo di rebuild del seed chiuso — `-=` corretto, contratto allineato (D6/D9/D13 fuori, D24/D25 dentro)
+
+### Stato attuale e obiettivo della sessione
+
+Ripresa dall'handoff «2026-11-08 17:50» (checkpoint verificato: «resta la sincronizzazione
+dei documenti»). Obiettivo: **chiudere il ciclo di rebuild** del seed — cioè eseguire i
+punti 1–5 di quel checkpoint — e registrare la **decisione aperta su `D25`**.
+
+Nota di coordinamento: durante la sessione il repository è stato aggiornato da una
+**sessione parallela** (commits `68fc1bc`, `a002c5d`, …) e `TASK.md`/`STATUS.md` sono
+cambiati sotto i piedi due volte (17:45, 17:50). La sessione ha quindi lavorato **sopra lo
+stato reale** (`git status`, `git log -3`, mtime dei dump) e ha committato **tutto in un
+solo commit**, come chiesto dal checkpoint.
+
+### Cosa è stato fatto
+
+1. **Bug `-=` nel seed (divergenza *silenziosa*)** — misurato sul dump rigenerato:
+   `x = 10; x -= 3` restituiva **10** (il valore vecchio). Causa: nel codegen di
+   `st_sub_check` era emesso `sub rcx, rax` (`48 29 c1`) invece di `sub rax, rcx`
+   (`48 29 c8`) — l'ordine degli operandi di `SUB /r` è inverso rispetto a `ADD /r`.
+   Fix: `seed/dev/core.js` usa ora l'helper canonico `subRaxRcx()`. Verificato
+   byte-identico al riferimento JS su 7 programmi di battery (`-=`, `*=` con variabile,
+   con espressione, con negativi, `*=` a zero).
+2. **Ciclo di rebuild chiuso**: `node seed/dev/gen_seed.js all` → dump PE (25088 byte) ed
+   ELF (9647 byte) rigenerati → binari committati (`seed/linux-x86_64/seed`,
+   `seed/windows-x86_64/seed.exe`, `seed_decoded.exe`) decodificati dai dump canonici →
+   hash CI aggiornati (ELF `96789450…`, PE `c4a25d2c…`) → documentazione allineata
+   (hash, dimensioni, conteggi). **Anti-drift verde**: il generatore riproduce i dump
+   committati byte per byte.
+3. **Contratto del seed** (`seed/dev/certified-subset.txt`): chiuse **D6** (`-=`, `*=`
+   a nome), **D9** (chiamata in posizione finale: ora valutata) e **D13** (indicizzazione
+   `xs[i]` 1-based e scrittura `xs[i] = v`); **D8** rifinita (l'`if` come valore funziona
+   **solo** in coda al corpo di una funzione: `y = if … end` resta rifiutato, exit 1);
+   **D24** (noisy) `xs[i] += v` non implementata; **D25** (silent) gli interi sono limitati
+   a **±(2^61 − 1)** (il tag del tipo occupa il bit basso): oltre, il risultato è sbagliato
+   **senza errore**, mentre `SPEC-CORE.md` §5 chiede 64 bit signed con wrap.
+4. **Guardie statiche**: rimosse `G-D06`, `G-D09`, `G-D13` (divergenze risolte; i fixture
+   che le facevano scattare sono diventati fixture «ammessi»: `risolto_composta.td`,
+   `risolto_chiamata_finale.td`, `risolto_indicizzazione.td`); aggiunta **G-D24**
+   (AST `indexassign` con op ≠ `=`) + fixture `d24_composta_indice.td`; `D25` aggiunta a
+   `DIFFERENTIAL_ONLY` (la violazione dipende dai valori a runtime: presidio nel gate
+   differenziale, non in una regola statica).
+5. **Probe**: 39 → **44**. Nuovi: `ok_composta_sottrai` (`-=`, `*=`), `ok_lista_indice_scrittura`
+   (`xs[i] = v`), `bad_lista_indice_composta` (`xs[i] += v` → exit 1),
+   `bad_lista_indice_fuori_range` (exit 1), `bad_intero_64bit` (divergenza silenziosa,
+   congelata come sidecar: exit 0 + stdout `-1`).
+6. **Documentazione allineata**: `seed/README.md` (tabella divergenze: via D6/D9/D13, D8
+   rifinita, D24/D25 nuove, conteggi 42/44, ELF 9647 byte), `seed/dev/README.md`,
+   `seed/linux-x86_64/README.md`, `seed/windows-x86_64/README.md`, mirror Obsidian
+   (`obsidian-triad/wiki-content/Doc-seed-windows-README.md`), `conformance/README.md`,
+   `conformance/core/README.md` (42 casi, **0 gap noti**), `docs/libro/_dati_dal_codice.md`
+   (§3: limite degli interi; §8: 42 casi, `KNOWN_GAP` vuota), tutorial in 4 lingue
+   (conteggi 39 → 42, ELF 8499 → 9647 byte, gap `liste` descritto come **chiuso**),
+   `STATUS.md`, `CHANGELOG.md`, `tests/probes/README.md` (matrice + sezione sul rebuild).
+7. **Ticket 11 chiuso** (`.scratch/seed-linux-nativo/issues/11-ternario-simbolo-seed.md`:
+   `Status: resolved`) e `map.md` aggiornato: la mappa non ha più ticket aperti.
+
+### Cosa manca (l'unico lavoro aperto, più qualche allineamento minore)
+
+1. **Decisione su `D25`** (unico punto aperto, **non** un dettaglio da seedere in una riga):
+   il seed rappresenta gli interi con il tag nel bit basso → range utile ±(2^61 − 1),
+   mentre `SPEC-CORE.md` §5 chiede 64 bit signed con wrap. Le tre strade:
+   (a) **documentare il limite** (scelta fatta in questa sessione: divergenza `D25`
+   dichiarata nel contratto, nel README, nel libro e con il probe `bad_intero_64bit`);
+   (b) **implementare l'aritmetica a 64 bit** nel codegen (sposta il tag del tipo: lavoro
+   grande, da pianificare a parte);
+   (c) **dichiarare `SPEC-CORE.md` §5 impreciso** e riscrivere la norma (decisione
+   normativa, non tecnica: va presa dal maintainer).
+   Finché non si decide (b) o (c), il limite è **dichiarato e presidiato**.
+2. **`xs[i] += v`** (D24): decidere se implementarlo o mantenerlo come divergenza
+   rumorosa (scelta di questa sessione: **dichiarata**, non implementata — il rebuild non
+   era il momento giusto per aggiungere funzionalità).
+3. **Conteggi residui**: il mirror Obsidian *gemello* `obsidian-triad/github-wiki/Doc-seed-windows-README.md`
+   sta nel **submodulo** del wiki (repo separato): va aggiornato lì, out-of-band.
+   `docs/tutorial/TUTORIAL.ru.md` non contiene conteggi da correggere (verificato).
+4. **`selfhost/interpreter.td`** è ora **eseguibile dal seed** (prima falliva con exit 1 per
+   `xs[i]`): il differenziale seed↔JS dà 0 differenze. Non è entrato nel corpus
+   certificato (resta «fuori contratto» per decisione: è un prototipo).
+
+### File toccati
+
+| File | Modifica |
+|---|---|
+| `seed/dev/core.js` | **fix** `-=`: `B(0x48,0x29,0xc1)` → `subRaxRcx()` (`48 29 c8`) |
+| `seed/dev/certified-subset.txt` | contratto: via D6/D9/D13, dentro D24/D25, D8 rifinita |
+| `seed/dev/core.js` → `seed/{linux,windows}-x86_64/seed.hex` | dump rigenerati (anti-drift) |
+| `seed/linux-x86_64/seed`, `seed/windows-x86_64/seed.exe`, `seed_decoded.exe` | binari decodificati dai dump canonici |
+| `.github/workflows/ci.yml` | hash check: ELF `96789450…`, PE `c4a25d2c…` |
+| `tools/selfhost-guard/rules.mjs` | via `G-D06`/`G-D09`/`G-D13`; nuova `G-D24`; `DIFFERENTIAL_ONLY += D25` |
+| `tools/selfhost-guard/test.mjs` | casi fixture aggiornati; 3 check «risolta → ammesso»; test «contratto spegne la regola» spostato su D24 |
+| `tools/selfhost-guard/fixtures/` | rimossi `d06_composta.td`, `d09_chiamata_finale.td`, `d13_indicizzazione.td`; aggiunti `d24_composta_indice.td`, `risolto_*.td` |
+| `tests/probes/*` (5 programmi + sidecar) | `ok_composta_sottrai`, `ok_lista_indice_scrittura`, `bad_lista_indice_composta`, `bad_lista_indice_fuori_range`, `bad_intero_64bit` |
+| `tests/probes/run_probes.sh` | `bad_intero_64bit` fra le eccezioni misurate (sidecar) |
+| `seed/README.md`, `seed/dev/README.md`, `seed/{linux,windows}-x86_64/README.md`, `obsidian-triad/wiki-content/Doc-seed-windows-README.md` | hash, dimensioni, divergenze, conteggi |
+| `conformance/README.md`, `conformance/core/README.md`, `docs/libro/_dati_dal_codice.md`, `docs/tutorial/TUTORIAL{,.it,.ja,.zh}.md` | conteggi 39/40 → 42, gap `liste` chiuso, limite degli interi |
+| `STATUS.md`, `CHANGELOG.md`, `TASK.md` | stato, changelog, questo handoff |
+| `.scratch/seed-linux-nativo/issues/11-…md`, `.scratch/seed-linux-nativo/map.md` | ticket 11 chiuso, mappa senza ticket aperti |
+
+Nessun **golden di conformance** è stato riscritto; nessun file di lessico, parser o
+tipi è stato toccato (l'unica modifica al runtime è il fix di `-=`).
+
+### Decisioni prese
+
+1. **`-=` corretto, non dichiarato divergenza**: era un bug del codegen (operandi
+   invertiti), non una scelta di progetto → corretto e coperto da probe.
+2. **`D25` (interi a 62 bit) dichiarata, non implementata**: l'aritmetica a 64 bit vero
+   nel codegen è un lavoro grande (spostare il tag dei tipi); la regola operativa 1
+   impone di non cambiare la semantica dichiarata: finché il limite non è risolto, è
+   **dichiarato** (contratto + README + libro + probe) e la decisione (b)/(c) resta
+   aperta.
+3. **`D24` dichiarata, non implementata**: la grammatica di Core (`SPEC-CORE.md` §4) non
+   prevede l'assegnazione a indice; `xs[i] = v` è un'estensione del seed e quella
+   composta no. Dichiararla è sufficiente; implementarla è lavoro separato.
+4. **`D25` in `DIFFERENTIAL_ONLY`**: la violazione dipende dai valori a runtime, quindi
+   non è decidibile dall'AST: il presidio è il gate differenziale seed↔JS (come D15).
+5. **Nuovo id `D24`** invece di riusare `D23` (che era stato risolto e resta nella
+   cronologia): un id non viene riassegnato a una divergenza diversa.
+6. **Nessun nuovo caso in `conformance/core/cases/`**: il conteggio «42» è cablato in
+   guide e tutorial (5 lingue); le capability nuove sono coperte dai **probe** (44), che
+   sono il luogo previsto per i limiti e le estensioni del runtime.
+7. **ADR 0001 non riscritto**: l'ADR registra la *decisione* (immutabilità del PE e
+   riproducibilità del dump); l'hash cited è una prova storica del 2026-11-04 e non va
+   riscritto. Il nuovo hash sta nei README e nella CI.
+
+### Test di conformance eseguiti ed esito
+
+| comando | esito |
+|---|---|
+| `sh verify.sh` | **PASS** (Core 42/42, probe 44/44, logica 29/29) |
+| `sh conformance/gate.sh` | **PASS** 42/42, **0 gap noti** |
+| `TRIAD_SEED=…/seed-wine.sh sh conformance/run.sh` (PE via wine) | **PASS** 42/42 (parità PE↔ELF) |
+| `TRIAD_SEED=…/seed-wine.sh sh tests/probes/run_probes.sh` (PE via wine) | **PASS** 44/44 (parità PE↔ELF) |
+| `sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed` | **PASS** 7 casi |
+| `node tools/selfhost-guard/test.mjs` | **PASS** 25 test, 0 falliti |
+| `node tools/selfhost-guard/guard.mjs` | **PASS** 0 errori, 7 avvisi |
+| `node tools/selfhost-guard/differential.mjs` | **PASS** 6 file, 0 differenze |
+| anti-drift: `gen_seed.js` + `cmp` (PE ed ELF) | **PASS** (dump riprodotti byte per byte) |
+| hash CI `sha256sum --check` | **PASS** (ELF e PE) |
+| `node tools/site-gen/build.mjs --check` / `lint.mjs` | **PASS** (13 file, 0 errori) |
+| `sh tests/security/run.sh` | **PASS** |
+| `sh tests/desktop.sh` | **PASS** |
+| battery seed↔JS (22 programmi: `-=`, `*=`, `xs[i]`, `xs[i]=v`, fuori range, `if` come valore, chiamate in posizione finale, overflow) | **identici** salvo `xs[i] += v` (D24, exit 1) e il range 62 bit (D25) |
+
+### Prossimi passi e problemi aperti
+
+1. Decidere `D25`: (a) limite documentato [scelta corrente], (b) aritmetica a 64 bit,
+   (c) norma rivista. È l'unico punto **aperto** che riguarda la semantica.
+2. Decidere `D24` (`xs[i] += v`): implementare o mantenere come divergenza rumorosa.
+3. Aggiornare il mirror *gemello* del README PE nel submodulo `obsidian-triad/github-wiki`
+   (out-of-band).
+4. Se si vuole un caso di conformance per `-=`/`xs[i] = v` (oggi coperti dai probe),
+   decidere il costo del cablaggio dei conteggi nelle guide.
+
+### Comando di ripresa
+
+```sh
+cd /home/votlazam/Documenti/progetti/triad2.0 && git status --short && git log --oneline -3 \
+  && sh conformance/gate.sh | tail -2 && sh tests/probes/run_probes.sh | tail -2 \
+  && node tools/selfhost-guard/test.mjs | tail -2 && node seed/dev/gen_seed.js linux /tmp/chk.hex >/dev/null \
+  && cmp /tmp/chk.hex seed/linux-x86_64/seed.hex && echo "anti-drift OK"
+```
+
+```
+Ripresa sessione: leggi la sezione "Handoff — 2026-11-08 18:20: ciclo di rebuild del seed chiuso" in TASK.md e continua da lì
+```
+
+## Handoff — 2026-11-08 17:50: checkpoint verificato — il rebuild è fatto (in parallelo), resta la sincronizzazione dei documenti
+
+### Stato attuale e obiettivo della sessione
+
+Sessione di **checkpoint** (verifica, non implementazione): ripresa dall'handoff
+«2026-11-08 03:30» (ticket 11, ternario con simbolo / D23). **Il repository è avanzato
+molto rispetto a quell'handoff**: durante questa sessione una **sessione parallela** ha
+chiuso D23, il ciclo N03/N04 e **poi l'intero ciclo di rebuild** (dump, hash CI,
+contratto, guardie, probe). Obiettivo di questa sessione: **misurare** lo stato reale
+(quello descritto nell'handoff era superato) e consegnare un elenco verificato del
+lavoro residuo.
+
+### Cosa è stato fatto (in questa sessione: solo misure; scrittura solo in TASK.md)
+
+1. **Stato reale misurato del working tree** (le modifiche sono **non committate**):
+   - `node seed/dev/gen_seed.js linux|windows` **riproduce** i dump committati →
+     **anti-drift VERDE** (prima della sessione parallela era rotto: ELF byte 2551,
+     PE byte 3767);
+   - hash CI aggiornati (ELF `96789450…`, PE `c4a25d2c…`) e coerenti con i dump;
+   - binario `seed/linux-x86_64/seed` **allineato** al dump (`cmp` OK, 9647 byte);
+   - contratto: **chiuse D6** (`-=`,`*=`), **D9** (chiamata in posizione finale),
+     **D13** (indicizzazione `xs[i]` e scrittura `xs[i] = v`); **aggiunte D24**
+     (`xs[i] += v` → exit 1, rumorosa) e **D25** (interi a 62 bit invece di 64 bit
+     signed: **divergenza silenziosa** dal `SPEC-CORE.md` §5);
+   - guardie: `G-D06`/`G-D09`/`G-D13` spente da sole, nuovi fixture `risolto_*.td` e
+     `d24_composta_indice.td`; probe: 44 (nuovi `ok_composta_sottrai`,
+     `ok_lista_indice_scrittura`, `bad_lista_indice_fuori_range`,
+     `bad_lista_indice_composta`, `bad_intero_64bit`).
+2. **Verifica completa sul working tree** (tutto verde):
+   `sh conformance/gate.sh` → **42/42**; `sh tests/probes/run_probes.sh` → **44/44**;
+   `node tools/selfhost-guard/test.mjs` → **25/25**; `guard.mjs` → **0 errori** (7 avvisi);
+   `differential.mjs` → **0 differenze** seed↔JS; `sh verify.sh` → **OK** (Core 42/42,
+   probe 44/44, logic 29/29).
+3. **Battery seed↔JS** (riferimento JS = autorità semantica): con i dump rigenerati
+   `-=`, `*=`, `xs[i]`, `xs[i] = v` e il ternario con simbolo sono **byte-identici** al
+   riferimento; resta **`xs[i] += v` → exit 1** (D24) e il **range 62 bit** (D25).
+
+### Cosa manca (tutto documentale + il commit; ~30 minuti)
+
+1. **Committare il working tree** (rebuild del seed: dump PE/ELF, hash CI, contratto,
+   guardie, probe) — è lavoro byte-per-byte: un solo commit, messaggio che tracci il
+   diff (ADR 0001: ogni diff nei byte è deliberato e documentato).
+2. **`seed/README.md`** — la tabella delle divergenze è ancora quella pre-rebuild:
+   togliere le righe **D6**, **D9**, **D13**; aggiungere **D24** (`xs[i] += v`, exit 1) e
+   **D25** (interi a 62 bit: wrap silenzioso invece di 64 bit signed, `SPEC-CORE.md` §5);
+   aggiornare la lista «fuori contratto» e i conteggi (42 casi, 44 probe, ELF 9647 byte).
+3. **STATUS.md / CHANGELOG.md** — stato del seed e conteggi (42/42, 44/44).
+4. **Conteggi obsoleti nel book/tutorial** (4 lingue) e nel mirror Obsidian
+   (submodule, out-of-band): `docs/tutorial/TUTORIAL{,.it,.ja,.zh}.md` dicono ancora
+   «39/39 casi Core» (righe 51, 3045/3753, 3502/4433, 2456/2461);
+   `docs/libro/_dati_dal_codice.md` dice «40/40».
+5. **Ticket 11** (`.scratch/seed-linux-nativo/issues/11-ternario-simbolo-seed.md`):
+   è ancora `Status: open` → chiuderlo (D23 risolta) e allineare `map.md`.
+6. **Decisione aperta su D25**: il seed rappresenta gli interi con 2 bit di tag → range
+   utile ±(2^61−1), mentre `SPEC-CORE.md` §5 chiede interi a 64 bit signed. È una
+   divergenza **silenziosa** (wrap invece di errore): va deciso se (a) si documenta come
+   limite del seed, (b) si implementa l'aritmetica a 64 bit, o (c) si dichiara la
+   specifica imprecisa. **Non** è un dettaglio da seedere in una riga.
+
+### Avvertenza: sessioni parallele sullo stesso repository
+
+Durante questa sessione `TASK.md`, `STATUS.md` e `seed/dev/core.js` sono cambiati
+**sotto i piedi** (commit `68fc1bc`, `a002c5d`, …; `core.js` alle 14:56) e il working
+tree è passato da pulito a «rebuild in corso». **Prima di modificare dump o `core.js`**:
+`git status --short` + `git log --oneline -3` + `ls -l --time-style=full-iso
+seed/dev/core.js seed/*/seed.hex`, e verificare che nessun'altra sessione sia a metà
+rebuild (le due sessioni che si sovrappongono producono dump diversi → anti-drift rosso).
+
+### File toccati
+
+| File | Modifica |
+|---|---|
+| `TASK.md` | questo handoff (e basta: **nessun'altra scrittura in questa sessione**) |
+
+### Decisioni prese
+
+1. **Nessuna scrittura al repository** in questa sessione: la consegna è il checkpoint
+   verificato + l'elenzo del residuo; il rebuild byte-per-byte va committato **in uno**
+   (regola operativa 3, ADR 0001).
+2. **Il riferimento semantico resta il riferimento JS** (`seed/dev/triad_core.cjs`):
+   confronti seed↔JS byte-esatti su stdout **ed** exit code; nessun golden riscritto.
+3. **D24 (`xs[i] += v`) resta una divergenza ruminosa**: dichiararla, non
+   implementarla, in questa sessione (il rebuild era il momento giusto per chiudere
+   D6/D9/D13, non per aggiungere funzionalità).
+
+### Test di conformance eseguiti ed esito
+
+| comando | esito |
+|---|---|
+| `sh conformance/gate.sh` | **PASS** 42/42 (0 gap noti) |
+| `sh tests/probes/run_probes.sh` | **PASS** 44/44 |
+| `node tools/selfhost-guard/test.mjs` | **PASS** 25/25 |
+| `node tools/selfhost-guard/guard.mjs` | **PASS** 0 errori, 7 avvisi |
+| `node tools/selfhost-guard/differential.mjs` | **PASS** 0 differenze seed↔JS |
+| `sh verify.sh` | **PASS** (Core 42/42, probe 44/44, logic 29/29) |
+| anti-drift `gen_seed.js` + `cmp` (ELF e PE) | **PASS** (dump riprodotti byte per byte) |
+| battery seed↔JS (7 costrutti) | conforme **tranne** `xs[i] += v` (D24) |
+
+### Prossimi passi e problemi aperti
+
+1. Committare il rebuild (punto 1) e fare la sincronizzazione documentale (punti 2–4).
+2. Chiudere il ticket 11 e aggiornare `map.md` (punto 5).
+3. Decidere D25 (punto 6): è l'unica divergenza **silenziosa** rimasta nel contratto.
+
+### Comando di ripresa
+
+```sh
+cd /home/votlazam/Documenti/progetti/triad2.0 && git status --short && git log --oneline -3 \
+  && ls -l --time-style=full-iso seed/dev/core.js seed/linux-x86_64/seed.hex seed/windows-x86_64/seed.hex \
+  && sh conformance/gate.sh | tail -2 && sh verify.sh | tail -2
+```
+
+```
+Ripresa sessione: leggi la sezione "Handoff — 2026-11-08 17:50" in TASK.md e continua da lì
+```
+
 ## Installazione desktop KDE senza qtpaths — 2026-11-08
 
 L'installazione riusciva ma alcune versioni xdg-utils richiamavano qtpaths

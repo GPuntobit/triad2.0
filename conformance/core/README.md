@@ -11,9 +11,9 @@ Triad-Full: they will be covered by the seed tests.
 ## Execution
 
 ```sh
-sh conformance/run.sh          # verify (Core suite: 40 cases, byte-exact)
+sh conformance/run.sh          # verify (Core suite: 42 cases, byte-exact)
 sh conformance/run.sh --update # regenerate the goldens (only for deliberate semantic changes)
-sh conformance/gate.sh         # gate: the same suite, tolerating the known gaps (noisy)
+sh conformance/gate.sh         # gate: the same suite (no known gap left: all 42 are required)
 ```
 
 ## Cases
@@ -41,7 +41,7 @@ sh conformance/gate.sh         # gate: the same suite, tolerating the known gaps
 | `funzioni_io` | block function with declared effect `!io` — covered by the seed |
 | `formula` | block function with two parameters (rectangle area) — covered by the seed |
 | `begin_block` | `begin ... end` block — covered by the seed (M3b2b3l) |
-| `liste` | 1-based indices, `length`, `push!`, iteration with `while` |
+| `liste` | 1-based indices, `length`, `push!`, iteration with `while` — covered by the seed |
 | `liste_base` | construction and printing of integer lists — covered by the seed |
 | `liste_push` | `push!` on integer lists, aliasing — covered by the seed |
 | `stringhe_base` | string literals, printing, `length` — covered by the seed (M3b2b3m) |
@@ -57,14 +57,17 @@ sh conformance/gate.sh         # gate: the same suite, tolerating the known gaps
 | `chiusura_in_if` | lambda inside `if` — covered by the seed |
 | `scope` | local vs global, shadowing with `let` — covered by the seed (M3b2b3j) |
 | `gcd` | Euclidean algorithm for GCD (recursion, modulo) — covered by the seed |
-| `ternario_simbolo` | ternary whose *then* branch is a symbol — **not covered by the seed**: the seed takes the `:` of the symbol as the separator and rejects the program (D23); the golden comes from the JS reference (semantic authority) |
+| `ternario_simbolo` | ternary whose *then* branch is a symbol — covered by the seed (D23 resolved) |; the golden comes from the JS reference (semantic authority) |
 
-40 cases in total. On the seed **38 are green** and two are *known gaps*, excluded
-explicitly and noisily by `conformance/gate.sh` (no golden was rewritten to hide them):
+42 cases in total. On the seed **all 42 are green**: `conformance/gate.sh` has no known
+gap left (no golden was rewritten to hide one).
 
-- `liste` — N03: the seed does not implement `xs[i]` (1-based) nor `length(xs)`;
-- `ternario_simbolo` — D23: the seed takes the `:` of a symbol literal as the ternary
-  separator and rejects the program (exit 1).
+The two historical gaps were closed without touching the goldens:
+
+- `liste` — N03: the seed now implements `xs[i]` (1-based), `length(xs)`, the
+  `push!` statement and the iteration with `while` (the N03/N04 rebuild);
+- `ternario_simbolo` — D23: the seed now distinguishes the `:` of a symbol literal
+  from the ternary separator.
 
 Since the CI revision of
 2026-11-05 (decision 04, `.scratch/seed-linux-nativo/issues/04-parita-suite-ci.md`) the CI

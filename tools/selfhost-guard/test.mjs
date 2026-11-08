@@ -32,14 +32,11 @@ const CASES = [
   ['d03_escape.td', 'G-D03'],
   ['d04_eq_stringhe.td', 'G-D04'],
   ['d05_continue.td', 'G-D05'],
-  ['d06_composta.td', 'G-D06'],
   ['d07_while_valore.td', 'G-D07'],
   ['d08_if_valore.td', 'G-D08'],
-  ['d09_chiamata_finale.td', 'G-D09'],
   ['d10_return.td', 'G-D10'],
   ['d11_lambda_blocco.td', 'G-D11'],
   ['d12_let_multi.td', 'G-D12'],
-  ['d13_indicizzazione.td', 'G-D13'],
   ['d14_primitivi_assenti.td', 'G-D14'],
   ['d16_bootstrap_assente.td', 'G-D16'],
   ['d17_simbolo_operatore.td', 'G-D17'],
@@ -48,6 +45,7 @@ const CASES = [
   ['d20_scope_corpo_blocco.td', 'G-D20'],
   ['d21_while_non_bool.td', 'G-D21'],
   ['d22_keyword_cieca.td', 'G-D22'],
+  ['d24_composta_indice.td', 'G-D24'],
   ['e02_troppi_parametri.td', 'G-E02'],
   ['e03_lista_troppo_lunga.td', 'G-E03'],
 ];
@@ -78,6 +76,18 @@ for (const [fixture, rule] of CASES) {
   ok('D23 risolta -> ternario con simbolo ammesso', !findings.some((f) => f.rule === 'G-D23'));
 }
 
+// D6, D9 e D13 sono risolte dal seed: i costrutti che erano vietati
+// devono essere ammessi (nessuna guardia deve piu' scattare).
+for (const [fixture, what] of [
+  ['risolto_composta.td', 'D6 risolta -> `-=`/`*=` ammessi'],
+  ['risolto_chiamata_finale.td', 'D9 risolta -> chiamata in posizione finale ammessa'],
+  ['risolto_indicizzazione.td', 'D13 risolta -> indicizzazione `xs[i]` ammessa'],
+]) {
+  const findings = checkFile(path.join(FIXTURES, fixture), contract);
+  ok(what, findings.length === 0,
+    findings.map((f) => `${f.rule}: ${f.msg}`).join(' | '));
+}
+
 // il corpus pulito non deve produrre violazioni
 {
   const file = path.join(FIXTURES, 'pulito.td');
@@ -89,10 +99,10 @@ for (const [fixture, rule] of CASES) {
 // il contratto spegne la regola quando la divergenza non c'e' piu'
 {
   const contract2 = { ...contract, divergence: { ...contract.divergence } };
-  delete contract2.divergence.D13;
-  const file = path.join(FIXTURES, 'd13_indicizzazione.td');
+  delete contract2.divergence.D24;
+  const file = path.join(FIXTURES, 'd24_composta_indice.td');
   const findings = checkFile(file, contract2);
-  ok('D13 assente dal contratto -> regola spenta', !findings.some((f) => f.rule === 'G-D13'),
+  ok('D24 assente dal contratto -> regola spenta', !findings.some((f) => f.rule === 'G-D24'),
     findings.map((f) => f.rule).join(', '));
 }
 

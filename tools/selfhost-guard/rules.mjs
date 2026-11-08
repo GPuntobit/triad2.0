@@ -61,7 +61,7 @@ function callName(node) {
  * (tools/selfhost-guard/differential.mjs); se il differenziale rileva una
  * differenza, la risposta e' la chirurgia nel seed.
  */
-export const DIFFERENTIAL_ONLY = new Set(['D15']);
+export const DIFFERENTIAL_ONLY = new Set(['D15', 'D25']);
 
 export const RULES = [
   // ---------------------------------------------------------------- D1
@@ -194,27 +194,6 @@ export const RULES = [
     },
   },
 
-  // ---------------------------------------------------------------- D6
-  {
-    id: 'G-D06',
-    divergence: 'D6',
-    title: '`-=` e `*=` non esistono nel seed',
-    level: 'error',
-    check(ctx) {
-      const out = [];
-      for (const { node } of ctx.analysis?.nodes ?? []) {
-        if (node.kind !== 'assign' && node.kind !== 'indexassign') continue;
-        if (node.op !== '-=' && node.op !== '*=') continue;
-        out.push({
-          line: null,
-          msg: `l'assegnazione composta \`${node.op}\` non e' implementata dal seed (exit 1): ` +
-            'riscrivila come `x = x - y` / `x = x * y`',
-        });
-      }
-      return out;
-    },
-  },
-
   // ---------------------------------------------------------------- D7
   {
     id: 'G-D07',
@@ -249,43 +228,10 @@ export const RULES = [
         if (statementPosition) continue;
         out.push({
           line: null,
-          msg: '`if` usato come valore: il seed non implementa l\'if-espressione (exit 1). ' +
+          msg: '`if` usato come valore: il seed non implementa l\'if-espressione in posizione ' +
+            'generale (exit 1); lo valuta solo come ultima espressione del corpo di una funzione. ' +
             'L\'`if` puo\' essere solo uno statement (o la prima parte di una catena `if`/`elseif`)',
         });
-      }
-      return out;
-    },
-  },
-
-  // ---------------------------------------------------------------- D9
-  {
-    id: 'G-D09',
-    divergence: 'D9',
-    title: 'chiamata in posizione finale: non e\' valutata dal seed',
-    level: 'error',
-    check(ctx) {
-      const out = [];
-      const ast = ctx.ast;
-      if (!ast) return out;
-      const checkTail = (stmts, where) => {
-        if (!stmts || !stmts.length) return;
-        const last = stmts[stmts.length - 1];
-        if (last.kind !== 'exprstmt') return;
-        if (!last.expr || last.expr.kind !== 'call') return;
-        // `println` e' l'unica chiamata ammessa in posizione finale: il seed
-        // la tratta come uno statement (gli altri builtin e le funzioni
-        // utente no: misurato, exit 1).
-        if (callName(last.expr) === 'println') return;
-        out.push({
-          line: null,
-          msg: `chiamata in posizione finale (${where}): il seed non la valuta (exit 1). ` +
-            'Assegna il risultato a una variabile e restituisci la variabile',
-        });
-      };
-      checkTail(ast.stmts, 'programma');
-      for (const f of ctx.analysis?.functions ?? []) {
-        if (f.short) continue;
-        checkTail(f.node.body, `corpo di \`${f.name}\``);
       }
       return out;
     },
@@ -345,26 +291,6 @@ export const RULES = [
         out.push({
           line: null,
           msg: '`let` con piu\' binding: il seed ne supporta uno solo (exit 1)',
-        });
-      }
-      return out;
-    },
-  },
-
-  // ---------------------------------------------------------------- D13
-  {
-    id: 'G-D13',
-    divergence: 'D13',
-    title: 'indicizzazione `xs[i]` non esiste nel seed',
-    level: 'error',
-    check(ctx) {
-      const out = [];
-      for (const { node } of ctx.analysis?.nodes ?? []) {
-        if (node.kind !== 'index') continue;
-        out.push({
-          line: null,
-          msg: 'indicizzazione `xs[i]` non implementata dal seed (exit 1): ' +
-            'usa il primitivo bootstrap `get(xs, i)` (indice 0-based, SPEC-CORE.md §8)',
         });
       }
       return out;
@@ -638,6 +564,27 @@ export const RULES = [
             });
           }
         }
+      }
+      return out;
+    },
+  },
+
+  // ---------------------------------------------------------------- D24
+  {
+    id: 'G-D24',
+    divergence: 'D24',
+    title: 'assegnazione composta a indice `xs[i] += v` non esiste nel seed',
+    level: 'error',
+    check(ctx) {
+      const out = [];
+      for (const { node } of ctx.analysis?.nodes ?? []) {
+        if (node.kind !== 'indexassign') continue;
+        if (node.op === '=') continue;      // `xs[i] = v` e' implementato
+        out.push({
+          line: null,
+          msg: `l'assegnazione composta a indice \`${node.op}\` non e' implementata dal seed ` +
+            '(exit 1): riscrivila come `xs[i] = xs[i] <op> v`',
+        });
       }
       return out;
     },

@@ -1,5 +1,31 @@
 # Triad and S0 bootstrap status
 
+## Ciclo di rebuild del seed: `-=` corretto, `xs[i]` e chiamata in posizione finale chiusi — 2026-11-08
+
+Chiuso il ciclo di rebuild avviato dal checkpoint delle 17:45: `seed/dev/core.js` →
+`seed.hex` (PE + ELF) → binari committati → hash CI → documentazione. Il generatore
+riproduce ora i dump committati byte per byte (job CI «Reproducible dump» verde) e il
+gate hash è allineato agli artefatti.
+
+Correzione nel codegen: `-=` emetteva `sub rcx, rax` (`48 29 c1`) invece di
+`sub rax, rcx` (`48 29 c8`) — risultato sbagliato **senza errore** (`x = 10; x -= 3`
+restituiva `10`). Ora usa l'helper canonico `subRaxRcx()`.
+
+Contratto aggiornato (`seed/dev/certified-subset.txt`): chiuse **D6** (`-=`, `*=` a
+nome), **D9** (chiamata in posizione finale: viene valutata) e **D13** (indicizzazione
+`xs[i]` 1-based e scrittura `xs[i] = v`); **D8** rifinita (`if` come valore solo come
+ultima espressione del corpo di una funzione). Nuove divergenze: **D24** (noisy)
+`xs[i] += v` non implementata, con guardia statica `G-D24`; **D25** (silent) gli
+interi sono limitati a ±(2^61 − 1) perché il tag occupa il bit basso, oltre il
+risultato è sbagliato senza errore. Regole `G-D06`/`G-D09`/`G-D13` rimosse (i
+fixture che le facevano scattare sono diventati fixture «ammessi»).
+
+Verifiche PASS: conformance **42/42** e probe **44/44** su ELF nativo e su PE via wine
+(parità byte-esatta), `check_seed.sh` 7 casi, guardie 25 test, differenziale 6 file
+0 differenze, anti-drift `cmp` OK, hash CI `--check` OK, sito in sync, sicurezza.
+Nessun golden di conformance riscritto; nessuna semantica del linguaggio cambiata
+oltre il fix di `-=`.
+
 ## Installazione desktop KDE senza qtpaths — 2026-11-08
 
 L'installazione riusciva ma alcune versioni xdg-utils richiamavano qtpaths

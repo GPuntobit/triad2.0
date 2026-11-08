@@ -1,5 +1,28 @@
 # Changelog — standard Triad
 
+## Ciclo di rebuild del seed: `-=` corretto, `xs[i]` e chiamata in posizione finale chiusi — 2026-11-08
+
+Chiuso il ciclo di rebuild del seed (`core.js` → dump PE/ELF → binari → hash CI →
+documentazione): il generatore riproduce i dump committati byte per byte e il gate
+hash della CI è allineato.
+
+- **fix (seed)**: `-=` era sbagliato **in silenzio** (operandi invertiti nel codegen:
+  `sub rcx, rax` invece di `sub rax, rcx`); ora il risultato è corretto.
+- **contratto**: chiuse `D6` (`-=`, `*=` a nome), `D9` (chiamata in posizione finale),
+  `D13` (indicizzazione `xs[i]` 1-based e `xs[i] = v`); `D8` rifinita (l'`if` come
+  valore funziona solo in coda al corpo di una funzione); nuove `D24` (noisy:
+  `xs[i] += v` non implementata) e `D25` (silent: interi limitati a ±(2^61 − 1)).
+- **guardie**: rimossa `G-D06`/`G-D09`/`G-D13` (divergenze risolte), aggiunta `G-D24`
+  per l'assegnazione composta a indice; i fixture «rifiutati» sono diventati fixture
+  «ammessi».
+- **probe**: 39 → 44 (`ok_composta_sottrai`, `ok_lista_indice_scrittura`,
+  `bad_lista_indice_composta`, `bad_lista_indice_fuori_range`, `bad_intero_64bit`).
+- **artefatti**: dump PE (25088 byte) ed ELF (9647 byte) rigenerati, hash CI e
+  documentazione aggiornati (PE `C4A25D2C…`, ELF `96789450…`).
+
+Verifiche PASS: conformance 42/42, probe 44/44 (ELF e PE via wine), guardie 25 test,
+differenziale 0 differenze, anti-drift e hash CI verdi. Nessun golden riscritto.
+
 ## Installazione desktop KDE senza qtpaths — 2026-11-08
 
 L'installazione riusciva ma alcune versioni xdg-utils richiamavano qtpaths

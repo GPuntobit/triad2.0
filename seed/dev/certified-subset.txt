@@ -55,20 +55,31 @@ strsub = no
 #         guardia statica).
 # Una divergenza sparisce da questo elenco quando il seed la risolve:
 # in quel caso la regola corrispondente si disattiva da sola.
+#
+# Risolte e rimosse da questo elenco (misurate il 2026-11-08):
+#   D6  — `-=` e `*=` (assegnazione composta a nome) sono implementati;
+#   D9  — la chiamata in posizione finale e' valutata;
+#   D13 — l'indicizzazione `xs[i]` (1-based) e la scrittura `xs[i] = v`
+#         sono implementate (fuori range -> exit 1).
+#
+# Divergenze aggiunte il 2026-11-08:
+#   D24 (noisy)  — l'assegnazione composta a indice `xs[i] += v` non e'
+#                  implementata: exit 1 (la forma `xs[i] = v` funziona).
+#   D25 (silent) — gli interi sono rappresentati con il tag nel bit basso:
+#                  il range utile e' +/- (2^61 - 1), non 64 bit signed come
+#                  in SPEC-CORE.md §5: oltre, il risultato e' sbagliato
+#                  senza errore (wrap a 62 bit).
 [divergence]
 D1 = silent
 D2 = silent
 D3 = silent
 D4 = silent
 D5 = noisy
-D6 = noisy
 D7 = noisy
 D8 = noisy
-D9 = noisy
 D10 = noisy
 D11 = noisy
 D12 = noisy
-D13 = noisy
 D14 = noisy
 D15 = silent
 D16 = noisy
@@ -78,3 +89,5 @@ D19 = silent
 D20 = silent
 D21 = silent
 D22 = noisy
+D24 = noisy
+D25 = silent

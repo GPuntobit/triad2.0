@@ -48,7 +48,7 @@ casi, e ogni blocco di codice dichiara il profilo a cui appartiene.
 
 | profilo | dove è definito | eseguibile oggi? |
 |---|---|---|
-| **Triad-Core** | `SPEC-CORE.md` | **sì**: i seed in codice macchina (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) passano 39/39 casi Core byte per byte; anche l'interprete di riferimento JavaScript `seed/dev/triad_core.cjs` li passa tutti |
+| **Triad-Core** | `SPEC-CORE.md` | **sì**: i seed in codice macchina (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) passano 42/42 casi Core byte per byte; anche l'interprete di riferimento JavaScript `seed/dev/triad_core.cjs` li passa tutti |
 | **Triad-Full** | `SPEC.md` | **no**: struct, dispatch, logica, macro, contratti, budget, tracce, effetti, destrutturazione, `for`, `try`, `Float` sono specifica; nella conformance Full passa solo `errore` |
 
 Due precisazioni sul contesto, utili per non confondere il libro con il progetto. La versione
@@ -378,7 +378,7 @@ cosa fa.
 
 ```sh
 bin/triad-cli status                 # ambiente e seed trovato (senza Node)
-bin/triad-cli test conformance       # conformance Core (39 casi, byte-exatti)
+bin/triad-cli test conformance       # conformance Core (42 casi, byte-exatti)
 bin/triad-cli test all               # gate completo: conformance + probe
 node cli/triad-cli.mjs ai verify -v  # verifica le soluzioni di ai/tasks/ (dev, Node)
 node cli/triad-cli.mjs seed generate windows  # rigenera seed.hex e stampa lo SHA-256
@@ -1798,7 +1798,7 @@ funziona su entrambi è essenziale se un programma deve girare anche sul seed, c
 S1.
 
 Il contratto è `conformance/core/`: entrambi i runtime devono produrre gli stessi golden. Oggi
-sia l'interprete JS sia i seed (PE Windows ed ELF Linux) passano tutti i 39 casi byte per byte:
+sia l'interprete JS sia i seed (PE Windows ed ELF Linux) passano tutti i 42 casi byte per byte:
 il gate gira sull'ELF nativo (job `seed-linux`). Restano differenze di dominio misurate,
 registrate nei probe e nella tabella:
 
@@ -3746,11 +3746,11 @@ PE come falso positivo (la CI aggiunge un'esclusione).
 
 ## 36. Il seed Linux (E2)
 
-`seed/linux-x86_64/seed` è un ELF64 statico di **8499 byte** generato da
+`seed/linux-x86_64/seed` è un ELF64 statico di **9647 byte** generato da
 `seed/dev/gen_seed.js linux`: entry `0x400078`, un solo `PT_LOAD` R|X, syscall dirette
 (`openat`/`read`/`write`/`exit`, isolate nelle routine `os_*`). È l'**interprete Triad-Core**
 completo: stessa macchina del seed Windows, stdout byte-identico sui golden condivisi
-(conformance 39/39 + probe + golden S1). La milestone M7 (port Linux) è completa: E0
+(conformance 42/42 + probe + golden S1). La milestone M7 (port Linux) è completa: E0
 (minimale) → E1 (lettura file) → E2 (interprete) → E3 (toolchain senza Node, `./install.sh`).
 
 ```sh
@@ -3870,7 +3870,7 @@ né input interattivo.
 ### 38.2 L'harness `conformance/run.sh`
 
 ```sh
-sh conformance/run.sh              # Core (39 casi, scoperti da conformance/core/cases)
+sh conformance/run.sh              # Core (42 casi, scoperti da conformance/core/cases)
 sh conformance/run.sh --update     # RIGENERA i golden dal runtime corrente (uso dev)
 ```
 
@@ -3882,9 +3882,10 @@ via variabile `TRIAD_SEED`. Esempio per provare un seed con percorso esplicito:
 `TRIAD_SEED=/percorso/seed sh conformance/run.sh`. Nessun fallback JS: il gate verifica il
 seed nativo, byte per byte contro i golden.
 
-Il gate copre tutti i 39 casi senza esclusioni: il gap storico `liste` (il seed non implementa
-l'indicizzazione standard `xs[i]`) è **registrato** nell'harness come esito atteso (exit 1 con
-stdout vuoto, identico su PE ed ELF), non skippato. Per vedere il caso con l'interprete JS di
+Il gate copre tutti i 42 casi senza esclusioni: il gap storico `liste` (il seed non
+implementava l'indicizzazione standard `xs[i]`) è **chiuso** dal ciclo di rebuild del seed:
+`xs[i]`, `xs[i] = v` e la chiamata in posizione finale funzionano, e il caso `liste` è verde
+come gli altri, senza esclusioni nell'harness. Per vedere il caso con l'interprete JS di
 sviluppo:
 
 ```sh
@@ -3970,7 +3971,7 @@ e `node cli/triad-cli.mjs` (Node, soli comandi di sviluppo).
 |---|---|
 | `triad-cli status` | root del progetto, piattaforma, seed trovato, stato del PATH |
 | `triad-cli run <file> [-- args]` | esegue un programma Triad via `bin/triad` |
-| `triad-cli test conformance [--update]` | esegue `conformance/run.sh` (39 casi Core) |
+| `triad-cli test conformance [--update]` | esegue `conformance/run.sh` (42 casi Core) |
 | `triad-cli test probes` / `test all` | probe / gate completo (`verify.sh`) |
 | `node cli/triad-cli.mjs ai verify [-t DIR] [-v]` | esegue le `solution.triad` di `ai/tasks/` sul seed nativo e le confronta con i golden |
 | `node cli/triad-cli.mjs seed generate windows\|linux [-o FILE]` | esegue il generatore del seed e stampa lo SHA-256 del dump |
@@ -4131,7 +4132,7 @@ generato da un modello solo in un ambiente isolato.
 
 | job | cosa verifica |
 |---|---|
-| `conformance-core` (Ubuntu) | `sh conformance/run.sh` (39 casi Core, byte-exatti) + validità dei sorgenti `selfhost/` |
+| `conformance-core` (Ubuntu) | `sh conformance/run.sh` (42 casi Core, byte-exatti) + validità dei sorgenti `selfhost/` |
 | `seed-linux` (ELF nativo, senza Wine) | `check_seed.sh` (contratto errori/limiti), hash di `seed.hex` PE **ed** ELF (gate anti-tampering), dump riproducibili (`gen_seed.js` + `cmp`), `sh verify.sh` (conformance + probe + golden S1 + smoke) |
 | `linux-toolchain` (senza Node) | launcher `bin/triad`, `install.sh` con smoke test byte-exatto (un golden alterato fa fallire l'installazione), `triad-cli status` e `triad-cli test all` |
 | `security` | `tests/security/run.sh` (azioni pinnate, path hijack, token, sanitizzazione) |
@@ -4430,7 +4431,7 @@ Strumenti Full previsti: `triad --tree file`, `sexpr(codice)`, `parse`/`unparse`
 ## 48. Stato, limiti noti e fix storici
 
 **Stato** (dettagli in [`STATUS.md`](STATUS.md)):
-- Core: 39/39 casi byte-exatti su PE, ELF e interprete JS.
+- Core: 42/42 casi byte-exatti su PE, ELF e interprete JS.
 - Full: 12 casi golden congelati, passa solo `errore`.
 - S1: prototipi in `selfhost/`, smoke test in CI; non ancora conformance.
 - S2–S4: non iniziati. Seed Linux: E2/E3 completi (interprete + toolchain senza Node).
