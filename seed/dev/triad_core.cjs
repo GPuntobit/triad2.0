@@ -515,6 +515,9 @@ function isLambdaFrame(env){
 class ReturnSignal { constructor(v){ this.v = v; } }
 class BreakSignal {}
 class ContinueSignal {}
+class ExitSignal extends Error {
+  constructor(code) { super(`exit(${code})`); this.code = code; }
+}
 
 function evalBlock(stmts, env){
   let last = NOTHING;
@@ -963,7 +966,7 @@ function callBuiltin(name, args, env){
   }
   if (name === 'exit') {
     if (args.length !== 1 || args[0].t !== 'int') throw new Error('exit');
-    process.exit(Number(args[0].v));
+    throw new ExitSignal(Number(args[0].v));
   }
   throw new Error('unknown function ' + name);
 }
@@ -997,7 +1000,7 @@ function runTriadSource(src, filename, scriptArgs) {
   const parser = new Parser(tokens);
   let ast;
   try { ast = parser.parseProgram(); }
-  catch (e) { process.stderr.write('parse error: ' + e.message + '\n'); process.exit(1); }
+  catch (e) { process.stderr.write('parse error: ' + e.message + '\n'); return 1; }
   const globalEnv = makeFrame(null, null, false);
   globalEnv.owner = null;
   globalEnv.isLambda = false;
@@ -1005,14 +1008,16 @@ function runTriadSource(src, filename, scriptArgs) {
   try {
     for (const s of ast.stmts) evalStmt(s, globalEnv);
   } catch (e) {
+    if (e instanceof ExitSignal) return e.code;
     if (e instanceof ReturnSignal) { }
     else if (e instanceof BreakSignal || e instanceof ContinueSignal) { }
     else {
       process.stderr.write('error: ' + (e && e.message ? e.message : e) + '\n');
-      process.exit(1);
+      return 1;
     }
   }
-  process.exit(0);
+  // Let Node drain pending pipe writes before ending the process.
+  return 0;
 }
 
 function runTriadFile(file, scriptArgs) {
@@ -1021,17 +1026,17 @@ function runTriadFile(file, scriptArgs) {
     src = fs.readFileSync(0, 'utf8');
   } else {
     try { src = fs.readFileSync(file, 'utf8'); }
-    catch (e) { process.stderr.write('cannot read file: ' + file + '\n'); process.exit(1); }
+    catch (e) { process.stderr.write('cannot read file: ' + file + '\n'); return 1; }
   }
-  runTriadSource(src, file, scriptArgs);
+  return runTriadSource(src, file, scriptArgs);
 }
 
 function main() {
   const args = process.argv.slice(2);
-  if (args.length === 0) { process.stderr.write('usage: triad FILE [ARG...]\n'); process.exit(2); }
+  if (args.length === 0) { process.stderr.write('usage: triad FILE [ARG...]\n'); return 2; }
   const file = args[0];
   const scriptArgs = args.slice(1);
-  runTriadFile(file, scriptArgs);
+  return runTriadFile(file, scriptArgs);
 }
 
 // Direct execution support for .td / .triad files via Node's module system.
@@ -1041,7 +1046,7 @@ function triadModuleLoader(module, filename) {
   // name in process.argv. Normalize them so ARGS is populated correctly.
   // The program arguments always follow the entry file in process.argv.
   const scriptArgs = process.argv.slice(2);
-  runTriadFile(filename, scriptArgs);
+  process.exitCode = runTriadFile(filename, scriptArgs);
   module.exports = {};
 }
 
@@ -1054,7 +1059,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     require.extensions['.triad'] = triadModuleLoader;
   }
   module.exports = { tokenize, Parser, evalStmt, makeFrame, L, S, I, B, Y, stringOf };
-  if (require.main === module) main();
+  if (require.main === module) process.exitCode = main();
 } else if (typeof window !== 'undefined') {
   // Minimal process shim: stdout/stderr write into window.__TRIAD_OUT__
   // (an array of strings provided by the playground); exit throws a

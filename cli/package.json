@@ -8,7 +8,7 @@
     "triad-cli": "./triad-cli.mjs"
   },
   "scripts": {
-    "test": "node triad-cli.mjs test run",
+    "test": "node --test ../tests/reference-output.test.mjs ../ai/jev_audit.test.mjs",
     "build:exe": "node build-exe.mjs"
   },
   "keywords": [
