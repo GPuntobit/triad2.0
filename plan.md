@@ -1,5 +1,21 @@
 # Plan to complete Triad 2.0 - Updated status
 
+## Correzione CI hash seed — 2026-11-08
+
+Il commit `ff222c2` ha aggiornato i dump PE/ELF senza aggiornare gli hash in CI.
+Il controllo ora usa SHA-256 dei dump committati (ELF `23a84dd3…`, PE `57f631e4…`)
+e `sha256sum --check`, che identifica il file in caso di mismatch. Nessun dump,
+generatore o golden modificato; nessuna modifica normativa a SPEC.md/SPEC-CORE.md.
+
+Verifiche: hash PE/ELF PASS; rebuild dei due dump + `cmp` PASS;
+`check_seed.sh` PASS (7 casi); gate Core PASS (39/40, D23 ancora escluso).
+`verify.sh` FAIL: quattro probe negativi accettati dal seed corrente
+(`bad_chiamata_nested_int`, `bad_chiamata_ultima_espressione`,
+`bad_if_valore_funzione`, `bad_lista_indice`). Restano da riallineare al contratto
+nel lavoro sul seed; nessun golden riscritto. L'anti-drift dei dump attuali passa:
+le note storiche sul suo fallimento si riferiscono ai dump precedenti a `ff222c2`.
+
+
 Runtime note: the machine-code seed is the default runtime for `.triad` (launcher `bin/triad`/`bin/triad.cmd` and CLI); Julia remains a development tool (tests, conformance, packaging).
 
 ## Current status (Day 4)
