@@ -1,5 +1,26 @@
 # Task Triad 2.0
 
+## Parametri tipizzati e dispatch S1 — 2026-11-08
+
+Risolto l'errore del programma struct Point con campi Float e metodi
+area(n::Int) / area(n::Number): parser delle firme, tabella metodi, ordine
+parziale di specificità, ridefinizione e ritorni scalari. Int/Float sono
+sottotipi di Number; Any è il fallback. Err(:method) e Err(:ambiguous)
+per mancata selezione e ambiguità. Goal funzione richiedono Bool.
+
+Literal Float decimali per dati/dispatch e conversione Int -> Float nei
+campi struct; nessuna dichiarazione di aritmetica Float IEEE completa.
+Rimosso il precedente lowering delle funzioni a clausole con i helper
+lf_term/lf_goal ormai inutilizzati. Auto desktop riconosce anche ::.
+
+Quattro nuovi casi logici: dichiarazioni originali (exit 0, nessun output),
+dispatch e ridefinizione, ambiguità, Float/struct. La suite passa a 29 casi
+su seed e riferimento. Verificati Core 42/42, probe 39/39, desktop, detector
+e sicurezza. Riferimenti normativi SPEC.md §§4–5. Limiti in README S1:
+restano Float arithmetic/esponenti, return annotation e corpi arbitrari.
+Non ancora incluso nella release beta.10 già pubblicata.
+
+
 ## Release v0.8.0-beta.10 — 2026-11-08
 
 Preparata prerelease con S1 logico, desktop automatico, fix Core/output e

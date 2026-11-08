@@ -259,11 +259,32 @@ function lx_all()
             end
         elseif lx_digit(ax)
             av = ax - 48
+            adec = lv_new()
+            lv_add(adec, ax)
             while lx_digit(lbyte(lsrc[1]))
+                lv_add(adec, lbyte(lsrc[1]))
                 av = av * 10 + lbyte(lsrc[1]) - 48
                 lsrc[1] = lsrc[1] + 1
             end
-            lv_add(ltoks, [4, av])
+            afloat = false
+            if lbyte(lsrc[1]) == 46
+                afloat = lx_digit(lbyte(lsrc[1] + 1))
+            end
+            if afloat
+                lv_add(adec, 46)
+                lsrc[1] = lsrc[1] + 1
+                ascale = 1
+                while lx_digit(lbyte(lsrc[1]))
+                    lv_add(adec, lbyte(lsrc[1]))
+                    av = av * 10 + lbyte(lsrc[1]) - 48
+                    ascale = ascale * 10
+                    lsrc[1] = lsrc[1] + 1
+                end
+                aname = ln_id(adec)
+                lv_add(ltoks, [32, [26, av, ascale, aname]])
+            else
+                lv_add(ltoks, [4, av])
+            end
         elseif ax == 34
             ab = lv_new()
             while (lbyte(lsrc[1]) != 34) && (lbyte(lsrc[1]) != 0)
@@ -380,10 +401,14 @@ function atom()
         tr = [3, tv]
     elseif tk == 5
         tr = [4, tv]
+    elseif tk == 32
+        tr = tv
     elseif tk == 24
         ta = atom()
         if get(ta, 0) == 3
             tr = [3, 0 - get(ta, 1)]
+        elseif get(ta, 0) == 26
+            tr = [26, 0 - get(ta, 1), get(ta, 2), get(ta, 3)]
         else
             tr = [5, kop_sub, [ta]]
         end
@@ -742,6 +767,8 @@ function lu(ua, ub)
                 lv_put(us, [get(uvx, ui), get(uvy, ui)])
                 ui = ui + 1
             end
+        elseif uk == 26
+            ur = get(ux, 1) * get(uy, 2) == get(uy, 1) * get(ux, 2)
         elseif uk == 6
             if (get(ux, 1) == 0) || (get(uy, 1) == 0)
                 ur = (get(ux, 1) == 0) && (get(uy, 1) == 0)
@@ -937,6 +964,21 @@ function lsolve(zg, zl, zd, zs)
                         zn = get(zx, 1)
                         zp = get(zy, 1)
                         zsame = get(zx, 0) == get(zy, 0)
+                        zxnum = (get(zx, 0) == 3) || (get(zx, 0) == 26)
+                        zynum = (get(zy, 0) == 3) || (get(zy, 0) == 26)
+                        if zxnum && zynum
+                            zxscale = 1
+                            zyscale = 1
+                            if get(zx, 0) == 26
+                                zxscale = get(zx, 2)
+                            end
+                            if get(zy, 0) == 26
+                                zyscale = get(zy, 2)
+                            end
+                            zn = zn * zyscale
+                            zp = zp * zxscale
+                            zsame = true
+                        end
                         if zo == 17
                             zlive = zn < zp
                         elseif zo == 18
@@ -950,7 +992,7 @@ function lsolve(zg, zl, zd, zs)
                         else
                             zlive = zsame && (zn == zp)
                         end
-                        if (zo >= 17) && (zo <= 20) && ((get(zx, 0) != 3) || (get(zy, 0) != 3))
+                        if (zo >= 17) && (zo <= 20) && (!zxnum || !zynum)
                             zerr = [11, err_type]
                             zstop = true
                         end
@@ -1010,8 +1052,41 @@ function lsolve(zg, zl, zd, zs)
                         zci = zci - 1
                     end
                     if !zknown
-                        zerr = [11, err_undef]
-                        zstop = true
+                        if (get(zterm, 0) == 5) && lm_has(get(zterm, 1), 0 - 1)
+                            zma = []
+                            zmi = 0
+                            zground = true
+                            while zmi < length(get(zterm, 2))
+                                zmv = lsnap(get(get(zterm, 2), zmi))
+                                if get(zmv, 0) == 1
+                                    zground = false
+                                end
+                                zma = push!(zma, zmv)
+                                zmi = zmi + 1
+                            end
+                            zmret = [11, err_inst]
+                            if zground
+                                zmret = lm_call(get(zterm, 1), zma)
+                            end
+                            if get(zmret, 0) == 8
+                                if get(zmret, 1) == 1
+                                    if ztr
+                                        lt_event(zevents, kw_exit, zterm, zlevel)
+                                        zbox[1] = true
+                                    end
+                                    lv_put(zcs, [ztodo, get(ltrail, 1), zlevel])
+                                end
+                            else
+                                zerr = zmret
+                                if get(zmret, 0) != 11
+                                    zerr = [11, err_type]
+                                end
+                                zstop = true
+                            end
+                        else
+                            zerr = [11, err_undef]
+                            zstop = true
+                        end
                     end
                     zlive = false
                 end
@@ -1164,17 +1239,25 @@ function leval(fa)
                 while fcidx < length(fargs)
                     ftype = get(ftypes, fcidx)
                     fvalue = get(fargs, fcidx)
-                    fvalid = (ftype == 0) || ((ftype == ty_int) && (get(fvalue, 0) == 3)) || ((ftype == ty_bool) && (get(fvalue, 0) == 8)) || ((ftype == ty_string) && (get(fvalue, 0) == 4)) || ((ftype == ty_symbol) && (get(fvalue, 0) == 2)) || ((ftype == ty_list) && (get(fvalue, 0) == 6))
-                    if !fvalid
-                        if get(fvalue, 0) == 5
-                            fvalid = get(fvalue, 1) == ftype
-                        end
+                    if (ftype == ty_float) && (get(fvalue, 0) == 3)
+                        fvalue = [26, get(fvalue, 1), 1, 0]
+                        fargs[fcidx + 1] = fvalue
                     end
+                    fvalid = lm_sub(lm_type(fvalue), ftype)
                     if !fvalid
                         fr = [11, err_type]
                     end
                     fcidx = fcidx + 1
                 end
+            elseif lm_has(fop, 0 - 1)
+                margs2 = []
+                midx2 = 0
+                while midx2 < length(get(fa, 2))
+                    mval2 = leval(get(get(fa, 2), midx2))
+                    margs2 = push!(margs2, mval2)
+                    midx2 = midx2 + 1
+                end
+                fr = lm_call(fop, margs2)
             else
             fpred = lsolve([30, fa], 1, 1000000, 1000000)
             if get(fpred, 0) == 11
@@ -1207,6 +1290,15 @@ function lshow(ra, nested)
             rr = ":"
         end
         rr = rr * ln_text(get(ra, 1))
+    elseif rk == 26
+        if get(ra, 3) == 0
+            rr = string(get(ra, 1)) * ".0"
+        else
+            rr = ln_text(get(ra, 3))
+            if get(ra, 1) < 0
+                rr = "-" * rr
+            end
+        end
     elseif rk == 3
         rr = string(get(ra, 1))
     elseif rk == 4
@@ -1278,55 +1370,165 @@ function lt_event(ev, ep, eg, ed)
     lv_add(ev, [24, ep, et, ed])
     0
 end
-function lf_term(xa, xp)
-    xr = xa
-    xk = get(xa, 0)
-    if xk == 9
-        xi = 0
-        while xi < length(xp)
-            if get(xp, xi) == get(xa, 1)
-                xr = [1, get(xa, 1)]
-            end
-            xi = xi + 1
-        end
-        if get(xr, 0) == 9
-            xr = le_lookup(get(xa, 1))
-        end
-    elseif xk == 5
-        xx = []
-        xi = 0
-        while xi < length(get(xa, 2))
-            xe = lf_term(get(get(xa, 2), xi), xp)
-            xx = push!(xx, xe)
-            xi = xi + 1
-        end
-        xr = [5, get(xa, 1), xx]
+function lm_type(ta)
+    tkx = get(ta, 0)
+    tx = 0
+    if tkx == 3
+        tx = ty_int
+    elseif tkx == 26
+        tx = ty_float
+    elseif tkx == 8
+        tx = ty_bool
+    elseif tkx == 2
+        tx = ty_symbol
+    elseif tkx == 4
+        tx = ty_string
+    elseif tkx == 6
+        tx = ty_list
+    elseif tkx == 5
+        tx = get(ta, 1)
     end
-    xr
+    tx
 end
-function lf_goal(ya, yp)
-    yr = ya
-    yk = get(ya, 0)
-    if (yk == 31) || (yk == 32)
-        yx = lf_goal(get(ya, 1), yp)
-        yy = lf_goal(get(ya, 2), yp)
-        yr = [yk, yx, yy]
-    elseif yk == 33
-        yx = lf_goal(get(ya, 1), yp)
-        yr = [33, yx]
-    elseif (yk == 34) || (yk == 36)
-        yx = lf_term(get(ya, 1), yp)
-        yy = lf_term(get(ya, 2), yp)
-        yr = [yk, yx, yy]
-    elseif yk == 35
-        yx = lf_term(get(ya, 2), yp)
-        yy = lf_term(get(ya, 3), yp)
-        yr = [35, get(ya, 1), yx, yy]
-    elseif yk == 30
-        yx = lf_term(get(ya, 1), yp)
-        yr = [30, yx]
+function lm_sub(sa, sb)
+    srx = (sa == sb) || (sb == 0) || (sb == ty_any) || ((sb == ty_number) && ((sa == ty_int) || (sa == ty_float)))
+    srx
+end
+function lm_has(hn, hc)
+    hi = 0
+    hr = false
+    while hi < get(lmethods, 1)
+        hm = lv_at(lmethods, hi)
+        if (get(hm, 0) == hn) && ((hc == (0 - 1)) || (length(get(hm, 1)) == hc))
+            hr = true
+        end
+        hi = hi + 1
     end
-    yr
+    hr
+end
+function lm_store(ma)
+    mi = 0
+    mx = 0 - 1
+    while mi < get(lmethods, 1)
+        mb = lv_at(lmethods, mi)
+        if (get(mb, 0) == get(ma, 0)) && (length(get(mb, 2)) == length(get(ma, 2)))
+            mj = 0
+            same = true
+            while mj < length(get(ma, 2))
+                same = same && (get(get(ma, 2), mj) == get(get(mb, 2), mj))
+                mj = mj + 1
+            end
+            if same
+                mx = mi
+            end
+        end
+        mi = mi + 1
+    end
+    if mx >= 0
+        lv_set(lmethods, mx, ma)
+    else
+        lv_add(lmethods, ma)
+    end
+    0
+end
+function lm_more(da, db)
+    di = 0
+    drx = true
+    strict = false
+    while di < length(da)
+        drx = drx && lm_sub(get(da, di), get(db, di))
+        strict = strict || (get(da, di) != get(db, di))
+        di = di + 1
+    end
+    drx = drx && strict
+    drx
+end
+function lm_call(cname, cargs)
+    ci2 = 0
+    applicable = lv_new()
+    while ci2 < get(lmethods, 1)
+        cmeth = lv_at(lmethods, ci2)
+        if (get(cmeth, 0) == cname) && (length(get(cmeth, 1)) == length(cargs))
+            cj2 = 0
+            cok = true
+            while cj2 < length(cargs)
+                cok = cok && lm_sub(lm_type(get(cargs, cj2)), get(get(cmeth, 2), cj2))
+                cj2 = cj2 + 1
+            end
+            if cok
+                lv_add(applicable, cmeth)
+            end
+        end
+        ci2 = ci2 + 1
+    end
+    chosen = 0
+    maxima = 0
+    ci2 = 0
+    while ci2 < get(applicable, 1)
+        ca2 = lv_at(applicable, ci2)
+        dominated = false
+        cj2 = 0
+        while cj2 < get(applicable, 1)
+            cb2 = lv_at(applicable, cj2)
+            if lm_more(get(cb2, 2), get(ca2, 2))
+                dominated = true
+            end
+            cj2 = cj2 + 1
+        end
+        if !dominated
+            chosen = ca2
+            maxima = maxima + 1
+        end
+        ci2 = ci2 + 1
+    end
+    result2 = [11, err_method]
+    if maxima > 1
+        result2 = [11, err_ambig]
+    elseif maxima == 1
+        oldcap = get(lenv, 1)
+        oldvals = []
+        ci2 = 0
+        while ci2 < length(cargs)
+            pname = get(get(chosen, 1), ci2)
+            oldval = 0
+            cj2 = 0
+            while cj2 < oldcap
+                pair2 = lv_at(lenv, cj2)
+                if get(pair2, 0) == pname
+                    oldval = get(pair2, 1)
+                end
+                cj2 = cj2 + 1
+            end
+            oldvals = push!(oldvals, oldval)
+            le_set(pname, get(cargs, ci2))
+            ci2 = ci2 + 1
+        end
+        body2 = get(chosen, 3)
+        if get(body2, 0) == 30
+            result2 = leval(get(body2, 1))
+        elseif get(body2, 0) == 37
+            result2 = [8, get(body2, 1)]
+        else
+            solved2 = lsolve(body2, 1, 1000000, 1000000)
+            if get(solved2, 0) == 11
+                result2 = solved2
+            else
+                result2 = [8, 0]
+                if get(solved2, 1) != 0
+                    result2 = [8, 1]
+                end
+            end
+        end
+        ci2 = 0
+        while ci2 < length(cargs)
+            if get(oldvals, ci2) != 0
+                le_set(get(get(chosen, 1), ci2), get(oldvals, ci2))
+            end
+            ci2 = ci2 + 1
+        end
+        lenv[2] = oldcap
+    end
+    result2
 end
 function lrun()
     gaps()
@@ -1386,13 +1588,19 @@ function lrun()
         elseif pk() == 6
             eat(6)
             sp = []
-            if pk() != 7
+            spt = []
+            while pk() != 7
                 sp = push!(sp, pn())
                 eat(1)
-                while pk() == 10
-                    eat(10)
-                    sp = push!(sp, pn())
+                sptype = ty_any
+                if pk() == 31
+                    eat(31)
+                    sptype = pn()
                     eat(1)
+                end
+                spt = push!(spt, sptype)
+                if pk() != 7
+                    eat(10)
                 end
             end
             eat(7)
@@ -1418,8 +1626,7 @@ function lrun()
                 shargs = push!(shargs, [1, get(sp, si)])
                 si = si + 1
             end
-            sg = lf_goal(sg, sp)
-            lv_add(lclauses, [[5, sn, shargs], sg])
+            lm_store([sn, sp, spt, sg])
         else
             eat(13)
             se = expr()

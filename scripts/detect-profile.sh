@@ -33,6 +33,9 @@ od -An -v -tu1 "$1" | {
                     fi
                     continue ;;
             esac
+            if [ "$byte" = 58 ] && [ "$prev" = 58 ]; then
+                printf 'logic\n'; exit 0
+            fi
             # A candidate keyword must be followed by a goal/name, not '='.
             if [ -n "$pending" ]; then
                 case $byte in

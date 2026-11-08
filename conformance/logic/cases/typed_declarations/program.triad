@@ -1,0 +1,6 @@
+struct Point
+ x::Float
+ y::Float
+end
+area(n::Int) = :intero
+area(n::Number) = :numero

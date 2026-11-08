@@ -85,11 +85,11 @@ supported behavior without changing the existing Full suite's goldens.
   types and nested struct types are checked at construction.
 - Boolean functions can be declared as `even(x) = x % 2 == 0` or with
   `function even(x)` / optional `return` / one Boolean goal / `end`.
-  They lower to logic clauses and retain iterative goal resolution.
+  They use the method table; calls from goals must return Bool.
 
 This is still not a complete Full evaluator. Arbitrary function statements,
-control-flow bodies, overload dispatch and non-Boolean function returns are
-not implemented by that lowering. General Full semantics and diagnostic
+control-flow bodies and return type annotations remain unsupported; typed
+method dispatch and scalar expression returns are now supported. General Full semantics and diagnostic
 payloads remain separate work. Finite S0 heap/vector limits still apply.
 
 ## Sessione desktop
@@ -107,3 +107,18 @@ di una parola chiave come nome di funzione può richiedere `:core`. Il file
 viene eseguito una sola volta: non si passa a un altro runtime dopo un errore.
 L'automatismo riguarda il desktop; `triad FILE` mantiene il percorso Core e
 `triad --logic FILE` seleziona S1 esplicitamente da terminale.
+
+## Typed methods and Float data
+
+`area(n::Int) = :intero` and `area(n::Number) = :numero` are supported.
+Methods are selected by the subtype partial order, independent of declaration
+order: Int/Float <: Number <: Any; same-signature redefinition replaces the
+old method. No applicable method returns Err(:method), multiple maximal
+methods Err(:ambiguous). Expression bodies can return scalar values; goal
+functions must return Bool. Parameter bindings are restored after a call.
+
+Decimal Float literals support struct data and dispatch; Int fields passed to
+a Float field convert as required by SPEC.md §4. This is not a full IEEE-754
+numeric evaluator: Float arithmetic, exponents, return annotations and arbitrary
+statement bodies remain unsupported. The existing source/heap limits remain.
+The desktop detector recognizes `::` outside comments/strings as S1 syntax.

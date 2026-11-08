@@ -73,4 +73,7 @@ printf '%s\n:auto\n%s\n:quit\n' "$logic_file" "$logic_file" |
 grep -q 'codice 1, profilo core' "$tmp/auto-reset.log"
 grep -Fq '[:dave]' "$tmp/auto-reset.log"
 grep -q 'codice 0, profilo logic' "$tmp/auto-reset.log"
+printf ':quit\n' | "$root/bin/triad-desktop" \
+    "$root/conformance/logic/cases/typed_declarations/program.triad" > "$tmp/typed.log" 2>&1
+grep -q 'codice 0, profilo logic' "$tmp/typed.log"
 echo 'desktop: PASS (install, MIME, auto/Core/logic, switch, errori, EOF)'
