@@ -63,4 +63,14 @@ grep -Fq '[:dave]' "$tmp/profiles.log"
 grep -q 'desktop-pass' "$tmp/profiles.log"
 grep -q 'codice 0, profilo logic' "$tmp/profiles.log"
 grep -q 'codice 0, profilo core' "$tmp/profiles.log"
-echo 'desktop: PASS (install, MIME, file con spazi, Core/logic, switch, errori, EOF)'
+# Opening a logic file from a file manager now selects S1 by default.
+printf ':quit\n' | "$root/bin/triad-desktop" "$logic_file" > "$tmp/auto-open.log" 2>&1
+grep -Fqx '[:dave]' "$tmp/auto-open.log"
+grep -q 'codice 0, profilo logic' "$tmp/auto-open.log"
+# Manual Core really overrides detection; :auto re-enables it for the next file.
+printf '%s\n:auto\n%s\n:quit\n' "$logic_file" "$logic_file" |
+    "$root/bin/triad-desktop" --core > "$tmp/auto-reset.log" 2>&1
+grep -q 'codice 1, profilo core' "$tmp/auto-reset.log"
+grep -Fq '[:dave]' "$tmp/auto-reset.log"
+grep -q 'codice 0, profilo logic' "$tmp/auto-reset.log"
+echo 'desktop: PASS (install, MIME, auto/Core/logic, switch, errori, EOF)'

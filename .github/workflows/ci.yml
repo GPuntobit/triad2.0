@@ -50,7 +50,7 @@ jobs:
       - name: S1 logic on native machine-code seed
         run: |
           sh conformance/logic/run.sh
-          node --test tests/logic-launcher.test.mjs
+          node --test tests/logic-launcher.test.mjs tests/profile-detection.test.mjs
       - name: Same S1 logic on development reference
         run: TRIAD_SEED="$PWD/conformance/logic/reference.sh" sh conformance/logic/run.sh
 

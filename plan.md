@@ -1,5 +1,20 @@
 # Plan to complete Triad 2.0 - Updated status
 
+## Desktop: profilo automatico dal codice
+
+Default auto per ogni file, con riconoscimento lessicale di fact/rule/solve/struct,
+ignorando stringhe (anche quote escaped), simboli, campi, nomi e commenti
+lineari/blocco annidati. Il detector è POSIX sh + od, senza Node nel runtime.
+:logic e :core restano override persistenti; :auto ripristina la scelta
+per file. Nessuna riesecuzione automatica dopo un errore. CLI triad FILE
+resta Core; cambiato il solo comportamento default della sessione desktop.
+
+Test: 10 casi detector e integrazione desktop su file associati, selezione
+automatica, override, ripristino auto, errori e percorsi con spazi PASS.
+Limite: la classificazione lessicale non implementa il parser Full; gli
+usi ambigui delle keyword come nomi di funzione richiedono override Core.
+
+
 ## Desktop: selezione esplicita del profilo logico S1
 
 La sessione desktop passava sempre i file a triad FILE (Core), quindi un
