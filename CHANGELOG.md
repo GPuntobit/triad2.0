@@ -1,5 +1,37 @@
 # Changelog — standard Triad
 
+## Non rilasciato — 2026-11-08 (ter): ternario con simbolo — divergenza `D23` del seed
+
+### Added
+- **Casi di conformance `ternario_simbolo`** (`conformance/core/cases/ternario_simbolo/`):
+  il ternario il cui ramo *then* è un **simbolo**. Il golden (`intero` / `numero` / `numero`,
+  exit 0) è quello del **riferimento JS** (`seed/dev/triad_core.cjs`, autorità semantica,
+  byte-exatto sui 39 casi già congelati); nessun golden è stato riscritto per mascherare il
+  difetto. Il caso contiene anche il controllo del ramo *else* (`? 1 : :numero`), che il
+  seed esegue senza problemi.
+- **Divergenza `D23 = noisy`** nel contratto del seed (`seed/dev/certified-subset.txt`) e
+  riga nella tabella delle divergenze di `seed/README.md`: il seed prende il `:` di un
+  simbolo come separatore del ternario e **rifiuta** il programma (exit 1).
+- **Guardia statica `G-D23`** (`tools/selfhost-guard/rules.mjs`) + fixture
+  `d23_ternario_simbolo.td` + voce nel self-test: nei sorgenti di S1 (che girano sul seed)
+  il ternario con un simbolo a profondità zero nel ramo *then* è **vietato**. Come tutte le
+  regole, si spegne da sola quando `D23` sparisce dal contratto.
+
+### Fixed
+- **`conformance/gate.sh`** — la KNOWN_GAP accettava **un solo** nome (`grep -v -x -F
+  "$KNOWN_GAP"`): con due gap noti il filtro non ne avrebbe escluso nessuno e il gate
+  sarebbe fallito. Ora i gap sono un elenco (uno per riga) e il filtro usa
+  `grep -v -x -F -f`, con il motivo di ogni gap stampato nel riepilogo.
+
+### Known (non risolto qui)
+- Il **fix del codice macchina** del ternario (`seed/dev/core.js`, routine
+  `pt_scan`/`pt_colon`) è rinviato a una sessione separata: tocca il ciclo di rebuild dei
+  dump (`seed.hex` + PE/ELF + hash CI), oggi bloccato dal known issue anti-drift (vedi
+  `TASK.md` → handoff «2026-11-07 22:40 (ter)»). Finché il fix non c'è, il caso
+  `ternario_simbolo` è il **2° gap noto** della suite Core: `conformance/gate.sh` lo
+  esclude in modo esplicito e rumoroso (**38/40** verdi sul seed, 40/40 sul riferimento JS).
+- Ticket: `.scratch/seed-linux-nativo/issues/11-ternario-simbolo-seed.md` (aperto).
+
 ## Non rilasciato — 2026-11-08 (bis): contratto dei limiti del seed allineato all'arena N20
 
 ### Fixed

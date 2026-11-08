@@ -2,7 +2,7 @@
 # =====================================================================
 #  conformance/gate.sh — gate di conformita' per CI e verifica locale
 #
-#  Il gate esegue l'oracle conformance/run.sh (39 casi cablati, confronto
+#  Il gate esegue l'oracle conformance/run.sh (40 casi cablati, confronto
 #  byte-esatto) e tollera ESCLUSIVAMENTE i fallimenti gia' documentati
 #  come gap del seed, elencati in KNOWN_GAP. Ogni altro fallimento fa
 #  fallire il gate.
@@ -10,11 +10,18 @@
 #  Gap noti (non sono regressioni: mancano funzionalita' del seed, non
 #  golden sbagliati — nessun golden viene riscritto per mascherarli):
 #
-#    liste  — N03: il seed non implementa l'indicizzazione `xs[i]`
-#             (1-based, SPEC-CORE.md §7) ne `length(xs)`; costruzione,
-#             stampa e `push!` funzionano (casi liste_base, liste_push).
+#    liste            — N03: il seed non implementa l'indicizzazione `xs[i]`
+#                       (1-based, SPEC-CORE.md §7) ne `length(xs)`;
+#                       costruzione, stampa e `push!` funzionano (casi
+#                       liste_base, liste_push).
 #
-#  Lo skip e' esplicito e rumoso: il gate stampa sempre l'elenco dei casi
+#    ternario_simbolo — D23: il seed sceglie il `:` di un simbolo `:nome`
+#                       come separatore del ternario e rifiuta il programma
+#                       (exit 1) quando il ramo *then* e' un simbolo; il
+#                       golden del caso e' quello del riferimento JS
+#                       (autorita' semantica), che e' corretto.
+#
+#  Lo skip e' esplicito e rumoroso: il gate stampa sempre l'elenco dei casi
 #  esclusi e il conteggio dei verdi. Uno skip silenzioso mascherebbe
 #  regressioni reali.
 #
@@ -28,8 +35,20 @@ export LC_ALL
 
 root=$(CDPATH= cd "$(dirname "$0")/.." && pwd) || exit 2
 
-# Fallimenti tollerati: nome del caso (uno per riga).
-KNOWN_GAP="liste"
+# Fallimenti tollerati: nome del caso (uno per riga, separati da spazi).
+KNOWN_GAP="liste ternario_simbolo"
+
+# Motivo del gap: una riga per gap noto.
+gap_reason() {
+  case "$1" in
+    liste)
+      echo "N03: il seed non implementa l'indicizzazione \`xs[i]\` (1-based) ne \`length(xs)\`" ;;
+    ternario_simbolo)
+      echo "D23: il seed sceglie il ':' di un simbolo come separatore del ternario (exit 1)" ;;
+    *)
+      echo "vedi CHANGELOG.md / STATUS.md" ;;
+  esac
+}
 
 tmp=${TMPDIR:-/tmp}/triad-gate-$$
 mkdir -p "$tmp" || exit 2
@@ -48,7 +67,8 @@ if [ "$rc" != 1 ]; then
 fi
 
 # I fallimenti devono essere tutti e soli i gap noti.
-unexpected=$(grep '^FAIL  ' "$tmp/out" | sed 's/^FAIL  \([^ ]*\).*/\1/' | grep -v -x -F "$KNOWN_GAP" || true)
+printf '%s\n' $KNOWN_GAP > "$tmp/gaps"
+unexpected=$(grep '^FAIL  ' "$tmp/out" | sed 's/^FAIL  \([^ ]*\).*/\1/' | grep -v -x -F -f "$tmp/gaps" || true)
 if [ -n "$unexpected" ]; then
   echo "gate: fallimenti non tollerati: $unexpected" >&2
   exit 1
@@ -57,7 +77,7 @@ fi
 echo ""
 echo "gate: NOTA — gap noti esclusi dal gate (nessun golden riscritto):"
 for c in $KNOWN_GAP; do
-  echo "gate:   - $c (vedi CHANGELOG.md / STATUS.md)"
+  echo "gate:   - $c — $(gap_reason "$c")"
 done
 echo "gate: i restanti casi Core sono verdi; il gate passa."
 exit 0

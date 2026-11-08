@@ -11,9 +11,9 @@ Triad-Full: they will be covered by the seed tests.
 ## Execution
 
 ```sh
-node conformance/run.mjs                                         # verify (Core is the default)
-node conformance/run.mjs --cases conformance/core/cases          # equivalent
-node conformance/run.mjs --cases conformance/core/cases --update # golden
+sh conformance/run.sh          # verify (Core suite: 40 cases, byte-exact)
+sh conformance/run.sh --update # regenerate the goldens (only for deliberate semantic changes)
+sh conformance/gate.sh         # gate: the same suite, tolerating the known gaps (noisy)
 ```
 
 ## Cases
@@ -57,8 +57,16 @@ node conformance/run.mjs --cases conformance/core/cases --update # golden
 | `chiusura_in_if` | lambda inside `if` — covered by the seed |
 | `scope` | local vs global, shadowing with `let` — covered by the seed (M3b2b3j) |
 | `gcd` | Euclidean algorithm for GCD (recursion, modulo) — covered by the seed |
+| `ternario_simbolo` | ternary whose *then* branch is a symbol — **not covered by the seed**: the seed takes the `:` of the symbol as the separator and rejects the program (D23); the golden comes from the JS reference (semantic authority) |
 
-39 cases in total, all green with `node conformance/run.mjs`. Since the CI revision of
+40 cases in total. On the seed **38 are green** and two are *known gaps*, excluded
+explicitly and noisily by `conformance/gate.sh` (no golden was rewritten to hide them):
+
+- `liste` — N03: the seed does not implement `xs[i]` (1-based) nor `length(xs)`;
+- `ternario_simbolo` — D23: the seed takes the `:` of a symbol literal as the ternary
+  separator and rejects the program (exit 1).
+
+Since the CI revision of
 2026-11-05 (decision 04, `.scratch/seed-linux-nativo/issues/04-parita-suite-ci.md`) the CI
 no longer re-executes the PE: the Windows side is guaranteed by the `seed.hex` hash gate
 plus these frozen goldens (register of PE behaviour), and the suite runs natively on Linux

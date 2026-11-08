@@ -108,6 +108,16 @@ nessuna delle due piattaforme emula l'altra. `SPEC-CORE.md` non cambia di una vi
   installa entrambi i wrapper, niente avvisi Node nel percorso utente; `.cmd` Windows
   invariati.
 
+## Open (dopo la destinazione)
+
+- [11 — Ternario con simbolo: il seed prende il `:` del simbolo come separatore](issues/11-ternario-simbolo-seed.md):
+  difetto **misurato** del seed (non conforme a `SPEC.md` §1): il ternario col ramo *then*
+  simbolico viene rifiutato (exit 1) quando la condizione è falsa; il riferimento JS è
+  corretto. Divergenza `D23 = noisy` nel contratto del seed + guardia statica `G-D23`
+  (vietata nei sorgenti di S1); caso di conformance `ternario_simbolo` congelato con il
+  golden del riferimento JS e **2° gap noto** del gate (escluso in modo rumoroso). Il fix
+  del codice macchina è rinviato a una sessione separata (ciclo di rebuild dei dump).
+
 ## Not yet specified
 
 ## Out of scope

@@ -48,6 +48,7 @@ const CASES = [
   ['d20_scope_corpo_blocco.td', 'G-D20'],
   ['d21_while_non_bool.td', 'G-D21'],
   ['d22_keyword_cieca.td', 'G-D22'],
+  ['d23_ternario_simbolo.td', 'G-D23'],
   ['e02_troppi_parametri.td', 'G-E02'],
   ['e03_lista_troppo_lunga.td', 'G-E03'],
 ];

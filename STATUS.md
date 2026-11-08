@@ -1,5 +1,44 @@
 # Triad and S0 bootstrap status
 
+## Ternario con simbolo: nuova divergenza `D23` del seed — 2026-11-08 (ter)
+
+Il seed implementa il ternario con uno scanner byte-per-byte che cerca il separatore `:`
+contando solo parentesi tonde, quadre e graffe. Quando il ramo *then* è un **simbolo**
+(`:nome`), il `:` del simbolo è a profondità zero e viene scambiato per il separatore: il
+programma viene **rifiutato** (exit 1, diagnostica generica `seed: error`) quando la
+condizione è falsa. Il ramo *true* funziona per caso (il seed parsa il ramo *then* dalla
+posizione subito dopo `?`), quindi il difetto si manifesta solo sul ramo non scelto.
+
+`SPEC.md` §1 stabilisce la regola dei due punti: «`c ? a : b`: a `:` **surrounded by
+spaces** is the ternary separator». Il **riferimento JS** (`seed/dev/triad_core.cjs`,
+autorità semantica) è conforme: byte-exatto sui 39 casi Core già congelati.
+
+Conseguenze (tutte in questa sessione):
+
+- **divergenza `D23 = noisy`** nel contratto del seed (`seed/dev/certified-subset.txt`) +
+  riga in `seed/README.md`;
+- **guardia statica `G-D23`** (`tools/selfhost-guard/rules.mjs`) con fixture e voce nel
+  self-test: nei sorgenti di S1 il ternario con simbolo nel ramo *then* è vietato (il
+  costrutto è *rumoroso*: exit 1). La regola si spegne da sola quando `D23` sparisce dal
+  contratto;
+- **caso di conformance `ternario_simbolo`** (`conformance/core/cases/ternario_simbolo/`)
+  con il golden del riferimento JS: **2° gap noto** della suite Core, escluso in modo
+  esplicito e rumoroso da `conformance/gate.sh` → **38/40** verdi sul seed (40/40 sul
+  riferimento JS). Nessun golden è stato riscritto per mascherare il difetto;
+- **`conformance/gate.sh`** corretto: la KNOWN_GAP accettava un solo nome e con due gap
+  avrebbe fallito il gate (filtro `grep -v -x -F -f` su elenco + motivo per gap).
+
+**Resta rosso** (fuori scope, noto): il **fix del codice macchina** del ternario
+(`seed/dev/core.js`, routine `pt_scan`/`pt_colon`) è rinviato a una sessione separata —
+toccerebbe il ciclo di rebuild dei dump (`seed.hex` + PE/ELF + hash CI), oggi bloccato dal
+known issue anti-drift (vedi `TASK.md` → handoff «2026-11-07 22:40 (ter)»). Ticket:
+`.scratch/seed-linux-nativo/issues/11-ternario-simbolo-seed.md` (aperto).
+
+Gate eseguiti: `sh verify.sh` → OK (conformance 38/40 con i due gap noti `liste` e
+`ternario_simbolo`, probe 39/39); `node tools/selfhost-guard/test.mjs` → OK (27 test);
+`node tools/selfhost-guard/guard.mjs` → 0 errori; `node tools/selfhost-guard/differential.mjs`
+→ 0 differenze.
+
 ## Contratto dei limiti del seed allineato all'arena N20 — 2026-11-08 (bis)
 
 Il gate `sh seed/linux-x86_64/check_seed.sh` era **rotto** dalla ri-proporzionamento

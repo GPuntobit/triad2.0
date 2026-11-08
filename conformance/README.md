@@ -26,7 +26,7 @@ verified.
 ## Profiles
 
 - **Triad-Full** — `cases/` (12 cases; today only `errore` passes, the rest of Triad-Full is not implemented): the whole language of `SPEC.md`.
-- **Triad-Core** — `core/cases/` (39 cases, all green): only the normative subset of
+- **Triad-Core** — `core/cases/` (40 cases, 38 green on the seed + 2 known gaps): only the normative subset of
 [`SPEC-CORE.md`](../SPEC-CORE.md), shared with Triad-Full; bootstrap primitives are
 not covered by this suite.
 
@@ -37,7 +37,7 @@ Triad, run by the implementation under test.
 - Current (phase 0, without Node): `run.sh`, POSIX shell harness:
 
 ```sh
-sh conformance/run.sh            # verify (Core profile, 39 cases, wired suite)
+sh conformance/run.sh            # verify (Core profile, 40 cases, wired suite)
 sh conformance/run.sh --update   # regenerate expected.out/expected.code
 sh conformance/gate.sh           # gate: run.sh + esclusione esplicita dei gap noti
 ```

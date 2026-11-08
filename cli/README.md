@@ -22,7 +22,7 @@ Comandi (`bin/triad-cli`, invocabile da qualunque directory):
 
 ```bash
 triad-cli run <file> [-- args]     # esegue un programma Triad (.triad/.td)
-triad-cli test conformance        # suite Core (39 casi; gap noti esclusi, vedi conformance/gate.sh)
+triad-cli test conformance        # suite Core (40 casi; gap noti esclusi, vedi conformance/gate.sh)
 triad-cli test conformance --strict   # oracle puro: fallisce su QUALSIASI caso non verde
 triad-cli test conformance --update   # rigenera i golden (uso dev)
 triad-cli test probes              # probe ok_*/test_*/bad_* + golden

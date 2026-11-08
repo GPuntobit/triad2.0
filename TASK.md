@@ -1,5 +1,140 @@
 # Task Triad 2.0
 
+## Handoff — 2026-11-08 03:30: ternario con simbolo — divergenza `D23` del seed (1 e 2 della lista)
+
+### Stato attuale e obiettivo della sessione
+
+Obiettivo della sessione precedente: capire perché il seed risponde `seed: error` a un
+programma Triad-Full (`struct Point` con campi `Float`, `area(n::Int)`/`area(n::Number)`).
+Diagnosi: **non è un bug** — il seed implementa solo Triad-Core (`struct`, `::`, `Float`,
+`Number` e il multiple dispatch non sono in `SPEC-CORE.md` §1–§4); l'output Full corrispondente
+è congelato in `conformance/cases/dispatch/expected.out`.
+
+Durante la costruzione dell'equivalente Core è emerso un **difetto vero del seed**: il
+ternario con un **simbolo nel ramo *then*** viene rifiutato (exit 1). Decisione del
+maintainer: eseguire in questa sessione i punti **(1)** e **(2)** (ticket + caso di
+conformance + divergenza `D23` nel contratto) e rinviare **(3)** (fix del codice macchina) a
+una sessione nuova.
+
+### Cosa è stato fatto
+
+1. **Difetto misurato**: `f(n) = n == 1 ? :intero : :numero` → il seed stampa `intero` e poi
+   esce con 1 (`seed: error`); il riferimento JS (`seed/dev/triad_core.cjs`, autorità
+   semantica) stampa `intero` / `numero` ed esce con 0. Causa: in `seed/dev/core.js` lo
+   scanner del ternario (`pt_scan`/`pt_colon`) sceglie come separatore **qualunque** `:` a
+   profondità zero → prende il `:` del simbolo. Sul ramo *true* il bug è mascherato (il ramo
+   viene parsato da subito dopo `?`); sul ramo *false* il seed parsa `intero : :numero` →
+   variabile inesistente → errore. Non conforme a `SPEC.md` §1 («a `:` **surrounded by
+   spaces** is the ternary separator»).
+2. **Ticket** `.scratch/seed-linux-nativo/issues/11-ternario-simbolo-seed.md` (aperto) con
+   fatti, risposte Q1–Q4, piano di chiusura e cosa fare quando il fix entra; pointer in
+   `.scratch/seed-linux-nativo/map.md` (sezione «Open (dopo la destinazione)»).
+3. **Divergenza `D23 = noisy`** in `seed/dev/certified-subset.txt` + riga nella tabella delle
+   divergenze di `seed/README.md` (e nella lista «fuori contratto»).
+4. **Guardia statica `G-D23`** in `tools/selfhost-guard/rules.mjs` (helper
+   `hasTopLevelSymbol`: simbolo a profondità zero nel ramo *then`), fixture
+   `tools/selfhost-guard/fixtures/d23_ternario_simbolo.td`, voce nel self-test: nei sorgenti di
+   S1 (che girano sul seed) il costrutto è **vietato**; la regola si spegne da sola quando
+   `D23` sparisce dal contratto.
+5. **Caso di conformance `ternario_simbolo`** (`conformance/core/cases/ternario_simbolo/`):
+   `program.td` (ternario con simbolo nel ramo *then* + controllo sul ramo *else*),
+   `expected.out` = `intero` / `numero` / `numero`, `expected.code` = `0`, `expected.golden`
+   legacy. Golden generato con il **riferimento JS** (verificato byte-exatto sui 39 casi già
+   congelati: 39/39 con `cmp` su stdout + exit code).
+6. **`conformance/gate.sh` corretto**: la `KNOWN_GAP` accettava **un solo** nome
+   (`grep -v -x -F "$KNOWN_GAP"`) → con due gap il gate sarebbe fallito. Ora: elenco di gap,
+   filtro `grep -v -x -F -f`, motivo per gap stampato nel riepilogo. Il caso entra nella
+   `KNOWN_GAP` (2° gap noto), **nessun golden riscritto per mascherarlo**.
+7. **Documentazione allineata**: `AGENTS.md` (§2 tabella + regola operativa 3: 40 casi, gap
+   noti plurali), `conformance/core/README.md` (tabella casi, conteggio, esecuzione),
+   `conformance/README.md`, `conformance/run.sh` (commento), `cli/README.md`,
+   `seed/README.md` (D23), `docs/libro/_dati_dal_codice.md` (§8), `STATUS.md`,
+   `CHANGELOG.md`.
+
+### Cosa manca
+
+- **Il fix del codice macchina** (punto 3 del piano, sessione nuova): `seed/dev/core.js`,
+  routine `pt_scan`/`pt_colon`. Ipotesi: ignorare un `:` seguito da un identificatore
+  (inizio di simbolo); in alternativa esigere il `:` circondato da spazi (`SPEC.md` §1),
+  badando attenzione alla coerenza con `SPEC-CORE.md` (dove il `:` è solo prefisso di
+  simbolo). Il fix implica il **ciclo di rebuild dei dump** (`seed.hex` + PE/ELF + hash CI),
+  oggi bloccato dal known issue anti-drift («2026-11-07 22:40 (ter)» in questo file): chiudere
+  prima il ciclo N03/N04.
+- **Alla chiusura del fix**: togliere `D23` dal contratto (la guardia `G-D23` si spegne da
+  sola), togliere `ternario_simbolo` dalla `KNOWN_GAP` del gate → 39/40 verdi con un solo gap
+  noto (`liste`), rigenerare i dump e gli hash CI, aggiornare i conteggi nella documentazione.
+- **Conteggi obsoleti nel book/tutorial**: `docs/tutorial/TUTORIAL{,.it,.ja}.md` dicono ancora
+  «39/39 casi Core» (più il mirror Obsidian in `obsidian-triad/github-wiki/`, submodule
+  separato, out-of-band): passaggio di sincronizzazione da fare, non fatto in questa sessione.
+- Il resto del ciclo di rebuild (N03/N04 → N23 → N24) resta invariato.
+
+### File toccati
+
+| File | Modifica |
+|---|---|
+| `.scratch/seed-linux-nativo/issues/11-ternario-simbolo-seed.md` | **nuovo**: ticket del difetto (aperto) |
+| `.scratch/seed-linux-nativo/map.md` | sezione «Open (dopo la destinazione)» con il ticket 11 |
+| `seed/dev/certified-subset.txt` | `D23 = noisy` |
+| `seed/README.md` | riga D23 nella tabella delle divergenze + lista «fuori contratto» |
+| `tools/selfhost-guard/rules.mjs` | helper `hasTopLevelSymbol` + regola `G-D23` |
+| `tools/selfhost-guard/fixtures/d23_ternario_simbolo.td` | **nuovo**: fixture della regola |
+| `tools/selfhost-guard/test.mjs` | caso `d23_ternario_simbolo.td → G-D23` |
+| `conformance/core/cases/ternario_simbolo/{program.td,expected.out,expected.code,expected.golden}` | **nuovo**: caso di conformance (golden del riferimento JS) |
+| `conformance/gate.sh` | KNOWN_GAP multi-gap (+ filtro corretto, + motivo per gap) |
+| `conformance/core/README.md`, `conformance/README.md`, `conformance/run.sh`, `cli/README.md` | conteggi 39 → 40, casi noti, entry point correnti |
+| `AGENTS.md` | §2 (38/40, due gap noti) + regola operativa 3 (gap noti plurali) |
+| `STATUS.md`, `CHANGELOG.md`, `docs/libro/_dati_dal_codice.md` | stato e conteggi |
+| `TASK.md` | questo handoff |
+
+Nessun file di lessico/parser/valutazione è stato modificato: **i byte del seed non cambiano**
+(niente rebuild dei dump in questa sessione).
+
+### Decisioni prese
+
+1. **Il difetto è del seed, non della specifica**: `SPEC.md` §1 distingue il `:` del
+   simbolo dal separatore del ternario; il riferimento JS è conforme e byte-exatto sui 39
+   casi Core → il golden del nuovo caso viene dal riferimento JS (autorità semantica).
+2. **Il caso di conformance entra nella suite Core anche se il seed lo rifiuta**: è il
+   precedente del gap `liste` (N03) — il golden dice la verità, il gate lo esclude in modo
+   esplicito e rumoroso. Nessun golden è stato riscritto per mascherare il difetto.
+3. **Il gap noto è dichiarato in due punti**: nel contratto del seed (`D23 = noisy`, da cui
+   dipende la guardia `G-D23`) e nella `KNOWN_GAP` del gate (da cui dipende il conteggio
+   «38/40 verdi»). Il test del guard («ogni divergenza del contratto è presidiata») impedisce
+   di dimenticare la guardia.
+4. **Il fix del codice macchina è rinviato**: tocca i dump e gli hash CI, e il ciclo di
+   rebuild è bloccato dal known issue anti-drift → sessione separata (fix + rebuild + hash +
+   rimozione di `D23`/`KNOWN_GAP` + conteggi).
+5. **Nessun probe `bad_*` per il difetto**: quei probe esigono stdout vuoto, il seed emette
+   invece `intero` prima di fallire → il caso di conformance è lo strumento adatto.
+
+### Test di conformance eseguiti ed esito
+
+| comando | esito |
+|---|---|
+| `sh conformance/run.sh` | **FAIL** (atteso): 38 PASS + 2 gap noti (`liste`, `ternario_simbolo`) su 40 |
+| `sh conformance/gate.sh` | **PASS** (exit 0): 38/40 verdi, 2 gap noti esclusi rumorosamente |
+| `sh verify.sh` | **PASS** (exit 0): conformance gate + 39/39 probe |
+| `node tools/selfhost-guard/test.mjs` | **PASS**: 27 test, 0 falliti (nuova regola `G-D23` + fixture) |
+| `node tools/selfhost-guard/guard.mjs` | **PASS**: 0 errori sul corpus (17 file, 11 avvisi preesistenti) |
+| `node tools/selfhost-guard/differential.mjs` | **PASS**: 0 differenze seed↔JS sul corpus certificato |
+| riferimento JS sui 39 casi Core (cmp stdout + exit) | **PASS**: 39/39 byte-esatti |
+
+### Prossimi passi concordati e problemi aperti
+
+1. **(sessione nuova)** fixare `pt_scan`/`pt_colon` in `seed/dev/core.js`; chiudere prima il
+   ciclo N03/N04; rigenerare `seed.hex` + PE/ELF + hash CI; togliere `D23` e
+   `ternario_simbolo` (guardia e gate si spengono da sole); riallineare i conteggi.
+2. Sincronizzare i conteggi «39/39» del book/tutorial (4 lingue) e il mirror Obsidian
+   (submodule, out-of-band).
+3. Restano rossi i known issue già noti: il passo CI «Reproducible dump (anti-drift)» e il
+   resto del ciclo di rebuild (N03/N04 → N23 → N24).
+
+### Comando di ripresa
+
+```
+Ripresa sessione: leggi la sezione "Handoff — 2026-11-08 03:30" in TASK.md e continua da lì
+```
+
 ## Handoff — 2026-11-08 02:40: contratto dei limiti del seed allineato all'arena N20
 
 ### Stato attuale e obiettivo della sessione
