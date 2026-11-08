@@ -1,5 +1,17 @@
 # Changelog — standard Triad
 
+## Icona desktop ovale — 2026-11-08
+
+Aggiornato assets/icons/triad.png con versione ovale del logo, su canvas
+256x256 con esterno trasparente. Il logo esistente è stato usato come
+riferimento; l'icona Windows originale rimane invariata. Installer e
+associazione Icon=triad già presenti riutilizzati senza cambiamenti.
+
+Verificati formato/dimensioni PNG, trasparenza agli angoli e installazione
+con tests/desktop.sh PASS. Per aggiornare menu/cache, rieseguire
+install.sh --desktop dal repository aggiornato. Nessun runtime modificato.
+
+
 ## Logo nella voce desktop Triad Program — 2026-11-08
 
 Aggiunto assets/icons/triad.png (PNG 256x256 estratto senza modifiche
