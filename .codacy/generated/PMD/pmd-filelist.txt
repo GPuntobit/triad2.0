@@ -1,1 +1,1 @@
-c:\Users\xbos\Documents\progetti\triad2.0\.github\ecc\scripts\lib\utils.js
+/home/votlazam/Documenti/progetti/triad2.0/seed/dev/core.js
