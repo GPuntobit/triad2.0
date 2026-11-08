@@ -1,5 +1,20 @@
 # Triad and S0 bootstrap status
 
+## Cleanup del codice inutilizzato — 2026-11-08
+
+Rimossi due script non richiamati (test_small.mjs, run_all.cjs con path
+personali), tre assegnazioni/allocazioni inutili di S1 e la guardia D23
+inattiva con il suo helper esclusivo. Nessun golden o artefatto macchina
+modificato. Prototipi selfhost mantenuti: documentati e validati dalla CI.
+Istruzioni duplicate irraggiungibili in core.js segnalate separatamente:
+il loro taglio cambierebbe il layout binario (ADR 0001).
+
+Audit ed evidenze: docs/unused-code-audit.md. Verifiche PASS: Core 42/42,
+probe 39/39, logica 25/25 sui due runtime, verify.sh, guardie (27 test),
+differenziale, sicurezza e desktop. Non dichiarata un'analisi esaustiva
+statica di ogni percorso possibile o di comandi usati fuori dal repository.
+
+
 ## Desktop: profilo automatico dal codice
 
 Default auto per ogni file, con riconoscimento lessicale di fact/rule/solve/struct,

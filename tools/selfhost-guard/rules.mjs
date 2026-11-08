@@ -45,29 +45,6 @@ const FORBIDDEN_BUILTINS = {
   Symbol: 'D14',
 };
 
-/**
- * true se l'espressione contiene un simbolo a profondita' zero (fuori da
- * parentesi, liste e indici): e' il caso che fa fallire il seed (D23).
- * Lo scanner del ternario del seed cerca il separatore `:` contando solo
- * le parentesi tonde, quadre e graffe: un `:` di simbolo a profondita' zero
- * viene scambiato per il separatore (SPEC.md §1: il separatore del ternario
- * e' un `:` circondato da spazi).
- */
-function hasTopLevelSymbol(node) {
-  if (!node || typeof node !== 'object') return false;
-  switch (node.kind) {
-    case 'sym': return true;
-    case 'binary': return hasTopLevelSymbol(node.left) || hasTopLevelSymbol(node.right);
-    case 'unary': return hasTopLevelSymbol(node.operand);
-    case 'assign': return hasTopLevelSymbol(node.value);
-    case 'ternary':
-      return hasTopLevelSymbol(node.cond) || hasTopLevelSymbol(node.then) ||
-        hasTopLevelSymbol(node.else);
-    // call / list / index / lambda: il `:` e' dentro parentesi o quadre
-    default: return false;
-  }
-}
-
 /** Primitivi §8 assenti (la loro disponibilita' e' nel contratto). */
 const BOOTSTRAP_PRIMITIVES = ['readfile', 'strlen', 'strbyte', 'strsub'];
 
@@ -661,28 +638,6 @@ export const RULES = [
             });
           }
         }
-      }
-      return out;
-    },
-  },
-
-  // ---------------------------------------------------------------- D23
-  {
-    id: 'G-D23',
-    divergence: 'D23',
-    title: 'ternario con un simbolo nel ramo *then*: il seed lo rifiuta',
-    level: 'error',
-    check(ctx) {
-      const out = [];
-      for (const { node } of ctx.analysis?.nodes ?? []) {
-        if (node.kind !== 'ternary') continue;
-        if (!hasTopLevelSymbol(node.then)) continue;
-        out.push({
-          line: null,
-          msg: 'ternario con un simbolo nel ramo *then*: il seed prende il `:` del simbolo ' +
-            'come separatore e rifiuta il programma (exit 1). ' +
-            "SPEC.md §1: il separatore del ternario e' un `:` circondato da spazi",
-        });
       }
       return out;
     },
