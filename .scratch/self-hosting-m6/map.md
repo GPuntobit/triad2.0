@@ -99,6 +99,13 @@ linker, compilatore o runtime esterno nel percorso. `SPEC-CORE.md` non cambia di
 
 <!-- foschia in scope: domande sospettate ma non ancora abbastanza precise da ticket -->
 
+- **Semantica a 64 bit degli interi in S1**: il seed offre solo 62 bit (2 bit di tag) e
+  **rifiuta** i valori fuori range (divergenza `D25`, ora `noisy`:
+  [`docs/adr/0003-range-interi-del-seed.md`](../../docs/adr/0003-range-interi-del-seed.md));
+  S1 gira sul seed e, delegando l'aritmetica all'host, sarebbe non conforme a
+  `SPEC-CORE.md` §5. Decisione aperta in
+  [13 — Semantica a 64 bit degli interi in S1](issues/13-interi-64-bit-in-s1.md).
+
 - **Interno di S1 per le feature Full** (Prolog `fact`/`rule`/`solve`, macro, contratti,
   effetti, budget, trace): come si rappresentano in Triad-Core dipende da
   [_Architettura di S1_](issues/02-architettura-s1.md); una o più patch di ticket quando
