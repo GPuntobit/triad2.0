@@ -78,4 +78,3 @@ D19 = silent
 D20 = silent
 D21 = silent
 D22 = noisy
-D23 = noisy

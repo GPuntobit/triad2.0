@@ -15,12 +15,6 @@
 #                       costruzione, stampa e `push!` funzionano (casi
 #                       liste_base, liste_push).
 #
-#    ternario_simbolo — D23: il seed sceglie il `:` di un simbolo `:nome`
-#                       come separatore del ternario e rifiuta il programma
-#                       (exit 1) quando il ramo *then* e' un simbolo; il
-#                       golden del caso e' quello del riferimento JS
-#                       (autorita' semantica), che e' corretto.
-#
 #  Lo skip e' esplicito e rumoroso: il gate stampa sempre l'elenco dei casi
 #  esclusi e il conteggio dei verdi. Uno skip silenzioso mascherebbe
 #  regressioni reali.
@@ -36,15 +30,13 @@ export LC_ALL
 root=$(CDPATH= cd "$(dirname "$0")/.." && pwd) || exit 2
 
 # Fallimenti tollerati: nome del caso (uno per riga, separati da spazi).
-KNOWN_GAP="liste ternario_simbolo"
+KNOWN_GAP="liste"
 
 # Motivo del gap: una riga per gap noto.
 gap_reason() {
   case "$1" in
     liste)
       echo "N03: il seed non implementa l'indicizzazione \`xs[i]\` (1-based) ne \`length(xs)\`" ;;
-    ternario_simbolo)
-      echo "D23: il seed sceglie il ':' di un simbolo come separatore del ternario (exit 1)" ;;
     *)
       echo "vedi CHANGELOG.md / STATUS.md" ;;
   esac

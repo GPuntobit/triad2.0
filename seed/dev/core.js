@@ -1074,7 +1074,17 @@ L('pt_adv'); incRsi(); jmp('pt_scan');
 L('pt_open'); incRdi(); incRsi(); jmp('pt_scan');
 L('pt_close'); testRdi(); jz('fail'); decRdi(); incRsi(); jmp('pt_scan');
 L('pt_q'); incR8d(); incRsi(); jmp('pt_scan');
-L('pt_colon'); testR8d(); jz('pt_found'); decR8d(); incRsi(); jmp('pt_scan');
+// D23: :name is a symbol token, not a ternary separator. Inspect the
+// identifier start without clobbering RAX (condition), RDI or R8 (depths).
+// Keep the existing :7 separator spelling accepted by the seed.
+L('pt_colon');
+cmpByteRsiDispImm(1, '_'); je('pt_adv');
+cmpByteRsiDispImm(1, 'A'); jb('pt_separator');
+cmpByteRsiDispImm(1, 'Z'); jbe('pt_adv');
+cmpByteRsiDispImm(1, 'a'); jb('pt_separator');
+cmpByteRsiDispImm(1, 'z'); jbe('pt_adv');
+L('pt_separator');
+testR8d(); jz('pt_found'); decR8d(); incRsi(); jmp('pt_scan');
 L('pt_found');
 pushRsi();                               // puntatore al ':'
 cmpRaxImm32(5); jne('pt_false');
