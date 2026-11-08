@@ -24,8 +24,7 @@ for both, so the diagnostic is `seed: read error`).
 The PE is silent: stderr diagnostics exist **only** on the ELF, outside the parity contract
 (which covers byte-identical stdout only). Runtime errors of a program (e.g. `bad_*` probes)
 exit non-zero with empty stdout, identically to the PE; the known PE limits stay documented
-limits (see [`tests/probes/README.md`](../../tests/probes/README.md) and the registered gap
-`liste` in [`conformance/run.sh`](../../conformance/run.sh)).
+limits (see [`tests/probes/README.md`](../../tests/probes/README.md)).
 ## Numbers
 - **ELF file:** 9644 bytes (`0x25AC`)
 - **Base:** `0x400000`; **entry:** `0x400078`
@@ -68,8 +67,8 @@ requires `cmp` equality (anti-drift), plus `check_seed.sh` and `verify.sh`.
   buffer `0x100000`. A source of `0x100000` bytes or more is rejected (exit 1).
 - The PE's machine-code domain limits (list-literal heap, dynamic scoping, max 4 parameters,
   multi-line list literals, …) are measured and registered in
-  [`tests/probes/README.md`](../../tests/probes/README.md); `xs[i]` and `push!`-statement
-  remain outside the seed domain (gap `liste`, registered in `conformance/run.sh`).
+  [`tests/probes/README.md`](../../tests/probes/README.md). All 40 Core cases, including
+  `liste`, are required by the gate without exclusions.
 ## Next steps
 - **E3 (N18) ✅ chiusa:** toolchain Linux senza Node — `install.sh` → `bin/triad` con questo
   seed come unico runtime (la logica di stub/fallback è uscita dal launcher), CLI POSIX

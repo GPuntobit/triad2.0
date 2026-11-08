@@ -5,9 +5,8 @@
 #  Q7): esegue i soli entry point sh — conformance/gate.sh +
 #  tests/probes/run_probes.sh. Exit 0 = gate verde.
 #
-#  conformance/gate.sh esegue l'oracle conformance/run.sh e tollera i
-#  soli gap noti del seed (elenco in conformance/gate.sh): ogni altro
-#  fallimento fa fallire il gate.
+#  conformance/gate.sh esegue l'oracle conformance/run.sh senza
+#  esclusioni: ogni fallimento Core fa fallire il gate.
 #
 #  L'anti-drift del dump (seed/dev/gen_seed.js && cmp) resta step
 #  separato CI/dev (Q7), come il check del contratto errori/limiti

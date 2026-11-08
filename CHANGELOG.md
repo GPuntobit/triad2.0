@@ -1,5 +1,29 @@
 # Changelog — standard Triad
 
+## Checkpoint e suite complete senza esclusioni — 2026-11-08
+
+Checkpoint remoto del codice iniziale non funzionante: branch
+`checkpoint/core-probes-failing-2026-11-08`, commit
+`6c38d383a13c85ce90f4107f1f5d70f601f3cf84` (hash CI obsoleti,
+quattro probe negativi obsoleti e D23 non risolta). I fix precedenti
+sono ora integrati in main `488f05e`: Core 40/40 e probe 39/39 passano.
+
+Rimossa l'ultima esclusione `liste`: conformance/gate.sh delega
+direttamente all'oracle e propaga il suo exit code. Aggiornati
+verify.sh, nome dello step CI, AGENTS.md e documentazione del runner
+e del seed. Nessun golden, dump o generatore modificato: i probe
+negativi restano test dei limiti attesi, non feature dichiarate implementate.
+Riferimento normativo: SPEC-CORE.md §11 (tutti i casi Core obbligatori).
+
+Verifiche PASS: Core 40/40, probe 39/39, verify.sh, CLI installata
+triad-cli test all, suite security, git diff --check. Controllo negativo:
+un errore temporaneo nel golden di liste fa fallire gate, verify.sh e
+triad-cli test all; il golden è poi ripristinato byte per byte.
+Il difetto dei precedenti gate che tolleravano una regressione di liste
+è chiuso. Restano i limiti del runtime registrati nei probe bad_*:
+la richiesta corrente copre le suite complete, non la loro implementazione.
+
+
 ## D23 risolta: ternario con simbolo reinserito nel gate — 2026-11-08
 
 `seed/dev/core.js`, scanner `pt_colon`: un `:` seguito dall'inizio di un
