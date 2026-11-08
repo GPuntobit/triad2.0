@@ -24,7 +24,6 @@
 
 import {
   BLIND_UP,
-  BLIND_DOWN,
   KEYWORDS,
   BINARY_OPS,
   blindKeywordIn,
