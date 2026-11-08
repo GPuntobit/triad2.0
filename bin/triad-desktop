@@ -12,30 +12,38 @@ while [ -L "$self" ]; do
 done
 ROOT=$(CDPATH= cd -- "$(dirname -- "$self")/.." && pwd -P) || exit 1
 
-profile=core
+profile=auto
 if [ "${1:-}" = "--logic" ]; then
     profile=logic
     shift
+elif [ "${1:-}" = "--auto" ]; then
+    shift
 elif [ "${1:-}" = "--core" ]; then
+    profile=core
     shift
 fi
 
 run_file() {
-    if [ "$profile" = logic ]; then
+    selected=$profile
+    if [ "$selected" = auto ]; then
+        selected=$(sh "$ROOT/scripts/detect-profile.sh" "$1") || selected=core
+    fi
+    printf 'Profilo selezionato: %s\n' "$selected"
+    if [ "$selected" = logic ]; then
         "$ROOT/bin/triad" --logic "$@"
     else
         "$ROOT/bin/triad" "$@"
     fi
     result=$?
-    printf '\nProgramma terminato (codice %s, profilo %s).\n' "$result" "$profile"
-    if [ "$result" -ne 0 ] && [ "$profile" = core ]; then
+    printf '\nProgramma terminato (codice %s, profilo %s).\n' "$result" "$selected"
+    if [ "$result" -ne 0 ] && [ "$selected" = core ]; then
         printf 'Per un programma con fact/rule/solve: digita :logic, poi il percorso del file.\n'
     fi
 }
 
 printf 'Triad — sessione desktop\n'
 printf 'Esecuzione di file .triad/.td; questa sessione non è un REPL.\n'
-printf 'Profili: :core per Triad-Core, :logic per fact/rule/solve. Profilo attuale: %s.\n' "$profile"
+printf 'Profili: :auto rileva dal codice, :core forza Core, :logic forza S1. Profilo attuale: %s.\n' "$profile"
 if [ "$#" -gt 0 ]; then
     run_file "$@"
 fi
@@ -44,6 +52,7 @@ while :; do
     IFS= read -r file || { printf '\n'; break; }
     case $file in
         :quit) break ;;
+        :auto) profile=auto; printf 'Profilo automatico selezionato.\n' ;;
         :logic) profile=logic; printf 'Profilo logico S1 selezionato.\n' ;;
         :core) profile=core; printf 'Profilo Core selezionato.\n' ;;
         '') continue ;;
