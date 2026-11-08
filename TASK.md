@@ -1,5 +1,20 @@
 # Task Triad 2.0
 
+## Installazione desktop KDE senza qtpaths — 2026-11-08
+
+L'installazione riusciva ma alcune versioni xdg-utils richiamavano qtpaths
+non disponibile sotto KDE 5/6. Quando KDE_SESSION_VERSION indica KDE >=5
+e qtpaths non esiste, la sola chiamata xdg-mime default usa il backend
+standard (X-Generic, KDE_SESSION_VERSION=0). L'ambiente utente non viene
+modificato e gli altri desktop conservano il comportamento precedente.
+
+Test desktop PASS: installazione KDE senza dipendenza qtpaths, default
+Triad registrato in mimeapps.list, preferenza text/plain preesistente
+preservata; controlli icona, profili e sessione mantenuti. Nessun runtime
+o golden modificato. Per applicare il fix rieseguire install.sh --desktop
+dal repository aggiornato. L'avviso non indicava un fallimento del seed.
+
+
 ## Icona desktop ovale — 2026-11-08
 
 Aggiornato assets/icons/triad.png con versione ovale del logo, su canvas
