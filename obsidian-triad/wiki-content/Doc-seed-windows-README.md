@@ -23,8 +23,8 @@ Il dump esadecimale è [`seed.hex`](https://github.com/GPuntobit/triad2.0/blob/m
 - **Entry point:** RVA `0x1000`
 - **Sezione:** `.text`, RVA `0x1000`, file offset `0x200`, 24576 byte, caratteristiche `0xE0000020`
 - **Immagine:** base `0x140000000`, `SizeOfImage` `0x7000`, header `0x200`, subsystem console, ASLR disattivata
-- **Codice:** 8315 byte
-- **sha256 di `seed.hex`:** `9987105DCD56F42A1AD73451821A281E6F24374ED6CE83993BB8CA56F5EC4822`
+- **Codice:** 8755 byte
+- **sha256 di `seed.hex`:** `9F96C413B2E77ABAB1E8758A7AAE92A2DDFA77BA5EF17BFF5927E35A688E98D1`
 
 ## Layout del file
 
@@ -36,7 +36,7 @@ Il dump esadecimale è [`seed.hex`](https://github.com/GPuntobit/triad2.0/blob/m
 | `0x058` | optional header PE32+, entry `0x1000`, base `0x140000000` |
 | `0x0D0` | data directory import: RVA `0x40A0`, size `0x28` |
 | `0x148` | section header `.text` (VirtualSize/RawSize `0x2400`) |
-| file `0x200` / RVA `0x1000` | codice (8315 byte) |
+| file `0x200` / RVA `0x1000` | codice (8755 byte) |
 | RVA `0x4000` (file `0x3200`) | IAT, 8 slot + null |
 | RVA `0x4050` (file `0x3250`) | ILT, 8 slot + null |
 | RVA `0x40A0` (file `0x32A0`) | import descriptor + terminatore |
@@ -45,20 +45,23 @@ Il dump esadecimale è [`seed.hex`](https://github.com/GPuntobit/triad2.0/blob/m
 
 Mappatura della sezione: `file offset = 0x200 + (RVA - 0x1000)`.
 
-## Memoria (`VirtualAlloc` 192 KiB, base `r14`)
+## Memoria (`VirtualAlloc` 10 MiB, base `r14`)
 
 | offset | cosa |
 |---|---|
-| `+0x00000` | sorgente Triad (max 60 KiB; a `+0xF000` c'è la maschera di stop dei blocchi) |
-| `+0x10000` | ambiente variabili (`r15`): contatore `rbx`, entry da 24 byte (`+0` nome ptr, `+8` len, `+16` valore) |
-| `+0x20000` | tabella funzioni (`r13`): contatore qword a `[r13]`, entry da 128 byte a `r13+8+i*128` |
-| `+0x30000` | heap condiviso: bump pointer qword; record chiusura da 128 byte da `+0x30008`; stringhe `[tipo=1][len][byte…]` (dati a `+16`) |
+| `+0x00000` | sorgente Triad (max `0xFFFFF` = 1 MiB − 1 byte; a `+0x100000` c'è la maschera di stop dei blocchi) |
+| `+0x100000` | scratch: maschera di stop (`+0x100000`), flag di chiusura (`+0x100008`), flag di break (`+0x100010`), modalità print inline (`+0x100028`) |
+| `+0x110000` | ambiente variabili (`r15`): contatore `rbx`, entry da 24 byte (`+0` nome ptr, `+8` len, `+16` valore), max 16384 binding |
+| `+0x190000` | tabella funzioni (`r13`): contatore qword a `[r13]`, entry da 128 byte a `r13+8+i*128`, max 3584 record |
+| `+0x200000` | heap condiviso: bump pointer qword; record chiusura da 128 byte da `+0x200008`; stringhe `[tipo=1][len][byte…]` (dati a `+16`), 8 MiB utilizzabili |
 
-`VirtualAlloc` riserva 256 KiB. Una chiusura è un record con la stessa forma di una entry
-funzione (nome/len del parametro, n=1, body, parametro); il valore è `record|2`. Il record ha
+`VirtualAlloc` riserva 10 MiB (`0xA00000`): la mappa qui sopra è la memory map
+dell'arena (N20: sorgente 1 MiB, heap 8 MiB).
+Una chiusura è un record con la stessa forma di una entry funzione (nome/len del parametro,
+n=1, body, parametro); il valore è `record|2`. Il record ha
 anche una cattura: `+0x60` conteggio, `+0x68` nome ptr, `+0x70` len, `+0x78` valore.
 La cattura era prevista quando la lambda è creata dentro un corpo di funzione (flag a
-`r14+0xF008`) e copia l'ultimo binding dell'ambiente, di solito il parametro; al momento della
+`r14+0x100008`) e copia l'ultimo binding dell'ambiente, di solito il parametro; al momento della
 chiamata, ma il meccanismo non è risultato affidabile: rimandato ad AST/bytecode.
 
 Entry funzione: `+0` nome ptr, `+8` nome len, `+16` numero parametri, `+24` body ptr nel

@@ -1,5 +1,123 @@
 # Task Triad 2.0
 
+## Handoff — 2026-11-08 02:40: contratto dei limiti del seed allineato all'arena N20
+
+### Stato attuale e obiettivo della sessione
+
+Obiettivo: **fixare il gate rotto** `sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed`
+(FAIL: `0xF000: exit 0 (atteso 1)`) e riallineare gli artefatti/documenti che ne dipendono.
+Sessione **breve e mirata**: nessuna modifica a lessico, parser, tipi o semantica del
+linguaggio → nessun golden di conformance toccato.
+
+### Cosa è stato fatto
+
+1. **Diagnosi**: il fallimento non è un bug del seed ma un **contratto di test obsoleto**.
+   La ri-proporzionamento dell'arena (N20, `9d22de3`) ha portato il buffer sorgente da 64 KiB
+   a **1 MiB** (maschera di stop a `+0x100000`); il contratto macchina-leggibile
+   (`seed/dev/certified-subset.txt`: `source.max_bytes = 1048576`) e il seed committato
+   (CI-gated) sono coerenti fra loro, ma `check_seed.sh` verificava ancora l'envelope
+   pre-N20 (`0xEFFF` ammesso, `0xF000` rifiutato). Le specifiche (`SPEC.md`,
+   `SPEC-CORE.md`) **non** fissano un limite di dimensione della sorgente: la scelta
+   dell'envelope è del progetto e il suo riferimento è il contratto del seed.
+2. **`seed/linux-x86_64/check_seed.sh`** — casi 6-7 riscritti sull'envelope corrente:
+   sorgente `0xFFFFF` (1 048 575 byte) **ammessa** (exit 0, stdout byte-esatto) e
+   sorgente `0x100000` **rifiutata** (exit 1, stdout vuoto, diagnostica su stderr);
+   intestazione aggiornata.
+3. **`.github/workflows/ci.yml`** — il gate hash anti-tampering riportava gli hash dei dump
+   **pre-N20** (passo CI rosso): allineato ai dump committati (ELF `971f61d5…`,
+   PE `9f96c413…`).
+4. **`seed/windows-x86_64/seed.exe` + `seed_decoded.exe`** — erano la decodifica del dump
+   pre-N20, **non** quella del `seed.hex` committato (ADR 0001: devono essere la decodifica
+   esatta): rigenerati dal dump canonico. La parità PE↔ELF sull'envelope è ripristinata
+   (verificata con Wine: stessi exit code e stesso stdout sui casi `0xFFFFF` / `0x100000` /
+   file assente / path vuoto / nessun argomento; il PE resta muto su stderr per contratto).
+5. **Documentazione** allineata all'envelope N20: `seed/README.md`,
+   `seed/linux-x86_64/README.md` (tabella dei comportamenti, exit code, limiti, numeri e
+   hash), `seed/windows-x86_64/README.md` (memory map, numeri, hash), il mirror Obsidian
+   in-repo (`obsidian-triad/wiki-content/Doc-seed-windows-README.md`) e
+   `docs/libro/_dati_dal_codice.md` (§3 «Limiti strutturali del seed»).
+   Il mirror gemello `obsidian-triad/github-wiki/Doc-seed-windows-README.md` sta nel
+   **submodulo** del wiki (repo separato): va aggiornato lì, out-of-band.
+   La diagnostica ELF per sorgente troppo grande resta `seed: read error` (etichetta
+   `read_fail` condivisa col fallimento di lettura: limite noto del seed) → il README è
+   stato allineato al comportamento reale invece del testo promesso.
+
+### Cosa manca (fuori scope di questa sessione)
+
+- **Il passo CI «Reproducible dump (anti-drift)» resta rosso**: il generatore a HEAD
+  (`ceaf202`, WIP N03/N04) **non** rigenera i dump committati (verificato: il generatore a
+  `9d22de3` li riproduce byte per byte, quello a HEAD no). È il known issue del ciclo di
+  rebuild: chiudere il ciclo N03/N04 (chiamata come statement) **prima** di rigenerare
+  PE/ELF + hash, altrimenti si ripubblicano dump non conformi.
+- Il resto del ciclo di rebuild (N03/N04 → N23 → N24) è invariato: vedi l'handoff
+  «2026-11-07 22:40 (ter)».
+
+### File toccati
+
+| File | Modifica |
+|---|---|
+| `seed/linux-x86_64/check_seed.sh` | casi 6-7 + intestazione sull'envelope N20 (1 MiB) |
+| `.github/workflows/ci.yml` | gate hash: hash dei dump committati (ELF/PE) |
+| `seed/windows-x86_64/seed.exe`, `seed_decoded.exe` | rigenerati dal `seed.hex` committato (decodifica esatta, ADR 0001) |
+| `seed/linux-x86_64/README.md`, `seed/windows-x86_64/README.md`, `seed/README.md` | limiti, memory map, numeri e hash aggiornati |
+| `obsidian-triad/wiki-content/Doc-seed-windows-README.md` | mirror del README PE aggiornato (il gemello nel submodulo `github-wiki` resta da aggiornare nel repo del wiki) |
+| `docs/libro/_dati_dal_codice.md` | §3 «Limiti strutturali del seed»: valori N20 e citazioni `seed/dev/core.js` |
+| `seed/dev/backend_elf.js` | solo commento: la soglia è `0x100000`, non `0xF000` |
+| `CHANGELOG.md`, `STATUS.md` | voce di correzione + stato corrente |
+| `TASK.md` | questo handoff |
+
+Nessun golden (`conformance/`, `tests/probes/`) è stato toccato; nessun file di
+lessico/parser/valutazione è stato modificato.
+
+### Decisioni prese
+
+1. **Il contratto di test si adatta al seed, non il viceversa**: l'envelope N20 è
+   deliberato (N20, `9d22de3`, contratto `certified-subset.txt`), le specifiche non fissano
+   limiti di dimensione della sorgente → il gate era il relitto obsoleto.
+2. **Nessun cambio ai byte del seed**: la diagnostica dedicata «file too large» implicherebbe
+   una nuova etichetta di uscita (PE + ELF) e dunque un nuovo hash CI + diff tracciata
+   (ADR 0001) per un vantaggio solo cosmetico: si è preferito allineare la documentazione
+   al comportamento reale (`seed: read error`).
+3. **Riparazione degli artefatti PE**: rigenerare `seed.exe`/`seed_decoded.exe` dal dump
+   canonico è un atto di riallineamento (non un cambio semantico): il gate hash CI resta
+   sulla `.hex` e non cambia.
+
+### Test di conformance eseguiti ed esito
+
+- `sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed` → **OK (7 casi)** (prima:
+  `FAIL: 0xF000: exit 0 (atteso 1)`).
+- `sh verify.sh` → **OK**: conformance 38/39 (unico FAIL il gap noto `liste`, escluso da
+  `conformance/gate.sh`), probe 39/39.
+- `node tools/selfhost-guard/guard.mjs` → OK (17 file, 0 errori, 11 avvisi);
+  `node tools/selfhost-guard/test.mjs` → OK (26 test, 0 falliti);
+  `node tools/selfhost-guard/differential.mjs` → OK (6 file, 0 differenze).
+- `node tools/site-gen/build.mjs --check` → OK (13 file coincidono con il generato).
+- PE↔ELF (Wine): `0xFFFFF` → `42` exit 0 su entrambi; `0x100000` → exit 1 su entrambi;
+  file assente → exit 1; path vuoto/nessun argomento → exit 2 (PE muto, ELF con
+  diagnostica).
+
+### Prossimi passi concordati e problemi aperti
+
+1. **Ciclo di rebuild N03/N04** (prioritario): chiamata come statement → poi rigenerare
+   PE/ELF (`node seed/dev/gen_seed.js all`), aggiornare gli hash in `.github/workflows/ci.yml`
+   e i documenti (`seed/README.md`, `seed/dev/README.md`, i due README dei seed, ADR 0001:
+   diff tracciato) → chiude il passo anti-drift.
+2. **N23**: `conformance/gate.sh` → `KNOWN_GAP` vuoto (il caso `liste` chiude con la
+   chiamata-statement).
+3. **N24**: allineare `BOOTSTRAP.md` §10, «Current status» di `TASK.md`, `STATUS.md`,
+   `CHANGELOG.md` (affermazioni ottimistiche su `elseif` e liste «complete»).
+4. N21/N06 rinviati (primitivi §8, stringhe).
+
+### Comando di ripresa
+
+```sh
+cd /home/votlazam/Documenti/progetti/triad2.0 && git status --short && sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed && sh verify.sh && node seed/dev/gen_seed.js all && git diff --stat
+```
+
+```
+Ripresa sessione: leggi la sezione "Handoff — 2026-11-08 02:40: contratto dei limiti del seed allineato all'arena N20" in TASK.md e continua da lì
+```
+
 ## Handoff — 2026-11-07 22:40 (ter): N03/N04 nel seed — indicizzazione `xs[i]` (WIP, **non committato**)
 
 ### Stato attuale e obiettivo della sessione

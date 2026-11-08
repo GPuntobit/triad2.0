@@ -64,7 +64,7 @@ const STDERR = 2;
 
 // ---- messaggi diagnostici (solo ELF: il PE e' muto, fuori parita') ----------
 // Testi invariati da E1 (N15); 'fail' (esaurimento arena) e' nuovo.
-// Nota: 'read_fail' copre sia errore di lettura sia sorgente >= 0xF000
+// Nota: 'read_fail' copre sia errore di lettura sia sorgente >= 0x100000
 // (etichetta condivisa col corpo, limite noto documentato).
 const MSG = {
   usage: 'usage: seed FILE.td\n',

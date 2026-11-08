@@ -1,5 +1,34 @@
 # Changelog — standard Triad
 
+## Non rilasciato — 2026-11-08 (bis): contratto dei limiti del seed allineato all'arena N20
+
+### Fixed
+- **`seed/linux-x86_64/check_seed.sh`** — i casi 6 e 7 verificavano ancora l'envelope
+  pre-N20 (sorgente ≤ `0xEFFF` ammessa, `0xF000` rifiutata): il gate falliva con
+  `FAIL: 0xF000: exit 0 (atteso 1)`, perché l'arena N20 riserva **1 MiB** di sorgente
+  (maschera di stop a `+0x100000`). Ora i casi verificano `0xFFFFF` ammessa (exit 0,
+  stdout byte-esatto) e `0x100000` rifiutata (exit 1, stdout vuoto, diagnostica su stderr).
+- **`.github/workflows/ci.yml`** — il gate hash anti-tampering riportava gli hash dei dump
+  **pre-N20**: allineati ai dump committati (ELF `971f61d5…`, PE `9f96c413…`).
+- **`seed/windows-x86_64/seed.exe` e `seed_decoded.exe`** — erano la decodifica del dump
+  **pre-N20**, non quella del `seed.hex` committato (ADR 0001: i due file devono essere la
+  decodifica esatta del dump canonico): rigenerati dal `seed.hex` committato. La parità
+  PE↔ELF sull'envelope è ripristinata (prima il PE rifiutava già una sorgente da 64 KiB,
+  l'ELF no).
+- **Documentazione** allineata all'envelope N20: `seed/README.md`,
+  `seed/linux-x86_64/README.md` (tabella dei comportamenti, limiti, numeri e hash),
+  `seed/windows-x86_64/README.md` (memory map, numeri e hash), il mirror Obsidian in-repo
+  (`obsidian-triad/wiki-content/Doc-seed-windows-README.md`) e
+  `docs/libro/_dati_dal_codice.md` (§3 «Limiti strutturali del seed»).
+  Il mirror gemello `obsidian-triad/github-wiki/Doc-seed-windows-README.md` sta nel
+  **submodulo** del wiki (repo separato): va aggiornato lì, out-of-band.
+
+### Known (non risolto qui)
+- Il passo CI «Reproducible dump (anti-drift)» resta **rosso**: il generatore a HEAD
+  (`ceaf202`, WIP N03/N04) non rigenera i dump committati. È il known issue del ciclo di
+  rebuild (vedi `TASK.md` → handoff «2026-11-07 22:40 (ter)»): chiudere il ciclo prima di
+  rigenerare PE/ELF + hash.
+
 ## Non rilasciato — 2026-11-08: guardie statiche e gate differenziale sul corpus certificato
 
 Decisione [12] della mappa self-hosting M6 (`.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md`):

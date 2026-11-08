@@ -5,8 +5,10 @@
 #
 #  Comportamenti verificati (contratto os_*, issue 03; identici al PE):
 #    2 = usage (nessun argomento o argv[1] vuoto), 1 = open/read fail o
-#    sorgente >= 0xF000 byte, 0 = esecuzione riuscita (file vuoto incluso).
-#  Il sorgente massimo ammesso e' 0xEFFF byte (slot maschera a +0xF000).
+#    sorgente >= 0x100000 byte, 0 = esecuzione riuscita (file vuoto incluso).
+#  Il sorgente massimo ammesso e' 0xFFFFF byte (1 MiB - 1): l'arena del seed
+#  riserva 1 MiB di sorgente (N20) e lo slot della maschera di stop dei
+#  blocchi sta a +0x100000.
 #
 #  Uso: sh seed/linux-x86_64/check_seed.sh [percorso-seed]
 #  (default: il seed affiancato allo script). Exit 0 = tutti i casi OK.
@@ -54,19 +56,19 @@ test "$rc" = 1 || fail "apertura: exit $rc (atteso 1)"
 test ! -s "$tmp/out" || fail "apertura: stdout non vuoto"
 test -s "$tmp/err" || fail "apertura: stderr vuoto (atteso messaggio)"
 
-# 6. sorgente 0xEFFF byte: limite ammesso (slot maschera a +0xF000)
-{ printf 'println(42)\n'; dd if=/dev/zero bs=1 count=61427 2>/dev/null | tr '\0' '\n'; } > "$tmp/edge.td"
-test "$(wc -c < "$tmp/edge.td")" = 61439 || fail "edge: dimensione sorgente != 61439"
+# 6. sorgente 0xFFFFF byte: limite ammesso (slot maschera a +0x100000)
+{ printf 'println(42)\n'; dd if=/dev/zero bs=1 count=1048563 2>/dev/null | tr '\0' '\n'; } > "$tmp/edge.td"
+test "$(wc -c < "$tmp/edge.td")" = 1048575 || fail "edge: dimensione sorgente != 1048575"
 printf '42\n' > "$tmp/edge.want"
-"$seed" "$tmp/edge.td" > "$tmp/out" 2> "$tmp/err" || fail "0xEFFF: exit != 0"
-cmp "$tmp/out" "$tmp/edge.want" >/dev/null 2>&1 || fail "0xEFFF: stdout != atteso (byte-exatto)"
+"$seed" "$tmp/edge.td" > "$tmp/out" 2> "$tmp/err" || fail "0xFFFFF: exit != 0"
+cmp "$tmp/out" "$tmp/edge.want" >/dev/null 2>&1 || fail "0xFFFFF: stdout != atteso (byte-esatto)"
 
-# 7. sorgente 0xF000 byte: troppo grande, exit 1, stdout vuoto
-{ printf 'println(43)\n'; dd if=/dev/zero bs=1 count=61428 2>/dev/null | tr '\0' '\n'; } > "$tmp/big.td"
-test "$(wc -c < "$tmp/big.td")" = 61440 || fail "big: dimensione sorgente != 61440"
+# 7. sorgente 0x100000 byte: troppo grande, exit 1, stdout vuoto
+{ printf 'println(43)\n'; dd if=/dev/zero bs=1 count=1048564 2>/dev/null | tr '\0' '\n'; } > "$tmp/big.td"
+test "$(wc -c < "$tmp/big.td")" = 1048576 || fail "big: dimensione sorgente != 1048576"
 "$seed" "$tmp/big.td" > "$tmp/out" 2> "$tmp/err"; rc=$?
-test "$rc" = 1 || fail "0xF000: exit $rc (atteso 1)"
-test ! -s "$tmp/out" || fail "0xF000: stdout non vuoto"
-test -s "$tmp/err" || fail "0xF000: stderr vuoto (atteso messaggio)"
+test "$rc" = 1 || fail "0x100000: exit $rc (atteso 1)"
+test ! -s "$tmp/out" || fail "0x100000: stdout non vuoto"
+test -s "$tmp/err" || fail "0x100000: stderr vuoto (atteso messaggio)"
 
 echo "check seed: OK (7 casi)"

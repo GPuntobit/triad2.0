@@ -1,5 +1,37 @@
 # Triad and S0 bootstrap status
 
+## Contratto dei limiti del seed allineato all'arena N20 — 2026-11-08 (bis)
+
+Il gate `sh seed/linux-x86_64/check_seed.sh` era **rotto** dalla ri-proporzionamento
+dell'arena (N20): i casi 6-7 verificavano ancora il vecchio envelope pre-N20 (sorgente
+≤ `0xEFFF`, rifiuto da `0xF000`), mentre il seed committato riserva **1 MiB** di sorgente
+(maschera di stop a `+0x100000`) → `FAIL: 0xF000: exit 0 (atteso 1)`.
+
+Allineati al **contratto macchina-leggibile** (`seed/dev/certified-subset.txt`:
+`source.max_bytes = 1048576`):
+
+- `seed/linux-x86_64/check_seed.sh`: `0xFFFFF` ammessa (exit 0, stdout byte-esatto),
+  `0x100000` rifiutata (exit 1, stdout vuoto, diagnostica su stderr) — **7 casi verdi**;
+- `.github/workflows/ci.yml`: gate hash anti-tampering riallineato ai dump committati
+  (ELF `971f61d5…`, PE `9f96c413…`; prima riportava gli hash pre-N20 → passo rosso);
+- `seed/windows-x86_64/seed.exe` + `seed_decoded.exe`: rigenerati dal `seed.hex` committato
+  (erano la decodifica pre-N20: ADR 0001 richiede la decodifica esatta). Parità PE↔ELF
+  ripristinata sull'envelope (verificata con Wine: stessi exit code e stesso stdout sui
+  casi `0xFFFFF`/`0x100000`/file assente/path vuoto/nessun argomento);
+- documentazione allineata: `seed/README.md`, `seed/linux-x86_64/README.md`,
+  `seed/windows-x86_64/README.md`, il mirror Obsidian in-repo
+  (`obsidian-triad/wiki-content/`), `docs/libro/_dati_dal_codice.md`. Il mirror gemello
+  `obsidian-triad/github-wiki/` sta nel **submodulo** del wiki (repo separato): va
+  aggiornato lì, out-of-band.
+
+Gate eseguiti: `sh verify.sh` → OK (conformance 38/39 con il solo gap noto `liste`, probe
+39/39); `check_seed.sh` → OK (7 casi); `tools/selfhost-guard/{guard,test,differential}.mjs` →
+OK (0 differenze); `tools/site-gen/build.mjs --check` → OK.
+
+**Resta rosso** (fuori scope, noto): il passo CI «Reproducible dump (anti-drift)» — il
+generatore a HEAD (`ceaf202`, WIP N03/N04) non rigenera i dump committati: chiude col ciclo
+di rebuild (vedi `TASK.md` → handoff «2026-11-07 22:40 (ter)»).
+
 ## Guardie statiche e gate differenziale sul corpus certificato — 2026-11-08
 
 La decisione [12] della mappa M6 (`.scratch/self-hosting-m6/issues/12-guardie-statiche-sorgente-s1.md`)

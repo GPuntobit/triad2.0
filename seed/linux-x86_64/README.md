@@ -14,22 +14,25 @@ The hex dump is [`seed.hex`](seed.hex): it is the committed source.
 | `./seed` (no args) | empty | `usage: seed FILE.td` | `2` |
 | `./seed ""` (empty path) | empty | `usage: seed FILE.td` | `2` |
 | `./seed missing.td` | empty | `seed: cannot open file` | `1` |
-| source ≥ `0xF000` bytes | empty | `seed: file too large` | `1` |
+| source ≥ `0x100000` bytes | empty | `seed: read error` | `1` |
 
 Exit codes follow the `os_*` contract (`.scratch/seed-linux-nativo/issues/03`): `2` = usage,
-`1` = open/read failure or source too large (mask slot at `+0xF000`, same bound as the PE).
+`1` = open/read failure or source too large (the arena reserves 1 MiB of source since N20,
+the block-stop mask slot is at `+0x100000`, same bound as the PE). The too-large case shares
+the `read_fail` label with the genuine read errors (known limit of the seed: one exit label
+for both, so the diagnostic is `seed: read error`).
 The PE is silent: stderr diagnostics exist **only** on the ELF, outside the parity contract
 (which covers byte-identical stdout only). Runtime errors of a program (e.g. `bad_*` probes)
 exit non-zero with empty stdout, identically to the PE; the known PE limits stay documented
 limits (see [`tests/probes/README.md`](../../tests/probes/README.md) and the registered gap
 `liste` in [`conformance/run.sh`](../../conformance/run.sh)).
 ## Numbers
-- **ELF file:** 8499 bytes (`0x2133`)
+- **ELF file:** 8736 bytes (`0x2220`)
 - **Base:** `0x400000`; **entry:** `0x400078`
-- **Program header:** a single `PT_LOAD` R|X, offset 0, filesz/memsz `0x2133`, align `0x1000`
+- **Program header:** a single `PT_LOAD` R|X, offset 0, filesz/memsz `0x2220`, align `0x1000`
   (no section headers, like the PE dump: the artifact is pure machine code)
-- **sha256 of `seed.hex`:** `41580ADEB58F4BD9B982AB1FBE3877E9B8B3E3439DFC34D085C850C1D6E3AA1B`
-- **sha256 of the decoded ELF:** `AB60C0C2C4BD5384D141BD50C5429FA0D13CCA781D7103CF7453DD8DCA3119C5`
+- **sha256 of `seed.hex`:** `971F61D5E9F8BCF3F22257E5C56B92A705EA45DA9FC23018203D6173FBBB7EC1`
+- **sha256 of the decoded ELF:** `7140778137C37F89C9DF5E397DA4E81DD275E531D9023D1BEF5FA8A51D28E547`
 ## Build and test (Linux)
 ```sh
 cd seed/linux-x86_64
@@ -61,7 +64,8 @@ tool and is not part of the S0→S4 chain. The CI `seed-linux` job re-runs the g
 requires `cmp` equality (anti-drift), plus `check_seed.sh` and `verify.sh`.
 ## Known limits (unchanged from the PE)
 - Path buffer: 256 bytes, unbounded copy (mirrors `GetCommandLineA` parsing in the PE).
-- Source: max `0xEFFF` bytes (`0xF000` is the mask slot); read buffer `0x10000`.
+- Source: max `0xFFFFF` bytes (1 MiB − 1, arena N20; `0x100000` is the mask slot); read
+  buffer `0x100000`. A source of `0x100000` bytes or more is rejected (exit 1).
 - The PE's machine-code domain limits (list-literal heap, dynamic scoping, max 4 parameters,
   multi-line list literals, …) are measured and registered in
   [`tests/probes/README.md`](../../tests/probes/README.md); `xs[i]` and `push!`-statement

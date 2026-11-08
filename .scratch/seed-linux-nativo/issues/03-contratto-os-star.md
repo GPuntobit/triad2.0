@@ -94,3 +94,11 @@ _SPEC-CORE.md_. Glossario: aggiunte le voci *Piazzamenti ordinati* e *Arena bump
   (`os_open` → exit 1, `os_read` → exit 1 + chiusura, `os_alloc` → exit 1 su esaurimento)
   come da Q4/Q5; il check `n < 0xF000` dopo `os_read` resta nel corpo, come prescritto.
   Nessun cambio di semantica: PE byte-identico (N16, `seed/dev/gen_seed.js`).
+- 2026-11-08 (N20, ri-proporzionamento dell'arena): i **limiti** qui descritti sono
+  stati cambiati, la **forma** del contratto no. La regione non è più `0x40000` ma
+  `0xA00000` (10 MiB) e il check dopo `os_read` è `n < 0x100000` (sorgente 1 MiB, slot
+  della maschera di stop a `+0x100000`); `os_alloc` alloca `MEM.REGION`, l'heap è a
+  `r14+0x200000` (8 MiB). Il contratto macchina-leggibile aggiornato è
+  `seed/dev/certified-subset.txt` (`source.max_bytes = 1048576`); il gate
+  `seed/linux-x86_64/check_seed.sh` verifica i nuovi limiti (`0xFFFFF` ammessa,
+  `0x100000` rifiutata). Forma e semantica delle primitive `os_*`: invariate.

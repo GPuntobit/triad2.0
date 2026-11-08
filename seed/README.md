@@ -9,7 +9,7 @@ The complete chain is described in [`../BOOTSTRAP.md`](../BOOTSTRAP.md).
 | M1 — prints a line and exits with 0 | Windows x86-64 (PE) | ✅ |
 | M2 — reads the file from the first argument and writes its bytes | Windows x86-64 (PE) | ✅ |
 | M3 — Triad-Core interpreter | Windows x86-64 (PE) | in progress: M3b1 ✅, M3b2a ✅, M3b2b1 ✅, M3b2b2 ✅, M3b2b3a-e ✅, **M3b2b3f** ⚠️ (unstable capture), **M3b2b3g** ✅ (`!`, `&&`, `||`, `+=`), **M3b2b3h** ✅ (`function … end`), **M3b2b3i** ✅ (multi-statement body), **M3b2b3j** ✅ (lexical frames, `let`; `scope`), **M3b2b3k** ✅ (closures; `closure`/`closures`), **M3b2b3l** ✅ (`begin`/`end`), **M3b2b3m** ✅ (base strings), **M3b2b3n** ✅ (`nothing`), **M3b2b3o** ✅ (concatenation), **M3b2b3p** ✅ (symbols `:name`; `base_symbols`); `string()`, multi-binding capture, `elseif`, lists | remain
-| M7 — Linux port (ELF) | Linux x86-64 | ✅ **E0 → E1 → E2 → E3**: minimal ELF (write/exit) → file runner (argv + I/O) → **Triad-Core interpreter** (8499 byte, parità byte-exatta col PE: conformance 39/39 + probe 39/39 + golden S1) → **toolchain senza Node** (`install.sh` → `bin/triad`/`bin/triad-cli`, CI `seed-linux` nativa) |
+| M7 — Linux port (ELF) | Linux x86-64 | ✅ **E0 → E1 → E2 → E3**: minimal ELF (write/exit) → file runner (argv + I/O) → **Triad-Core interpreter** (8736 byte, parità byte-exatta col PE: conformance 39/39 + probe 39/39 + golden S1) → **toolchain senza Node** (`install.sh` → `bin/triad`/`bin/triad-cli`, CI `seed-linux` nativa) |
 ## Contratto del seed
 Il seed **non** è un'implementazione Triad-Core completa: è un interprete diretto
 (scannerless) scritto in codice macchina, e fa da *veicolo di transizione* per S1 (il
@@ -19,7 +19,7 @@ Triad-Core che il seed esegue con la semantica di `SPEC-CORE.md`.
 Il contratto è in due pezzi:
 
 - **`dev/certified-subset.txt`** — il contratto *macchina-leggibile*: l'envelope
-  (buffer sorgente 64 KiB, heap 64 KiB, liste da 64 elementi, funzioni da 4 parametri),
+  (buffer sorgente 1 MiB, heap 8 MiB, liste da 64 elementi, funzioni da 4 parametri),
   i primitivi §8 presenti (`get`, `exit`; `readfile`/`strlen`/`strbyte`/`strsub` non
   ancora) e l'elenco delle **divergenze** dal comportamento della specifica, con la loro
   classe (`silent` = risultato sbagliato senza errore, `noisy` = exit 1);
