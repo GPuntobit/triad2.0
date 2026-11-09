@@ -240,6 +240,17 @@ function second(y)
     y
 end
 a = second(2, 3)
+exit(a)' \
+'function first(x)
+    x
+end
+function second(y)
+    y
+end
+a = second(2)
+function third(z)
+    z
+end
 exit(a)'; do
     printf '%s\n' "$invalid" > "$TMP/invalid.triad"
     if sh "$ROOT/selfhost/toolchain/compile-triad-s2-6.sh" "$TMP/invalid.triad" "$TMP/invalid.elf" > "$TMP/reject.out" 2>&1; then
