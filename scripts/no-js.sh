@@ -29,7 +29,7 @@ grep -E -i '\.(zip|tgz|tar|gz)$' "$TMP/files" > "$TMP/archives" || true
 : > "$TMP/runtime"
 for file in verify.sh install.sh bin/triad bin/triad-cli .github/workflows/*.yml .github/workflows/*.yaml; do
   [ -f "$file" ] || continue
-  if grep -Ein '(^|[[:space:];|])((node|nodejs|npm|npx|bun|deno)[[:space:]]|corepack[[:space:]])|actions/setup-node' "$file" >/dev/null; then
+  if grep -vE '^[[:space:]]*#' "$file" | grep -Ein '(^|[[:space:];|])((node|nodejs|npm|npx|bun|deno)[[:space:]]|corepack[[:space:]])|actions/setup-node' >/dev/null; then
     echo "$file" >> "$TMP/runtime"
   fi
 done
