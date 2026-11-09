@@ -6,7 +6,6 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT HUP INT TERM
 for name in multi loop join compare nested eight else_false copy; do
-    echo "S2.4 CASE: $name" >&2
     src="$ROOT/selfhost/toolchain/tests/frontend24/$name.triad"
     sh "$ROOT/selfhost/toolchain/lower-triad-s2-4.sh" "$src" "$TMP/$name.tir"
     golden="$ROOT/selfhost/toolchain/tests/frontend24/$name.expected.tir"
@@ -15,8 +14,6 @@ for name in multi loop join compare nested eight else_false copy; do
         diff -u "$golden" "$TMP/$name.tir" >&2 || true
         exit 1
     fi
-    echo "S2.4 frontend golden OK: $name" >&2
-    if [ "$name" = nested ]; then echo "S2.4 nested IR:" >&2; cat "$TMP/$name.tir" >&2; fi
     sh "$ROOT/selfhost/toolchain/compile-triad-s2-4.sh" "$src" "$TMP/$name.elf"
     set +e
     "$TMP/$name.elf" > "$TMP/$name.compiled.out" 2> "$TMP/$name.compiled.err"
