@@ -146,3 +146,5 @@ jobs:
         run: |
           export PATH="$RUNNER_TEMP/triad-bin:$PATH"
           triad-cli test all
+      - name: TRID native discovery stage
+        run: sh cognitive/tests/run.sh

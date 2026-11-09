@@ -12,9 +12,7 @@ fact edge(:learning, :requires, :logic, :unification, :spec_02)
 # Discover a candidate composed relation with an explicit witness and both sources.
 # The relation is a candidate only: the two-hop path is proven relative to facts,
 # but its interpretation (e.g., grandparent) requires a separately defined concept.
-rule candidate(?domain, ?kind, ?from, ?to, ?via, ?source1, ?source2) :-
-    edge(?domain, ?kind, ?from, ?via, ?source1),
-    edge(?domain, ?kind, ?via, ?to, ?source2)
+rule candidate(?domain, ?kind, ?from, ?to, ?via, ?source1, ?source2) :- edge(?domain, ?kind, ?from, ?via, ?source1), edge(?domain, ?kind, ?via, ?to, ?source2)
 
 println([s.to for s in solve candidate(:family, :parent, :mario, ?to, ?via, ?source1, ?source2)])
 println([s.via for s in solve candidate(:family, :parent, :mario, ?to, ?via, ?source1, ?source2)])
