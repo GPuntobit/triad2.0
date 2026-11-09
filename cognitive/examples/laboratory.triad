@@ -1,0 +1,31 @@
+# TRID-Core 0.2 - bounded symbolic hypothesis laboratory, S1 logic profile.
+# The generic hypothesis is: two steps of the same relation may compose.
+# The schema is programmed; candidate instances are derived from data.
+# Explicit observed examples are independent evidence, not negation-as-failure.
+
+fact edge(:family, :parent, :mario, :luca, :book_01)
+fact edge(:family, :parent, :luca, :antonio, :book_02)
+fact edge(:family, :parent, :luca, :antonella, :book_02)
+
+fact edge(:dependency, :needs, :trid, :logic, :spec_01)
+fact edge(:dependency, :needs, :logic, :unification, :spec_02)
+
+# Explicit observations and their sources; a negative example does not
+# erase the original facts or the hypothesis.
+fact observation(:family, :parent, :mario, :antonio, :positive, :review_01)
+fact observation(:family, :parent, :mario, :antonella, :positive, :review_02)
+fact observation(:dependency, :needs, :trid, :unification, :negative, :review_03)
+
+# The source IDs and intermediate node remain available as proof witnesses.
+rule propose(?domain, ?kind, ?from, ?to, ?via, ?src1, ?src2) :- edge(?domain, ?kind, ?from, ?via, ?src1), edge(?domain, ?kind, ?via, ?to, ?src2)
+rule support(?domain, ?kind, ?from, ?to, ?via, ?src1, ?src2, ?review) :- propose(?domain, ?kind, ?from, ?to, ?via, ?src1, ?src2), observation(?domain, ?kind, ?from, ?to, :positive, ?review)
+rule challenge(?domain, ?kind, ?from, ?to, ?via, ?src1, ?src2, ?review) :- propose(?domain, ?kind, ?from, ?to, ?via, ?src1, ?src2), observation(?domain, ?kind, ?from, ?to, :negative, ?review)
+
+println([s.to for s in solve propose(:family, :parent, :mario, ?to, ?via, ?src1, ?src2)])
+println([s.to for s in solve support(:family, :parent, :mario, ?to, ?via, ?src1, ?src2, ?review)])
+println([s.review for s in solve support(:family, :parent, :mario, ?to, ?via, ?src1, ?src2, ?review)])
+println([s.to for s in solve propose(:dependency, :needs, :trid, ?to, ?via, ?src1, ?src2)])
+println([s.to for s in solve challenge(:dependency, :needs, :trid, ?to, ?via, ?src1, ?src2, ?review)])
+println([s.review for s in solve challenge(:dependency, :needs, :trid, ?to, ?via, ?src1, ?src2, ?review)])
+println([s.to for s in solve support(:dependency, :needs, :trid, ?to, ?via, ?src1, ?src2, ?review)])
+println([s.to for s in solve challenge(:family, :parent, :mario, ?to, ?via, ?src1, ?src2, ?review)])
