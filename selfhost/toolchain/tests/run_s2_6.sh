@@ -40,6 +40,99 @@ for name in chain nested triple shadow nested_sub; do
     cmp "$TMP/elf.stdout" "$TMP/seed.stdout"
 done
 
+
+# Controlled recursion is real native CALL/RET, not loop substitution.
+# A natural argument in 0..32 decreases by exactly one until the base case.
+for name in rec_zero rec_five rec_twelve; do
+    echo "S2.6 RECURSION: $name" >&2
+    src="$ROOT/selfhost/toolchain/tests/frontend26/$name.triad"
+    sh "$ROOT/selfhost/toolchain/lower-triad-s2-6.sh" "$src" "$TMP/$name.tir"
+    golden="$ROOT/selfhost/toolchain/tests/frontend26/$name.expected.tir"
+    if [ -f "$golden" ] && ! cmp -s "$golden" "$TMP/$name.tir"; then
+        diff -u "$golden" "$TMP/$name.tir" >&2 || true
+        exit 1
+    fi
+    sh "$ROOT/selfhost/toolchain/verify-cfg-s2-6.sh" "$TMP/$name.tir" > "$TMP/verified"
+    grep -qx 'S2.6 CFG: PASS' "$TMP/verified"
+    sh "$ROOT/selfhost/toolchain/compile-triad-s2-6.sh" "$src" "$TMP/$name.elf"
+    set +e
+    "$TMP/$name.elf" > "$TMP/rec.elf.out" 2> "$TMP/rec.elf.err"
+    actual=$?
+    "$ROOT/bin/triad" "$src" > "$TMP/rec.s0.out" 2> "$TMP/rec.s0.err"
+    interpreted=$?
+    set -e
+    case "$name" in
+        rec_zero) expected=0 ;;
+        rec_five) expected=5 ;;
+        rec_twelve) expected=12 ;;
+    esac
+    if [ "$actual" -ne "$expected" ] || [ "$interpreted" -ne "$expected" ]; then
+        echo "S2.6: $name native=$actual S0=$interpreted expected=$expected" >&2
+        cat "$TMP/rec.elf.err" "$TMP/rec.s0.err" >&2
+        exit 1
+    fi
+    cmp "$TMP/rec.elf.out" "$TMP/rec.s0.out"
+done
+
+# The structural termination proof fails closed for bad base conditions,
+# nondecreasing recursive arguments and out-of-range initial depths.
+for invalid in \
+'function count(n)
+    if n == 0
+        n
+    else
+        next = n - 1
+        value = count(n)
+        result = value + 1
+        result
+    end
+end
+answer = count(5)
+exit(answer)' \
+'function count(n)
+    if n != 0
+        n
+    else
+        next = n - 1
+        value = count(next)
+        result = value + 1
+        result
+    end
+end
+answer = count(5)
+exit(answer)' \
+'function count(n)
+    if n == 0
+        n
+    else
+        next = n + 1
+        value = count(next)
+        result = value + 1
+        result
+    end
+end
+answer = count(5)
+exit(answer)' \
+'function count(n)
+    if n == 0
+        n
+    else
+        next = n - 1
+        value = count(next)
+        result = value + 1
+        result
+    end
+end
+answer = count(33)
+exit(answer)'; do
+    printf '%s\n' "$invalid" > "$TMP/bad-rec.triad"
+    if sh "$ROOT/selfhost/toolchain/compile-triad-s2-6.sh" "$TMP/bad-rec.triad" "$TMP/bad-rec.elf" > "$TMP/bad-rec.out" 2>&1; then
+        echo 'S2.6: unsafe recursion accepted' >&2
+        exit 1
+    fi
+    [ ! -e "$TMP/bad-rec.elf" ]
+done
+
 # Recompilation must be byte-for-byte deterministic.
 sh "$ROOT/selfhost/toolchain/compile-triad-s2-6.sh" "$ROOT/selfhost/toolchain/tests/frontend26/chain.triad" "$TMP/chain.rebuilt"
 cmp "$TMP/chain.elf" "$TMP/chain.rebuilt"
