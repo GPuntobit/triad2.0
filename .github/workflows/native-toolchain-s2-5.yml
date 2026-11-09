@@ -1,0 +1,32 @@
+name: Triad Native Typed Functions CFG S2.5
+on:
+  push:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-5.yml'
+  pull_request:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-5.yml'
+permissions:
+  contents: read
+jobs:
+  typed-functions-cfg:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Native typed AST, fixed-point CFG, function ABI
+        run: sh selfhost/toolchain/tests/run_s2_5.sh
+      - name: Native S2.4 streaming and definite assignment regression
+        run: sh selfhost/toolchain/tests/run_s2_4.sh
+      - name: Native S2.3 regression
+        run: sh selfhost/toolchain/tests/run_s2_3.sh
+      - name: Native S2.2 regression
+        run: sh selfhost/toolchain/tests/run_s2_2.sh
+      - name: Native S2.1 assembler regression
+        run: sh selfhost/toolchain/tests/run_s2_1.sh
+      - name: Native S2.0 ELF emitter regression
+        run: sh selfhost/toolchain/tests/run.sh
+      - name: Native conformance and zero JavaScript
+        run: sh verify.sh
