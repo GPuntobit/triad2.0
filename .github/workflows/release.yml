@@ -1,4 +1,4 @@
-name: Release
+name: Release (native assets only)
 on:
   workflow_dispatch:
     inputs:
@@ -9,72 +9,45 @@ on:
 permissions:
   contents: read
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, windows-latest]
-    runs-on: ${{ matrix.os }}
+  package:
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ inputs.tag }}
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: '22'
-      - name: Validate tag and source version
-        shell: bash
+      - name: Check release tag and version
         env:
           TAG: ${{ inputs.tag }}
         run: |
-          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ ]]
+          case "$TAG" in
+            v[0-9]*.[0-9]*.[0-9]*-beta.[0-9]*) ;;
+            *) echo 'Unsupported release tag' >&2; exit 1 ;;
+          esac
           test "$(cat VERSION)" = "${TAG#v}"
           test "$(git rev-parse HEAD)" = "$(git rev-list -n 1 "$TAG")"
-      - name: Native Linux verification
-        if: runner.os == 'Linux'
+      - name: Native verification and source integrity
         run: |
+          sh scripts/no-js.sh
           sh verify.sh
-          sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed
-          sh tests/desktop.sh
           sh tests/security/run.sh
-          node --test tests/reference-output.test.mjs tests/logic-launcher.test.mjs tests/profile-detection.test.mjs
-      - name: Install locked development dependencies
-        working-directory: cli
-        run: npm ci
-      - name: Build standalone development CLI
-        working-directory: cli
-        run: node build-exe.mjs
-      - name: Build Windows desktop application
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: dotnet build cli/windows-gui/TriadDesktop.csproj -c Release --output cli/dist
-      - name: Collect Linux assets
-        if: runner.os == 'Linux'
+      - name: Collect native seed and complete source distribution
         env:
           TAG: ${{ inputs.tag }}
         run: |
           mkdir -p release-assets
-          cp seed/linux-x86_64/seed release-assets/seed-linux-x86_64
-          cp cli/dist/triad-cli release-assets/triad-cli
-          cli/dist/triad-cli --help > /dev/null
-          git archive --format=tar.gz --prefix="triad-$TAG/" -o "release-assets/triad-$TAG-source.tar.gz" HEAD
-      - name: Collect Windows assets
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force release-assets | Out-Null
-          Copy-Item seed/windows-x86_64/seed.exe release-assets/seed.exe
-          Copy-Item cli/dist/triad-cli.exe release-assets/triad-cli.exe
-          Copy-Item cli/dist/TriadDesktop.exe release-assets/TriadDesktop.exe
-          & cli/dist/triad-cli.exe --help
-          if ($LASTEXITCODE -ne 0) { throw 'Standalone CLI smoke test failed' }
+          xxd -r -p seed/linux-x86_64/seed.hex release-assets/seed-linux-x86_64
+          chmod +x release-assets/seed-linux-x86_64
+          cp seed/windows-x86_64/seed.exe release-assets/seed.exe
+          git archive --format=tar.gz --prefix="triad-$TAG/" \
+            -o "release-assets/triad-$TAG-source.tar.gz" HEAD
+          (cd release-assets && sha256sum seed-linux-x86_64 seed.exe *-source.tar.gz > SHA256SUMS)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: release-${{ runner.os }}
+          name: triad-native-release
           path: release-assets/*
           if-no-files-found: error
   publish:
-    needs: build
+    needs: package
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -84,16 +57,12 @@ jobs:
           ref: ${{ inputs.tag }}
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          pattern: release-*
+          name: triad-native-release
           path: release-assets
-          merge-multiple: true
-      - name: Publish verified prerelease
+      - name: Publish native prerelease
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag }}
         run: |
-          cd release-assets
-          sha256sum seed* triad* Triad* > SHA256SUMS
-          cd ..
           gh release create "$TAG" release-assets/* --verify-tag --prerelease \
-            --title "Triad 2.0 - $TAG" --notes-file "docs/releases/RELEASE_NOTES_$TAG.md"
+            --title "Triad 2.0 - $TAG" --generate-notes

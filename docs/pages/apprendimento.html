@@ -9,7 +9,7 @@
 <link rel='stylesheet' href='../assets/css/triad-generated.css' />
 </head>
 <body>
-<div id='site-header'></div>
+<header class="site-header"><nav class="container" aria-label="Triad navigation"><a href="../index.html"><strong>Triad 2.0</strong></a> · <a href="getting-started.html">Getting started</a> · <a href="spec.html">Specification</a> · <a href="examples.html">Examples</a> · <a href="https://github.com/GPuntobit/triad2.0">GitHub</a></nav></header>
 <main class='container'>
 <div class='doc-layout'>
 <aside class='doc-sidebar'>
@@ -45,11 +45,11 @@ Part V    chapters 44-49  reference: grammar, quick tab, debugging, glossary, FA
 </div>
 <h2>2. The curve</h2>
 <p>Two curves are drawn on the same axis. The theoretical one measures the cumulative effort of the stages and reaches 100% at the end of the language stages: reading the whole standard is possible. The real one measures what can actually be exercised, and it tells a different story. At the threshold, the last Core stage, the idiomatic patterns and the Core exercises, it stands at 34.7% while the theoretical curve is already at 44.2%; from there the real curve creeps up to about 39% and stays there, while the theoretical one keeps climbing to the end.</p>
-<div class='chart-card' id='lc-home'></div>
+<img src='../assets/img/learning-curve.svg' alt='Learning curve' style='max-width:100%;height:auto'>
 <p>The same figure is available as a static file: <a href='../assets/img/learning-curve.svg' target='_blank' rel='noopener'>learning-curve.svg</a>.</p>
 <h3>The stages at a glance</h3>
 <p>The second chart shows the difficulty of every stage and the share that is exercisable today: the full bar is the share that can be run, the light bar is theory only.</p>
-<div class='chart-card' id='lc-stages'></div>
+<img src='../assets/img/learning-stages.svg' alt='Learning stages' style='max-width:100%;height:auto'>
 <p class='chart-link'><a href='../assets/img/learning-stages.svg' target='_blank' rel='noopener'>learning-stages.svg</a></p>
 <div id='lc-table'></div>
 <div class='code-card'>
@@ -72,9 +72,9 @@ TriadLearningCurve.renderTable('lc-table');
 </div>
 </div>
 </main>
-<div id='site-footer'></div>
-<script src='../assets/js/app.js'></script>
-<script src='../assets/js/learning-curve.js'></script>
-<script>TriadSite.mount('Learning'); TriadLearningCurve.render('lc-home', 'curve', { compact: true }); TriadLearningCurve.render('lc-stages', 'stages'); TriadLearningCurve.renderTable('lc-table');</script>
+<footer class="site-footer"><div class="container">Triad 2.0 · Native language tools · <a href="spec.html">Specification</a></div></footer>
+
+
+
 </body>
 </html>

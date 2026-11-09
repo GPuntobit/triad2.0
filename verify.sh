@@ -8,7 +8,7 @@
 #  conformance/gate.sh esegue l'oracle conformance/run.sh senza
 #  esclusioni: ogni fallimento Core fa fallire il gate.
 #
-#  L'anti-drift del dump (seed/dev/gen_seed.js && cmp) resta step
+#  L'anti-drift dei dump nativi avviene tramite verifica SHA-256 nello step
 #  separato CI/dev (Q7), come il check del contratto errori/limiti
 #  (seed/linux-x86_64/check_seed.sh).
 #

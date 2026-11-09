@@ -1,150 +1,79 @@
-name: CI
+name: CI — Native Triad (no JavaScript)
 on:
   push:
   pull_request:
 permissions:
   contents: read
 jobs:
-  conformance-core:
+  native-core:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: '20'
-      - name: Decode seed (Linux)
+      - name: Decode Linux machine-code seed
         run: |
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: "Conformance Core (gate POSIX: tutti i 42 casi, senza esclusioni)"
-        run: sh conformance/gate.sh
-      - name: Reference interpreter pipe output regression tests
-        run: node --test tests/reference-output.test.mjs
-      - name: Sorgenti selfhost validi Triad-Core
+      - name: Normative Triad Core and S1 regression
+        run: sh verify.sh
+      - name: Native TRID experimental journal
+        run: sh cognitive/native/tests/run.sh
+      - name: Native TRID multilevel proof/pulse suite
         run: |
-          for f in selfhost/*.td; do
-            echo "check $f"
-            node seed/dev/triad_core.cjs "$f" > /dev/null
-          done
-      - name: Guardie statiche sulla sorgente di S1 (sottoinsieme certificato)
-        # Il guard presidia il corpus certificato (selfhost/certified.txt):
-        # i costrutti che il seed rifiuta o esegue in modo divergente sono
-        # vietati nella sorgente di S1 (contratto: seed/dev/certified-subset.txt).
-        run: node tools/selfhost-guard/guard.mjs
-      - name: Self-test delle guardie statiche
-        run: node tools/selfhost-guard/test.mjs
-      - name: Gate differenziale seed <-> riferimento JS (corpus certificato)
-        # Stesso programma, stesso stdout byte per byte e stesso exit code
-        # sui due runtime: presidio empirico delle divergenze che una regola
-        # statica non puo' decidere (dipendono dai tipi a runtime).
-        run: node tools/selfhost-guard/differential.mjs
+          sh cognitive/native/tests/run_05.sh
+          sh cognitive/native/tests/run_06.sh
 
-  logic-engine:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: '20'
-      - name: S1 logic on native machine-code seed
-        run: |
-          sh conformance/logic/run.sh
-          node --test tests/logic-launcher.test.mjs tests/profile-detection.test.mjs
-      - name: Same S1 logic on development reference
-        run: TRIAD_SEED="$PWD/conformance/logic/reference.sh" sh conformance/logic/run.sh
-
-  security:
-    # Verifiche di sicurezza (tests/security/run.sh): isolamento Python,
-    # path hijack, workflow pinnati, sanitizzazione, token, path spostati.
+  seed-integrity:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: '20'
-      - name: Security checks
-        run: sh tests/security/run.sh
-
-  site-gen:
-    # Il sito statico in docs/ è generato da programmi Triad (tools/site-gen).
-    # La CI verifica due cose: che i sorgenti dei generatori restino nel
-    # sottoinsieme Triad-Core portabile, e che i file pubblicati coincidano
-    # con il generato. Solo Linux nativo (decisione 04: niente runner
-    # Windows nella verifica).
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: '20'
-      - name: Lint dei generatori Triad
-        run: node tools/site-gen/lint.mjs
-      - name: Sito generato in sync con i sorgenti
-        run: node tools/site-gen/build.mjs --check
-
-  seed-linux:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - name: Decode ELF
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xxd || sudo apt-get install -y vim-common
-          xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
-          chmod +x seed/linux-x86_64/seed
-      - name: Contratto errori/limiti del seed E2 (check_seed.sh)
-        run: |
-          sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed
-      - name: Hash check (PE + ELF, gate anti-tampering decisione 04)
+      - name: Validate committed native seed dumps
         run: |
           printf '%s\n' \
             '8457051f7d083ab834ec860502605a58f1ecce4a5abca88391a804898315d613  seed/linux-x86_64/seed.hex' \
             '20aa566dae21d2b102e684f7a8c1b67b1b2b44c61c1116e16d196de31683d7b7  seed/windows-x86_64/seed.hex' \
             | sha256sum --check
-      - name: Reproducible dump (anti-drift, PE + ELF)
-        run: |
-          node seed/dev/gen_seed.js windows /tmp/seed-pe-repro.hex
-          cmp /tmp/seed-pe-repro.hex seed/windows-x86_64/seed.hex
-          node seed/dev/gen_seed.js linux /tmp/seed-repro.hex
-          cmp /tmp/seed-repro.hex seed/linux-x86_64/seed.hex
-      - name: "Verify (harness senza Node: conformance + probe + golden S1 + smoke)"
-        # Gate ripristinate sull'ELF alla parita' N17 (ticket 04): probe
-        # ok_*/test_* (incluso `test_get`), golden selfhost/source.td e
-        # smoke selfhost/main.td — esattamente cio' che correva sulle gambe
-        # Windows rimosse dalla decisione 04.
-        run: sh verify.sh
+          xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
+          chmod +x seed/linux-x86_64/seed
+          sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed
 
-  linux-toolchain:
-    # Verifica che l'intera toolchain POSIX funzioni su Linux SENZA Node
-    # (N18, ticket 09): launcher bin/triad, install.sh senza root
-    # (wrapper a percorso assoluto + smoke test byte-exatto), CLI sh
-    # bin/triad-cli (status + test). Un mismatch del golden deve far
-    # fallire l'installazione (caso negativo esplicito).
+  native-toolchain:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - name: Launcher bin/triad esegue un programma (senza Node)
-        run: ./bin/triad tests/probes/test_simple.td | grep -q '^test$'
-      - name: install.sh (utente non root, prefix temporaneo)
+      - name: Native install and CLI
         run: |
           ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop
           export PATH="$RUNNER_TEMP/triad-bin:$PATH"
           triad tests/probes/test_let.td | grep -q '^15$'
           triad-cli status
-      - name: Sessione desktop (installazione e persistenza dopo errori)
-        run: sh tests/desktop.sh
-      - name: Smoke test negativo (golden diverso => installazione fallisce)
+          triad-cli test all
+          sh tests/desktop.sh
+      - name: Reject drift from golden output
         run: |
           cp tests/probes/test_simple.expected.out "$RUNNER_TEMP/golden.bak"
-          echo "tamper" >> tests/probes/test_simple.expected.out
-          if ./install.sh --prefix "$RUNNER_TEMP/triad-neg" --no-desktop; then
-            echo "ERRORE: install.sh ha accettato un golden diverso"; exit 1
+          echo tamper >> tests/probes/test_simple.expected.out
+          if ./install.sh --prefix "$RUNNER_TEMP/triad-bad" --no-desktop; then
+            echo 'ERROR: installation accepted incorrect golden' >&2
+            exit 1
           fi
           mv "$RUNNER_TEMP/golden.bak" tests/probes/test_simple.expected.out
-      - name: Conformance via launcher installato (CLI sh, senza Node)
+
+  security:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Security and no-JavaScript source policy
         run: |
-          export PATH="$RUNNER_TEMP/triad-bin:$PATH"
-          triad-cli test all
-      - name: TRID native discovery stage
-        run: sh cognitive/tests/run.sh
+          sh scripts/no-js.sh
+          sh tests/security/run.sh
+
+  static-docs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Validate static HTML documentation without client scripts
+        run: |
+          sh scripts/no-js.sh
+          test -s docs/index.html
+          test -s docs/pages/getting-started.html
+          test -s docs/pages/spec.html
