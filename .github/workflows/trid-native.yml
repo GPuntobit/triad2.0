@@ -123,6 +123,15 @@ jobs:
             "$GITHUB_WORKSPACE/bin/triad" "/tmp/trid-atom/v$i.triad"
             echo "CODE-$i=$?"
           done
+      - name: Seed variable-name regression matrix
+        run: |
+          set +e
+          for n in data facts rows journal history trid_data foo payload source; do
+            printf '%s = []\nprintln("NAME-OK")\n' "$n" > /tmp/trid-atom/name.triad
+            printf '%s: ' "$n"
+            "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-atom/name.triad
+            echo "rc=$?"
+          done
       - name: Native S1 logic smoke test
         run: ./bin/triad --logic cognitive/native/s1_discovery.triad
       - name: Native Triad cognitive regression (no Python/Node interpreter)
