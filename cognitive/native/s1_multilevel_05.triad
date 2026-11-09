@@ -1,0 +1,60 @@
+# TRID-Core 0.5: bounded multilevel deductions and activation pulses.
+# Runs natively on the documented S1 logic profile via --logic.
+# Statements and Horn rule bodies are single-line for the S1 parser.
+# Facts from sources are assumptions; proofs are conditional on those facts.
+# A pulse indicates salience/activation, NEVER truth or trust.
+
+# Independent evidence: two chains with explicit source provenance.
+fact evidence(:dependency, :trid, :logic, :src_01)
+fact evidence(:dependency, :logic, :unification, :src_02)
+fact evidence(:dependency, :unification, :occurs_check, :src_03)
+fact evidence(:dependency, :trid, :dialogue, :src_04)
+fact evidence(:dependency, :dialogue, :questions, :src_05)
+fact evidence(:dependency, :questions, :clarification, :src_06)
+
+# A negative source decision is explicit; unlisted sources are not rejected.
+fact revoked(:src_02)
+# Rule-state evidence is separate from any deduced conclusion.
+fact rule_state(:two_hop, :experimental)
+fact rule_state(:three_hop, :experimental)
+fact rule_state(:unsupported_generalization, :refuted)
+
+# Bounded proof DAG, three levels max, each intermediate node and source visible.
+rule proof1(?x, ?z, ?s1) :- evidence(:dependency, ?x, ?z, ?s1)
+rule proof2(?x, ?z, ?v1, ?s1, ?s2) :- proof1(?x, ?v1, ?s1), evidence(:dependency, ?v1, ?z, ?s2)
+rule proof3(?x, ?z, ?v1, ?v2, ?s1, ?s2, ?s3) :- proof2(?x, ?v2, ?v1, ?s1, ?s2), evidence(:dependency, ?v2, ?z, ?s3)
+
+# Validity is CONDITIONAL on all three source premises being retained.
+# Explicit revocation of any single source suppresses just that proof path.
+rule retained3(?x, ?z, ?v1, ?v2, ?s1, ?s2, ?s3) :- proof3(?x, ?z, ?v1, ?v2, ?s1, ?s2, ?s3), not(revoked(?s1)), not(revoked(?s2)), not(revoked(?s3))
+rule suspended3(?x, ?z, ?v1, ?v2, ?s1, ?s2, ?s3) :- proof3(?x, ?z, ?v1, ?v2, ?s1, ?s2, ?s3), revoked(?s1)
+rule suspended3(?x, ?z, ?v1, ?v2, ?s1, ?s2, ?s3) :- proof3(?x, ?z, ?v1, ?v2, ?s1, ?s2, ?s3), revoked(?s2)
+rule suspended3(?x, ?z, ?v1, ?v2, ?s1, ?s2, ?s3) :- proof3(?x, ?z, ?v1, ?v2, ?s1, ?s2, ?s3), revoked(?s3)
+
+# A separate associative network for pulses. Activation can traverse an edge
+# regardless of whether that edge is an accepted logical premise.
+fact association(:trid, :logic)
+fact association(:logic, :unification)
+fact association(:unification, :occurs_check)
+fact association(:trid, :dialogue)
+fact association(:dialogue, :questions)
+fact association(:questions, :clarification)
+fact pulse_seed(:trid)
+
+# Explicitly bounded three-hop pulse propagation; no infinite cycle.
+rule pulse1(?node) :- pulse_seed(?origin), association(?origin, ?node)
+rule pulse2(?node) :- pulse1(?via), association(?via, ?node)
+rule pulse3(?node) :- pulse2(?via), association(?via, ?node)
+
+# Proof details are queryable, not concealed behind a Boolean flag.
+println([s.z for s in solve proof3(:trid, ?z, ?v1, ?v2, ?s1, ?s2, ?s3)])
+println([s.v1 for s in solve proof3(:trid, ?z, ?v1, ?v2, ?s1, ?s2, ?s3)])
+println([s.v2 for s in solve proof3(:trid, ?z, ?v1, ?v2, ?s1, ?s2, ?s3)])
+println([s.s2 for s in solve proof3(:trid, ?z, ?v1, ?v2, ?s1, ?s2, ?s3)])
+println([s.z for s in solve retained3(:trid, ?z, ?v1, ?v2, ?s1, ?s2, ?s3)])
+println([s.z for s in solve suspended3(:trid, ?z, ?v1, ?v2, ?s1, ?s2, ?s3)])
+println([s.node for s in solve pulse1(?node)])
+println([s.node for s in solve pulse2(?node)])
+println([s.node for s in solve pulse3(?node)])
+println([s.state for s in solve rule_state(:three_hop, ?state)])
+println([s.state for s in solve rule_state(:unsupported_generalization, ?state)])
