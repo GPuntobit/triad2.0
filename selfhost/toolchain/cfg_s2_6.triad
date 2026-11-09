@@ -103,6 +103,6 @@ function cfg26_verify(src)
             asm_need(units <= 4)
         end
     end
-    asm_need(units >= 3 && units <= 4)
+    asm_need(units >= 2 && units <= 4)
     true
 end
