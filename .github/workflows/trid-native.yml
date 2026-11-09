@@ -65,6 +65,17 @@ jobs:
           TRIAD
           ( cd /tmp/trid-diag && "$GITHUB_WORKSPACE/bin/triad" common.triad )
           echo "common rc=$?"
+      - name: Check literal readfile assignments and parser input
+        run: |
+          set +e
+          cd /tmp/trid-native-debug
+          printf 'data = readfile("fixture.txt")\nprintln("A:", strlen(data))\n' > assign.triad
+          "$GITHUB_WORKSPACE/bin/triad" assign.triad; echo "assignment=$?"
+          printf 'f(x) = strlen(x)\nprintln("B:", f(readfile("fixture.txt")))\n' > call.triad
+          "$GITHUB_WORKSPACE/bin/triad" call.triad; echo "call=$?"
+          sed '/^println("BEGIN 1")/,$d' discover.triad > function.triad
+          printf 'data = parse_text(readfile("fixture.txt"))\nprintln("C:", length(data))\n' >> function.triad
+          "$GITHUB_WORKSPACE/bin/triad" function.triad; echo "parser=$?"
       - name: Native S1 logic smoke test
         run: ./bin/triad --logic cognitive/native/s1_discovery.triad
       - name: Native Triad cognitive regression (no Python/Node interpreter)
