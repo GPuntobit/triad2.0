@@ -76,3 +76,26 @@ sh cognitive/tests/run_02.sh
 For its scope and explicit limitations, see
 [cognitive/laboratory/README.md](laboratory/README.md). The 0.1 example and its
 golden test are retained unchanged.
+
+## TRID-Core 0.3: experimental rule structure search and persistent journal
+
+Version 0.3 adds a **development/reference tool written in Python 3
+(standard library)**. This is an explicitly transitional tool, **not a
+self-hosted Triad cognitive implementation**. It searches four possible
+two-edge Horn rule shapes from labelled examples, evaluates held-out examples,
+preserves refutations and source witnesses in a local append-only JSONL
+journal, and emits programs for the existing S1 native executor. Distinct
+logical shapes are genuinely searched; the finite shape grammar and target
+examples are explicitly supplied.
+
+```sh
+sh cognitive/tests/run_03.sh
+TRID_RUN_NATIVE=1 sh cognitive/tests/run_03.sh
+```
+
+See [0.3 architecture and limitations](laboratory/README_03.md).
+The first command runs the Python reference tests; the second additionally
+uses the local S1 native runtime and must be validated on a supported host.
+Rule status remains *experimental* or *refuted*; only ground deductions
+**conditional on experimental assumptions** are labelled demonstrated.
+All preceding 0.1 and 0.2 files and tests remain untouched.
