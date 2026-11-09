@@ -1,0 +1,26 @@
+name: TRID-Core 0.5 Native S1
+on:
+  push:
+    paths:
+      - 'cognitive/native/s1_multilevel_05.triad'
+      - 'cognitive/native/tests/run_05.sh'
+      - 'cognitive/native/tests/expected_05.out'
+      - '.github/workflows/trid-core-05.yml'
+  pull_request:
+    paths:
+      - 'cognitive/native/s1_multilevel_05.triad'
+      - 'cognitive/native/tests/run_05.sh'
+      - 'cognitive/native/tests/expected_05.out'
+      - '.github/workflows/trid-core-05.yml'
+permissions:
+  contents: read
+jobs:
+  trid-core-05-s1:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: TRID 0.5 native three-level proofs and pulses
+        run: sh cognitive/native/tests/run_05.sh
+      - name: TRID 0.1 native S1 compatibility
+        run: sh cognitive/tests/run.sh

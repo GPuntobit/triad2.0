@@ -3,10 +3,14 @@ on:
   push:
     paths:
       - 'cognitive/native/**'
+      - 'cognitive/tests/**'
+      - 'cognitive/examples/**'
       - '.github/workflows/trid-native.yml'
   pull_request:
     paths:
       - 'cognitive/native/**'
+      - 'cognitive/tests/**'
+      - 'cognitive/examples/**'
       - '.github/workflows/trid-native.yml'
 permissions:
   contents: read
@@ -16,189 +20,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - name: Decode existing native S0 seed
+      - name: Decode native S0 seed
         run: |
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Diagnostic native file reading and development oracle (development only)
-        run: |
-          mkdir -p /tmp/trid-native-debug
-          cp cognitive/native/fixture.txt /tmp/trid-native-debug/fixture.txt
-          : > /tmp/trid-native-debug/journal.log
-          cat cognitive/native/common.triad cognitive/native/discover.triad > /tmp/trid-native-debug/discover.triad
-          printf 'println(strlen(readfile("fixture.txt")))\n' > /tmp/trid-native-debug/read.triad
-          echo 'Native S0 readfile check:'
-          ( cd /tmp/trid-native-debug; "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-native-debug/read.triad ) || true
-          echo 'Seed certified-subset static diagnostics:'
-          node tools/selfhost-guard/guard.mjs /tmp/trid-native-debug/discover.triad || true
-          echo 'Development oracle diagnostic:'
-          ( cd /tmp/trid-native-debug; node "$GITHUB_WORKSPACE/seed/dev/triad_core.cjs" /tmp/trid-native-debug/discover.triad ) || true
-          echo 'Native S0 function-definitions file-read diagnostic:'
-          sed '/^println("BEGIN 1")/,$d' /tmp/trid-native-debug/discover.triad > /tmp/trid-native-debug/functions-only.triad
-          printf 'println(strlen(readfile("fixture.txt")))\n' >> /tmp/trid-native-debug/functions-only.triad
-          ( cd /tmp/trid-native-debug; "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-native-debug/functions-only.triad ) || true
-          echo 'Native S0 discovery direct diagnostic:'
-          ( cd /tmp/trid-native-debug; "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-native-debug/discover.triad ) || true
-      - name: Minimal seed function/return diagnostic
-        run: |
-          set +e
-          mkdir -p /tmp/trid-diag
-          cp cognitive/native/fixture.txt /tmp/trid-diag/fixture.txt
-          cat > /tmp/trid-diag/probe.triad <<'TRIAD'
-          function load(path)
-              println("LOAD-ENTER")
-              src = readfile(path)
-              println("LOAD-READ", strlen(src))
-              src
-          end
-          println("PROBE-START")
-          result = load("fixture.txt")
-          println("PROBE-RETURN", strlen(result))
-          TRIAD
-          ( cd /tmp/trid-diag && "$GITHUB_WORKSPACE/bin/triad" probe.triad )
-          echo "probe rc=$?"
-          cp cognitive/native/common.triad /tmp/trid-diag/common.triad
-          cat >> /tmp/trid-diag/common.triad <<'TRIAD'
-          println("COMMON-START")
-          rows = parse_file("fixture.txt")
-          println("COMMON-RETURN", length(rows))
-          TRIAD
-          ( cd /tmp/trid-diag && "$GITHUB_WORKSPACE/bin/triad" common.triad )
-          echo "common rc=$?"
-      - name: Check literal readfile assignments and parser input
-        run: |
-          set +e
-          cd /tmp/trid-native-debug
-          printf 'data = readfile("fixture.txt")\nprintln("A:", strlen(data))\n' > assign.triad
-          "$GITHUB_WORKSPACE/bin/triad" assign.triad; echo "assignment=$?"
-          printf 'f(x) = strlen(x)\nprintln("B:", f(readfile("fixture.txt")))\n' > call.triad
-          "$GITHUB_WORKSPACE/bin/triad" call.triad; echo "call=$?"
-          sed '/^println("BEGIN 1")/,$d' discover.triad > function.triad
-          printf 'data = parse_text(readfile("fixture.txt"))\nprintln("C:", length(data))\n' >> function.triad
-          "$GITHUB_WORKSPACE/bin/triad" function.triad; echo "parser=$?"
-      - name: Native seed List primitives diagnostic
-        run: |
-          set +e
-          mkdir -p /tmp/trid-lists
-          cat > /tmp/trid-lists/a.triad <<'TRIAD'
-          data = []
-          println("EMPTY ", length(data))
-          push!(data, ["edge", "family"])
-          println("ONE ", length(data))
-          println("NESTED ", length(data[1]))
-          TRIAD
-          "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-lists/a.triad; echo "list-status=$?"
-          cat > /tmp/trid-lists/b.triad <<'TRIAD'
-          data = [["edge", "family"], ["edge", "parent"]]
-          println("LITERAL ", length(data))
-          TRIAD
-          "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-lists/b.triad; echo "literal-status=$?"
-      - name: Seed small list operations matrix
-        run: |
-          set +e
-          mkdir -p /tmp/trid-atom
-          printf 'println([1,2])\n' > /tmp/trid-atom/v1.triad
-          printf 'a = [1,2]\nprintln("OK")\n' > /tmp/trid-atom/v2.triad
-          printf 'a = [1,2]\nprintln(a)\n' > /tmp/trid-atom/v3.triad
-          printf 'a = [1,2]\nprintln(length(a))\n' > /tmp/trid-atom/v4.triad
-          printf 'a = []\nprintln("OK")\n' > /tmp/trid-atom/v5.triad
-          printf 'a = []\npush!(a, 7)\nprintln("OK")\n' > /tmp/trid-atom/v6.triad
-          cat > /tmp/trid-atom/v7.triad <<'TRIAD'
-          data = []
-          row = ["edge", "family"]
-          push!(data, row)
-          println("SEVEN", length(data))
-          TRIAD
-          cat > /tmp/trid-atom/v8.triad <<'TRIAD'
-          data = []
-          push!(data, ["edge", "family"])
-          println("EIGHT", length(data))
-          TRIAD
-          cat > /tmp/trid-atom/v9.triad <<'TRIAD'
-          data = []
-          println("NINE", length(data))
-          TRIAD
-          for i in 1 2 3 4 5 6 7 8 9; do
-            echo "CASE-$i"
-            "$GITHUB_WORKSPACE/bin/triad" "/tmp/trid-atom/v$i.triad"
-            echo "CODE-$i=$?"
-          done
-      - name: Seed variable-name regression matrix
-        run: |
-          set +e
-          for n in data facts rows journal history trid_data foo payload source; do
-            printf '%s = []\nprintln("NAME-OK")\n' "$n" > /tmp/trid-atom/name.triad
-            printf '%s: ' "$n"
-            "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-atom/name.triad
-            echo "rc=$?"
-          done
-      - name: Native flat list feasibility
-        run: |
-          set +e
-          cat > /tmp/trid-atom/f1.triad <<'TRIAD'
-          a = []
-          println("EMPTY-LENGTH ", length(a))
-          TRIAD
-          cat > /tmp/trid-atom/f2.triad <<'TRIAD'
-          a = []
-          push!(a, "abc")
-          println("STRING-LENGTH ", length(a))
-          TRIAD
-          cat > /tmp/trid-atom/f3.triad <<'TRIAD'
-          a = ["one", "two"]
-          println("LIST-STRINGS ", length(a))
-          TRIAD
-          cat > /tmp/trid-atom/f4.triad <<'TRIAD'
-          a = ["one"]
-          push!(a, "two")
-          println("LIST-APPENDED ", length(a))
-          TRIAD
-          for i in 1 2 3 4; do
-            "$GITHUB_WORKSPACE/bin/triad" "/tmp/trid-atom/f$i.triad"
-            echo "flat-$i=$?"
-          done
-      - name: Check seed symbol and string values
-        run: |
-          set +e
-          printf 's = "abc"\nprintln(s)\n' > /tmp/trid-atom/z1.triad
-          printf 'a = [:one, :two]\nprintln(length(a))\n' > /tmp/trid-atom/z2.triad
-          printf 'a = []\npush!(a, :one)\nprintln(length(a))\n' > /tmp/trid-atom/z3.triad
-          printf 'a = []\npush!(a, 1)\nprintln(length(a))\n' > /tmp/trid-atom/z4.triad
-          printf 'a = ["one"]\nprintln("done")\n' > /tmp/trid-atom/z5.triad
-          printf 'a = [:one]\nprintln("done")\n' > /tmp/trid-atom/z6.triad
-          for i in 1 2 3 4 5 6; do
-            "$GITHUB_WORKSPACE/bin/triad" "/tmp/trid-atom/z$i.triad"
-            echo "val-$i=$?"
-          done
-      - name: Native column-symbol representation smoke test
-        run: |
-          set +e
-          cat > /tmp/trid-atom/columns.triad <<'TRIAD'
-          c1 = [:xedge, :xreview]
-          c2 = [:xfamily, :xgrandparent]
-          function col(i, k)
-              item = :x
-              if k == 1
-                  item = c1[i]
-              else
-                  item = c2[i]
-              end
-              value = string(item)
-              result = ""
-              if strlen(value) > 1
-                  result = strsub(value, 2, strlen(value))
-              end
-              result
-          end
-          println("ROWS ", length(c1))
-          println("C1 ", col(1, 1))
-          println("C2 ", col(2, 2))
-          TRIAD
-          "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-atom/columns.triad
-          echo "column-status=$?"
-      - name: Native S1 logic smoke test
-        run: ./bin/triad --logic cognitive/native/s1_discovery.triad
-      - name: Native Triad cognitive regression (no Python/Node interpreter)
+      - name: S1 discovery golden test
+        run: sh cognitive/tests/run.sh
+      - name: Native discovery, journal, verification and revocation
         run: sh cognitive/native/tests/run.sh
-      - name: Existing native Triad conformance gate
+      - name: Existing native conformance
         run: sh verify.sh
