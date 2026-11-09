@@ -40,7 +40,9 @@ function valid_name(s)
 end
 
 function parse_file(path)
+    println("PARSE START")
     src = readfile(path)
+    println("READ OK ", strlen(src))
     rows = []
     fields = []
     start = 1
@@ -69,6 +71,7 @@ function parse_file(path)
         end
         i += 1
     end
+    println("PARSE FINISH ", length(rows))
     rows
 end
 
