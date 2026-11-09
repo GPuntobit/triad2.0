@@ -18,8 +18,10 @@ MEMORY="$STATE/memory.txt"
 [ -e "$JOURNAL" ] || : > "$JOURNAL"
 cat "$ROOT/cognitive/native/common.triad" "$ROOT/cognitive/native/discover.triad" > "$TMP/discover.triad"
 cat "$ROOT/cognitive/native/common.triad" "$ROOT/cognitive/native/verify.triad" > "$TMP/verify.triad"
+echo "TRID native: discovery stage" >&2
 "$ROOT/bin/triad" "$TMP/discover.triad" "$FIXTURE" "$JOURNAL" > "$TMP/events.log"
 cat "$JOURNAL" "$TMP/events.log" > "$TMP/new-journal.log"
+echo "TRID native: independent verification stage" >&2
 "$ROOT/bin/triad" "$TMP/verify.triad" "$FIXTURE" "$TMP/new-journal.log" > "$TMP/new-memory.txt"
 mv "$TMP/new-journal.log" "$JOURNAL"
 mv "$TMP/new-memory.txt" "$MEMORY"
