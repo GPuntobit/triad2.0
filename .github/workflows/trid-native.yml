@@ -132,6 +132,31 @@ jobs:
             "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-atom/name.triad
             echo "rc=$?"
           done
+      - name: Native flat list feasibility
+        run: |
+          set +e
+          cat > /tmp/trid-atom/f1.triad <<'TRIAD'
+          a = []
+          println("EMPTY-LENGTH ", length(a))
+          TRIAD
+          cat > /tmp/trid-atom/f2.triad <<'TRIAD'
+          a = []
+          push!(a, "abc")
+          println("STRING-LENGTH ", length(a))
+          TRIAD
+          cat > /tmp/trid-atom/f3.triad <<'TRIAD'
+          a = ["one", "two"]
+          println("LIST-STRINGS ", length(a))
+          TRIAD
+          cat > /tmp/trid-atom/f4.triad <<'TRIAD'
+          a = ["one"]
+          push!(a, "two")
+          println("LIST-APPENDED ", length(a))
+          TRIAD
+          for i in 1 2 3 4; do
+            "$GITHUB_WORKSPACE/bin/triad" "/tmp/trid-atom/f$i.triad"
+            echo "flat-$i=$?"
+          done
       - name: Native S1 logic smoke test
         run: ./bin/triad --logic cognitive/native/s1_discovery.triad
       - name: Native Triad cognitive regression (no Python/Node interpreter)
