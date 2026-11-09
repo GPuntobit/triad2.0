@@ -1,0 +1,12 @@
+function inc(v)
+    delta = v + 2
+    delta
+end
+function combine(a, b)
+    x = inc(a)
+    total = x + b
+    total
+end
+seed = 4
+answer = combine(seed, 3)
+exit(answer)
