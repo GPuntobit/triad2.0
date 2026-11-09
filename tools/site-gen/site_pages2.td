@@ -27,7 +27,7 @@
 #    - the shared page shell is allocated once in variables and
 #      printed three times.
 #
-#  Run:  node tools/site-gen/build.mjs --dry tools/site-gen/site_pages2.td
+# Run: sh tools/site-gen/build.sh
 # =====================================================================
 
 # --- the shell shared by the three pages ------------------------------
@@ -40,7 +40,7 @@ b_css = "<link rel='stylesheet' href='../assets/css/style.css' />"
 b_css2 = "<link rel='stylesheet' href='../assets/css/triad-generated.css' />"
 b_headend = "</head>"
 b_body = "<body>"
-b_hdrdiv = "<div id='site-header'></div>"
+b_hdrdiv = "<header class='site-header'><nav class='container'><a href='../index.html'>Triad 2.0</a> · <a href='getting-started.html'>Getting started</a> · <a href='spec.html'>Specification</a></nav></header>"
 b_main = "<main class='container'>"
 b_layout = "<div class='doc-layout'>"
 b_aside = "<aside class='doc-sidebar'>"
@@ -65,8 +65,8 @@ b_content = "<div class='doc-content'>"
 b_contentend = "</div>"
 b_layoutend = "</div>"
 b_mainend = "</main>"
-b_ftrdiv = "<div id='site-footer'></div>"
-b_script = "<script src='../assets/js/app.js'></script>"
+b_ftrdiv = "<footer class='site-footer'><div class='container'>Triad 2.0 · Static documentation</div></footer>"
+b_script = ""
 b_bodyend = "</body>"
 b_htmlend = "</html>"
 
@@ -144,14 +144,11 @@ println("<li>Write the case yourself: a deterministic program with no input, the
 println("<li>For a Full chapter, read the specification next to it: the standard is the contract, the case will arrive with the runtime.</li>")
 println("<li>Measure the plateau and not the number of pages: the real curve says what you can actually run today.</li>")
 println("</ul>")
-println("<p class='section-sub'>Source: docs/assets/js/learning-curve.js, docs/tutorial/TUTORIAL.md, docs/MANUALE.md, README.md, docs/index.html.</p>")
+println("<p class='section-sub'>Source: docs/assets/img/learning-curve.svg, docs/tutorial/TUTORIAL.md, docs/MANUALE.md, README.md, docs/index.html.</p>")
 println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script src='../assets/js/learning-curve.js'></script>")
-println("<script>TriadSite.mount('Learning'); TriadLearningCurve.render('lc-home', 'curve', { compact: true }); TriadLearningCurve.render('lc-stages', 'stages'); TriadLearningCurve.renderTable('lc-table');</script>")
 println(b_bodyend)
 println(b_htmlend)
 
@@ -208,13 +205,13 @@ println("<h2>2. How to run it</h2>")
 println("<p>The verifier takes every task that has a solution, runs it with the seed and compares the standard output and the exit code with the goldens. It prints a verdict for each case and a summary at the end; a missing solution is skipped and does not make the verification fail, while a single failing solution is enough to make the command exit with the code 1.</p>")
 println("<div class='code-card'>")
 println("# all the tasks")
-println("node cli/triad-cli.mjs ai verify")
+println("AI verifier: native implementation pending")
 println("")
 println("# a single case")
-println("node cli/triad-cli.mjs ai verify --tasks ai/tasks/02_fattoriale")
+println("AI verifier: native implementation pending")
 println("")
 println("# with the obtained and the expected output side by side")
-println("node cli/triad-cli.mjs ai verify --verbose")
+println("AI verifier: native implementation pending")
 println("</div>")
 println("<h2>3. The format of the solution</h2>")
 println("<p>The system prompt is strict on purpose: a single block of code, no text outside the block, no markdown around it, only the supported constructs of Triad-Core, no invented libraries, types or functions, and the output produced only with the print statement. The answer is saved as the solution file and it is executed by the Core interpreter.</p>")
@@ -233,8 +230,6 @@ println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script>TriadSite.mount('AI')</script>")
 println(b_bodyend)
 println(b_htmlend)
 
@@ -300,12 +295,10 @@ println("<p>The license applies to the whole repository: the specification and t
 println("<p>The footer of every page of the site repeats the same two facts, the license and the version of the standard: 2026 Triad 2.0, distributed under the MIT license, standard 0.2.0. The version lives in the VERSION file and the history of the standard in the CHANGELOG.</p>")
 println("<h2>3. The standard and the site</h2>")
 println("<p>The specification, the conformance suite and the version file are the requirements to present Triad as an autonomous language: they are the parts of the repository the language is measured by, and they travel with the same license. A copy of the license is expected in every substantial copy or distribution of the software, a derived work included.</p>")
-println("<p class='section-sub'>Source: LICENSE, VERSION, CHANGELOG.md, docs/assets/js/app.js (footer), editors/README.md.</p>")
+println("<p class='section-sub'>Source: LICENSE, VERSION, CHANGELOG.md, docs/assets/css/style.css (footer), editors/README.md.</p>")
 println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script>TriadSite.mount('License')</script>")
 println(b_bodyend)
 println(b_htmlend)
