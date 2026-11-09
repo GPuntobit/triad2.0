@@ -11,7 +11,7 @@ if ! mkdir "$STATE/.lock" 2>/dev/null; then
     exit 1
 fi
 LOCK="$STATE/.lock"
-trap 'rmdir "$LOCK"' EXIT HUP INT TERM
+trap 'rm -f "$LOCK/rejected" "$LOCK/program.triad"; rmdir "$LOCK"' EXIT HUP INT TERM
 GRAPH="$STATE/graph.facts"
 [ -e "$GRAPH" ] || cp "$ROOT/cognitive/native/graph_06.facts" "$GRAPH"
 [ -f "$GRAPH" ] && [ -r "$GRAPH" ] || { echo 'TRID 0.6: invalid graph path' >&2; exit 1; }
