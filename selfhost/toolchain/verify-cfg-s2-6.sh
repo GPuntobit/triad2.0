@@ -24,8 +24,7 @@ cmp -s "$src" "$TMP/allowed" || { echo 'S2.6 CFG: unsafe input' >&2; exit 2; }
 } > "$TMP/check.triad"
 if ! "$ROOT/bin/triad" "$TMP/check.triad" > "$TMP/result"; then
     echo 'S2.6 CFG: native fixed-point verification failed' >&2
-    head -c 2000 "$TMP/result" >&2
     exit 1
 fi
-grep -qx 'S2.6 CFG: PASS' "$TMP/result" || { echo 'S2.6 CFG: unexpected verifier output' >&2; head -c 2000 "$TMP/result" >&2; exit 1; }
+grep -qx 'S2.6 CFG: PASS' "$TMP/result" || { echo 'S2.6 CFG: unexpected verifier output' >&2; exit 1; }
 cat "$TMP/result"
