@@ -222,7 +222,9 @@ function proof_count(history, name, shape)
 end
 
 function check_history(data, history)
+    println("DIAG-HISTORY-ENTER")
     need(length(history) > 0, "empty hypothesis journal")
+    println("DIAG-HISTORY-LENGTH ", length(history))
     i = 1
     while i <= length(history)
         r = history[i]
