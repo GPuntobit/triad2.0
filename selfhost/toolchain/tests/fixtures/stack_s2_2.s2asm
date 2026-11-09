@@ -1,0 +1,5 @@
+sub_rsp 5128
+add_rsp 5128
+xor_edi
+mov_eax 60
+syscall

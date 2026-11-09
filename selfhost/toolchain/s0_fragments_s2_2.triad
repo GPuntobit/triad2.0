@@ -1,0 +1,29 @@
+# S2.2 auditable reconstruction of TWO SMALL FRAGMENTS of native S0.
+# NOT the S0 interpreter and NOT a seed regeneration facility.
+# Requires elf64_exit.triad (hex_byte, little, zeros).
+#
+# Actual committed seed/linux-x86_64/seed.hex:
+# 0..63: ELF64 header; 120..126: sub rsp, 0x1408 (first native opcode).
+# Values below are human-readable structural fields and operand encodings,
+# not a pasted seed blob.
+
+function s0_elf_header_hex()
+    out = ""
+    # ELF magic, 64-bit class, little endian, current version.
+    out = out * hex_byte(127) * hex_byte(69) * hex_byte(76) * hex_byte(70)
+    out = out * hex_byte(2) * hex_byte(1) * hex_byte(1) * zeros(9)
+    # ET_EXEC, x86-64, EV_CURRENT.
+    out = out * little(2, 2) * little(62, 2) * little(1, 4)
+    # entry = 0x400078 (code starts after ELF+program headers).
+    out = out * hex_byte(120) * hex_byte(0) * hex_byte(64) * zeros(5)
+    # program header offset = 64; no section table.
+    out = out * little(64, 8) * zeros(8) * little(0, 4)
+    out = out * little(64, 2) * little(56, 2) * little(1, 2)
+    out = out * little(0, 2) * little(0, 2) * little(0, 2)
+    out
+end
+
+function s0_first_opcode_hex()
+    # REX.W + 81 /5 + imm32 = sub rsp, 5128 (0x1408).
+    hex_byte(72) * hex_byte(129) * hex_byte(236) * little(5128, 4)
+end
