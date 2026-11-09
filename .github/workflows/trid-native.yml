@@ -33,6 +33,10 @@ jobs:
           node tools/selfhost-guard/guard.mjs /tmp/trid-native-debug/discover.triad || true
           echo 'Development oracle diagnostic:'
           ( cd /tmp/trid-native-debug; node "$GITHUB_WORKSPACE/seed/dev/triad_core.cjs" /tmp/trid-native-debug/discover.triad ) || true
+          echo 'Native S0 function-definitions file-read diagnostic:'
+          sed '/^println("BEGIN 1")/,$d' /tmp/trid-native-debug/discover.triad > /tmp/trid-native-debug/functions-only.triad
+          printf 'println(strlen(readfile("fixture.txt")))\n' >> /tmp/trid-native-debug/functions-only.triad
+          ( cd /tmp/trid-native-debug; "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-native-debug/functions-only.triad ) || true
           echo 'Native S0 discovery direct diagnostic:'
           ( cd /tmp/trid-native-debug; "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-native-debug/discover.triad ) || true
       - name: Native Triad cognitive regression (no Python/Node interpreter)
