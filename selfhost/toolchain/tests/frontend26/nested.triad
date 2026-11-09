@@ -1,0 +1,10 @@
+function calc(a, b)
+    res = a + (b - 2)
+    res
+end
+function passthru(x)
+    result = calc(x, 4)
+    result
+end
+tmp = passthru(7)
+exit(tmp)
