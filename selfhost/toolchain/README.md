@@ -6,6 +6,26 @@ written in **Triad-Core** and run under the existing native x86-64 seed.
 There is no JavaScript/Node, Python, C, Rust, or external assembler involved
 in generating the machine-code bytes.
 
+## S2.6 — Multi-function typed AST and controlled native recursion
+
+The experimental [`README_S2_6.md`](README_S2_6.md) documents two
+native Triad-Core compiler profiles: up to three acyclic functions with
+lexically isolated stack locals and one RHS-nested arithmetic expression;
+and a **strictly controlled primitive-recursion** form with a decreasing
+natural parameter and initial input limited to 0..32.
+
+Each function has a separate must-def CFG fixed-point check. Native
+`CALL`/`RET`, EDI/ESI parameters, EAX results and balanced stack frames
+are tested by executing generated Linux x86-64 ELF binaries.
+
+```sh
+sh selfhost/toolchain/tests/run_s2_6.sh
+sh selfhost/toolchain/compile-triad-s2-6.sh selfhost/toolchain/tests/frontend26/rec_five.triad /tmp/triad-rec
+```
+
+This is **not** arbitrary recursion, full lexical closure support, a
+Triad-Full compiler, full S0 seed reproduction, or S3 self-hosting.
+
 ## S2.5 — Native typed AST, CFG fixed point and i32 function ABI
 
 [`README_S2_5.md`](README_S2_5.md) describes the S2.5 restricted

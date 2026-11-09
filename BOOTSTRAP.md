@@ -216,6 +216,26 @@ The limited one-function subset is **not** full Triad-Core, a general
 ABI/runtime implementation, seed S0 regeneration or S3 compiler
 self-hosting. See `selfhost/toolchain/README_S2_5.md`.
 
+## S2.6 — native multiple functions, nested expressions and bounded recursion
+
+`selfhost/toolchain/frontend_s2_6.triad` compiles a small Core subset
+with up to three functions, 1–2 i32 arguments per function, distinct
+function-local stack frames, acyclic calls to prior declarations and one
+right-nested arithmetic AST expression. `cfg_s2_6.triad` independently
+verifies definite assignment via a fixed-point iteration **per function**.
+
+`recursion_s2_6.triad` adds exactly one verified primitive-recursion
+shape: a natural parameter checked against zero and decremented by one
+before each native recursive call, with initial input 0..32 and balanced
+40-byte callee frames. This structurally bounds simultaneous recursion
+depth at 33. Unsafe or non-decreasing recursion is rejected.
+
+The tests execute native ELF64 programs and compare representative
+sources with the S0 interpreter; all earlier toolchain and no-JS tests
+remain regression gates. **No full S0 interpreter regeneration, no
+general recursive compiler, and no S3 self-hosting yet.**
+See `selfhost/toolchain/README_S2_6.md`.
+
 ## 8. Compliance Agreement
 The executable specification is `conformance/`: each case is
 ```
