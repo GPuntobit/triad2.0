@@ -1,0 +1,128 @@
+# TRIAD S2.6 independent multi-root CFG definite assignment verifier.
+# Validates main and each function as a distinct lexical stack frame.
+# Every unit is analyzed by a real monotone must-def fixed point:
+# IN[n] = intersection of OUT[p] over reachable predecessor edges.
+# Function-call edges return to the caller continuation, while each
+# callee is checked from its own fresh root (no stack-slot aliasing).
+# Dependencies: cfg_s2_5.triad and assembler_s2_1.triad.
+
+function cfg26_check_unit(src)
+    ops = []
+    args = []
+    pos = 1
+    while pos <= strlen(src)
+        line_end = pos
+        while line_end <= strlen(src) && strbyte(src, line_end) != 10
+            line_end += 1
+        end
+        if line_end > pos
+            words = asm_tokens(strsub(src, pos, line_end - 1))
+            if !asm_same(words[1], "@")
+                asm_need(length(words) == 2 || length(words) == 3)
+                push!(ops, words[1])
+                arg = ""
+                if length(words) == 3
+                    arg = words[2]
+                end
+                push!(args, arg)
+                asm_need(length(ops) <= 45)
+            end
+        end
+        pos = line_end + 1
+    end
+    n = length(ops)
+    asm_need(n >= 4)
+    asm_need(asm_same(ops[1], "start") || asm_same(ops[1], "label"))
+    asm_need(asm_same(ops[n], "exit") || asm_same(ops[n], "return"))
+    i = 1
+    while i <= n
+        op = ops[i]
+        if asm_same(op, "jump") || asm_same(op, "br_zero") || asm_same(op, "br_nonzero")
+            asm_need(cfg25_target(ops, args, args[i]) > 0)
+        end
+        i += 1
+    end
+    old_out = []
+    old_reach = []
+    i = 1
+    while i <= n
+        push!(old_out, 255)
+        push!(old_reach, false)
+        i += 1
+    end
+    graph = [ops, args]
+    stable = false
+    rounds = 0
+    final_in = []
+    final_reach = []
+    while !stable && rounds <= n + 1
+        new_out = []
+        new_reach = []
+        new_in = []
+        stable = true
+        i = 1
+        old = [old_out, old_reach]
+        while i <= n
+            state = cfg25_step(graph, old, i, 1)
+            push!(new_in, state[1])
+            push!(new_out, state[2])
+            push!(new_reach, state[3])
+            if old_out[i] != state[2] || old_reach[i] != state[3]
+                stable = false
+            end
+            i += 1
+        end
+        old_out = new_out
+        old_reach = new_reach
+        final_in = new_in
+        final_reach = new_reach
+        rounds += 1
+    end
+    asm_need(stable)
+    i = 1
+    while i <= n
+        if final_reach[i] && cfg25_read(ops[i])
+            offset = asm_uint(args[i])
+            asm_need(cfg25_known(final_in[i], offset))
+        end
+        i += 1
+    end
+    true
+end
+
+# Every source unit has a unique stack entry, with its return or exit at
+# its end. A label immediately after an exit/return starts a new unit.
+function cfg26_verify(src)
+    asm_need(strlen(src) > 0 && strlen(src) <= 12000)
+    segment = ""
+    pos = 1
+    previous_terminal = false
+    units = 0
+    while pos <= strlen(src)
+        line_end = pos
+        while line_end <= strlen(src) && strbyte(src, line_end) != 10
+            line_end += 1
+        end
+        if line_end > pos
+            line = strsub(src, pos, line_end - 1)
+            words = asm_tokens(line)
+            op = words[1]
+            if !asm_same(op, "@")
+                if previous_terminal
+                    asm_need(asm_same(op, "label"))
+                    cfg26_check_unit(segment)
+                    units += 1
+                    segment = ""
+                end
+                segment = ir_append24(segment, line)
+                previous_terminal = asm_same(op, "exit") || asm_same(op, "return")
+            end
+        end
+        pos = line_end + 1
+    end
+    asm_need(previous_terminal)
+    cfg26_check_unit(segment)
+    units += 1
+    asm_need(units >= 3 && units <= 4)
+    true
+end
