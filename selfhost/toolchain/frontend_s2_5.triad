@@ -1,0 +1,273 @@
+# TRIAD S2.5 native typed AST frontend: bounded one-function i32 profile.
+# Source -> typed AST expression nodes -> native IR -> x86-64 ELF.
+# No JS/Node, C compiler or host-language expression translation.
+# Function definition FIRST; 1 or 2 i32 parameters; no recursion or nesting.
+# SysV x86-64 registers: EDI, ESI inputs; EAX output; caller owns its frame.
+
+function f25_words(line)
+    asm_need(strlen(line) > 0 && strlen(line) <= 256)
+    result = []
+    word = ""
+    i = 1
+    while i <= strlen(line)
+        c = strbyte(line, i)
+        punct = c == 61 || c == 43 || c == 45 || c == 40 || c == 41 || c == 44
+        separate = c == 32 || punct
+        if separate
+            if strlen(word) > 0
+                push!(result, word)
+                word = ""
+            end
+            if punct
+                push!(result, strsub(line, i, i))
+            end
+        else
+            allowed = (c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c == 95
+            asm_need(allowed)
+            word = word * strsub(line, i, i)
+        end
+        i += 1
+    end
+    if strlen(word) > 0
+        push!(result, word)
+    end
+    result
+end
+
+function f25_name(name)
+    ok = mv_name(name)
+    if asm_same(name, "function") || asm_same(name, "return")
+        ok = false
+    end
+    ok
+end
+
+# AST record [tag, type, lhs, operator, rhs], one expression at a time.
+# The type field is always i32; bool is not silently coerced to an integer.
+function f25_expr(words, first, last)
+    count = last - first + 1
+    asm_need(count > 0)
+    node = []
+    if count == 1
+        operand = words[first]
+        if mv_number(operand)
+            asm_uint(operand)
+            push!(node, "const")
+        else
+            asm_need(f25_name(operand))
+            push!(node, "var")
+        end
+        push!(node, "i32")
+        push!(node, operand)
+        push!(node, "")
+        push!(node, "")
+    elseif count == 3
+        lhs = words[first]
+        op = words[first + 1]
+        rhs = words[first + 2]
+        asm_need(asm_same(op, "+") || asm_same(op, "-"))
+        asm_need(mv_number(lhs) || f25_name(lhs))
+        asm_need(mv_number(rhs) || f25_name(rhs))
+        if mv_number(lhs)
+            asm_uint(lhs)
+        end
+        if mv_number(rhs)
+            asm_uint(rhs)
+        end
+        push!(node, "binary")
+        push!(node, "i32")
+        push!(node, lhs)
+        push!(node, op)
+        push!(node, rhs)
+    elseif count == 4 || count == 6
+        fn = words[first]
+        asm_need(f25_name(fn))
+        asm_need(asm_same(words[first + 1], "("))
+        asm_need(asm_same(words[last], ")"))
+        a1 = words[first + 2]
+        asm_need(mv_number(a1) || f25_name(a1))
+        if mv_number(a1)
+            asm_uint(a1)
+        end
+        a2 = ""
+        if count == 6
+            asm_need(asm_same(words[first + 3], ","))
+            a2 = words[first + 4]
+            asm_need(mv_number(a2) || f25_name(a2))
+            if mv_number(a2)
+                asm_uint(a2)
+            end
+        end
+        push!(node, "call")
+        push!(node, "i32")
+        push!(node, fn)
+        push!(node, a1)
+        push!(node, a2)
+    else
+        asm_need(false)
+    end
+    node
+end
+
+function f25_second(ir, vars, mask, operand)
+    out = ir
+    if mv_number(operand)
+        asm_uint(operand)
+        out = front_line(out, "i32_arg2_const " * operand)
+    else
+        slot = mv_require(vars, mask, operand)
+        out = front_line(out, "i32_arg2_load " * string(slot))
+    end
+    out
+end
+
+# Every assignment compiles through the AST, including a function call.
+# 'state' is [definite-assignment mask, function name, arity, in_function].
+function f25_assign(ir, vars, state, words)
+    asm_need(length(words) >= 3)
+    target = words[1]
+    asm_need(f25_name(target) && asm_same(words[2], "="))
+    node = f25_expr(words, 3, length(words))
+    asm_need(asm_same(node[2], "i32"))
+    mask = state[1]
+    out = ir
+    if asm_same(node[1], "binary")
+        out = mv_value(out, vars, mask, node[3])
+        out = mv_arithmetic(out, vars, mask, node[4] * node[5])
+    elseif asm_same(node[1], "call")
+        asm_need(!state[4])
+        asm_need(asm_same(node[3], state[2]))
+        if state[3] == 1
+            asm_need(asm_same(node[5], ""))
+        else
+            asm_need(state[3] == 2 && strlen(node[5]) > 0)
+        end
+        out = mv_value(out, vars, mask, node[4])
+        if state[3] == 2
+            out = f25_second(out, vars, mask, node[5])
+        end
+        out = front_line(out, "i32_call " * node[3])
+    else
+        out = mv_value(out, vars, mask, node[3])
+    end
+    slot = mv_allocate(vars, target)
+    out = front_line(out, "i32_store " * string(slot))
+    mask = mv_mark(mask, slot)
+    [out, mask]
+end
+
+# Program:
+# function name(p1[, p2])
+#   local = operand [+|- operand]
+#   return local
+# end
+# lhs = ...
+# result = name(arg1[, arg2])
+# exit(result)
+# Exactly one function and one top-level terminal exit.
+function source_to_ir25(src)
+    asm_need(strlen(src) > 0 && strlen(src) <= 8000)
+    main_ir = "start"
+    main_ir = front_line(main_ir, "i32_frame 32")
+    body_ir = ""
+    globals = []
+    locals = []
+    main_mask = 0
+    local_mask = 0
+    function_name = ""
+    parameters = 0
+    phase = 0
+    saw_return = false
+    saw_call = false
+    ended = false
+    count = 0
+    pos = 1
+    while pos <= strlen(src)
+        line_end = pos
+        while line_end <= strlen(src) && strbyte(src, line_end) != 10
+            line_end += 1
+        end
+        if line_end > pos
+            line = strsub(src, pos, line_end - 1)
+            words = f25_words(line)
+            if length(words) > 0
+                op = words[1]
+                asm_need(!ended)
+                if phase == 0
+                    asm_need(asm_same(op, "function"))
+                    asm_need(length(words) == 5 || length(words) == 7)
+                    function_name = words[2]
+                    asm_need(f25_name(function_name))
+                    asm_need(asm_same(words[3], "("))
+                    asm_need(asm_same(words[length(words)], ")"))
+                    param1 = words[4]
+                    asm_need(f25_name(param1))
+                    body_ir = front_line(body_ir, "label " * function_name)
+                    body_ir = front_line(body_ir, "i32_enter 40")
+                    first_slot = mv_allocate(locals, param1)
+                    asm_need(first_slot == 0)
+                    body_ir = front_line(body_ir, "i32_store 0")
+                    local_mask = mv_mark(local_mask, 0)
+                    parameters = 1
+                    if length(words) == 7
+                        asm_need(asm_same(words[5], ","))
+                        param2 = words[6]
+                        asm_need(f25_name(param2) && !asm_same(param1, param2))
+                        second_slot = mv_allocate(locals, param2)
+                        asm_need(second_slot == 4)
+                        body_ir = front_line(body_ir, "i32_arg2_store 4")
+                        local_mask = mv_mark(local_mask, 4)
+                        parameters = 2
+                    end
+                    phase = 1
+                elseif phase == 1
+                    if asm_same(op, "return")
+                        asm_need(!saw_return && length(words) == 2)
+                        slot = mv_require(locals, local_mask, words[2])
+                        body_ir = front_line(body_ir, "i32_load " * string(slot))
+                        body_ir = front_line(body_ir, "i32_result")
+                        body_ir = front_line(body_ir, "i32_leave 40")
+                        body_ir = front_line(body_ir, "return")
+                        saw_return = true
+                    elseif asm_same(op, "end")
+                        asm_need(saw_return && length(words) == 1)
+                        phase = 2
+                    else
+                        asm_need(!saw_return)
+                        state = [local_mask, function_name, parameters, true]
+                        pair = f25_assign(body_ir, locals, state, words)
+                        body_ir = pair[1]
+                        local_mask = pair[2]
+                    end
+                else
+                    asm_need(phase == 2)
+                    if asm_same(op, "exit")
+                        asm_need(length(words) == 4)
+                        asm_need(asm_same(words[2], "(") && asm_same(words[4], ")"))
+                        slot = mv_require(globals, main_mask, words[3])
+                        main_ir = front_line(main_ir, "i32_load " * string(slot))
+                        main_ir = front_line(main_ir, "exit")
+                        ended = true
+                    else
+                        asm_need(!asm_same(op, "function") && !asm_same(op, "end"))
+                        asm_need(length(words) >= 3)
+                        node = f25_expr(words, 3, length(words))
+                        if asm_same(node[1], "call")
+                            saw_call = true
+                        end
+                        state = [main_mask, function_name, parameters, false]
+                        pair = f25_assign(main_ir, globals, state, words)
+                        main_ir = pair[1]
+                        main_mask = pair[2]
+                    end
+                end
+                count += 1
+                asm_need(count <= 35)
+            end
+        end
+        pos = line_end + 1
+    end
+    asm_need(phase == 2 && saw_return && saw_call && ended)
+    asm_need(strlen(main_ir) + strlen(body_ir) <= 12000)
+    front_line(main_ir, body_ir)
+end
