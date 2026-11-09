@@ -91,6 +91,7 @@ La suite S2.1 confronta gli opcode del payload con golden indipendenti,
 esegue realmente gli ELF su Linux e prova:
 - salto in avanti con codice saltato, `exit(42)`;
 - salto condizionato all'indietro, `exit(0)`;
+- `add_edi`, `cmp_edi` e salto condizionato `jz` in avanti, `exit(5)`;
 - `lea_rsi` su dati, output esatto `A`;
 - `call`/`ret`, `exit(17)`;
 - build deterministica byte per byte;
