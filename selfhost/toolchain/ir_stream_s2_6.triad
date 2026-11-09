@@ -105,6 +105,6 @@ function lower_ir_stream26(src)
         end
         pos = line_end + 1
     end
-    asm_need(statement_count >= 2 && saw_exit && function_count >= 2 && !function_active && function_closed && result_seen)
+    asm_need(statement_count >= 2 && saw_exit && function_count >= 1 && !function_active && function_closed && result_seen)
     out
 end
