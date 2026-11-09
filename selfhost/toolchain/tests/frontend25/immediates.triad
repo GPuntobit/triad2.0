@@ -1,6 +1,6 @@
 function choose(left, right)
     result = left
-    return result
+    result
 end
 a = choose(8, 3)
 exit(a)
