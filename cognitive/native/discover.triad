@@ -180,15 +180,21 @@ function discover_target(data, target, journal, events)
     events
 end
 
+println("TRACE-START")
 data = trid_data
+println("TRACE-ASSIGNED", length(data))
 journal = trid_history
+println("TRACE-JOURNAL", length(journal))
 validate_data(data)
+println("TRACE-VALID")
 check_journal(journal)
+println("TRACE-JOURNAL-CHECKED")
 events = []
 i = 1
 while i <= length(data)
     row = data[i]
     if same(row[1], "target")
+        println("TRACE-TARGET", row[3])
         discover_target(data, row, journal, events)
     end
     i += 1
