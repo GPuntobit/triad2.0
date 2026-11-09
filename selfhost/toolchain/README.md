@@ -6,6 +6,22 @@ written in **Triad-Core** and run under the existing native x86-64 seed.
 There is no JavaScript/Node, Python, C, Rust, or external assembler involved
 in generating the machine-code bytes.
 
+## S2.1 — assembler nativo a due passaggi
+
+La fase successiva è ora disponibile nel prototipo
+[`README_S2_1.md`](README_S2_1.md): un assembler dichiarativo scritto
+in Triad-Core con etichette, simboli, salti relativi `rel32` in avanti
+e all'indietro, `call`/`ret` e indirizzi RIP-relative per dati.
+Il programma genera un ELF64 di dimensioni variabili.
+
+```sh
+sh selfhost/toolchain/tests/run_s2_1.sh
+sh selfhost/toolchain/assemble.sh selfhost/toolchain/tests/fixtures/forward.s2asm /tmp/triad-forward
+```
+
+S2.1 non ricostruisce ancora il seed S0 e non è un compilatore per
+programmi arbitrari scritti in Triad.
+
 ## What is implemented
 
 `elf64_exit.triad` creates a complete Linux x86-64 **ELF64 ET_EXEC**
