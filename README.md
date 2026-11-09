@@ -216,21 +216,7 @@ LICENSE                     MIT license (open source)
 
 The S0 seeds are native executables for x86-64 only (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) and cannot run on Android devices, which are ARM64. There is no ARM64 native seed yet (see [STATUS.md](STATUS.md)); `bin/triad` always executes the seed and reports a clear error where no seed can run.
 
-On Termux (and any non-x86-64 platform) Triad-Core programs can still be executed with the **development** reference interpreter `seed/dev/triad_core.cjs` — a development tool outside the zero-install user path:
-
-```sh
-pkg install nodejs git
-git clone https://github.com/GPuntobit/triad2.0.git && cd triad2.0
-printf 'x = 6 * 7\nprintln(x)\n' > demo.td
-node seed/dev/triad_core.cjs demo.td   # prints 42 via the JS reference interpreter
-node seed/dev/triad_core.cjs           # full Core suite also passes on Termux
-```
-
-Notes:
-
-- The JS reference is a development tool only (rule: no host languages in the
-  S0→S4 bootstrap chain); the user path (`triad`) never falls back to it.
-- On Termux you can run Triad-Core programs (the subset covered by the conformance suite); Triad-Full constructs still require the future self-hosted runtime ([BOOTSTRAP.md](BOOTSTRAP.md)).
+On Termux (Android ARM64) and other platforms without a supported x86-64 native seed, **local execution is not supported yet**. A Triad-native ARM64 seed or a compatible native port is required. No JavaScript fallback interpreter is shipped, and the launcher never delegates to Node.js.
 
 ## Website
 
