@@ -1,0 +1,8 @@
+function add(left, right)
+    total = left + right
+    return total
+end
+a = 5
+b = 7
+answer = add(a, b)
+exit(answer)
