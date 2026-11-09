@@ -41,12 +41,8 @@ function f26_expr(words, first, last)
     else
         basic = f25_expr(words, first, last)
         kind = basic[1]
-        if asm_same(kind, "binary")
-            lhs = f26_atom(basic[3])
-            rhs = f26_atom(basic[5])
-            node = ["binary", "i32", lhs, basic[4], rhs]
-        elseif asm_same(kind, "const") || asm_same(kind, "var")
-            node = f26_atom(basic[3])
+        if asm_same(kind, "binary") || asm_same(kind, "const") || asm_same(kind, "var")
+            node = basic
         else
             asm_need(asm_same(kind, "call"))
             node = basic
@@ -82,21 +78,23 @@ function f26_assignment(ir, words, env)
     asm_need(asm_same(node[2], "i32"))
     out = ir
     if asm_same(kind, "binary")
-        left = node[3]
         operation = node[4]
-        right = node[5]
-        asm_need(asm_same(left[2], "i32") && asm_same(right[2], "i32"))
-        if asm_same(right[1], "binary")
-            inner_left = right[3]
-            inner_op = right[4]
-            inner_right = right[5]
-            asm_need(!asm_same(inner_left[1], "binary") && !asm_same(inner_right[1], "binary"))
-            first = inner_left[3]
-            other = inner_right[3]
-            out = mv_value(out, vars, mask, first)
-            out = mv_arithmetic(out, vars, mask, inner_op * other)
-            out = front_line(out, "i32_store 28")
+        asm_need(asm_same(operation, "+") || asm_same(operation, "-"))
+        if length(words) == 9
+            # Copy all primitive AST fields before calling further Triad
+            # functions: S0 has small evaluator frames for nested List values.
+            left = node[3]
+            right = node[5]
             first = left[3]
+            inner_left = right[3]
+            inner_right = right[5]
+            inner_first = inner_left[3]
+            inner_second = inner_right[3]
+            inner_operation = right[4]
+            asm_need(asm_same(left[2], "i32") && asm_same(right[2], "i32"))
+            out = mv_value(out, vars, mask, inner_first)
+            out = mv_arithmetic(out, vars, mask, inner_operation * inner_second)
+            out = front_line(out, "i32_store 28")
             out = mv_value(out, vars, mask, first)
             if asm_same(operation, "+")
                 out = front_line(out, "i32_add_slot 28")
@@ -104,10 +102,10 @@ function f26_assignment(ir, words, env)
                 out = front_line(out, "i32_sub_slot 28")
             end
         else
-            first = left[3]
-            other = right[3]
+            first = node[3]
+            second = node[5]
             out = mv_value(out, vars, mask, first)
-            out = mv_arithmetic(out, vars, mask, operation * other)
+            out = mv_arithmetic(out, vars, mask, operation * second)
         end
     elseif asm_same(kind, "call")
         fn = node[3]
