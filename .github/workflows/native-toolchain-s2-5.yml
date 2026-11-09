@@ -16,6 +16,19 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Diagnose S2.5 AST parser definitions
+        run: |
+          set +e
+          cat selfhost/toolchain/elf64_exit.triad selfhost/toolchain/assembler_s2_1.triad selfhost/toolchain/frontend_s2_3.triad selfhost/toolchain/frontend_s2_4.triad selfhost/toolchain/frontend_s2_5.triad > /tmp/s25.triad
+          echo 'println("DIAG-DEFINES")' >> /tmp/s25.triad
+          ./bin/triad /tmp/s25.triad; echo "DEFINES=$?"
+          sed '$d' /tmp/s25.triad > /tmp/s25x.triad
+          echo 'println(length(f25_words("function add(left, right)")))' >> /tmp/s25x.triad
+          ./bin/triad /tmp/s25x.triad; echo "WORDS=$?"
+          sed '$d' /tmp/s25.triad > /tmp/s25e.triad
+          echo 'x = f25_words("a = b + c")' >> /tmp/s25e.triad
+          echo 'println(f25_expr(x, 3, length(x)))' >> /tmp/s25e.triad
+          ./bin/triad /tmp/s25e.triad; echo "EXPR=$?"
       - name: Native typed AST, fixed-point CFG, function ABI
         run: sh selfhost/toolchain/tests/run_s2_5.sh
       - name: Native S2.4 streaming and definite assignment regression
