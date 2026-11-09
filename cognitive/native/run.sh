@@ -42,8 +42,11 @@ make_source() {
     safe_records "$FIXTURE"
     safe_records "$2"
     {
-        emit_rows "$FIXTURE" trid_data
-        emit_rows "$2" trid_history
+        emit_rows "$FIXTURE" data
+        case "$1" in
+            */verify.triad) emit_rows "$2" history ;;
+            *) emit_rows "$2" journal ;;
+        esac
         cat "$ROOT/cognitive/native/common.triad" "$1"
     } > "$3"
 }
