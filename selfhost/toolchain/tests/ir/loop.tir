@@ -1,0 +1,7 @@
+start
+i32_const 3
+label loop
+i32_dec
+i32_test_zero
+br_nonzero loop
+exit
