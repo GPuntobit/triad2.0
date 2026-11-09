@@ -64,6 +64,7 @@ function f25_expr(words, first, last)
         push!(node, "")
         push!(node, "")
     elseif count == 3
+        println("F25-BINARY-START")
         lhs = words[first]
         op = words[first + 1]
         rhs = words[first + 2]
@@ -76,11 +77,13 @@ function f25_expr(words, first, last)
         if mv_number(rhs)
             asm_uint(rhs)
         end
+        println("F25-BINARY-TYPED")
         push!(node, "binary")
         push!(node, "i32")
         push!(node, lhs)
         push!(node, op)
         push!(node, rhs)
+        println("F25-BINARY-PUSHED")
     elseif count == 4 || count == 6
         fn = words[first]
         asm_need(f25_name(fn))
@@ -108,6 +111,7 @@ function f25_expr(words, first, last)
     else
         asm_need(false)
     end
+    println("F25-EXPR-RETURN")
     node
 end
 
@@ -130,12 +134,15 @@ function f25_assign(ir, vars, state, words)
     target = words[1]
     asm_need(f25_name(target) && asm_same(words[2], "="))
     node = f25_expr(words, 3, length(words))
+    println("F25-AST-READY")
     asm_need(asm_same(node[2], "i32"))
     mask = state[1]
     out = ir
     if asm_same(node[1], "binary")
         out = mv_value(out, vars, mask, node[3])
+        println("F25-OPERAND-READY")
         out = mv_arithmetic(out, vars, mask, node[4] * node[5])
+        println("F25-BINARY-LOWERED")
     elseif asm_same(node[1], "call")
         asm_need(!state[4])
         asm_need(asm_same(node[3], state[2]))
