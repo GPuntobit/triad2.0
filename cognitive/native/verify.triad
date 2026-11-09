@@ -309,11 +309,11 @@ function diag_two(xs, ys)
 end
 
 println("DIAG-VERIFY-START")
+diag_one(history)
 validate_data(data)
 println("DIAG-DATA-OK")
 check_journal(history)
 println("DIAG-JOURNAL-OK")
-diag_one(history)
 diag_two(data, history)
 check_history(data, history)
 println("DIAG-HISTORY-OK")
