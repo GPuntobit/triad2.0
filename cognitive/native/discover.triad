@@ -37,7 +37,7 @@ end
 function same_proof(a, b)
     equal = length(a) == length(b)
     i = 1
-    while i <= length(a) && equal
+    while i <= length(a) && equal == true
         if !same(a[i], b[i])
             equal = false
         end
