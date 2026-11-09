@@ -1,0 +1,126 @@
+# Triad-Core native x86-64 ELF64 emitter, stage S2.0.
+# Produces hexadecimal machine-code bytes on stdout (not a Triad interpreter).
+# The shell launcher decodes the hex stream to a binary. No Node, C or Python.
+# ABI: Linux x86-64, direct syscalls, ET_EXEC at 0x400000.
+# Caller appends: emit_elf_exit(STATUS)   STATUS in 0..255.
+
+function emit_digit(n)
+    digits = "0123456789abcdef"
+    print(strsub(digits, n + 1, n + 1))
+end
+
+function emit_byte(n)
+    if n < 0 || n > 255
+        exit(1)
+    end
+    high = 0
+    low = n
+    while low >= 16
+        low -= 16
+        high += 1
+    end
+    emit_digit(high)
+    emit_digit(low)
+end
+
+function emit_zeros(count)
+    i = 0
+    while i < count
+        emit_byte(0)
+        i += 1
+    end
+end
+
+# Encode a non-negative integer as little-endian unsigned bytes.
+# Quotient by 256 uses subtraction because Core does not expose integer /.
+function emit_le(n, count)
+    if n < 0
+        exit(1)
+    end
+    i = 0
+    while i < count
+        quotient = 0
+        rem = n
+        while rem >= 256
+            rem -= 256
+            quotient += 1
+        end
+        emit_byte(rem)
+        n = quotient
+        i += 1
+    end
+    if n != 0
+        exit(1)
+    end
+end
+
+# x86-64: mov r32, imm32 (register = EDI [0xbf] or EAX [0xb8]).
+function mov_edi_imm32(value)
+    emit_byte(191)
+    emit_le(value, 4)
+end
+
+function mov_eax_imm32(value)
+    emit_byte(184)
+    emit_le(value, 4)
+end
+
+function syscall_instruction()
+    emit_byte(15)
+    emit_byte(5)
+end
+
+# 64-byte ELF header + 56-byte PT_LOAD header + 12-byte executable.
+# Execution: mov edi, exit_code; mov eax, 60; syscall.
+function emit_elf_exit(status)
+    if status < 0 || status > 255
+        exit(1)
+    end
+    # ELF magic / class 64-bit / little-endian / ELF version.
+    emit_byte(127)
+    emit_byte(69)
+    emit_byte(76)
+    emit_byte(70)
+    emit_byte(2)
+    emit_byte(1)
+    emit_byte(1)
+    emit_zeros(9)
+    emit_le(2, 2)       # ET_EXEC
+    emit_le(62, 2)      # EM_X86_64
+    emit_le(1, 4)       # EV_CURRENT
+    # e_entry = 0x400078 (code starts at offset 120).
+    emit_byte(120)
+    emit_byte(0)
+    emit_byte(64)
+    emit_zeros(5)
+    emit_le(64, 8)      # e_phoff
+    emit_zeros(8)      # e_shoff = none
+    emit_le(0, 4)      # e_flags
+    emit_le(64, 2)     # e_ehsize
+    emit_le(56, 2)     # e_phentsize
+    emit_le(1, 2)      # e_phnum
+    emit_le(0, 2)      # e_shentsize
+    emit_le(0, 2)      # e_shnum
+    emit_le(0, 2)      # e_shstrndx
+    # Single PT_LOAD, flags R|X, starting at file offset 0.
+    emit_le(1, 4)
+    emit_le(5, 4)
+    emit_le(0, 8)
+    # p_vaddr, p_paddr = 0x400000.
+    emit_byte(0)
+    emit_byte(0)
+    emit_byte(64)
+    emit_zeros(5)
+    emit_byte(0)
+    emit_byte(0)
+    emit_byte(64)
+    emit_zeros(5)
+    emit_le(132, 8)    # p_filesz
+    emit_le(132, 8)    # p_memsz
+    emit_le(4096, 8)   # p_align, page-aligned PT_LOAD
+    # Machine-code payload: no libc or external libraries.
+    mov_edi_imm32(status)
+    mov_eax_imm32(60)
+    syscall_instruction()
+    println("")
+end
