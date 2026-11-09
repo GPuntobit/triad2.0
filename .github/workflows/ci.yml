@@ -77,3 +77,5 @@ jobs:
           test -s docs/index.html
           test -s docs/pages/getting-started.html
           test -s docs/pages/spec.html
+      - name: Generate static docs with native Triad
+        run: sh tools/site-gen/build.sh --dry-run

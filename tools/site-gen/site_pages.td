@@ -22,7 +22,7 @@
 #      printed eight times: the seed arena is a bump allocator of
 #      about 64 KiB and every literal is a heap object.
 #
-#  Run:  node tools/site-gen/build.mjs --dry tools/site-gen/site_pages.td
+# Run: sh tools/site-gen/build.sh
 # =====================================================================
 
 # --- the shell shared by the eight pages ------------------------------
@@ -35,7 +35,7 @@ b_css = "<link rel='stylesheet' href='../assets/css/style.css' />"
 b_css2 = "<link rel='stylesheet' href='../assets/css/triad-generated.css' />"
 b_headend = "</head>"
 b_body = "<body>"
-b_hdrdiv = "<div id='site-header'></div>"
+b_hdrdiv = "<header class='site-header'><nav class='container'><a href='../index.html'>Triad 2.0</a> · <a href='getting-started.html'>Getting started</a> · <a href='spec.html'>Specification</a></nav></header>"
 b_main = "<main class='container'>"
 b_layout = "<div class='doc-layout'>"
 b_aside = "<aside class='doc-sidebar'>"
@@ -60,8 +60,8 @@ b_content = "<div class='doc-content'>"
 b_contentend = "</div>"
 b_layoutend = "</div>"
 b_mainend = "</main>"
-b_ftrdiv = "<div id='site-footer'></div>"
-b_script = "<script src='../assets/js/app.js'></script>"
+b_ftrdiv = "<footer class='site-footer'><div class='container'>Triad 2.0 · Static documentation</div></footer>"
+b_script = ""
 b_bodyend = "</body>"
 b_htmlend = "</html>"
 
@@ -105,7 +105,7 @@ println(b_content)
 println("<h1>Get started</h1>")
 println("<p class='section-sub'>Triad 2.0 is a standalone language with a normative specification, an executable conformance suite and no dependency on other languages. This page takes you from an empty folder to a running program.</p>")
 println("<h2>1. Requirements</h2>")
-println("<p>There is no package to install and no compiler to set up: cloning the repository is enough to start. You need <strong>Node.js 20 or newer</strong> for the reference interpreter, the conformance runner and the development CLI, and <strong>Git</strong> to fetch the project. That is the whole list on purpose, because a language that wants to be independent from other languages cannot ask for a toolchain before it can run.</p>")
+println("<p>There is no package to install and no compiler to set up: cloning the repository is enough to start. You need <strong>Linux x86-64 and a POSIX shell</strong> for the reference interpreter, the conformance runner and the development CLI, and <strong>Git</strong> to fetch the project. That is the whole list on purpose, because a language that wants to be independent from other languages cannot ask for a toolchain before it can run.</p>")
 println("<div class='code-card'>")
 println("# clone the project")
 println("git clone https://github.com/GPuntobit/triad2.0.git")
@@ -115,14 +115,14 @@ println("# Linux, macOS or WSL: decode the seed and install the launchers")
 println("curl -fsSL https://raw.githubusercontent.com/GPuntobit/triad2.0/main/install.sh | sh")
 println("export PATH=$HOME/.local/bin:$PATH")
 println("</div>")
-println("<p>The install script decodes the Linux seed from its hexadecimal dump, checks that it runs and installs the launchers in the local binary directory (<code>~/.local/bin</code>); it prints the <code>export PATH</code> line to add. On Windows nothing has to be decoded to begin with: the launcher falls back to the Node.js interpreter, and the seed can be materialised later with a system decoder.</p>")
+println("<p>The install script decodes the Linux seed from its hexadecimal dump, checks that it runs and installs the launchers in the local binary directory (<code>~/.local/bin</code>); it prints the <code>export PATH</code> line to add. On Windows nothing has to be decoded to begin with: no foreign-language fallback is available, and the native seed is materialised from the committed hexadecimal dump.</p>")
 println("<h2>2. Run a file</h2>")
-println("<p>The launcher finds a runtime for you: the machine code seed when it is usable, the Node.js interpreter otherwise. Both run the same Triad-Core programs; the differences between them are listed in chapter 15 of the tutorial.</p>")
+println("<p>The launcher finds a runtime for you: the machine code seed when it is usable, no foreign-language fallback. Both run the same Triad-Core programs; the differences between them are listed in chapter 15 of the tutorial.</p>")
 println("<div class='code-card'>")
 println("triad examples/benvenuto.triad              # launcher")
 println("bin/triad.cmd examples/benvenuto.triad     # Windows wrapper")
-println("node seed/dev/triad_core.cjs hello.triad   # reference interpreter")
-println("echo 'println(7 * 6)' | node seed/dev/triad_core.cjs -")
+println("./bin/triad hello.triad   # native machine-code seed")
+println("./bin/triad examples/benvenuto.triad")
 println("</div>")
 println("<p>The hyphen in place of the file name tells the interpreter to read the program from the standard input. The arguments of the script are available in <code>ARGS</code>, a list of strings, and a file can start with a shebang line so that it is executed directly.</p>")
 println("<h2>3. Your first program</h2>")
@@ -147,8 +147,8 @@ println("<p>The <code>examples/</code> folder holds ready programs: <code>benven
 println("<h2>4. The development CLI and the conformance suite</h2>")
 println("<p>The CLI wraps the development tasks and the conformance runner checks an implementation against the golden cases. The REPL belongs to Triad-Full: the Core profile defines script execution only, and section 10 of SPEC-CORE.md says so explicitly.</p>")
 println("<div class='code-card'>")
-println("node conformance/run.mjs                          # 37 Core cases")
-println("node conformance/run.mjs --cases conformance/cases # 12 Full cases")
+println("sh conformance/run.sh                          # 37 Core cases")
+println("sh conformance/run.sh --cases conformance/cases # 12 Full cases")
 println("bin/triad-cli status")
 println("bin/triad-cli help")
 println("</div>")
@@ -157,8 +157,6 @@ println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script>TriadSite.mount('Get started')</script>")
 println(b_bodyend)
 println(b_htmlend)
 
@@ -263,8 +261,6 @@ println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script>TriadSite.mount('Tour')</script>")
 println(b_bodyend)
 println(b_htmlend)
 
@@ -338,8 +334,6 @@ println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script>TriadSite.mount('Spec')</script>")
 println(b_bodyend)
 println(b_htmlend)
 
@@ -390,7 +384,7 @@ println("x = 6 * 7")
 println("println(x)")
 println("</div>")
 println("<h2>2. Part II, Triad-Core step by step</h2>")
-println("<p>Chapters 4 to 17 walk through the subset that runs today: vocabulary, values and printing, variables and assignment, operators and expressions, flow control, functions, lambdas, closures and scopes, lists, strings, symbols and conversions, the bootstrap primitives, execution errors, the differences between the JavaScript interpreter and the Windows seed, idiomatic patterns and guided exercises.</p>")
+println("<p>Chapters 4 to 17 walk through the subset that runs today: vocabulary, values and printing, variables and assignment, operators and expressions, flow control, functions, lambdas, closures and scopes, lists, strings, symbols and conversions, the bootstrap primitives, execution errors, the semantics of the native machine-code seed, idiomatic patterns and guided exercises.</p>")
 println("<p>Every chapter ends with a pointer to the conformance case that acts as its normative reference, so each notion can be checked against a golden output instead of being taken on trust.</p>")
 println("<h3>Exercises</h3>")
 println("<p>Chapter 17 collects the guided exercises, one group per topic, and asks for a program and its expected output. They are meant to be solved with the conformance runner at hand: write the program, run it, compare the output with the golden file, and then write the case yourself.</p>")
@@ -398,7 +392,7 @@ println("<h2>3. Part III, Triad-Full</h2>")
 println("<p>Chapters 18 to 32 present the complete standard: the full vocabulary and types, typed and multiple dispatch functions, structs, the extended flow control with <code>for</code>, ranges, comprehensions and <code>try</code>, logic with facts and rules, deconstruction, errors as data, contracts, budgets, tracks, declared effects, code as data and macros, the Full builtin, the command line and the REPL, and finally the complete examples with their golden output.</p>")
 println("<p>This part can be read today, but only the Core material can be executed: the rest of the standard waits for the self-hosted runtime.</p>")
 println("<h2>4. Part IV, the project code</h2>")
-println("<p>Chapters 33 to 43 describe the repository itself: the map of the directories, the JavaScript reference interpreter, the Windows seed and its generator, the Linux seed, self-hosting in <code>selfhost/</code>, how to read and write conformance cases, the development CLI, the AI benchmark, the editor and the site, continuous integration and the contribution flow.</p>")
+println("<p>Chapters 33 to 43 describe the repository itself: the map of the directories, the native seed, the discontinued generator and the future native bootstrap toolchain, the Linux seed, self-hosting in <code>selfhost/</code>, how to read and write conformance cases, the development CLI, the AI benchmark, the editor and the site, continuous integration and the contribution flow.</p>")
 println("<h2>5. Part V, the reference</h2>")
 println("<p>Chapters 44 to 49 are the reference: the EBNF grammar of Triad-Core, a quick tab of the Core and Full subsets, debugging, the glossary, the status with the known limits and the FAQ.</p>")
 println("<h2>6. How to use it</h2>")
@@ -408,8 +402,6 @@ println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script>TriadSite.mount('Tutorial')</script>")
 println(b_bodyend)
 println(b_htmlend)
 
@@ -466,12 +458,12 @@ println("<p>The Core profile lives in <code>conformance/core/cases</code> and us
 println("<h3>Missing goldens</h3>")
 println("<p>The runner reads <code>expected.out</code> and, when it is absent, the identical copy <code>expected.golden</code>. When neither is there the case fails with the message <code>golden mancante</code>: it usually means that the checkout is incomplete, because the repository ignores the files that end with <code>.out</code> except the expected ones. A case can never pass without its golden.</p>")
 println("<h2>3. Running the suite</h2>")
-println("<p>The runner is a Node.js script with no Julia dependency. It uses the runtime given by <code>TRIAD_SEED</code>, otherwise the reference interpreter on Linux and macOS, otherwise the Windows seed executable.</p>")
+println("<p>The conformance runner is a POSIX shell harness that executes the native seed (or the explicitly configured TRIAD_SEED) and compares byte-exact expected output.</p>")
 println("<div class='code-card'>")
-println("node conformance/run.mjs                                  # Core profile, 37 cases")
-println("node conformance/run.mjs --cases conformance/cases       # Full profile, 12 cases")
-println("node conformance/run.mjs --skip liste                     # skip some cases")
-println("node conformance/run.mjs --update                         # regenerate the goldens")
+println("sh conformance/run.sh                                  # Core profile, 37 cases")
+println("sh conformance/run.sh --cases conformance/cases       # Full profile, 12 cases")
+println("sh conformance/run.sh --skip liste                     # skip some cases")
+println("sh conformance/run.sh --update                         # regenerate the goldens")
 println("</div>")
 println("<p>Continuous integration runs the suite on every change: a job on Ubuntu with the reference interpreter, a job on the Windows PE seed with the subset of Core cases that the seed supports, and a job for the Linux ELF seed with its hash. The seed hash is checked, so a change in the machine code is always visible in the diff.</p>")
 println("<h2>4. Adding a case</h2>")
@@ -481,8 +473,6 @@ println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script>TriadSite.mount('Conformance')</script>")
 println(b_bodyend)
 println(b_htmlend)
 
@@ -556,8 +546,6 @@ println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script>TriadSite.mount('Bootstrap')</script>")
 println(b_bodyend)
 println(b_htmlend)
 
@@ -636,8 +624,6 @@ println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script>TriadSite.mount('Editor')</script>")
 println(b_bodyend)
 println(b_htmlend)
 
@@ -683,7 +669,7 @@ println("<p class='section-sub'>STATUS.md tracks what works today and what is mi
 println("<h2>1. Ready today</h2>")
 println("<ul class='feature-list'>")
 println("<li><strong>Standard</strong> - SPEC.md version 0.2.0, SPEC-CORE.md, VERSION and CHANGELOG.md.</li>")
-println("<li><strong>Conformance</strong> - the Node runner, Triad-Core 37 of 37 green, with the goldens versioned as text.</li>")
+println("<li><strong>Conformance</strong> - the native POSIX conformance runner and committed Core goldens, with the goldens versioned as text.</li>")
 println("<li><strong>Seed S0</strong> - a Windows PE interpreter with integers, variables, functions in both forms, recursion, Bool, operators, conditionals, loops, blocks, lambdas, closures, strings and concatenation.</li>")
 println("<li><strong>Launcher and CLI</strong> - the launcher locates the runtime for you; the Julia implementation has been removed.</li>")
 println("<li><strong>Continuous integration</strong> - the conformance job on Ubuntu, the Windows job on the PE seed and the Linux ELF job.</li>")
@@ -696,8 +682,8 @@ println("<h2>3. The distance from the goal</h2>")
 println("<p>The goal is not complete. S0 is a machine code interpreter, but S1, the interpreter written in Triad-Core, has not finished, so there is no self-hosting yet. S2 and S3, the native compiler and its fixed point, have not started, and the Linux ELF port is at its first stage. External recognition, the Linguist pull request and the publication of the extensions still depend on the maintainer: the MIT license is in place since October 2026, the rest is a step outside the repository.</p>")
 println("<h2>4. Verification</h2>")
 println("<div class='code-card'>")
-println("node conformance/run.mjs                                 # Core, 37 cases")
-println("node conformance/run.mjs --cases conformance/cases       # Full, 12 cases")
+println("sh conformance/run.sh                                 # Core, 37 cases")
+println("sh conformance/run.sh --cases conformance/cases       # Full, 12 cases")
 println("</div>")
 println("<p>Every change to the lexicon, to the parser, to the types, to the evaluation or to the input and output has to come with a case in <code>conformance/</code> and must keep the Core cases green.</p>")
 println("<p>The documentation was consolidated under <code>docs/</code>, with the tutorial, the wiki and the security records beside the site; the small probe programs live in <code>tests/probes/</code> and the legacy scaffold of the old site is still in <code>tools/site-jekyll/</code>. The paths that other tools depend on did not change.</p>")
@@ -706,7 +692,5 @@ println(b_contentend)
 println(b_layoutend)
 println(b_mainend)
 println(b_ftrdiv)
-println(b_script)
-println("<script>TriadSite.mount('Status')</script>")
 println(b_bodyend)
 println(b_htmlend)

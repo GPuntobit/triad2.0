@@ -118,21 +118,28 @@ dedicated milestone, not an afterthought.
 | M5 | S2: compilatore nativo in Triad | fill out S1; S1 compilato passa la conformance senza seed |
 | M6 | self-hosting | native compiler compiles itself (fixed point), seed withdrawn |
 | M7 | parity + Linux port | conformance verde su Linux ELF; CLI/REPL; docs |
-## 7. Development tools (outside the product)
-The bootstrap product and chain do not use other languages. To **develop and
-verify** however you need something that runs the tests while the seed does not yet exist:
-- the **current stage0** (Julia kernel) is only used as a one-time golden generator
-  and as a behavioral reference during M0–M4; not part of S0–S4;
-- goldens are committed text files: from M3 onwards no tests require Julia;
-- the final conformance runner is `triad --conformance DIR`, implemented in Triad
-  (S1/M4). Until then, use `conformance/run.jl` as a temporary tool;
-- materializing the seed from committed bytes uses only system tools (hex decoding, `certutil`/`xxd`), not compilers or interpreters; - the conformance runner is `conformance/run.mjs` (Node).
-- the seed generator (`seed/dev/gen_seed.js`, Node) is a **only tool
-  maintenance**: produces the dump, is not required to build/use the seed and is not part of
-  of S0–S4. It is versioned because the machine code would otherwise no longer be extensible
-  (it has already been lost once and rebuilt, checked against the hash).
-Rule: **None of these tools should be required to use Triad or to
-reconstruct the chain S0→S4** when M6 is reached.
+## 7. Native development after JavaScript removal (2026-11-09)
+
+The current checkout no longer contains JavaScript/TypeScript or Node/npm
+tooling. The executable S0 kernel is retained as annotated machine-code dumps
+(`seed/linux-x86_64/seed.hex` and `seed/windows-x86_64/seed.hex`);
+the POSIX CLI runs S0 and S1 directly. The normative Core and logic goldens
+are verified with `sh verify.sh` and the SHA-256 hashes are checked in CI.
+
+**Critical gap:** the prior development seed generator was removed to meet
+the no-JS requirement. Native seed regeneration has **not yet been
+implemented**. The existing dumps can be decoded and checked, but there is no
+source-level maintenance parity until a Triad-native seed generator (or an
+equivalent auditable, non-JS machine-code bootstrap path) is built and
+independently verified. Do not claim full S0–S4 self-hosting.
+
+The web documentation is script-free and its static pages can be generated
+from Triad programs via `sh tools/site-gen/build.sh`. The former browser
+playground and reference interpreter are unavailable.
+
+See `docs/NO_JAVASCRIPT_MIGRATION.md` for the acceptance contract and
+remaining work.
+
 ## 8. Compliance Agreement
 The executable specification is `conformance/`: each case is
 ```
@@ -146,7 +153,7 @@ conformance/cases/<nome>/
 An implementation passes the suite if, running `program.td` as a script with `ARGS` from
 `args.txt`, produces `expected.out` and `expected.code`. The suite is independent from
 implementation language: the seed, S1 and the native compiler will execute it.
-The goldens are generated one-off with stage0 (`conformance/run.mjs --update`) and then committed: from that moment they are the contract and the Node runner is enough to verify them.
+The conformance goldens are committed and checked byte-for-byte with the native POSIX test harness; regenerating goldens must be reviewed deliberately.
 ## 9. Risks
 | Risk | Mitigation |
 |---|---|
