@@ -2,6 +2,9 @@
 # Requires common.triad prepended by run.sh.
 
 function bind_pair(a, b, shape)
+    x = ""
+    y = ""
+    z = ""
     if shape == "chain"
         if a[5] != b[4]
             return []
