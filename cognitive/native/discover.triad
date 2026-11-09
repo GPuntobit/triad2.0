@@ -181,15 +181,21 @@ function discover_target(data, target, journal, events)
     events
 end
 
+println("BEGIN 1")
 data = parse_file("fixture.txt")
+println("BEGIN 2 ", length(data))
 journal = parse_file("journal.log")
+println("BEGIN 3")
 validate_data(data)
 check_journal(journal)
+println("BEGIN 4")
 events = []
 i = 1
 while i <= length(data)
     row = data[i]
+    println("ROW ", i)
     if same(row[1], "target")
+        println("TARGET ", row[3])
         discover_target(data, row, journal, events)
     end
     i += 1
