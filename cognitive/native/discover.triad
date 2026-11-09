@@ -180,11 +180,8 @@ function discover_target(data, target, journal, events)
     events
 end
 
-println("TRACE-A ", strlen(trid_fixture))
-data = parse_text(trid_fixture)
-println("TRACE-B ", length(data))
-journal = parse_text(trid_journal)
-println("TRACE-C ", length(journal))
+data = trid_data
+journal = trid_history
 validate_data(data)
 check_journal(journal)
 events = []
