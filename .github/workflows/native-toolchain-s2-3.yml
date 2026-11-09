@@ -1,0 +1,28 @@
+name: Triad Native Source Frontend S2.3
+on:
+  push:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-3.yml'
+  pull_request:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-3.yml'
+permissions:
+  contents: read
+jobs:
+  source-frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: S2.3 Triad source to IR to ELF plus S0 differential
+        run: sh selfhost/toolchain/tests/run_s2_3.sh
+      - name: S2.2 native IR regression
+        run: sh selfhost/toolchain/tests/run_s2_2.sh
+      - name: S2.1 assembler regression
+        run: sh selfhost/toolchain/tests/run_s2_1.sh
+      - name: S2.0 code emitter regression
+        run: sh selfhost/toolchain/tests/run.sh
+      - name: No-JavaScript and complete native conformance
+        run: sh verify.sh
