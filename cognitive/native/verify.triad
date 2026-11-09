@@ -199,6 +199,7 @@ function find_eval(history, name, shape)
     i = 1
     while i <= length(history)
         r = history[i]
+        println("DBG-VERIFY-EVENT ", i, " ", r[3])
         if same(r[3], "evaluation") && same(r[4], name) && same(r[5], shape)
             item = r
         end
@@ -292,7 +293,12 @@ function memory_projection(data, history)
 end
 
 
+println("DBG-VERIFY-START")
 validate_data(data)
+println("DBG-VERIFY-INPUT-OK")
 check_journal(history)
+println("DBG-VERIFY-JOURNAL-OK")
 check_history(data, history)
+println("DBG-VERIFY-PROOFS-OK")
 memory_projection(data, history)
+println("DBG-VERIFY-DONE")
