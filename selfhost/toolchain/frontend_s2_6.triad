@@ -132,12 +132,16 @@ function f26_assignment(ir, words, env)
     vars = env[1]
     mask = env[2]
     # Never use the reserved stack slot 28 for a source local.
+    println("S26-AST-START")
     node = f26_expr(words, 3, length(words))
+    println("S26-AST-READY")
     out = f26_emit(ir, node, env)
+    println("S26-LOWERED")
     slot = mv_allocate(vars, dest)
     asm_need(slot <= 24)
     out = front_line(out, "i32_store " * string(slot))
     mask = mv_mark(mask, slot)
+    println("S26-STORED")
     [out, mask]
 end
 
@@ -173,6 +177,8 @@ function source_to_ir26(src)
             words = f25_words(strsub(src, pos, line_end - 1))
             if length(words) > 0
                 op = words[1]
+                println("S26-LINE")
+                println(op)
                 asm_need(!finished)
                 if asm_same(op, "function")
                     asm_need(state == 0 && !completed_function)
