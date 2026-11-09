@@ -1,0 +1,2 @@
+# Separate S1 process: activation does not assert truth.
+println([s.to for s in solve active_node(:trid, ?to, [:trid], :h6)])

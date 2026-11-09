@@ -1,0 +1,36 @@
+name: TRID-Core 0.6 Native Graph
+on:
+  push:
+    paths:
+      - 'cognitive/native/s1_graph_06.triad'
+      - 'cognitive/native/graph_06.facts'
+      - 'cognitive/native/queries_proof_06.triad'
+      - 'cognitive/native/queries_pulse_06.triad'
+      - 'cognitive/native/run_06.sh'
+      - 'cognitive/native/tests/run_06.sh'
+      - 'cognitive/native/tests/expected_06.out'
+      - 'cognitive/native/tests/expected_06_revoked.out'
+      - '.github/workflows/trid-core-06.yml'
+  pull_request:
+    paths:
+      - 'cognitive/native/s1_graph_06.triad'
+      - 'cognitive/native/graph_06.facts'
+      - 'cognitive/native/queries_proof_06.triad'
+      - 'cognitive/native/queries_pulse_06.triad'
+      - 'cognitive/native/run_06.sh'
+      - 'cognitive/native/tests/run_06.sh'
+      - 'cognitive/native/tests/expected_06.out'
+      - 'cognitive/native/tests/expected_06_revoked.out'
+      - '.github/workflows/trid-core-06.yml'
+permissions:
+  contents: read
+jobs:
+  trid-core-06-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Native S1 graph, byte-exact proof/revocation golden and pulses
+        run: sh cognitive/native/tests/run_06.sh
+      - name: TRID 0.5 S1 golden regression
+        run: sh cognitive/native/tests/run_05.sh
