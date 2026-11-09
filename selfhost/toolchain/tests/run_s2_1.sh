@@ -5,7 +5,7 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT HUP INT TERM
 
-for name in forward backward rip_data call; do
+for name in forward backward rip_data call conditional; do
     sh "$ROOT/selfhost/toolchain/assemble.sh" "$ROOT/selfhost/toolchain/tests/fixtures/$name.s2asm" "$TMP/$name"
     xxd -p -s 120 -c 8192 "$TMP/$name" > "$TMP/$name.code.hex"
     if ! cmp -s "$ROOT/selfhost/toolchain/tests/golden/$name.code.hex" "$TMP/$name.code.hex"; then
@@ -36,6 +36,12 @@ set -e
 # Reassembly is deterministic, independent of working directory and previous runs.
 sh "$ROOT/selfhost/toolchain/assemble.sh" "$ROOT/selfhost/toolchain/tests/fixtures/forward.s2asm" "$TMP/again"
 cmp "$TMP/forward" "$TMP/again"
+# ADD and JZ rel32 branch on a true comparison; exit with EDI=5.
+set +e
+"$TMP/conditional"
+rc=$?
+set -e
+[ "$rc" -eq 5 ] || { echo "conditional: expected 5, got $rc" >&2; exit 1; }
 
 # Negative tests: fail closed without creating an executable.
 for entry in 'jmp missing' 'label x
