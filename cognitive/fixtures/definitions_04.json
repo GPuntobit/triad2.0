@@ -1,0 +1,6 @@
+{
+  "definitions": [
+    {"domain":"family","target":"grandparent","relation":"parent","shape":"chain","reference":"definition_grandparent_01"},
+    {"domain":"family","target":"sibling","relation":"parent","shape":"common_source","reference":"definition_sibling_01"}
+  ]
+}

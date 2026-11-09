@@ -99,3 +99,26 @@ uses the local S1 native runtime and must be validated on a supported host.
 Rule status remains *experimental* or *refuted*; only ground deductions
 **conditional on experimental assumptions** are labelled demonstrated.
 All preceding 0.1 and 0.2 files and tests remain untouched.
+
+## TRID-Core 0.4: independent conditional proofs and memory dependencies
+
+Version 0.4 adds `cognitive/tools/proof_04.py`: a Python 3 stdlib
+**reference** proof checker independent of the 0.3 generator implementation.
+It recomputes the bounded four-shape ground deductions, rechecks label
+metrics and provenance witnesses, verifies experimental journal hash links,
+and writes a separate *derived* cognitive-memory snapshot. It does not claim
+that sources or observations are objectively true.
+
+A rule can be **conditionally consolidated** only after a matching formal
+definition, passed training/held-out examples and explicit `--approve` gate.
+Individual grounded deductions keep their source and definition dependencies.
+Revoking an input or definition source suspends affected proof paths; the
+original experimental history remains intact.
+
+```sh
+sh cognitive/tests/run_04.sh
+```
+
+See [proof engine and epistemic limitations](laboratory/README_04.md).
+This milestone remains Python-backed, not native Triad, and is deliberately
+separate from both existing S1 and the 0.3 generator.
