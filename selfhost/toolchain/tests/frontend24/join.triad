@@ -1,0 +1,7 @@
+flag = 1
+if flag == 1
+    value = 7
+else
+    value = 11
+end
+exit(value)
