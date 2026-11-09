@@ -158,6 +158,7 @@ function f25_assign(ir, vars, state, words)
     else
         out = mv_value(out, vars, mask, first)
     end
+    asm_need(strlen(out) <= 11900)
     slot = mv_allocate(vars, target)
     out = front_line(out, "i32_store " * string(slot))
     mask = mv_mark(mask, slot)
