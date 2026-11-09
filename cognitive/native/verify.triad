@@ -1,3 +1,10 @@
+function diag_one(xs)
+    println("DIAG-ONE-ENTER")
+    println("DIAG-ONE-LENGTH ", length(xs))
+    true
+end
+
+
 # TRID Native independent checker and conditional memory projection.
 # Requires common.triad only; no discovery functions or foreign runtime.
 
@@ -294,12 +301,6 @@ function memory_projection(data, history)
     true
 end
 
-
-function diag_one(xs)
-    println("DIAG-ONE-ENTER")
-    println("DIAG-ONE-LENGTH ", length(xs))
-    true
-end
 
 function diag_two(xs, ys)
     println("DIAG-TWO-ENTER")
