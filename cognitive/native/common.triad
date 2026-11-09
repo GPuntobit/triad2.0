@@ -1,0 +1,209 @@
+# TRID Native Core: byte-based record reader, integrity, bounded IO.
+# This is Triad-Core, executed by the native S0 seed. It does not use Python.
+# Persistent writes are handled by the POSIX launcher through stdout redirection.
+
+function need(ok, msg)
+    if !ok
+        println("TRID error: ", msg)
+        exit(1)
+    end
+end
+
+function valid_name(s)
+    if strlen(s) == 0
+        return false
+    end
+    i = 1
+    while i <= strlen(s)
+        c = strbyte(s, i)
+        if i == 1 && !(c >= 97 && c <= 122)
+            return false
+        end
+        if !((c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c == 95)
+            return false
+        end
+        i += 1
+    end
+    return true
+end
+
+function parse_file(path)
+    s = readfile(path)
+    rows = []
+    fields = []
+    start = 1
+    i = 1
+    n = strlen(s)
+    while i <= n + 1
+        if i == n + 1
+            ch = 10
+        else
+            ch = strbyte(s, i)
+        end
+        if ch == 124 || ch == 10
+            if i > start
+                push!(fields, strsub(s, start, i - 1))
+            else
+                push!(fields, "")
+            end
+            start = i + 1
+            if ch == 10
+                if length(fields) > 1 || fields[1] != ""
+                    push!(rows, fields)
+                end
+                fields = []
+            end
+        else
+            need(ch >= 32 && ch <= 126, "non-ASCII record byte")
+        end
+        i += 1
+    end
+    return rows
+end
+
+function join_parts(xs, a, b)
+    result = ""
+    i = a
+    while i <= b
+        if i > a
+            result = result * "|"
+        end
+        result = result * xs[i]
+        i += 1
+    end
+    return result
+end
+
+function checksum(s)
+    h = 0
+    i = 1
+    while i <= strlen(s)
+        h = (h * 131 + strbyte(s, i)) % 1000000007
+        i += 1
+    end
+    return h
+end
+
+function check_journal(rows)
+    previous = 0
+    i = 1
+    while i <= length(rows)
+        r = rows[i]
+        need(length(r) >= 6, "malformed journal event")
+        need(r[1] == string(i), "journal sequence mismatch")
+        need(r[2] == string(previous), "journal predecessor mismatch")
+        body = join_parts(r, 1, length(r) - 1)
+        need(r[length(r)] == string(checksum(body)), "journal checksum mismatch")
+        previous = checksum(body)
+        i += 1
+    end
+    return previous
+end
+
+function has_record(rows, body)
+    i = 1
+    while i <= length(rows)
+        r = rows[i]
+        if length(r) >= 6 && join_parts(r, 3, length(r) - 1) == body
+            return true
+        end
+        i += 1
+    end
+    return false
+end
+
+function has_line(lines, line)
+    i = 1
+    while i <= length(lines)
+        if lines[i] == line
+            return true
+        end
+        i += 1
+    end
+    return false
+end
+
+function queue(lines, history, body)
+    if !has_record(history, body) && !has_line(lines, body)
+        push!(lines, body)
+    end
+end
+
+function emit(lines, history)
+    prev = check_journal(history)
+    seq = length(history) + 1
+    i = 1
+    while i <= length(lines)
+        line = string(seq) * "|" * string(prev) * "|" * lines[i]
+        prev = checksum(line)
+        println(line, "|", prev)
+        seq += 1
+        i += 1
+    end
+end
+
+function validate_data(data)
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        size = length(r)
+        key = r[1]
+        ok = (key == "edge" && size == 6) || (key == "target" && size == 4) || (key == "review" && size == 7) || (key == "definition" && size == 6) || (key == "approve" && size == 4) || (key == "revoke" && size == 2)
+        need(ok, "invalid fixture record")
+        j = 2
+        while j <= size
+            need(valid_name(r[j]), "invalid fixture atom")
+            j += 1
+        end
+        if key == "review"
+            need(r[3] == "train" || r[3] == "test", "invalid split")
+            need(r[4] == "positive" || r[4] == "negative", "invalid polarity")
+        end
+        i += 1
+    end
+end
+
+function find_record(rows, kind, a, b)
+    i = 1
+    while i <= length(rows)
+        r = rows[i]
+        if r[1] == kind && (a == "" || r[2] == a) && (b == "" || r[3] == b)
+            return r
+        end
+        i += 1
+    end
+    return []
+end
+
+function edge_exists(data, domain, relation, triple)
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        if r[1] == "edge" && r[2] == domain && r[3] == relation && r[4] == triple[1] && r[5] == triple[2] && r[6] == triple[3]
+            return true
+        end
+        i += 1
+    end
+    return false
+end
+
+function is_revoked(data, source)
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        if r[1] == "revoke" && r[2] == source
+            return true
+        end
+        i += 1
+    end
+    return false
+end
+
+function read_args()
+    need(length(ARGS) == 2, "usage: program.triad FIXTURE JOURNAL")
+    data = parse_file(ARGS[1])
+    history = parse_file(ARGS[2])
+    validate_data(data)
+    check_journal(history)
+    return [data, history]
+end
