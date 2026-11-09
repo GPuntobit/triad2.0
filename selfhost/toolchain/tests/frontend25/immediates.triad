@@ -1,0 +1,6 @@
+function choose(left, right)
+    result = left
+    return result
+end
+a = choose(8, 3)
+exit(a)
