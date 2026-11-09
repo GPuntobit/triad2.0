@@ -16,25 +16,6 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - name: Diagnose S2.1 Core seed stages (nonblocking)
-        run: |
-          set +e
-          mkdir -p /tmp/triad-s21
-          for n in 1 2 3 4 5; do
-            cat selfhost/toolchain/elf64_exit.triad selfhost/toolchain/assembler_s2_1.triad > /tmp/triad-s21/probe.triad
-            case "$n" in
-              1) printf '\nprintln("STAGE1")\n' >> /tmp/triad-s21/probe.triad ;;
-              2) printf '\nprintln("STAGE2")\nprintln(asm_size("jmp"))\n' >> /tmp/triad-s21/probe.triad ;;
-              3) printf '\nprintln("STAGE3")\nprintln(asm_uint("42"))\n' >> /tmp/triad-s21/probe.triad ;;
-              4) printf '\nprintln("STAGE4")\nsource = "mov_edi 42\nmov_eax 60\nsyscall\n"\nwords = asm_tokens(source)\nprintln(length(words))\n' >> /tmp/triad-s21/probe.triad ;;
-              5) printf '\nprintln("STAGE5")\nsource = "mov_edi 42\nmov_eax 60\nsyscall\n"\nimage = assemble_text(source)\nprintln(image)\n' >> /tmp/triad-s21/probe.triad ;;
-            esac
-            echo "DIAG $n"
-            ./bin/triad /tmp/triad-s21/probe.triad > /tmp/triad-s21/output 2>&1
-            echo "DIAG RC=$?"
-            head -c 300 /tmp/triad-s21/output
-            echo
-          done
       - name: Native Triad S2.1 labels, jumps, calls and addresses
         run: sh selfhost/toolchain/tests/run_s2_1.sh
       - name: S2.0 compatibility
