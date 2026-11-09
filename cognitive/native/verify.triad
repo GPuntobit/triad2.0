@@ -1,6 +1,8 @@
 function diag_one(xs)
     println("DIAG-ONE-ENTER")
-    println("DIAG-ONE-LENGTH ", length(xs))
+    count = length(xs)
+    println("DIAG-ONE-COUNT")
+    println(count)
     true
 end
 
@@ -206,7 +208,8 @@ function find_eval(history, name, shape)
     i = 1
     while i <= length(history)
         r = history[i]
-        println("DIAG-EVENT ", i, " ", r[3])
+        println("DIAG-EVENT")
+        println(i)
         if same(r[3], "evaluation") && same(r[4], name) && same(r[5], shape)
             item = r
         end
@@ -231,7 +234,8 @@ end
 function check_history(facts, journal_rows)
     println("DIAG-HISTORY-ENTER")
     need(length(journal_rows) > 0, "empty hypothesis journal")
-    println("DIAG-HISTORY-LENGTH ", length(journal_rows))
+    println("DIAG-HISTORY-LENGTH")
+    println(length(journal_rows))
     i = 1
     while i <= length(journal_rows)
         r = journal_rows[i]
@@ -304,8 +308,11 @@ end
 
 function diag_two(xs, ys)
     println("DIAG-TWO-ENTER")
-    println("DIAG-TWO-X ", length(xs))
-    println("DIAG-TWO-Y ", length(ys))
+    count1 = length(xs)
+    count2 = length(ys)
+    println("DIAG-TWO-COUNTS")
+    println(count1)
+    println(count2)
     true
 end
 
