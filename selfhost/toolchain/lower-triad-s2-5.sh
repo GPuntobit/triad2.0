@@ -25,7 +25,6 @@ cmp -s "$src" "$TMP/allowed" || { echo 'S2.5: unsafe source bytes' >&2; exit 2; 
 } > "$TMP/frontend.triad"
 if ! "$ROOT/bin/triad" "$TMP/frontend.triad" > "$TMP/ir"; then
     echo 'S2.5: Triad AST/type frontend rejected input' >&2
-    head -c 1600 "$TMP/ir" >&2
     exit 1
 fi
 [ -s "$TMP/ir" ] && [ "$(wc -c < "$TMP/ir")" -le 12000 ] || { echo 'S2.5: IR size invalid' >&2; exit 1; }
