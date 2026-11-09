@@ -1,12 +1,3 @@
-function diag_one(xs)
-    println("DIAG-ONE-ENTER")
-    count = length(xs)
-    println("DIAG-ONE-COUNT")
-    println(count)
-    true
-end
-
-
 # TRID Native independent checker and conditional memory projection.
 # Requires common.triad only; no discovery functions or foreign runtime.
 
@@ -208,7 +199,6 @@ function find_eval(history, name, shape)
     i = 1
     while i <= length(history)
         r = history[i]
-        println("DBG-VERIFY-EVENT ", i, " ", r[3])
         if same(r[3], "evaluation") && same(r[4], name) && same(r[5], shape)
             item = r
         end
@@ -231,9 +221,7 @@ function proof_count(history, name, shape)
 end
 
 function check_history(facts, journal_rows)
-    println("DIAG-HISTORY-ENTER")
     need(length(journal_rows) > 0, "empty hypothesis journal")
-    println("DIAG-HISTORY-LENGTH")
     println(length(journal_rows))
     i = 1
     while i <= length(journal_rows)
@@ -303,14 +291,7 @@ function memory_projection(data, history)
     end
     true
 end
-
-
-println("DBG-VERIFY-START")
 validate_data(data)
-println("DBG-VERIFY-INPUT-OK")
 check_journal(history)
-println("DBG-VERIFY-JOURNAL-OK")
 check_history(data, history)
-println("DBG-VERIFY-PROOFS-OK")
 memory_projection(data, history)
-println("DBG-VERIFY-DONE")
