@@ -45,7 +45,7 @@ sh "$ROOT/selfhost/toolchain/compile-triad-s2-4.sh" "$ROOT/selfhost/toolchain/te
 cmp "$TMP/multi.elf" "$TMP/rebuilt"
 
 # Validate each machine opcode against an independent reviewed golden.
-sh "$ROOT/selfhost/toolchain/assemble.sh" "$ROOT/selfhost/toolchain/tests/fixtures/stack_s2_4.s2asm" "$TMP/stack"
+sh "$ROOT/selfhost/toolchain/assemble-s2-4.sh" "$ROOT/selfhost/toolchain/tests/fixtures/stack_s2_4.s2asm" "$TMP/stack"
 xxd -p -s 120 -c 8192 "$TMP/stack" > "$TMP/stack.code.hex"
 cmp "$ROOT/selfhost/toolchain/tests/golden/stack_s2_4.code.hex" "$TMP/stack.code.hex"
 set +e
@@ -141,10 +141,10 @@ i32_frame 32
 i32_const 1
 exit'; do
     printf '%s\n' "$bad" > "$TMP/bad.tir"
-    if sh "$ROOT/selfhost/toolchain/compile-ir.sh" "$TMP/bad.tir" "$TMP/bad-from-ir" > "$TMP/ir.log" 2>&1; then
+    if sh "$ROOT/selfhost/toolchain/lower-ir-s2-4.sh" "$TMP/bad.tir" "$TMP/bad.s2asm" > "$TMP/ir.log" 2>&1; then
         echo "S2.4: invalid typed IR unexpectedly assembled: $bad" >&2
         exit 1
     fi
-    [ ! -e "$TMP/bad-from-ir" ]
+    [ ! -e "$TMP/bad.s2asm" ]
 done
 echo 'Triad native S2.4 multi-variable stack and structured CFG: PASS'
