@@ -93,6 +93,21 @@ jobs:
           println("LITERAL ", length(data))
           TRIAD
           "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-lists/b.triad; echo "literal-status=$?"
+      - name: Seed small list operations matrix
+        run: |
+          set +e
+          mkdir -p /tmp/trid-atom
+          printf 'println([1,2])\n' > /tmp/trid-atom/v1.triad
+          printf 'a = [1,2]\nprintln("OK")\n' > /tmp/trid-atom/v2.triad
+          printf 'a = [1,2]\nprintln(a)\n' > /tmp/trid-atom/v3.triad
+          printf 'a = [1,2]\nprintln(length(a))\n' > /tmp/trid-atom/v4.triad
+          printf 'a = []\nprintln("OK")\n' > /tmp/trid-atom/v5.triad
+          printf 'a = []\npush!(a, 7)\nprintln("OK")\n' > /tmp/trid-atom/v6.triad
+          for i in 1 2 3 4 5 6; do
+            echo "CASE-$i"
+            "$GITHUB_WORKSPACE/bin/triad" "/tmp/trid-atom/v$i.triad"
+            echo "CODE-$i=$?"
+          done
       - name: Native S1 logic smoke test
         run: ./bin/triad --logic cognitive/native/s1_discovery.triad
       - name: Native Triad cognitive regression (no Python/Node interpreter)
