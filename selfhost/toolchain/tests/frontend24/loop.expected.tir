@@ -1,0 +1,22 @@
+start
+i32_frame 32
+i32_const 4
+i32_store 0
+i32_const 3
+i32_store 4
+i32_zero
+i32_store 8
+label wloop1
+i32_load 0
+i32_test_zero
+br_zero wend1
+i32_load 8
+i32_add_slot 4
+i32_store 8
+i32_load 0
+i32_sub 1
+i32_store 0
+jump wloop1
+label wend1
+i32_load 8
+exit
