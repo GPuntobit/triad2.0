@@ -49,7 +49,11 @@ make_source() {
 }
 make_source "$ROOT/cognitive/native/discover.triad" "$JOURNAL" "$TMP/discover.triad"
 echo "TRID native: discovery stage" >&2
-( cd "$TMP"; "$ROOT/bin/triad" "$TMP/discover.triad" > "$TMP/events.log" )
+if ! ( cd "$TMP"; "$ROOT/bin/triad" "$TMP/discover.triad" > "$TMP/events.log" ); then
+    echo "TRID: discovery stdout before failure:" >&2
+    cat "$TMP/events.log" >&2
+    exit 1
+fi
 cat "$JOURNAL" "$TMP/events.log" > "$TMP/new-journal.log"
 make_source "$ROOT/cognitive/native/verify.triad" "$TMP/new-journal.log" "$TMP/verify.triad"
 echo "TRID native: independent verification stage" >&2
