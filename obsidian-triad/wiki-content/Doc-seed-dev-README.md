@@ -10,38 +10,30 @@ decodificatore di sistema (`certutil -decodehex` / `xxd -r -p`).
 
 ## `gen_seed.js`
 
-Generatore del PE Windows del seed (Node.js, solo sviluppo). Contiene l'assembler-lite e la
-descrizione delle strutture PE; produce `seed.hex` e ne stampa etichette e dimensioni.
+Unico entry point del generatore del seed (Node.js, solo sviluppo):
 
 ```sh
-node seed/dev/gen_seed.js seed/windows-x86_64/seed.hex
+node seed/dev/gen_seed.js <windows|linux|all> [out.hex]
 ```
 
-Output corrente: PE da **25088 byte**, sha256 di `seed.hex` (lo stesso verificato dalla CI):
+`windows` e `linux` rigenerano un dump nel suo path canonico
+(`../windows-x86_64/seed.hex`, `../linux-x86_64/seed.hex`; `out.hex` lo sovrascrive),
+`all` rigenera entrambi. Struttura (decisione 02,
+`.scratch/seed-linux-nativo/issues/02`): l'assembler-lite e il **codegen condiviso**
+(corpo dell'interprete + confine `os_*`) stanno in `core.js`; i due backend contengono
+le emissioni inline `os_*` (posizionamento ordinato degli slot secondo il contratto
+`os_*`), le costanti di sistema e i builder dell'eseguibile — `backend_pe.js` (PE
+Windows) e `backend_elf.js` (ELF Linux).
 
-```
-3A75A21E2F47D8DC4C88D4BC2580A85D5349BCDF7550E5FFA16E2C0AC7CA8C11
-```
+Output corrente:
 
-## `gen_seed_linux.js`
-
-Generatore dell'ELF Linux x86-64 del seed (E0: syscall `write`/`exit`, messaggio
-`Triad seed Linux OK`). Costruisce ELF64 statico, entry `0x400078`, un solo `PT_LOAD` R|X.
-
-```sh
-node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex
-```
-
-Output corrente: ELF da **173 byte**, sha256 di `seed.hex`:
-
-```
-AD4C9F08176D9964D5BE17D44C72230184434025980447395E7A3250F63CA5EA
-```
-
-sha256 dell'ELF decodificato:
-`6d504451e1d8a39c6e139a8a120bfaf03373131894292be12f0039eb8a7797f9`.
-
-Lo script verifica magic, `e_machine`, entry e round-trip del dump prima di uscire.
+- **windows:** PE da 25088 byte, sha256 di `seed.hex` (verificato dalla CI):
+  `20AA566DAE21D2B102E684F7A8C1B67B1B2B44C61C1116E16D196DE31683D7B7`
+- **linux** (E2, interprete Triad-Core): ELF da 11977 byte (entry `0x400078`, un solo
+  `PT_LOAD` R|X), sha256 di `seed.hex`:
+  `8457051F7D083AB834EC860502605A58F1ECCE4A5ABCA88391A804898315D613`,
+  sha256 dell'ELF decodificato:
+  `CDBC3C3D901D534B66C6FE4C0E4248E968AA2F6333F8F9C10B052B5FAD7D6361`
 
 ## Perché sono versionati
 

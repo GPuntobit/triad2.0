@@ -1,5 +1,47 @@
 # Triad and S0 bootstrap status
 
+## D22 risolta: le parole chiave sono token *esatti* nel seed — 2026-11-09
+
+Il seed confrontava le parole chiave con i **byte grezzi** del sorgente. Ne
+venivano due limiti, raccolti nella divergenza `D22`:
+
+1. un identificatore che *inizia* con una keyword (`iffy`, `myif`, `endx`,
+   `elsewhere`) veniva scambiato dal seed per il costrutto (exit 1);
+2. dentro un corpo di blocco il contatore di annidamento contava anche le
+   keyword contenute nel **testo di un letterale** (`"if end else while"`):
+   il blocco sembrava più annidato e il programma terminava con exit 1.
+
+Il seed ora riconosce le parole chiave come token **esatti** (confine
+bilatero: il carattere precedente e quello successivo devono essere
+delimitatori) e **salta il testo di un letterale** quando scandisce la fine di
+un blocco. Implementazione in `seed/dev/core.js`: nuovo helper `kw_bound`
+(confine della parola) e nuova routine `sc_string` (salto del letterale),
+usate da tutti i punti in cui il seed riconosce `if`, `else`, `elseif`, `end`,
+`let`, `while`, `begin`, `function`, `break`, `continue`, `return`.
+
+Conseguenze:
+
+- **contratto**: `D22` esce da `seed/dev/certified-subset.txt` (era `noisy`);
+- **guardie**: la regola `G-D22` è rimossa (come `G-D06`, `G-D09`, `G-D13`);
+  il fixture «rifiutato» è diventato «ammesso»
+  (`tools/selfhost-guard/fixtures/risolto_keyword_cieca.td`);
+- **generatore del sito**: la regola `E010` del lint (`tools/site-gen/lint.mjs`,
+  «letterale con `if` dentro un blocco») è rimossa: il testo lungo si può
+  stampare anche dentro un blocco;
+- **probe**: `bad_if_in_blocco`/`bad_if_in_blocco_while` diventano
+  `ok_if_in_blocco`/`ok_if_in_blocco_while` (con golden sidecar); nuovi
+  `ok_keyword_confine` (identificatori che contengono una keyword) e
+  `ok_keyword_inizio_sorgente` (keyword al primo byte della sorgente):
+  **55 → 57 probe** nella suite cablata;
+- **artefatti**: dump PE (25088 byte, codice 11996 byte) ed ELF (11977 byte)
+  rigenerati, hash CI aggiornati (PE `20aa566d…`, ELF `8457051f…`), binari
+  decodificati e README del seed allineati.
+
+Verifiche PASS: conformance **42/42**, probe **57/57** (ELF nativo e PE via
+wine, parità byte-esatta), logica **29/29**, guardie 23 test, differenziale 0
+differenze, `check_seed.sh` 7 casi, anti-drift `cmp` e hash CI verdi. Nessun
+golden di conformance riscritto.
+
 ## D16 risolta: i primitivi §8 (`readfile`, `strlen`, `strbyte`, `strsub`) sono nel seed — 2026-11-08
 
 Il seed implementava i soli primitivi §8 `get` ed `exit`, e **dichiarava `exit` disponibile
@@ -540,7 +582,8 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
 - **Standard**: `SPEC.md` (v0.2.0), `SPEC-CORE.md`, `VERSION`, `CHANGELOG.md`.
 - **Conformance**: POSIX harness `conformance/run.sh` (no Node, no Julia — 2026-11-05,
   N17: replaced `conformance/run.mjs`/`run.test.mjs` in one shot, ticket 08); Triad-Core
-  39/39 green **byte-exact** on the native ELF seed (`seed/linux-x86_64/seed`, no Wine).
+  **42/42 green** **byte-exact** on the native ELF seed (`seed/linux-x86_64/seed`, no Wine),
+  with `conformance/gate.sh` running **no exclusions**.
   Triad-Full: 12 cases, today only `errore` passes (outside the gate, ticket 08 Q3).
   Golden `expected.out`/`expected.code` sidecar versioned; a missing golden fails the
   case with `golden mancante`. See `conformance/README.md`.
@@ -555,11 +598,16 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
   the seed cannot execute. 13 generated files (12 pages + stylesheet), 214 internal links, none
   broken; CI job `site-gen` (Ubuntu + Windows). The certified subset and the measured seed limits
   are in `tests/probes/README.md`.
-- **Seed S0** (Windows PE, no runtime/compiler): Triad-Core interpreter with
+- **Seed S0** (machine code, no runtime/compiler): Triad-Core interpreter with
   support for integers, variables, functions (short form and multi-statement `function ... end`),
-  recursion, Bool, operators (`% ^ ! && || +=`), `if`/`elseif`/`else`, `while`, `let`, `begin`,
+  recursion, Bool, operators (`% ^ ! && || += -=`), `if`/`elseif`/`else`, `while`, `let`, `begin`,
   lambda, closures with capture by value, basic strings + concatenation + `string()`,
-  `nothing`, symbols and construction/printing of integer lists.
+  `nothing`, symbols, integer lists (`xs[i]` 1-based, `xs[i] = v`, `push!`) and the §8
+  primitives `get`, `exit`, `readfile`, `strlen`, `strbyte`, `strsub`. Two artifacts with
+  **byte-exact parity**: PE Windows (25088 byte, code 11996 byte, dump `20aa566d…83d7b7`)
+  and ELF Linux (11977 byte, dump `8457051f…315d613`); the contract (envelope, §8
+  primitives, divergences D1–D25) is in `seed/dev/certified-subset.txt`, the readable
+  version in `seed/README.md`.
 - **S1 source-code front end** (2026-11-02): `selfhost/source.td` — a new
   scanner + root-scan + recursive-descent algorithm derived from the
   machine-code seed (not from the removed Julia code), covering the whole
@@ -587,8 +635,9 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
   `.scratch/seed-linux-nativo/issues/04-parita-suite-ci.md`): gambe Windows rimosse il
   2026-11-05 (job `seed-windows` eliminato, matrice `site-gen` ridotta a Ubuntu; il commit
   `fc320f4` lo dichiarava nel messaggio ma non lo implementava nel diff). Job:
-  `conformance-core` (Ubuntu, `--skip liste`), `site-gen` (Ubuntu), `seed-linux` (ELF E1 +
-  `check_e1.sh` + hash PE **ed** ELF + anti-drift dump of **both** artifacts:
+  `conformance-core` (Ubuntu, gate **senza esclusioni**), `logic-engine` (Ubuntu, suite
+  logica S1), `site-gen` (Ubuntu), `seed-linux` (ELF E2 +
+  `check_seed.sh` + hash PE **ed** ELF + anti-drift dump of **both** artifacts:
   `gen_seed.js`/`gen_seed_linux.js` + `cmp`), `linux-toolchain`, `security`. Lato PE: gate
   hash di `seed.hex` + golden congelati (ADR 0002: il PE non viene mai rieseguito dal gate).
 
@@ -597,19 +646,19 @@ Triad as a standalone, recognized language: its own standard, conformance, `.tri
 | area | status |
 |---|---|
 | `stringhe` (`string()`) | implemented (Int/String); Bool/Symbol/Nothing not implemented |
-| `liste` | Core case passes with the runner; on the seed PE: construction/printing and `push!` of integer lists, standard indexing, `length` and iteration not supported |
+| `liste` | Core case green on the seed (construction, printing, `xs[i]` 1-based, `xs[i] = v`, `push!`); `length` and iteration not supported |
 | `valori` (lists/symbols/strings together) | partial; integer lists only, no operations or mixed values |
 | `controllo` (`elseif`) | implemented |
 | `continue` | Core per `SPEC-CORE.md`, ma **assente dal seed PE**: il programma termina con codice 1 alla prima `continue` (misurato, 2026-11-01); l'interprete JS la esegue. Il libro usa la forma equivalente con `break` + condizione capovolta, verificata identica sui due runtime |
-| `-=`, `*=` | Core per `SPEC-CORE.md`, ma **assenti dal seed PE** (codice 1); funzionano sull'interprete JS. Solo `+=` è supportato dal seed |
+| `-=`, `*=` | ✅ implementati nel seed (divergenza `D6` chiusa); resta **non implementata** la forma composta a indice `xs[i] += v` (divergenza `D24`, exit 1) |
 | `while`-espressione (`x = while … end`) | Core per `SPEC-CORE.md` §4, ma il seed PE la rifiuta (codice 1); l'interprete JS la esegue |
 | condizione `while` non-`Bool` | `SPEC.md` prevede `Err(:type)`; il seed PE salta silenziosamente il corpo (exit 0), l'interprete JS segnala `error: while cond` — comportamenti divergenti entrambi da verificare |
 | scope del corpo `while` | `SPEC.md` §5 prevede un ambiente per `while`; il seed PE lascia uscire le variabili assegnate nel corpo, l'interprete JS le confina (errore di variabile indefinita) — il caso `while_annidati` usa solo assegnamenti su nomi preesistenti per restare neutro |
-| S1 (Triad in Triad-Core) | in progress in `selfhost/` (smoke test in CI, not yet conformance) |
+| S1 (Triad in Triad-Core) | in progress in `selfhost/`: front-end (`source.td`) and executable logic engine (`selfhost/logic/engine.td`, `triad --logic FILE`, 29/29 logic cases); not yet a full conformance suite |
 | Triad-Full | 11/12 cases not implemented (only `errore` passes) |
 | CLI seed | file execution only; REPL and SPEC section 14 options to do |
 | S2-S3 (native compiler, self-hosting) | not started |
-| S4 / M7 (parity, Linux ELF) | **✅ MAIN TASK (2026-11-03) COMPLETE (2026-11-05)**: E1 file runner (N15); E2a `os_*` codegen core, PE byte-identical (N16); E2b ELF **E2** 8499 byte = full Triad-Core interpreter, **byte-exact parity** on conformance 39/39 + probes 39/39 + S1 golden, native Linux **without Wine** + Node-free harness (N17); E3 toolchain without Node (N18): `./install.sh` (pure-`printf` seed decode, absolute-path wrappers, byte-exact smoke test that fails the install on mismatch) → `bin/triad` exec-always-seed (stub/`--jsref`/JS/triad-native logic removed) + POSIX `bin/triad-cli` (`run`/`test`/`status`, no Node), `cli/triad-cli.mjs` thinned to dev commands (`seed`/`ai`/`ext`), CI `seed-linux` native + `linux-toolchain` without Node, tutorials (it/en/ja/zh/ru) updated to the post-decision-04 CI. Windows keeps the PE unchanged. |
+| S4 / M7 (parity, Linux ELF) | **✅ MAIN TASK (2026-11-03) COMPLETE (2026-11-05)**: E1 file runner (N15); E2a `os_*` codegen core, PE byte-identical (N16); E2b ELF **E2** 11977 byte = full Triad-Core interpreter, **byte-exact parity** on conformance 42/42 + probes 57/57 + S1 golden, native Linux **without Wine** + Node-free harness (N17); E3 toolchain without Node (N18): `./install.sh` (pure-`printf` seed decode, absolute-path wrappers, byte-exact smoke test that fails the install on mismatch) → `bin/triad` exec-always-seed (stub/`--jsref`/JS/triad-native logic removed) + POSIX `bin/triad-cli` (`run`/`test`/`status`, no Node), `cli/triad-cli.mjs` thinned to dev commands (`seed`/`ai`/`ext`), CI `seed-linux` native + `linux-toolchain` without Node, tutorials (it/en/ja/zh/ru) updated to the post-decision-04 CI. Windows keeps the PE unchanged. |
 
 ## Main task (2026-11-03): native Linux seed — no Wine — ✅ COMPLETE (2026-11-05)
 
@@ -628,7 +677,8 @@ identically to the PE (known limits included), `BOOTSTRAP.md` §4/§5/§6/§9 (M
 ```sh
 sh verify.sh                       # gate unico: conformance/run.sh + tests/probes/run_probes.sh
 sh conformance/run.sh              # Core, 42 casi, byte-exatti sull'ELF nativo
-sh tests/probes/run_probes.sh      # 55 probe (ok_*/test_* + bad_* + selfhost golden)
+sh tests/probes/run_probes.sh      # 57 probe (ok_*/test_* + bad_* + selfhost golden)
+sh conformance/logic/run.sh        # 29 casi logici (S1)
 sh seed/linux-x86_64/check_seed.sh # errori/limiti del seed (7 casi)
 node tools/selfhost-guard/guard.mjs        # guardie statiche sul corpus certificato
 node tools/selfhost-guard/test.mjs         # self-test delle guardie (un fixture per regola)

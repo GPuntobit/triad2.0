@@ -1,3 +1,12 @@
+function diag_one(xs)
+    println("DIAG-ONE-ENTER")
+    count = length(xs)
+    println("DIAG-ONE-COUNT")
+    println(count)
+    true
+end
+
+
 # TRID Native independent checker and conditional memory projection.
 # Requires common.triad only; no discovery functions or foreign runtime.
 
@@ -6,7 +15,7 @@ function target_for(data, name)
     i = 1
     while i <= length(data)
         r = data[i]
-        if same(r[1], "target") && same(r[3], name)
+        if same(r[1], "target") && same(cell(r, 3), name)
             result = r
         end
         i += 1
@@ -37,11 +46,11 @@ function entails(data, target, shape, pair)
     i = 1
     while i <= length(data)
         a = data[i]
-        if same(a[1], "edge") && same(a[2], target[2]) && same(a[3], target[4])
+        if same(a[1], "edge") && same(a[2], target[2]) && same(cell(a, 3), target[4])
             j = 1
             while j <= length(data)
                 b = data[j]
-                if same(b[1], "edge") && same(b[2], target[2]) && same(b[3], target[4])
+                if same(b[1], "edge") && same(b[2], target[2]) && same(cell(b, 3), target[4])
                     if ground_pair(a, b, shape, pair)
                         found = true
                     end
@@ -128,7 +137,7 @@ function evidence_consistent(data, target)
             j = 1
             while j <= length(data)
                 b = data[j]
-                if same(b[1], "review") && same(b[2], target[3]) && same(a[5], b[5]) && same(a[6], b[6]) && !same(a[4], b[4])
+                if same(b[1], "review") && same(b[2], target[3]) && same(a[5], cell(b, 5)) && same(a[6], cell(b, 6)) && !same(a[4], cell(b, 4))
                     good = false
                 end
                 j += 1
@@ -144,7 +153,7 @@ function definition_ref(data, target, shape)
     i = 1
     while i <= length(data)
         r = data[i]
-        if same(r[1], "definition") && same(r[2], target[3]) && same(r[3], target[2]) && same(r[4], target[4]) && same(r[5], shape)
+        if same(r[1], "definition") && same(r[2], target[3]) && same(cell(r, 3), target[2]) && same(cell(r, 4), target[4]) && same(cell(r, 5), shape)
             ref = r[6]
         end
         i += 1
@@ -157,7 +166,7 @@ function is_approved(data, target, shape)
     i = 1
     while i <= length(data)
         r = data[i]
-        if same(r[1], "approve") && same(r[2], target[3]) && same(r[3], shape)
+        if same(r[1], "approve") && same(r[2], target[3]) && same(cell(r, 3), shape)
             yes = true
         end
         i += 1
@@ -221,31 +230,34 @@ function proof_count(history, name, shape)
     count
 end
 
-function check_history(data, history)
-    need(length(history) > 0, "empty hypothesis journal")
+function check_history(facts, journal_rows)
+    println("DIAG-HISTORY-ENTER")
+    need(length(journal_rows) > 0, "empty hypothesis journal")
+    println("DIAG-HISTORY-LENGTH")
+    println(length(journal_rows))
     i = 1
-    while i <= length(history)
-        r = history[i]
+    while i <= length(journal_rows)
+        r = journal_rows[i]
         if same(r[3], "evaluation")
             need(length(r) == 15, "invalid evaluation event")
-            target = target_for(data, r[4])
+            target = target_for(facts, r[4])
             need(length(target) == 4, "evaluation target missing")
-            m = independent_metrics(data, target, r[5])
+            m = independent_metrics(facts, target, r[5])
             need(same(r[6], m[8]) && same(r[7], m[1]) && same(r[8], m[2]) && same(r[9], m[3]), "evaluation training mismatch")
             need(same(r[10], m[4]) && same(r[11], m[5]) && same(r[12], m[6]) && same(r[13], m[7]), "evaluation testing mismatch")
             expected = "no"
-            if expected_choice(data, target, r[5])
+            if expected_choice(facts, target, r[5])
                 expected = "yes"
             end
             need(same(r[14], expected), "selected rule mismatch")
         elseif same(r[3], "proof")
             need(length(r) == 11, "invalid proof record")
-            target = target_for(data, r[4])
+            target = target_for(facts, r[4])
             need(length(target) == 4, "proof target missing")
-            ev = find_eval(history, r[4], r[5])
+            ev = find_eval(journal_rows, r[4], r[5])
             need(length(ev) == 15, "missing proof rule")
             need(same(ev[14], "yes") && same(ev[6], "experimental"), "proof for invalid candidate")
-            need(proven_witness(data, r, target), "false ground proof")
+            need(proven_witness(facts, r, target), "false ground proof")
         else
             need(false, "unknown journal event")
         end
@@ -271,7 +283,7 @@ function memory_projection(data, history)
                     state = "suspended_dependency"
                 end
             end
-            println("rule|", target[3], "|", shape, "|", state, "|", row[13], "|", ref)
+            println("rule|" * target[3] * "|" * shape * "|" * state * "|" * row[13] * "|" * ref)
             if gate
                 j = 1
                 while j <= length(history)
@@ -281,7 +293,7 @@ function memory_projection(data, history)
                         if is_revoked(data, p[9]) || is_revoked(data, p[10]) || is_revoked(data, ref)
                             stateclaim = "suspended"
                         end
-                        println("claim|", target[3], "|", p[6], "|", p[7], "|", shape, "|", p[8], "|", p[9], "|", p[10], "|", ref, "|", stateclaim)
+                        println("claim|" * target[3] * "|" * p[6] * "|" * p[7] * "|" * shape * "|" * p[8] * "|" * p[9] * "|" * p[10] * "|" * ref * "|" * stateclaim)
                     end
                     j += 1
                 end

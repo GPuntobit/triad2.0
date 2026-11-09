@@ -26,12 +26,12 @@ The PE is silent: stderr diagnostics exist **only** on the ELF, outside the pari
 exit non-zero with empty stdout, identically to the PE; the known PE limits stay documented
 limits (see [`tests/probes/README.md`](../../tests/probes/README.md)).
 ## Numbers
-- **ELF file:** 11465 bytes (`0x2cc9`)
+- **ELF file:** 11977 bytes (`0x2ec9`)
 - **Base:** `0x400000`; **entry:** `0x400078`
-- **Program header:** a single `PT_LOAD` R|X, offset 0, filesz/memsz `0x2682`, align `0x1000`
+- **Program header:** a single `PT_LOAD` R|X, offset 0, filesz/memsz `0x2ec9`, align `0x1000`
   (no section headers, like the PE dump: the artifact is pure machine code)
-- **sha256 of `seed.hex`:** `A5FA3E506B91BF444D8EE6D673F703BBEC31DF649F01D7061264F91424C441D8`
-- **sha256 of the decoded ELF:** `47C950E30C147CBD137C5419BF1EF11ABEF265B39D931A87294D1E98A6F3307E`
+- **sha256 of `seed.hex`:** `8457051F7D083AB834EC860502605A58F1ECCE4A5ABCA88391A804898315D613`
+- **sha256 of the decoded ELF:** `CDBC3C3D901D534B66C6FE4C0E4248E968AA2F6333F8F9C10B052B5FAD7D6361`
 ## Build and test (Linux)
 ```sh
 cd seed/linux-x86_64

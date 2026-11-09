@@ -69,6 +69,13 @@ strsub = yes
 #         implementati (vedi [available]); `exit(n)` era gia' dichiarato
 #         disponibile ma mancava davvero: ora esiste (codice a 8 bit).
 #
+# Risolta e rimossa il 2026-11-09:
+#   D22 — le parole chiave sono riconosciute come token *esatti* (confine
+#         bilatero: `iffy`, `myif`, `endx`, `elsewhere` non sono keyword)
+#         e il testo di un letterale non conta per l'annidamento dei
+#         blocchi: il seed salta il letterale quando scandisce la fine di
+#         un blocco. La guardia statica G-D22 e' stata rimossa.
+#
 # Correzioni senza id (divergenze *non dichiarate*, cioe' bug):
 #   - i simboli non sono piu' stringhe: un oggetto simbolo ha tipo 5 (non
 #     1), quindi `strlen(:x)` fallisce come sul riferimento JS e la
@@ -104,6 +111,5 @@ D18 = noisy
 D19 = silent
 D20 = silent
 D21 = silent
-D22 = noisy
 D24 = noisy
 D25 = noisy

@@ -23,8 +23,8 @@ Il dump esadecimale è [`seed.hex`](https://github.com/GPuntobit/triad2.0/blob/m
 - **Entry point:** RVA `0x1000`
 - **Sezione:** `.text`, RVA `0x1000`, file offset `0x200`, 24576 byte, caratteristiche `0xE0000020`
 - **Immagine:** base `0x140000000`, `SizeOfImage` `0x7000`, header `0x200`, subsystem console, ASLR disattivata
-- **Codice:** 8755 byte
-- **sha256 di `seed.hex`:** `0432C4CA79C110E43D8B3621A8EBAF66DED4E4855ADCB761FAC98D823B300FD4`
+- **Codice:** 11996 byte
+- **sha256 di `seed.hex`:** `20AA566DAE21D2B102E684F7A8C1B67B1B2B44C61C1116E16D196DE31683D7B7`
 
 ## Layout del file
 
@@ -36,75 +36,80 @@ Il dump esadecimale è [`seed.hex`](https://github.com/GPuntobit/triad2.0/blob/m
 | `0x058` | optional header PE32+, entry `0x1000`, base `0x140000000` |
 | `0x0D0` | data directory import: RVA `0x40A0`, size `0x28` |
 | `0x148` | section header `.text` (VirtualSize/RawSize `0x2400`) |
-| file `0x200` / RVA `0x1000` | codice (8755 byte) |
+| file `0x200` / RVA `0x1000` | codice (11996 byte) |
 | RVA `0x4000` (file `0x3200`) | IAT, 8 slot + null |
 | RVA `0x4050` (file `0x3250`) | ILT, 8 slot + null |
-| RVA `0x40A0` (file `0x32A0`) | import descriptor + terminatore |
+| RVA `0x40A0` (file `0x32A0`) | import descriptor + terminator |
 | RVA `0x40D0` (file `0x32D0`) | `KERNEL32.dll` |
 | RVA `0x5000` (file `0x4200`) | hint/name delle 8 funzioni |
 
-Mappatura della sezione: `file offset = 0x200 + (RVA - 0x1000)`.
+Mappatura delle sezioni: `file offset = 0x200 + (RVA - 0x1000)`.
 
 ## Memoria (`VirtualAlloc` 10 MiB, base `r14`)
 
 | offset | cosa |
 |---|---|
-| `+0x00000` | sorgente Triad (max `0xFFFFF` = 1 MiB − 1 byte; a `+0x100000` c'è la maschera di stop dei blocchi) |
-| `+0x100000` | scratch: maschera di stop (`+0x100000`), flag di chiusura (`+0x100008`), flag di break (`+0x100010`), modalità print inline (`+0x100028`) |
-| `+0x110000` | ambiente variabili (`r15`): contatore `rbx`, entry da 24 byte (`+0` nome ptr, `+8` len, `+16` valore), max 16384 binding |
-| `+0x190000` | tabella funzioni (`r13`): contatore qword a `[r13]`, entry da 128 byte a `r13+8+i*128`, max 3584 record |
-| `+0x200000` | heap condiviso: bump pointer qword; record chiusura da 128 byte da `+0x200008`; stringhe `[tipo=1][len][byte…]` (dati a `+16`), 8 MiB utilizzabili |
+| `+0x00000` | sorgente Triad (max `0xFFFFF` = 1 MiB − 1 byte; a `+0x100000` c'è la mask di stop dei blocchi) |
+| `+0x100000` | scratch: mask di stop dei blocchi (`+0x100000`), flag di chiusura (`+0x100008`), flag di break (`+0x100010`), modalità print inline (`+0x100028`) |
+| `+0x110000` | variabili d'ambiente (`r15`): contatore `rbx`, voci da 24 byte (`+0` ptr nome, `+8` len, `+16` valore), max 16384 legami |
+| `+0x190000` | tabella funzioni (`r13`): contatore qword a `[r13]`, voci da 128 byte a `r13+8+i*128`, max 3584 record |
+| `+0x200000` | heap condiviso: bump pointer qword; record di chiusura da 128 byte a partire da `+0x200008`; stringhe `[type=1][len][byte…]` (dati a `+16`), 8 MiB utilizzabili |
 
-`VirtualAlloc` riserva 10 MiB (`0xA00000`): la mappa qui sopra è la memory map
+`VirtualAlloc` riserva 10 MiB (`0xA00000`): il layout sopra è la mappa di memoria
 dell'arena (N20: sorgente 1 MiB, heap 8 MiB).
-Una chiusura è un record con la stessa forma di una entry funzione (nome/len del parametro,
-n=1, body, parametro); il valore è `record|2`. Il record ha
-anche una cattura: `+0x60` conteggio, `+0x68` nome ptr, `+0x70` len, `+0x78` valore.
-La cattura era prevista quando la lambda è creata dentro un corpo di funzione (flag a
-`r14+0x100008`) e copia l'ultimo binding dell'ambiente, di solito il parametro; al momento della
-chiamata, ma il meccanismo non è risultato affidabile: rimandato ad AST/bytecode.
 
-Entry funzione: `+0` nome ptr, `+8` nome len, `+16` numero parametri, `+24` body ptr nel
-sorgente, `+32` parametri (max 4, ciascuno ptr a `+0`, len a `+8`).
+Una chiusura è un record con la stessa forma di una voce funzione (nome/len del
+parametro, n=1, body, parametro); il valore è `record|2`. Il record ha anche una
+cattura: `+0x60` conteggio, `+0x68` ptr nome, `+0x70` len, `+0x78` valore.
 
-L'assegnamento usa `env_assign`: cerca la variabile più recente e la aggiorna; se non esiste la
-crea. I parametri di funzione sono legati con `env_store` (append) e l'ambiente viene troncato
-al ritorno; in questo modo un ciclo aggiorna le variabili invece di creare una entry per giro.
+La cattura era prevista quando la lambda è creata dentro il corpo di una funzione (flag
+a `r14+0x100008`) e copia l'ultimo legame d'ambiente, di solito il parametro; al momento
+della chiamata, ma il meccanismo non era affidabile: rimandato ad AST/bytecode.
 
-## Codice (mappa per etichette, offset dall'inizio del codice)
+Funzione d'ingresso: `+0` ptr nome, `+8` len nome, `+16` numero di parametri, `+24` ptr
+del body nel sorgente, `+32` parametri (max 4, ciascuno con ptr a `+0` e len a `+8`).
+
+L'assegnazione usa `env_assign`: cerca la variabile più recente e la aggiorna; se non
+esiste la crea. I parametri delle funzioni sono legati con `env_store` (append) e
+l'ambiente viene troncato al ritorno: in questo modo un ciclo aggiorna le variabili
+invece di creare una voce per iterazione.
+
+## Codice (mappa delle etichette, offset dall'inizio del codice)
 
 | offset | etichetta | cosa fa |
 |---|---|---|
-| `0x000` | — | prologo, `GetStdHandle`, `GetCommandLineA`, parsing path |
+| `0x000` | — | prologue, `GetStdHandle`, `GetCommandLineA`, parsing del path |
 | `0xEE` | `path_check` | path vuoto → exit 2 |
-| — | — | `CreateFileA`; `VirtualAlloc(0,0x40000,…)`; `ReadFile`; `CloseHandle`; NUL; inizializza ambiente, funzioni e heap chiusure |
-| `0x220` | `parse_program` | ciclo statement: `println`, assegnamento, funzione, `if`, `while` |
-| `0x40D` | `stmt_assign` | nome; `=` → assegnamento, `(` → funzione |
-| `0x4E4` | `st_func` | definizione: entry, parametri (max 4), `=`, body, salta a fine riga |
-| `0x598` | `st_func_skip` | avanza fino a LF/`;`/EOF dopo il body |
-| `0x5C4` | `scan_end` | scansione a profondità: trova `elseif`/`else`/`end` con annidamento |
-| `0x7A7` | `st_if` | seleziona il primo ramo vero tra `if`/`elseif`, altrimenti `else` |
-| `0x8E5` | `st_while` | `while cond … end`: rivaluta la condizione, esegue il corpo |
-| `0x96B` | `st_function` | `function f(x) <espressione> end`: definizione con corpo a una espressione |
-| `0xBA0` | `pp_eof` | EOF: errore se dentro un blocco (maschera ≠ 0) |
-| `0xBB4` | `skip_ws` | spazi, tab, LF, CR, `;`, commenti `#` |
-| `0xC74` | `parse_cmp` | confronti, risultato Bool |
-| `0xDBB` | `parse_ternary` | `cmp ? a : b` con scansione del ramo non scelto |
-| `0xF36` | `parse_sum` | `term { (+\|-) term }` |
-| `0xF94` | `parse_term` | `factor { (*\|%) factor }` |
-| `0x10F6` | `parse_factor` | unario `-` o potenza |
-| `0x1192` | `parse_primary` | intero, Bool, variabile, chiamata, `( expr )` |
-| `0x14BD` | `pf_lambda` | `x -> expr`: record chiusura + cattura (1 binding) |
-| `0x1561` | `skip_text` | salta il corpo della lambda fino a un delimitatore |
-| `0x185D` | `pf_call` | chiamata nominata o di chiusura, argomenti, cattura, binding, body |
-| `0x19F9` | `pf_call_nocap` | prosegue senza cattura |
-| `0x1AFB` | `fn_find` | cerca una funzione per nome |
-| `0x1B57` | `parse_ident` | identificatore |
-| `0x1BC3` | `env_find` | cerca una variabile (dalla più recente) |
-| `0x1C32` | `env_store` | aggiunge un parametro/variabile nuova |
-| `0x1C4C` | `env_assign` | aggiorna la variabile più recente (o la crea) |
-| `0x164D` | `print_int` | Int decimale, `true`/`false`, `fun` |
-| `0x11BD` … | `fail`, `read_fail`, `open_fail`, `usage` | uscite |
+| — | — | `CreateFileA`; `VirtualAlloc(0,0xA00000,…)`; `ReadFile`; `CloseHandle`; NUL; inizializza ambiente, funzioni e chiusure dell'heap |
+| `0x22E` | `parse_program` | ciclo di statement: `println`, assegnazione, funzione, `if`, `while` |
+| `0x51E` | `stmt_assign` | nome; `=` → assegnazione, `(` → funzione |
+| `0x83C` | `st_func` | definizione: ingresso, parametri (max 4), `=`, body, salta a fine riga |
+| `0x910` | `st_func_skip` | avanza fino a LF/`;`/EOF dopo il body |
+| `0x93C` | `scan_end` | scansione di profondità: trova `elseif`/`else`/`end` con annidamento |
+| `0xB98` | `sc_string` | salta il testo di un letterale (un letterale non è codice) |
+| `0xBBD` | `st_if` | seleziona il primo ramo vero fra `if`/`elseif`, altrimenti `else` |
+| `0xD52` | `st_while` | `while cond … end`: rivaluta la condizione, esegue il body |
+| `0xDFE` | `st_function` | `function f(x) <espressione> end`: definizione con body di un'espressione |
+| `0x1040` | `pp_eof` | EOF: errore se dentro un blocco (mask ≠ 0) |
+| `0x1054` | `skip_ws` | spazi, tab, LF, CR, `;`, commenti `#` |
+| `0x1114` | `parse_cmp` | confronti, risultato Bool |
+| `0x125B` | `parse_ternary` | `cmp ? a : b` con scansione del ramo non scelto |
+| `0x1408` | `parse_sum` | `term { (+\|-) term }` |
+| `0x1470` | `parse_term` | `factor { (*\|%) factor }` |
+| `0x15E8` | `parse_factor` | unario `-` o potenza |
+| `0x17C4` | `parse_primary` | intero, Bool, variabile, chiamata, `( expr )` |
+| `0x1B6F` | `pf_lambda` | `x -> expr`: record chiusura + cattura (1 binding) |
+| `0x1C37` | `skip_text` | salta il corpo della lambda fino a un delimitatore |
+| `0x2426` | `pf_call` | chiamata nominata o di chiusura, argomenti, cattura, binding, body |
+| `0x2765` | `pf_call_nocap` | prosegue senza cattura |
+| `0x2892` | `fn_find` | cerca una funzione per nome |
+| `0x28EE` | `parse_ident` | identificatore |
+| `0x295A` | `kw_bound` | confine bilatero di una parola chiave (una keyword è un token *esatto*) |
+| `0x29D7` | `env_find` | cerca una variabile (dalla più recente) |
+| `0x2A46` | `env_store` | aggiunge un parametro/variabile nuova |
+| `0x2A6D` | `env_assign` | aggiorna la variabile più recente (o la crea) |
+| `0x2ADD` | `print_int` | Int decimale, `true`/`false`, `fun` |
+| `0x2E8C` | `fail`, `read_fail`, `open_fail`, `usage` | uscite |
 
 ### Chiamata di funzione (stack)
 
@@ -135,16 +140,24 @@ $p.ExitCode                                                       # 0
 .\seed.exe non_esiste.td ; $LASTEXITCODE                          # 1
 ```
 
-Verificati anche: `stringhe`, `stringhe_concat`, `nothing_base`, `stringhe_base`, `begin_block`, `closure`, `chiusure`, `scope`, `funzioni_blocco`, `funzioni_io`, `funzioni`, `aritmetica`, `lambda`, `while_loop`, `controllo` (elseif), `operatori`, `confronti`, `ricorsione`
-(120/55), `funzioni_semplici`, `variabili`, `interi`; chiusura che cattura il parametro
-(`f=crea(10); f(5)=15`) e due chiusure indipendenti (`g=crea(100)`); errore di arità → exit 1.
+Verificati anche: `strings`, `concat_strings`, `nothing_base`, `base_strings`,
+`begin_block`, `closure`, `closures`, `scope`, `funzioni_blocco`, `funzioni_io`,
+`funzioni`, `aritmetica`, `lambda`, `while_loop`, `controllo` (elseif), `operatori`,
+`confronti`, `ricorsione` (120/55), `funzioni_semplici`, `variabili`, `interi`; chiusura
+che cattura il parametro (`f=crea(10); f(5)=15`) e due chiusure indipendenti
+(`g=crea(100)`); errore di arità → exit 1.
 
 ## Limiti attuali
 
 - cattura delle chiusure: copre l'ultimo binding del frame; la cattura multi-binding resta da fare (AST/bytecode);
 - lambda solo a **un parametro**; body di una funzione: massimo 4 parametri;
 - il seed non verifica staticamente gli effetti: `!io` è accettato per eseguire output nei corpi funzione;
-- mancano le liste (casi `liste` e `valori`);
+- liste: ✅ implementate (costruzione, `push!`, `get`, indice `xs[i]` e scrittura `xs[i] = v`; il gap storico `liste` del gate di conformance è chiuso);
 - `string()` copre Int e String; Bool/Symbol/Nothing non implementati;
 - `elseif` ✅ implementato;
 - solo Windows PE; `os_*` ed ELF sono del port M7.
+
+> **Aggiornato il 2026-11-09 (D22 risolta):** le parole chiave sono riconosciute come
+> token *esatti* (helper `kw_bound`: `iffy`, `myif`, `endx`, `elsewhere` non sono
+> keyword) e il testo di un letterale non conta per l'annidamento dei blocchi
+> (routine `sc_string`): un letterale può contenere `if` anche dentro un blocco.

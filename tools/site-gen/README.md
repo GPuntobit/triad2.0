@@ -97,21 +97,22 @@ Non funziona sul seed (e il lint lo segnala):
 | `return` in una funzione a blocco | `E021` |
 | `readfile`, `strlen`, `strbyte`, `strsub`, `ARGS` | `E022` |
 | escape `\n`, `\"`, `\\` nelle stringhe | `E011` |
-| letterale con `if` dentro un blocco | `E010` |
 | `let` con più binding | `E030` |
 | `==` fra stringhe | `E023` |
 | chiamata come ultima espressione del corpo | `W023` |
 | `+=` su stringhe | `W024` |
 
-Tre conseguenze pratiche per chi scrive un generatore:
+Due conseguenze pratiche per chi scrive un generatore:
 
-1. **Il testo lungo va stampato a livello di programma.** Dentro un blocco
-   (`function`, `if`, `while`) il seed conta le occorrenze della sottostringa
-   `if` nel testo del letterale e sbaglia l'annidamento del blocco.
-2. **Ogni riga generata è un `println`.** Gli escape non esistono: una riga con
+1. **Ogni riga generata è un `println`.** Gli escape non esistono: una riga con
    un `\n` dentro viene stampata con i due caratteri.
-3. **Gli attributi HTML si scrivono con apici singoli** (`href='spec.html'`):
+2. **Gli attributi HTML si scrivono con apici singoli** (`href='spec.html'`):
    l'escape `\"` non è supportato.
+
+> **Aggiornato il 2026-11-09:** la regola `E010` (letterale con `if` dentro un
+> blocco) è stata rimossa: il seed riconosce le parole chiave come token
+> esatti e salta il testo di un letterale quando scandisce la fine di un
+> blocco, quindi un letterale può contenere `if` anche dentro un blocco.
 
 ## I file generati
 

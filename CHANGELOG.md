@@ -1,5 +1,33 @@
 # Changelog — standard Triad
 
+## D22 risolta: le parole chiave sono token *esatti* nel seed — 2026-11-09
+
+Il seed riconosceva le parole chiave confrontando i **byte grezzi** del
+sorgente: un identificatore che inizia con una keyword (`iffy`, `myif`) veniva
+scambiato per il costrutto, e dentro un corpo di blocco il contatore di
+annidamento contava anche le keyword contenute nel testo di un letterale
+(`"if end else while"`), spostando la fine del blocco (exit 1).
+
+- **fix (seed)**: helper `kw_bound` (confine bilatero della parola chiave) e
+  routine `sc_string` (salto del testo di un letterale) in `seed/dev/core.js`;
+  le parole chiave sono ora token *esatti* e il testo di un letterale non
+  conta per l'annidamento dei blocchi;
+- **contratto**: `D22` esce da `seed/dev/certified-subset.txt`;
+- **guardie**: `G-D22` rimossa; il fixture «rifiutato» è diventato «ammesso»
+  (`risolto_keyword_cieca.td`);
+- **generatore del sito**: rimossa la regola `E010` del lint
+  (`tools/site-gen/lint.mjs`): un letterale può contenere `if` anche dentro un
+  blocco;
+- **probe**: `bad_if_in_blocco`/`bad_if_in_blocco_while` → `ok_if_in_blocco`/
+  `ok_if_in_blocco_while` (golden sidecar); nuovi `ok_keyword_confine` e
+  `ok_keyword_inizio_sorgente` (55 → 57 probe);
+- **artefatti**: dump PE (25088 byte, codice 11996 byte) ed ELF (11977 byte)
+  rigenerati, hash CI aggiornati (PE `20aa566d…`, ELF `8457051f…`).
+
+Verifiche PASS: conformance 42/42, probe 57/57 (ELF e PE via wine), logica 29/29,
+guardie 23 test, differenziale 0 differenze, anti-drift e hash CI verdi. Nessun
+golden riscritto.
+
 ## D16 risolta: i primitivi §8 (`readfile`, `strlen`, `strbyte`, `strsub`) sono nel seed — 2026-11-08
 
 Il seed dichiarava `exit` disponibile **senza implementarlo** (`exit(1)` usciva con

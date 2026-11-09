@@ -43,7 +43,6 @@ const CASES = [
   ['d19_newline_operatore.td', 'G-D19'],
   ['d20_scope_corpo_blocco.td', 'G-D20'],
   ['d21_while_non_bool.td', 'G-D21'],
-  ['d22_keyword_cieca.td', 'G-D22'],
   ['d24_composta_indice.td', 'G-D24'],
   ['e02_troppi_parametri.td', 'G-E02'],
   ['e03_lista_troppo_lunga.td', 'G-E03'],
@@ -75,13 +74,14 @@ for (const [fixture, rule] of CASES) {
   ok('D23 risolta -> ternario con simbolo ammesso', !findings.some((f) => f.rule === 'G-D23'));
 }
 
-// D6, D9 e D13 sono risolte dal seed: i costrutti che erano vietati
-// devono essere ammessi (nessuna guardia deve piu' scattare).
+// D6, D9, D13, D16 e D22 sono risolte dal seed: i costrutti che erano
+// vietati devono essere ammessi (nessuna guardia deve piu' scattare).
 for (const [fixture, what] of [
   ['risolto_composta.td', 'D6 risolta -> `-=`/`*=` ammessi'],
   ['risolto_chiamata_finale.td', 'D9 risolta -> chiamata in posizione finale ammessa'],
   ['risolto_indicizzazione.td', 'D13 risolta -> indicizzazione `xs[i]` ammessa'],
   ['risolto_bootstrap.td', 'D16 risolta -> primitivi §8 ammessi'],
+  ['risolto_keyword_cieca.td', 'D22 risolta -> keyword cieche ammesse'],
 ]) {
   const findings = checkFile(path.join(FIXTURES, fixture), contract);
   ok(what, findings.length === 0,

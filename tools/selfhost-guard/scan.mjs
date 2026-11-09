@@ -3,28 +3,16 @@
 //
 //  Non e' un parser: produce i token grezzi (identificatori, letterali,
 //  numeri, operatori) con la riga, piu' i dati che l'AST non porta:
-//  il testo *grezzo* dei letterali (escape, keyword cieche) e l'ultimo
-//  token di codice di ogni riga (per la regola sul newline).
+//  il testo *grezzo* dei letterali (escape) e l'ultimo token di codice
+//  di ogni riga (per la regola sul newline).
 //
-//  Le keyword "ciechi" sono quelle che il contatore di annidamento del
-//  seed conta confrontando i byte grezzi del sorgente: incrementano la
-//  profondita' senza una corrispondente "end".  Misurato sul seed:
-//  dentro un corpo di blocco, un identificatore o un letterale che
-//  contiene "if", "let", "while" o "function" rompe l'annidamento
-//  (exit 1); "end" e "else" decrementano la profondita' e spostano la
-//  fine del blocco (errore o semantica spostata).
+//  Nota storica: il seed contava le parole chiave confrontando i byte
+//  grezzi del sorgente, quindi un identificatore che inizia con una
+//  keyword o un letterale che contiene "if" rompevano l'annidamento dei
+//  blocchi (divergenza D22).  Il seed e' stato corretto (2026-11-09):
+//  le keyword sono token *esatti* e il testo di un letterale non conta.
+//  Le helper che servivano a presidiare D22 sono state rimosse.
 // =====================================================================
-
-/** Keyword che il seed conta in modo cieco (incrementano la profondita'). */
-export const BLIND_UP = ['if', 'let', 'while', 'function'];
-/** Keyword ciechi che decrementano la profondita' (spostano la fine blocco). */
-export const BLIND_DOWN = ['end', 'else'];
-
-/** Keyword Core ammessi come tali (identificatori esatti). */
-export const KEYWORDS = new Set([
-  'if', 'else', 'elseif', 'while', 'let', 'begin', 'end', 'function',
-  'break', 'continue', 'return', 'true', 'false', 'nothing',
-]);
 
 const TWO_CHAR_OPS = new Set(['==', '!=', '<=', '>=', '&&', '||', '+=', '-=', '*=', '->']);
 const ONE_CHAR_OPS = new Set('+-*/%^=<>!&|?:');
@@ -116,22 +104,6 @@ export function scanSource(src) {
   return { tokens, strings, errors };
 }
 
-/** True se l'identificatore contiene una keyword cieca del seed. */
-export function blindKeywordIn(ident) {
-  for (const kw of BLIND_UP) {
-    if (ident.includes(kw)) return kw;
-  }
-  return null;
-}
-
-/** True se l'identificatore contiene una keyword cieca che decrementa. */
-export function blindDownKeywordIn(ident) {
-  for (const kw of BLIND_DOWN) {
-    if (ident.includes(kw)) return kw;
-  }
-  return null;
-}
-
 /**
  * Ultimo token di codice di ogni riga fisica (serve alla regola sul
  * newline: una riga che finisce con un operatore binario fa proseguire
@@ -152,35 +124,3 @@ export function lastCodeTokenPerLine(tokens) {
 export const BINARY_OPS = new Set([
   '+', '-', '*', '%', '^', '==', '!=', '<', '<=', '>', '>=', '&&', '||',
 ]);
-
-/**
- * Intervalli di sorgente dei corpi dei blocchi (`if`, `while`, `let`,
- * `begin`, `function ... end`): [inizio, fine] come offset nel sorgente.
- *
- * Serve alla regola D22: il contatore di annidamento del seed e' cieco al
- * contesto *dentro un corpo di blocco* (livelello di programma non conta
- * le keyword: li confronta solo per decidere se un blocco finisce li').
- */
-export function blockRanges(tokens) {
-  const ranges = [];
-  const stack = [];
-  for (const t of tokens) {
-    if (t.type !== 'ident') continue;
-    const v = t.value;
-    if (v === 'if' || v === 'while' || v === 'let' || v === 'begin' || v === 'function') {
-      stack.push({ start: t.pos + v.length, label: v });
-    } else if (v === 'end') {
-      const b = stack.pop();
-      if (b) ranges.push({ start: b.start, end: t.pos, label: b.label });
-    }
-  }
-  return ranges;
-}
-
-/** true se l'offset e' dentro uno dei corpi di blocco. */
-export function insideBlock(ranges, offset) {
-  for (const r of ranges) {
-    if (offset >= r.start && offset < r.end) return r;
-  }
-  return null;
-}

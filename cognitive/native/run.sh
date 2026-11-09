@@ -19,8 +19,9 @@ MEMORY="$STATE/memory.txt"
 [ -e "$JOURNAL" ] || : > "$JOURNAL"
 # S0 cannot reliably assign/pass a readfile result. Transport data as literals.
 # Reject every byte that could escape a Triad quoted multiline string.
+# Allowed: letters, digits, '_', '|' (field separator) and '-' (negative metric).
 safe_records() {
-    if LC_ALL=C grep '[^a-zA-Z0-9_|]' "$1" >/dev/null; then
+    if LC_ALL=C grep '[^a-zA-Z0-9_|.-]' "$1" >/dev/null; then
         echo "TRID: unsafe input bytes in $1" >&2
         exit 1
     fi
@@ -58,6 +59,8 @@ if ! ( cd "$TMP"; "$ROOT/bin/triad" "$TMP/discover.triad" > "$TMP/events.log" );
     exit 1
 fi
 cat "$JOURNAL" "$TMP/events.log" > "$TMP/new-journal.log"
+echo "DIAG-EVENT-COUNT $(wc -l < "$TMP/events.log")" >&2
+echo "DIAG-JOURNAL-COUNT $(wc -l < "$TMP/new-journal.log")" >&2
 make_source "$ROOT/cognitive/native/verify.triad" "$TMP/new-journal.log" "$TMP/verify.triad"
 echo "TRID native: independent verification stage" >&2
 if ! ( cd "$TMP"; "$ROOT/bin/triad" "$TMP/verify.triad" > "$TMP/new-memory.txt" ); then

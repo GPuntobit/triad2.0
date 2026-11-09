@@ -1,5 +1,141 @@
 # Task Triad 2.0
 
+## Handoff — 2026-11-09 05:10: chiusura delle azioni aperte del ciclo D22 — commit, mirror del wiki e handoff
+
+### Stato attuale e obiettivo della sessione
+
+Ripresa dall'elenco «cosa resta aperto» del ciclo D22 (`324e99b`, *feat: resolve D22 by
+recognizing keywords as exact tokens*). Obiettivo di questa sessione: **chiudere i punti
+1–3** dell'elenco (commit nel repo padre con il gitlink del submodule, handoff in
+`TASK.md`, risincronizzazione dei mirror del wiki obsoleti) e **registrare** i punti 4
+(decisioni normative D24/D25 e N10) come azioni umane aperte, senza inventare semantica.
+
+Il fix D22 (helper `kw_bound` e routine `sc_string` in `seed/dev/core.js`) era **già
+committato** in `324e99b`; restavano non committati la sincronizzazione documentale
+(hash CI, `STATUS.md`, `CHANGELOG.md`, README del seed, mirror `wiki-content`), i due
+probe nuovi (`ok_keyword_confine`, `ok_keyword_inizio_sorgente`) e il gitlink del
+submodule `obsidian-triad/github-wiki`.
+
+### Cosa è stato fatto
+
+1. **Commit nel repo padre** (unico commit, senza riscritture di storia) con:
+   - `.github/workflows/ci.yml`: hash dei dump aggiornati (ELF `8457051f…`, PE
+     `20aa566d…`) **e** riparazione del job `linux-toolchain`: in `HEAD` il passo
+     «Launcher bin/triad esegue un programma» aveva una riga `run:` corrotta che
+     concatenava il passo successivo (`grep -q '^test` + testo del passo
+     «install.sh»), e i passi «Sessione desktop», «Smoke test negativo», «Conformance
+     via launcher installato» e «TRID native: discovery stage» erano duplicati dentro
+     `seed-linux`. Ora il job è di nuovo ben formato e senza duplicati;
+   - `STATUS.md` / `CHANGELOG.md`: sezione «D22 risolta» (le due voci esistevano già
+     nel working tree, non erano nel commit `324e99b`);
+   - `seed/README.md`, `seed/dev/README.md`, `seed/linux-x86_64/README.md`,
+     `seed/windows-x86_64/README.md`: contratto del seed, mappa etichette con
+     `kw_bound`/`sc_string`, hash e dimensioni aggiornati;
+   - `tests/probes/README.md`: matrice dei probe con `iffy`/`myif`/`endx`/`elsewhere`
+     e keyword al primo byte della sorgente; `bad_if_in_blocco*` → `ok_if_in_blocco*`;
+   - i due probe nuovi `tests/probes/ok_keyword_confine.{td,expected.out,expected.code}`
+     e `ok_keyword_inizio_sorgente.{td,expected.out,expected.code}`;
+   - i mirror in `obsidian-triad/wiki-content/` (`Doc-seed-README.md`,
+     `Doc-seed-dev-README.md`, `Doc-seed-linux-README.md`,
+     `Doc-seed-windows-README.md`);
+   - il **gitlink** del submodule `obsidian-triad/github-wiki` → `0d04bc7`.
+2. **Handoff** (questa sezione) scritto in `TASK.md` **dentro lo stesso commit**.
+3. **Mirror del wiki risincronizzati** (punto 3 dell'elenco aperto): `Doc-STATUS.md` e
+   `Doc-CHANGELOG.md` erano fermi al 2026-10-26 (37/37, hash `3A75A21E…`, ELF E0,
+   runner Julia, `seed-windows` in CI). Riscritti in italiano con lo stato corrente:
+   Core **42/42** byte-esatti sull'ELF nativo, **57** probe, logica **29/29**, guardie
+   23 test, PE 25088 byte / ELF 11977 byte con i hash correnti, divergenze D1–D25 del
+   contratto, S1 (front-end + motore logico), CI solo Linux nativi, cicli 2026-11-05 →
+   2026-11-09 (D22, D16, D25, rebuild, release `0.8.0-beta.10`, E1–E3, gate senza
+   esclusioni, D23, audit runtime, desktop, dispatch S1).
+   - `obsidian-triad/wiki-content/Doc-STATUS.md` e `Doc-CHANGELOG.md` (sorgente) →
+     copie identiche nel submodule → commit submodule `0d04bc7`
+     «docs: risincronizza i mirror Doc-STATUS.md e Doc-CHANGELOG.md» → **push** su
+     `origin/master` del wiki (`fdcc953..0d04bc7`).
+4. **`STATUS.md` allineato allo stato reale** (le sezioni «What is ready» /
+   «What is missing» erano ferme al 2026-11-05): conformance 39/39 → **42/42**,
+   probe 55 → **57**, `seed-linux` con `check_e1.sh` → `check_seed.sh`, job
+   `logic-engine` aggiunto all'elenco dei job CI, `--skip liste` → «gate senza
+   esclusioni», riga «Seed S0» aggiornata (PE+ELF, primitivi §8, `xs[i]`, hash),
+   riga `-=`, `*=` (ora implementate: resta `xs[i] += v`, D24), riga `liste`
+   (`xs[i]` 1-based, `xs[i] = v`, `push!` verdi), riga S1 (motore logico 29/29),
+   riga S4/M7 (ELF 11977 byte, parità 42/42 + 57/57).
+
+### Decisioni prese
+
+- **Nessuna decisione normativa nuova**: la sessione non ha modificato `SPEC.md`,
+  `SPEC-CORE.md` né il contratto del seed; il fix D22 era già deciso e implementato
+  (`324e99b`).
+- **Risincronizzazione dei mirror del wiki**: scelta di rifare i due mirror in forma
+  *condensa e in italiano* (come nello stile già presente), non come copia letterale
+  di `STATUS.md`/`CHANGELOG.md`: i mirror hanno un'intestazione wiki e un pubblico
+  diverso; la copertura dei fatti è completa per i dati verificabili (conteggi, hash,
+  dimensioni, divergenze, job CI).
+- **Riparazione di `ci.yml`**: il file in `HEAD` era corrotto da un merge (riga `run:`
+  corrotta + passi duplicati). Correzione considerata parte della sincronizzazione
+  documentale/hash, non un cambio di comportamento della CI.
+
+### Cosa manca (aperto, non toccato in questa sessione)
+
+- **D24** (`xs[i] += v`): assegnazione composta a indice — assente nel seed (exit 1,
+  divergenza `noisy`). È **oltre la grammatica di `SPEC-CORE.md`**; serve una
+  decisione normativa (estendere Core o restituire l'errore).
+- **D25** (interi a 62 bit effettivi vs 64 bit signed con wrap di `SPEC-CORE.md` §5):
+  il seed **rifiuta** il fuori range (exit 1) invece di produrre un numero sbagliato
+  in silenzio; i 64 bit restano un vincolo per S1. Decisione già parzialmente
+  documentata in `docs/adr/0003-range-interi-del-seed.md` — va estesa o confermata.
+- **N10** (rotazione del PAT esposto): resta un'**azione umana** (non trattabile
+  dall'agente).
+- **Stato di `main`**: il commit di questa sessione è locale; **push non eseguito**
+  (il push del submodule wiki è stato eseguito).
+- Restano aperte le righe N11–N14 già elencate più avanti in questo file (audit
+  TOCTOU, alert CodeQL, politica «libro fuori dal repo», capitoli `Libro-*.md`).
+
+### File toccati e modifiche
+
+| file | modifica |
+|---|---|
+| `.github/workflows/ci.yml` | hash dump PE/ELF aggiornati; job `linux-toolchain` riparato (riga `run:` corrotta + passi duplicati rimossi) |
+| `STATUS.md` | sezione D22; sezioni «What is ready»/«What is missing»/CI allineate allo stato reale (42/42, 57 probe, ELF 11977 byte, `logic-engine`, `check_seed.sh`) |
+| `CHANGELOG.md` | sezione D22 risolta |
+| `seed/README.md`, `seed/dev/README.md`, `seed/linux-x86_64/README.md`, `seed/windows-x86_64/README.md` | contratto del seed, etichette `kw_bound`/`sc_string`, hash e dimensioni |
+| `tests/probes/README.md` | matrice dei probe (keyword esatte, letterale in blocco) e guardie `G-D01`…`G-D21`, `G-D24` (`G-D22` rimossa) |
+| `tests/probes/ok_keyword_confine.{td,expected.out,expected.code}` | nuovo probe (identificatori che contengono una keyword) |
+| `tests/probes/ok_keyword_inizio_sorgente.{td,expected.out,expected.code}` | nuovo probe (keyword al primo byte della sorgente) |
+| `obsidian-triad/wiki-content/Doc-seed-README.md`, `Doc-seed-dev-README.md`, `Doc-seed-linux-README.md`, `Doc-seed-windows-README.md` | mirror dei README del seed (E2/E3, D22) |
+| `obsidian-triad/wiki-content/Doc-STATUS.md`, `Doc-CHANGELOG.md` | mirror risincronizzati (stato corrente al 2026-11-09) |
+| `obsidian-triad/github-wiki` | gitlink → `0d04bc7` (submodule: `Doc-STATUS.md`, `Doc-CHANGELOG.md` risincronizzati, push su `origin/master`) |
+| `TASK.md` | questo handoff |
+
+### Test di conformance eseguiti ed esito
+
+- `sh verify.sh` → **PASS** (`conformance/gate.sh` 42/42 senza esclusioni,
+  `tests/probes/run_probes.sh` **57 probe OK**, `conformance/logic/run.sh` **29/29**).
+- `node tools/site-gen/lint.mjs` → PASS (4 file, 0 errori, 0 avvisi).
+- `node tools/site-gen/build.mjs --check` → PASS (13 file coincidono con il generato).
+- `node tools/selfhost-guard/test.mjs` → PASS (23 test, 0 falliti).
+- Nessun golden riscritto; nessun dump, generatore o sorgente di runtime modificato
+  (solo documentazione, CI e due probe nuovi).
+
+### Prossimi passi
+
+1. **Push** del commit di questa sessione su `origin/main` (non eseguito: serve un
+   push esplicito del maintainer o del prossimo agente con permessi).
+2. **D25**: decidere se l'ADR 0003 va esteso (testi di riferimento, implicazioni per
+   S1) o se il vincolo 64 bit va mantenuto come-is con il rifiuto rumoroso del seed.
+3. **D24**: decidere se `xs[i] += v` entra in `SPEC-CORE.md` o resta un errore
+   dichiarato.
+4. **N10**: rotazione del PAT esposto (azione umana).
+5. Se si vuole chiudere la coda documentale: allineare i numeri storici citati
+   nelle sezioni «round 31–34» di `STATUS.md` (restano volutamente storici) e
+   riesaminare i mirror `Doc-SPEC*.md` del wiki.
+
+### Comando di ripresa
+
+```sh
+cd /home/votlazam/Documenti/progetti/triad2.0 && git log --oneline -3 && git status --short && sh verify.sh
+```
+
 ## Handoff — 2026-11-08 18:20: ciclo di rebuild del seed chiuso — `-=` corretto, contratto allineato (D6/D9/D13 fuori, D24/D25 dentro)
 
 ### Stato attuale e obiettivo della sessione
