@@ -201,9 +201,10 @@ function is_revoked(data, source)
 end
 
 function read_args()
-    need(length(ARGS) == 2, "usage: program.triad FIXTURE JOURNAL")
-    data = parse_file(ARGS[1])
-    history = parse_file(ARGS[2])
+    # S0 does not currently expose ARGS reliably. POSIX launcher passes two
+    # inherited read-only file descriptors; all parsing remains native Triad.
+    data = parse_file("/dev/fd/3")
+    history = parse_file("/dev/fd/4")
     validate_data(data)
     check_journal(history)
     return [data, history]
