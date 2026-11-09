@@ -181,9 +181,7 @@ function discover_target(data, target, journal, events)
 end
 
 println("TRACE-START")
-data = trid_data
-println("TRACE-ASSIGNED", length(data))
-journal = trid_history
+println("TRACE-DATA", length(data))
 println("TRACE-JOURNAL", length(journal))
 validate_data(data)
 println("TRACE-VALID")
