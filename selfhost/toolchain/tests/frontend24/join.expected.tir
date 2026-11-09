@@ -1,0 +1,16 @@
+start
+i32_frame 32
+i32_const 1
+i32_store 0
+i32_load 0
+i32_compare 1
+br_nonzero felse1
+i32_const 7
+i32_store 4
+jump fend1
+label felse1
+i32_const 11
+i32_store 4
+label fend1
+i32_load 4
+exit
