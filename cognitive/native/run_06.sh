@@ -11,7 +11,7 @@ if ! mkdir "$STATE/.lock" 2>/dev/null; then
     exit 1
 fi
 LOCK="$STATE/.lock"
-trap 'rm -f "$LOCK/rejected" "$LOCK/program.triad"; rmdir "$LOCK"' EXIT HUP INT TERM
+trap 'rm -f "$LOCK/rejected" "$LOCK/proofs.triad" "$LOCK/pulses.triad" "$LOCK/proofs.out" "$LOCK/pulses.out"; rmdir "$LOCK"' EXIT HUP INT TERM
 GRAPH="$STATE/graph.facts"
 [ -e "$GRAPH" ] || cp "$ROOT/cognitive/native/graph_06.facts" "$GRAPH"
 [ -f "$GRAPH" ] && [ -r "$GRAPH" ] || { echo 'TRID 0.6: invalid graph path' >&2; exit 1; }
@@ -31,6 +31,10 @@ if [ "$SIZE" -gt 16000 ]; then
     echo 'TRID 0.6: graph exceeds fixed size budget' >&2
     exit 1
 fi
-cat "$GRAPH" "$ROOT/cognitive/native/s1_graph_06.triad" > "$LOCK/program.triad"
-# S1 logical input is bounded, and no interpreter switch occurs on failure.
-"$ROOT/bin/triad" --logic "$LOCK/program.triad"
+# S1 uses a finite bump heap. Isolate repeated recursive proof queries from
+# propagation, so inference and salience cannot consume each other's budget.
+cat "$GRAPH" "$ROOT/cognitive/native/s1_graph_06.triad" "$ROOT/cognitive/native/queries_proof_06.triad" > "$LOCK/proofs.triad"
+cat "$GRAPH" "$ROOT/cognitive/native/s1_graph_06.triad" "$ROOT/cognitive/native/queries_pulse_06.triad" > "$LOCK/pulses.triad"
+"$ROOT/bin/triad" --logic "$LOCK/proofs.triad" > "$LOCK/proofs.out"
+"$ROOT/bin/triad" --logic "$LOCK/pulses.triad" > "$LOCK/pulses.out"
+cat "$LOCK/proofs.out" "$LOCK/pulses.out"
