@@ -40,6 +40,19 @@ jobs:
             echo "PREFIX: $boundary"
             ./bin/triad /tmp/prefix.triad; echo "prefix_rc=$?"
           done
+      - name: Diagnose print, strsub and user function calls
+        run: |
+          set +e
+          for expr in 'print("X")' 'print(strsub("abcd", 2, 2))' 'emit_digit(10)' 'emit_byte(127)'; do
+            sed '/^function emit_byte/,$ d' selfhost/toolchain/elf64_exit.triad > /tmp/narrow.triad
+            printf '\n%s\n' "$expr" >> /tmp/narrow.triad
+            echo "NARROW=$expr"
+            ./bin/triad /tmp/narrow.triad
+            echo "NARROW-RC=$?"
+          done
+          cp selfhost/toolchain/elf64_exit.triad /tmp/full.triad
+          printf 'print("L")\n' >> /tmp/full.triad
+          ./bin/triad /tmp/full.triad; echo "FULL-RC=$?"
       - name: Native ELF code generation using Triad-Core
         run: sh selfhost/toolchain/tests/run.sh
       - name: Ensure zero JavaScript and current Triad conformance
