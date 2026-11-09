@@ -132,10 +132,9 @@ function metrics(data, target, shape)
     tfp = testneg[1]
     tfn = testpos[2] - ttp
     score = 3 * tp - 5 * fp - 2 * fn
+    state = "experimental"
     if fp > 0 || tfp > 0
         state = "refuted"
-    else
-        state = "experimental"
     end
     return [shape, tp, fp, fn, ttp, tfp, tfn, score, state, proofs]
 end
