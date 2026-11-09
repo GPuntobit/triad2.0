@@ -157,6 +157,19 @@ jobs:
             "$GITHUB_WORKSPACE/bin/triad" "/tmp/trid-atom/f$i.triad"
             echo "flat-$i=$?"
           done
+      - name: Check seed symbol and string values
+        run: |
+          set +e
+          printf 's = "abc"\nprintln(s)\n' > /tmp/trid-atom/z1.triad
+          printf 'a = [:one, :two]\nprintln(length(a))\n' > /tmp/trid-atom/z2.triad
+          printf 'a = []\npush!(a, :one)\nprintln(length(a))\n' > /tmp/trid-atom/z3.triad
+          printf 'a = []\npush!(a, 1)\nprintln(length(a))\n' > /tmp/trid-atom/z4.triad
+          printf 'a = ["one"]\nprintln("done")\n' > /tmp/trid-atom/z5.triad
+          printf 'a = [:one]\nprintln("done")\n' > /tmp/trid-atom/z6.triad
+          for i in 1 2 3 4 5 6; do
+            "$GITHUB_WORKSPACE/bin/triad" "/tmp/trid-atom/z$i.triad"
+            echo "val-$i=$?"
+          done
       - name: Native S1 logic smoke test
         run: ./bin/triad --logic cognitive/native/s1_discovery.triad
       - name: Native Triad cognitive regression (no Python/Node interpreter)
