@@ -30,7 +30,6 @@ unchanged on their parent branch while native parity is being validated.
 ## Run (native S0, Linux)
 
 ```sh
-git switch feature/trid-native-core
 sh cognitive/native/tests/run.sh
 # user-specific persistent state directory, no root access:
 sh cognitive/native/run.sh
@@ -99,23 +98,22 @@ Once the experimental features pass native tests, improving the S0/S1 I/O
 interface and the type-safe representation of proof DAGs should be handled
 as separately reviewed language/runtime milestones.
 
-## Real GitHub Actions status — native migration is NOT yet complete
+## CI status and verification boundary
 
-The `TRID Native Core` workflow has executed on Ubuntu 24.04 using the
-machine-code seed. The stand-alone `s1_discovery.triad` sample **passed**
-the native S1 smoke check. The larger native S0
-`common.triad + discover.triad + verify.triad` implementation
-**still fails** with `seed: error` during discovery, and the end-to-end
-persistent-laboratory regression has **not passed**. The branch and PR must
-remain draft.
+The historical S0 verifier failure was addressed in merged PR #99.
+A [green TRID Native Core run](https://github.com/GPuntobit/triad2.0/actions/runs/42621287537)
+exists on an **older commit**: it must not be cited as proof that current `main`
+passes. The new [combined baseline workflow](../../.github/workflows/trid-baseline.yml)
+runs all five required suites on one checkout and records its SHA.
 
-The sources were adjusted for actual seed gaps (no function `return`,
-no reliable native string `==`, no usable `ARGS`), and a static seed
-guard pass is not a substitute for a real execution test. The current
-S0 implementation contains temporary diagnostic output; it is **not ready
-for persistent production data**. Do not treat it as a drop-in replacement
-for the Python reference tool until a native regression is green.
+The launcher rejects unexpected discovery stdout and malformed verifier
+projections before publishing them. A native verifier debug print has been
+removed. Fault injection checks that failures before publication preserve
+the pre-existing journal and memory bytes.
 
-The S1 sample is a verified native deduction **from a manually declared
-logical schema**; it is not autonomous rule synthesis. Existing Python
-0.3/0.4 tools remain retained for preservation and baseline comparison.
+**Not yet transactional:** journal and memory use two separate renames.
+A crash between them can expose inconsistent revisions. Recovery, backups
+and atomic multi-file publication remain TRID-005 and cannot be claimed here.
+
+The example S1 proofs remain conditional on manually supplied premises;
+there is no autonomous rule synthesis or free-text understanding.

@@ -222,7 +222,6 @@ end
 
 function check_history(facts, journal_rows)
     need(length(journal_rows) > 0, "empty hypothesis journal")
-    println(length(journal_rows))
     i = 1
     while i <= length(journal_rows)
         r = journal_rows[i]

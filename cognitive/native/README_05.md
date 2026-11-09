@@ -4,9 +4,10 @@ This is a **bounded, genuinely native Triad S1 logic experiment**, running via
 `./bin/triad --logic`. No Python, Node.js or external LLM is used to compute
 these deductions or the activation steps.
 
-It does **not** replace the unverified persistent S0 pipeline of 0.4. The old
-0.3/0.4 development reference tools and prior experimental branches stay
-unchanged. The 0.5 gate is independent of that unresolved S0 failure.
+It does **not** replace the separately tested persistent S0 pipeline of 0.4.
+The historical S0 verifier failure was addressed by merged PR #99, but the
+candidate commit still needs its own same-SHA CI evidence. The 0.5 gate is a
+separate, bounded S1 experiment.
 
 ## Run
 
@@ -71,8 +72,8 @@ this experiment does not learn rule shapes or change metadata automatically.
 - No automatically learned edge-strength weights, decay, or relevance ranking.
 - S1 remains bounded by the underlying seed limits (65,535 source bytes,
   finite memory/step budget).
-- The 0.4 native S0 journal transport must pass its independent CI before
-  any claim of complete 0.1–0.5 runtime migration.
+- The 0.4 S0 journal transport requires a passing gate on the same candidate
+  SHA before any claim of complete 0.1–0.5 migration.
 
 Next prioritize a native Triad source-backed graph with durable facts and a
 proof witness representation, then an independent revocation audit and

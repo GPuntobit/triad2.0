@@ -28,4 +28,9 @@ if sh "$ROOT/cognitive/native/run.sh" "$TMP/fixture.txt" > "$TMP/failed.out" 2>&
     exit 1
 fi
 grep -q 'journal sequence mismatch' "$TMP/failed.out"
+sh "$ROOT/cognitive/native/tests/run_transport.sh"
+if LC_ALL=C grep -E '^(DIAG-|NATIVE |TRID error:|[0-9]+$)' "$M" >/dev/null; then
+    echo 'TRID: diagnostics contaminated the committed memory' >&2
+    exit 1
+fi
 printf 'TRID-Core native migration: PASS\n'
