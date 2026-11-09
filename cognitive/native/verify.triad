@@ -95,7 +95,8 @@ function independent_metrics(data, target, shape)
     if fp > 0 || tfp > 0
         state = "refuted"
     end
-    [tp, fp, fn, ttp, tfp, tfn, score, state]
+    result = [tp, fp, fn, ttp, tfp, tfn, score, state]
+    result
 end
 
 function expected_choice(data, target, shape)
