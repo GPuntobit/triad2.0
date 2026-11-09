@@ -1,0 +1,310 @@
+# TRIAD S2.4 — native multi-variable i32 frontend and structured CFG checks.
+# Requires elf64_exit, assembler_s2_1, frontend_s2_3 for lexical tokenization.
+# Sources are real Triad-Core statements, but this is a restricted profile.
+# Every i32 variable receives a distinct 4-byte native stack slot.
+# A set of definitely-assigned slots is tracked at every structured CFG join.
+
+function mv_number(word)
+    ok = strlen(word) > 0 && strlen(word) <= 5
+    i = 1
+    while i <= strlen(word) && ok
+        ch = strbyte(word, i)
+        if ch < 48 || ch > 57
+            ok = false
+        end
+        i += 1
+    end
+    ok
+end
+
+function mv_name(name)
+    ok = asm_name_ok(name)
+    if asm_same(name, "if") || asm_same(name, "while") || asm_same(name, "else") || asm_same(name, "end") || asm_same(name, "exit") || asm_same(name, "true") || asm_same(name, "false") || asm_same(name, "nothing")
+        ok = false
+    end
+    ok
+end
+
+# Typed symbol table is flat: [identifier, stack-offset, identifier, offset].
+# All admitted values have type i32, with 8 slots at offsets 0,4,...28.
+function mv_slot(table, name)
+    result = -1
+    i = 1
+    while i <= length(table)
+        if asm_same(table[i], name)
+            result = table[i + 1]
+        end
+        i += 2
+    end
+    result
+end
+
+function mv_allocate(table, name)
+    asm_need(mv_name(name))
+    offset = mv_slot(table, name)
+    if offset < 0
+        count = 0
+        i = 1
+        while i <= length(table)
+            count += 1
+            i += 2
+        end
+        asm_need(count < 8)
+        offset = count * 4
+        push!(table, name)
+        push!(table, offset)
+    end
+    offset
+end
+
+# For bit mask of slots 0..7, check without bitwise or divide primitives.
+function mv_bit(offset)
+    asm_need(offset >= 0 && offset <= 28 && offset % 4 == 0)
+    result = 1
+    i = 0
+    while i < offset
+        result *= 2
+        i += 4
+    end
+    result
+end
+
+function mv_known(mask, offset)
+    bit = mv_bit(offset)
+    mask % (bit * 2) >= bit
+end
+
+function mv_mark(mask, offset)
+    result = mask
+    if !mv_known(mask, offset)
+        result += mv_bit(offset)
+    end
+    result
+end
+
+function mv_meet(then_mask, else_mask)
+    result = 0
+    offset = 0
+    while offset < 32
+        if mv_known(then_mask, offset) && mv_known(else_mask, offset)
+            result += mv_bit(offset)
+        end
+        offset += 4
+    end
+    result
+end
+
+function mv_require(table, mask, name)
+    asm_need(mv_name(name))
+    offset = mv_slot(table, name)
+    asm_need(offset >= 0 && mv_known(mask, offset))
+    offset
+end
+
+# Append expression's i32 value in EDI. The grammar is a single operand:
+# a decimal 0..65535 or a definitely initialized i32 variable.
+function mv_value(ir, table, mask, operand)
+    out = ir
+    if mv_number(operand)
+        number = asm_uint(operand)
+        if number == 0
+            out = front_line(out, "i32_zero")
+        else
+            out = front_line(out, "i32_const " * operand)
+        end
+    else
+        offset = mv_require(table, mask, operand)
+        out = front_line(out, "i32_load " * string(offset))
+    end
+    out
+end
+
+function mv_arithmetic(ir, table, mask, operator, operand)
+    out = ir
+    asm_need(asm_same(operator, "+") || asm_same(operator, "-"))
+    if mv_number(operand)
+        asm_uint(operand)
+        if asm_same(operator, "+")
+            out = front_line(ir, "i32_add " * operand)
+        else
+            out = front_line(ir, "i32_sub " * operand)
+        end
+    else
+        offset = mv_require(table, mask, operand)
+        if asm_same(operator, "+")
+            out = front_line(ir, "i32_add_slot " * string(offset))
+        else
+            out = front_line(ir, "i32_sub_slot " * string(offset))
+        end
+    end
+    out
+end
+
+# A condition is type Bool (comparison of two i32 values). The result is
+# carried in x86 flags, consumed immediately by a typed conditional branch.
+function mv_condition(ir, table, mask, lhs, rhs)
+    offset = mv_require(table, mask, lhs)
+    out = front_line(ir, "i32_load " * string(offset))
+    if mv_number(rhs)
+        number = asm_uint(rhs)
+        if number == 0
+            out = front_line(out, "i32_test_zero")
+        else
+            out = front_line(out, "i32_compare " * rhs)
+        end
+    else
+        other = mv_require(table, mask, rhs)
+        out = front_line(out, "i32_compare_slot " * string(other))
+    end
+    out
+end
+
+# Structured blocks have typed immutable frames:
+# [kind, block-id, parent-index, definitely-before, definitely-then].
+# At if+else join: definite initialization = intersection of both branches.
+# At if without else and at while exit: restore the pre-block set because
+# the branch/body may execute zero times. This is a conservative CFG analysis.
+function source_to_ir24(src)
+    words = front_words(src)
+    symbols = []
+    frames = []
+    ir = "start"
+    ir = front_line(ir, "i32_frame 32")
+    current = 0
+    mask = 0
+    block_id = 0
+    done = false
+    statements = 0
+    index = 1
+    while index <= length(words)
+        op = words[index]
+        if asm_same(op, "@")
+            index += 1
+        else
+            asm_need(!done)
+            step = 0
+            if asm_same(op, "while") || asm_same(op, "if")
+                asm_need(index + 5 <= length(words))
+                lhs = words[index + 1]
+                comparator = words[index + 2]
+                asm_need(asm_same(comparator, "=") || asm_same(comparator, "!"))
+                asm_need(asm_same(words[index + 3], "="))
+                rhs = words[index + 4]
+                asm_need(asm_same(words[index + 5], "@"))
+                block_id += 1
+                asm_need(block_id <= 90)
+                if asm_same(op, "while")
+                    ir = front_line(ir, "label wloop" * string(block_id))
+                end
+                ir = mv_condition(ir, symbols, mask, lhs, rhs)
+                target = "felse" * string(block_id)
+                if asm_same(op, "while")
+                    target = "wend" * string(block_id)
+                end
+                if asm_same(comparator, "!")
+                    ir = front_line(ir, "br_zero " * target)
+                else
+                    ir = front_line(ir, "br_nonzero " * target)
+                end
+                push!(frames, op)
+                push!(frames, block_id)
+                push!(frames, current)
+                push!(frames, mask)
+                push!(frames, 0)
+                current = length(frames) - 4
+                step = 6
+            elseif asm_same(op, "else")
+                asm_need(index + 1 <= length(words))
+                asm_need(asm_same(words[index + 1], "@"))
+                asm_need(current > 0 && asm_same(frames[current], "if"))
+                id = frames[current + 1]
+                before = frames[current + 3]
+                then_mask = mask
+                parent = frames[current + 2]
+                ir = front_line(ir, "jump fend" * string(id))
+                ir = front_line(ir, "label felse" * string(id))
+                push!(frames, "else")
+                push!(frames, id)
+                push!(frames, parent)
+                push!(frames, before)
+                push!(frames, then_mask)
+                current = length(frames) - 4
+                mask = before
+                step = 2
+            elseif asm_same(op, "end")
+                asm_need(index + 1 <= length(words))
+                asm_need(asm_same(words[index + 1], "@"))
+                asm_need(current > 0)
+                kind = frames[current]
+                id = frames[current + 1]
+                parent = frames[current + 2]
+                before = frames[current + 3]
+                if asm_same(kind, "while")
+                    ir = front_line(ir, "jump wloop" * string(id))
+                    ir = front_line(ir, "label wend" * string(id))
+                    mask = before
+                elseif asm_same(kind, "if")
+                    ir = front_line(ir, "label felse" * string(id))
+                    mask = before
+                else
+                    asm_need(asm_same(kind, "else"))
+                    ir = front_line(ir, "label fend" * string(id))
+                    mask = mv_meet(frames[current + 4], mask)
+                end
+                current = parent
+                step = 2
+            elseif asm_same(op, "exit")
+                # A top-level exit is compulsory, and uses a known i32 slot.
+                asm_need(current == 0 && index + 4 <= length(words))
+                asm_need(asm_same(words[index + 1], "("))
+                name = words[index + 2]
+                asm_need(asm_same(words[index + 3], ")"))
+                asm_need(asm_same(words[index + 4], "@"))
+                slot = mv_require(symbols, mask, name)
+                ir = front_line(ir, "i32_load " * string(slot))
+                ir = front_line(ir, "exit")
+                done = true
+                step = 5
+            else
+                # Assignment and compound update, with automatic i32 typing.
+                asm_need(mv_name(op))
+                asm_need(index + 3 <= length(words))
+                operator = words[index + 1]
+                slot = mv_allocate(symbols, op)
+                if asm_same(operator, "=")
+                    operand = words[index + 2]
+                    next = words[index + 3]
+                    if asm_same(next, "@")
+                        ir = mv_value(ir, symbols, mask, operand)
+                        step = 4
+                    else
+                        asm_need(asm_same(next, "+") || asm_same(next, "-"))
+                        asm_need(index + 5 <= length(words))
+                        final = words[index + 4]
+                        asm_need(asm_same(words[index + 5], "@"))
+                        ir = mv_value(ir, symbols, mask, operand)
+                        ir = mv_arithmetic(ir, symbols, mask, next, final)
+                        step = 6
+                    end
+                else
+                    asm_need(asm_same(operator, "+") || asm_same(operator, "-"))
+                    asm_need(index + 4 <= length(words))
+                    asm_need(asm_same(words[index + 2], "="))
+                    operand = words[index + 3]
+                    asm_need(asm_same(words[index + 4], "@"))
+                    mv_require(symbols, mask, op)
+                    ir = front_line(ir, "i32_load " * string(slot))
+                    ir = mv_arithmetic(ir, symbols, mask, operator, operand)
+                    step = 5
+                end
+                ir = front_line(ir, "i32_store " * string(slot))
+                mask = mv_mark(mask, slot)
+            end
+            statements += 1
+            asm_need(statements <= 240 && strlen(ir) <= 12000)
+            index += step
+        end
+    end
+    asm_need(done && current == 0 && length(symbols) > 0)
+    ir
+end
