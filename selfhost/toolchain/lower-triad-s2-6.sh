@@ -26,12 +26,11 @@ cmp -s "$src" "$TMP/allowed" || { echo 'S2.6: unsafe source bytes' >&2; exit 2; 
 } > "$TMP/frontend.triad"
 if ! "$ROOT/bin/triad" "$TMP/frontend.triad" > "$TMP/ir"; then
     echo 'S2.6: Triad AST/type frontend rejected input' >&2
-    head -c 1800 "$TMP/ir" >&2
     exit 1
 fi
 [ -s "$TMP/ir" ] && [ "$(wc -c < "$TMP/ir")" -le 12000 ] || { echo 'S2.6: IR size invalid' >&2; exit 1; }
 tr -cd 'a-z0-9_ \n' < "$TMP/ir" > "$TMP/clean"
-cmp -s "$TMP/ir" "$TMP/clean" || { echo 'S2.6: non-IR output' >&2; head -c 2500 "$TMP/ir" >&2; exit 1; }
+cmp -s "$TMP/ir" "$TMP/clean" || { echo 'S2.6: non-IR output' >&2; exit 1; }
 IFS= read -r first < "$TMP/ir"
 [ "$first" = start ] || { echo 'S2.6: invalid IR entry' >&2; exit 1; }
 mv "$TMP/ir" "$dest"
