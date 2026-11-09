@@ -4,7 +4,7 @@
 # Source-labelled deductions remain conditional; activation is NOT belief.
 
 # Cycle guard for finite list of visited nodes.
-rule in_path(?x, [?x | ?rest])
+rule in_path(?x, [?x | ?rest]) :- ?x == ?x
 rule in_path(?x, [?head | ?rest]) :- in_path(?x, ?rest)
 
 # Find all simple (cycle-free) evidence paths, arbitrary finite graph topology.
