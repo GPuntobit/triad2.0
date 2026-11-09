@@ -1,6 +1,6 @@
 function increment(value)
     next = value + 3
-    return next
+    next
 end
 a = 4
 answer = increment(a)
