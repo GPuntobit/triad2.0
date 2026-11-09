@@ -23,13 +23,7 @@
 // =====================================================================
 
 import {
-  BLIND_UP,
-  KEYWORDS,
   BINARY_OPS,
-  blindKeywordIn,
-  blindDownKeywordIn,
-  blockRanges,
-  insideBlock,
   lastCodeTokenPerLine,
 } from './scan.mjs';
 import { seedLocalsOf, isStringExpr, isBoolExpr, boundIn } from './analysis.mjs';
@@ -482,92 +476,10 @@ export const RULES = [
     },
   },
 
-  // ---------------------------------------------------------------- D22
-  {
-    id: 'G-D22',
-    divergence: 'D22',
-    title: 'keyword cieche del seed: identificatore che inizia con una keyword, o keyword dentro un corpo di blocco',
-    level: 'error',
-    check(ctx) {
-      const out = [];
-      const ranges = blockRanges(ctx.scan.tokens);
-      // (a) posizione di statement: un identificatore che *inizia* con una
-      //     keyword viene scambiato dal seed per il costrutto (misurato:
-      //     `ifx = 1` fallisce con exit 1)
-      // (b) dentro un corpo di blocco: il contatore di annidamento del seed
-      //     e' cieco e conta le keyword confrontando i byte grezzi; a
-      //     livello di programma invece non le conta (misurato)
-      for (const t of ctx.scan.tokens) {
-        if (t.type === 'ident') {
-          if (KEYWORDS.has(t.value)) continue;
-          const head = BLIND_UP.find((kw) => t.value.startsWith(kw));
-          if (head) {
-            out.push({
-              line: t.line,
-              msg: `l'identificatore \`${t.value}\` inizia con \`${head}\`: il seed lo scambia per ` +
-                'il costrutto e la sua esecuzione fallisce (exit 1)',
-            });
-            continue;
-          }
-          const up = blindKeywordIn(t.value);
-          if (up) {
-            const at = t.pos + t.value.indexOf(up);
-            const blk = insideBlock(ranges, at);
-            if (!blk) continue;
-            out.push({
-              line: t.line,
-              msg: `l'identificatore \`${t.value}\` contiene \`${up}\` dentro un corpo di ` +
-                `\`${blk.label}\`: il seed conta le keyword confrontando i byte grezzi e sbaglia ` +
-                "l'annidamento dei blocchi (exit 1)",
-            });
-            continue;
-          }
-          const down = blindDownKeywordIn(t.value);
-          if (down) {
-            const at = t.pos + t.value.indexOf(down);
-            const blk = insideBlock(ranges, at);
-            if (!blk) continue;
-            out.push({
-              line: t.line,
-              level: 'warn',
-              msg: `l'identificatore \`${t.value}\` contiene \`${down}\` dentro un corpo di ` +
-                `\`${blk.label}\`: il seed conta anche le keyword che chiudono un blocco e puo' ` +
-                'spostare la fine del blocco',
-            });
-          }
-          continue;
-        }
-        if (t.type === 'string') {
-          const up = blindKeywordIn(t.value);
-          if (up) {
-            const at = t.pos + 1 + t.value.indexOf(up);
-            const blk = insideBlock(ranges, at);
-            if (!blk) continue;
-            out.push({
-              line: t.line,
-              msg: `il letterale contiene \`${up}\` dentro un corpo di \`${blk.label}\`: il seed ` +
-                "conta le keyword confrontando i byte grezzi e sbaglia l'annidamento dei blocchi " +
-                '(exit 1)',
-            });
-            continue;
-          }
-          const down = blindDownKeywordIn(t.value);
-          if (down) {
-            const at = t.pos + 1 + t.value.indexOf(down);
-            const blk = insideBlock(ranges, at);
-            if (!blk) continue;
-            out.push({
-              line: t.line,
-              level: 'warn',
-              msg: `il letterale contiene \`${down}\` dentro un corpo di \`${blk.label}\`: il seed ` +
-                "puo' spostare la fine del blocco",
-            });
-          }
-        }
-      }
-      return out;
-    },
-  },
+  // D22 e' risolta dal seed (2026-11-09): le parole chiave sono riconosciute
+  // come token *esatti* (confine bilatero: `iffy`, `myif`, `endx` non sono
+  // keyword) e il testo di un letterale non conta per l'annidamento dei
+  // blocchi. La guardia G-D22 e' quindi rimossa, come G-D06/G-D09/G-D13.
 
   // ---------------------------------------------------------------- D24
   {

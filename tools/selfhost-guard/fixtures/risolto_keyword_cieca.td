@@ -1,5 +1,10 @@
-# D22 — il seed conta le keyword confrontando i byte grezzi.
+# D22 risolta — il seed riconosce le parole chiave come token esatti e il
+# testo di un letterale non conta per l'annidamento dei blocchi.
 if true
-  s = "if"
+  s = "if end else while function let"
+  iffy = 1
+  myif = 2
+  println(s)
+  println(iffy)
+  println(myif)
 end
-println(s)

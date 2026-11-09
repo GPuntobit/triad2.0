@@ -18,7 +18,6 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..');
 
-const BLOCK_OPEN = new Set(['function', 'if', 'while', 'let', 'begin']);
 const BOOTSTRAP_ONLY = new Set(['readfile', 'strlen', 'strbyte', 'strsub', 'ARGS']);
 
 /** Tokenizza il sorgente Triad: stringhe, commenti, identificatori, numeri, punteggiatura. */
@@ -104,20 +103,12 @@ function lintFile(file) {
   const { tokens, errors } = tokenize(src, file);
   for (const e of errors) add('error', e.line, 'E002', e.msg);
 
-  // --- profondità dei blocchi + letterali dentro i blocchi -------------
-  const depth = [];
-  let depthNow = 0;
+  // --- letterali: escape e righe multiple ------------------------------
+  // Nota: la regola E010 (letterale con "if" dentro un blocco) e' stata
+  // rimossa il 2026-11-09: il seed riconosce le parole chiave come token
+  // esatti e salta il testo di un letterale quando scandisce la fine di un
+  // blocco, quindi un letterale puo' contenere "if" anche dentro un blocco.
   for (const t of tokens) {
-    if (t.type === 'ident') {
-      if (BLOCK_OPEN.has(t.value)) { depth.push(t.value); depthNow++; }
-      else if (t.value === 'end') { depth.pop(); depthNow = Math.max(0, depthNow - 1); }
-    }
-    if (t.type === 'string' && depthNow > 0 && t.value.includes('if')) {
-      add('error', t.line, 'E010',
-        `letterale con la sottostringa "if" dentro un blocco (${depth[depth.length - 1] ?? '?'}): ` +
-        'il seed conta le occorrenze di "if" nel testo e sbaglia l\'annidamento. ' +
-        'Sposta il contenuto fuori dal blocco o riformulalo senza "if".');
-    }
     if (t.type === 'string' && /\\[ntr"\\]/.test(t.value)) {
       add('error', t.line, 'E011',
         'escape non interpretato nella stringa: il seed stampa i due caratteri e fallisce su \\". ' +
