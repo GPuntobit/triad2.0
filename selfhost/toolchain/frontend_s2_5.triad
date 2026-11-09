@@ -123,48 +123,6 @@ end
 
 # Every assignment compiles through the AST, including a function call.
 # 'state' is [definite-assignment mask, function name, arity, in_function].
-function f25_assign(ir, vars, state, words)
-    asm_need(length(words) >= 3)
-    target = words[1]
-    asm_need(f25_name(target) && asm_same(words[2], "="))
-    node = f25_expr(words, 3, length(words))
-    kind = node[1]
-    node_type = node[2]
-    first = node[3]
-    second = node[4]
-    third = node[5]
-    asm_need(asm_same(node_type, "i32"))
-    mask = state[1]
-    out = ir
-    if asm_same(kind, "binary")
-        out = mv_value(out, vars, mask, first)
-        operation = second * third
-        out = mv_arithmetic(out, vars, mask, operation)
-    elseif asm_same(kind, "call")
-        asm_need(!state[4])
-        function_name = state[2]
-        arity = state[3]
-        asm_need(asm_same(first, function_name))
-        if arity == 1
-            asm_need(strlen(third) == 0)
-        else
-            asm_need(arity == 2 && strlen(third) > 0)
-        end
-        out = mv_value(out, vars, mask, second)
-        if arity == 2
-            out = f25_second(out, vars, mask, third)
-        end
-        out = front_line(out, "i32_call " * function_name)
-    else
-        out = mv_value(out, vars, mask, first)
-    end
-    asm_need(strlen(out) <= 11900)
-    slot = mv_allocate(vars, target)
-    out = front_line(out, "i32_store " * string(slot))
-    mask = mv_mark(mask, slot)
-    [out, mask]
-end
-
 # Program:
 # function name(p1[, p2])
 #   local = operand [+|- operand]
@@ -243,10 +201,26 @@ function source_to_ir25(src)
                         phase = 2
                     else
                         asm_need(!saw_return)
-                        state = [local_mask, function_name, parameters, true]
-                        pair = f25_assign(body_ir, locals, state, words)
-                        body_ir = pair[1]
-                        local_mask = pair[2]
+                        asm_need(length(words) >= 3 && asm_same(words[2], "="))
+                        dest = words[1]
+                        asm_need(f25_name(dest))
+                        node = f25_expr(words, 3, length(words))
+                        kind = node[1]
+                        lhs = node[3]
+                        operation = node[4]
+                        rhs = node[5]
+                        asm_need(asm_same(node[2], "i32"))
+                        asm_need(!asm_same(kind, "call"))
+                        if asm_same(kind, "binary")
+                            body_ir = mv_value(body_ir, locals, local_mask, lhs)
+                            expression = operation * rhs
+                            body_ir = mv_arithmetic(body_ir, locals, local_mask, expression)
+                        else
+                            body_ir = mv_value(body_ir, locals, local_mask, lhs)
+                        end
+                        slot = mv_allocate(locals, dest)
+                        body_ir = front_line(body_ir, "i32_store " * string(slot))
+                        local_mask = mv_mark(local_mask, slot)
                     end
                 else
                     asm_need(phase == 2)
@@ -260,14 +234,38 @@ function source_to_ir25(src)
                     else
                         asm_need(!asm_same(op, "function") && !asm_same(op, "end"))
                         asm_need(length(words) >= 3)
+                        asm_need(asm_same(words[2], "="))
+                        dest = words[1]
+                        asm_need(f25_name(dest))
                         node = f25_expr(words, 3, length(words))
-                        if asm_same(node[1], "call")
+                        kind = node[1]
+                        lhs = node[3]
+                        operation = node[4]
+                        rhs = node[5]
+                        asm_need(asm_same(node[2], "i32"))
+                        if asm_same(kind, "call")
+                            asm_need(asm_same(lhs, function_name))
+                            if parameters == 1
+                                asm_need(strlen(rhs) == 0)
+                            else
+                                asm_need(parameters == 2 && strlen(rhs) > 0)
+                            end
+                            main_ir = mv_value(main_ir, globals, main_mask, operation)
+                            if parameters == 2
+                                main_ir = f25_second(main_ir, globals, main_mask, rhs)
+                            end
+                            main_ir = front_line(main_ir, "i32_call " * function_name)
                             saw_call = true
+                        elseif asm_same(kind, "binary")
+                            main_ir = mv_value(main_ir, globals, main_mask, lhs)
+                            expression = operation * rhs
+                            main_ir = mv_arithmetic(main_ir, globals, main_mask, expression)
+                        else
+                            main_ir = mv_value(main_ir, globals, main_mask, lhs)
                         end
-                        state = [main_mask, function_name, parameters, false]
-                        pair = f25_assign(main_ir, globals, state, words)
-                        main_ir = pair[1]
-                        main_mask = pair[2]
+                        slot = mv_allocate(globals, dest)
+                        main_ir = front_line(main_ir, "i32_store " * string(slot))
+                        main_mask = mv_mark(main_mask, slot)
                     end
                 end
                 count += 1
