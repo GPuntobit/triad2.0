@@ -28,6 +28,18 @@ jobs:
             head -c 160 /tmp/triad-probe-out
             echo
           done
+
+      - name: Native Core parser prefix diagnostic (nonblocking)
+        run: |
+          set +e
+          printf 'println("CORE-BASE")\n' > /tmp/basic.triad
+          ./bin/triad /tmp/basic.triad; echo "base=$?"
+          for boundary in 'function emit_byte' 'function emit_zeros' 'function emit_le' 'function mov_edi_imm32' 'function emit_elf_exit' 'unused_boundary'; do
+            sed "/^$boundary/,$ d" selfhost/toolchain/elf64_exit.triad > /tmp/prefix.triad
+            printf '\nprintln("CORE-PREFIX")\n' >> /tmp/prefix.triad
+            echo "PREFIX: $boundary"
+            ./bin/triad /tmp/prefix.triad; echo "prefix_rc=$?"
+          done
       - name: Native ELF code generation using Triad-Core
         run: sh selfhost/toolchain/tests/run.sh
       - name: Ensure zero JavaScript and current Triad conformance
