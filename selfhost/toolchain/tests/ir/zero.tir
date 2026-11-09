@@ -1,0 +1,6 @@
+start
+i32_zero
+i32_inc
+i32_inc
+i32_dec
+exit
