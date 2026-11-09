@@ -221,33 +221,33 @@ function proof_count(history, name, shape)
     count
 end
 
-function check_history(data, history)
+function check_history(facts, journal_rows)
     println("DIAG-HISTORY-ENTER")
-    need(length(history) > 0, "empty hypothesis journal")
-    println("DIAG-HISTORY-LENGTH ", length(history))
+    need(length(journal_rows) > 0, "empty hypothesis journal")
+    println("DIAG-HISTORY-LENGTH ", length(journal_rows))
     i = 1
-    while i <= length(history)
-        r = history[i]
+    while i <= length(journal_rows)
+        r = journal_rows[i]
         if same(r[3], "evaluation")
             need(length(r) == 15, "invalid evaluation event")
-            target = target_for(data, r[4])
+            target = target_for(facts, r[4])
             need(length(target) == 4, "evaluation target missing")
-            m = independent_metrics(data, target, r[5])
+            m = independent_metrics(facts, target, r[5])
             need(same(r[6], m[8]) && same(r[7], m[1]) && same(r[8], m[2]) && same(r[9], m[3]), "evaluation training mismatch")
             need(same(r[10], m[4]) && same(r[11], m[5]) && same(r[12], m[6]) && same(r[13], m[7]), "evaluation testing mismatch")
             expected = "no"
-            if expected_choice(data, target, r[5])
+            if expected_choice(facts, target, r[5])
                 expected = "yes"
             end
             need(same(r[14], expected), "selected rule mismatch")
         elseif same(r[3], "proof")
             need(length(r) == 11, "invalid proof record")
-            target = target_for(data, r[4])
+            target = target_for(facts, r[4])
             need(length(target) == 4, "proof target missing")
-            ev = find_eval(history, r[4], r[5])
+            ev = find_eval(journal_rows, r[4], r[5])
             need(length(ev) == 15, "missing proof rule")
             need(same(ev[14], "yes") && same(ev[6], "experimental"), "proof for invalid candidate")
-            need(proven_witness(data, r, target), "false ground proof")
+            need(proven_witness(facts, r, target), "false ground proof")
         else
             need(false, "unknown journal event")
         end
