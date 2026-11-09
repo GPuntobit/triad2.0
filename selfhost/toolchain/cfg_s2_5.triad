@@ -1,0 +1,223 @@
+# S2.5 independent native CFG definite-assignment verifier.
+# Dataflow is a MONOTONE FIXED-POINT over a bounded instruction CFG,
+# not a single forward lexical pass. A reachable read requires every
+# predecessor to have definitely assigned its i32 stack slot.
+# Both _start and the one function label are CFG entry nodes.
+# Triad-native analysis; POSIX only transports source bytes.
+
+function cfg25_target(ops, args, name)
+    result = 0
+    i = 1
+    while i <= length(ops)
+        if asm_same(ops[i], "label") && asm_same(args[i], name)
+            asm_need(result == 0)
+            result = i
+        end
+        i += 1
+    end
+    result
+end
+
+# Real control-flow edges: fallthrough, jmp, and both outcomes of a branch.
+# call is intentionally a fallthrough edge for caller's return path; the
+# function body is also analyzed as its own entry with fresh stack state.
+function cfg25_edge(ops, args, predecessor, successor)
+    op = ops[predecessor]
+    edge = false
+    if asm_same(op, "jump")
+        dest = cfg25_target(ops, args, args[predecessor])
+        asm_need(dest > 0)
+        edge = dest == successor
+    elseif asm_same(op, "br_zero") || asm_same(op, "br_nonzero")
+        dest = cfg25_target(ops, args, args[predecessor])
+        asm_need(dest > 0)
+        edge = dest == successor || successor == predecessor + 1
+    elseif !asm_same(op, "exit") && !asm_same(op, "return")
+        edge = successor == predecessor + 1
+    end
+    edge
+end
+
+function cfg25_bit(offset)
+    asm_need(offset >= 0 && offset <= 28 && offset % 4 == 0)
+    b = 1
+    i = 0
+    while i < offset
+        b *= 2
+        i += 4
+    end
+    b
+end
+
+function cfg25_known(mask, offset)
+    b = cfg25_bit(offset)
+    mask % (b * 2) >= b
+end
+
+function cfg25_add(mask, offset)
+    result = mask
+    if !cfg25_known(mask, offset)
+        result += cfg25_bit(offset)
+    end
+    result
+end
+
+function cfg25_intersect(a, b)
+    result = 0
+    offset = 0
+    while offset <= 28
+        if cfg25_known(a, offset) && cfg25_known(b, offset)
+            result += cfg25_bit(offset)
+        end
+        offset += 4
+    end
+    result
+end
+
+function cfg25_read(op)
+    asm_same(op, "i32_load") || asm_same(op, "i32_add_slot") || asm_same(op, "i32_sub_slot") || asm_same(op, "i32_compare_slot") || asm_same(op, "i32_arg2_load")
+end
+
+function cfg25_write(op)
+    asm_same(op, "i32_store") || asm_same(op, "i32_arg2_store")
+end
+
+# 4-argument helper: calculate the in-mask for one node from all reachable
+# predecessors' previous out-masks, then append the new transfer result.
+# Arrays are rebuilt each round: S0 does not need mutable indexed stores.
+function cfg25_step(graph, previous, index, roots)
+    ops = graph[1]
+    args = graph[2]
+    prior_out = previous[1]
+    prior_reach = previous[2]
+    reachable = false
+    in_mask = 255
+    if index == 1 || index == roots
+        reachable = true
+        in_mask = 0
+    else
+        pred = 1
+        while pred <= length(ops)
+            if prior_reach[pred] && cfg25_edge(ops, args, pred, index)
+                if !reachable
+                    in_mask = prior_out[pred]
+                else
+                    in_mask = cfg25_intersect(in_mask, prior_out[pred])
+                end
+                reachable = true
+            end
+            pred += 1
+        end
+    end
+    out_mask = in_mask
+    if reachable && cfg25_write(ops[index])
+        offset = asm_uint(args[index])
+        out_mask = cfg25_add(in_mask, offset)
+    end
+    [in_mask, out_mask, reachable]
+end
+
+function cfg25_verify(src)
+    asm_need(strlen(src) > 0 && strlen(src) <= 12000)
+    ops = []
+    args = []
+    pos = 1
+    while pos <= strlen(src)
+        line_end = pos
+        while line_end <= strlen(src) && strbyte(src, line_end) != 10
+            line_end += 1
+        end
+        if line_end > pos
+            words = asm_tokens(strsub(src, pos, line_end - 1))
+            if !asm_same(words[1], "@")
+                asm_need(length(words) == 2 || length(words) == 3)
+                push!(ops, words[1])
+                value = ""
+                if length(words) == 3
+                    value = words[2]
+                end
+                push!(args, value)
+                asm_need(length(ops) <= 48)
+            end
+        end
+        pos = line_end + 1
+    end
+    n = length(ops)
+    asm_need(n > 5 && asm_same(ops[1], "start"))
+    call_name = ""
+    found_exit = false
+    function_root = 0
+    i = 1
+    while i <= n
+        op = ops[i]
+        if asm_same(op, "exit")
+            found_exit = true
+        elseif asm_same(op, "i32_call")
+            asm_need(!asm_same(args[i], ""))
+            if strlen(call_name) == 0
+                call_name = args[i]
+            else
+                asm_need(asm_same(call_name, args[i]))
+            end
+        end
+        i += 1
+    end
+    asm_need(found_exit && strlen(call_name) > 0)
+    function_root = cfg25_target(ops, args, call_name)
+    asm_need(function_root > 1 && function_root < n)
+    asm_need(asm_same(ops[function_root + 1], "i32_enter"))
+    # Check all jump targets, including unreachable labels, before dataflow.
+    i = 1
+    while i <= n
+        if asm_same(ops[i], "jump") || asm_same(ops[i], "br_zero") || asm_same(ops[i], "br_nonzero")
+            asm_need(cfg25_target(ops, args, args[i]) > 0)
+        end
+        i += 1
+    end
+    old_out = []
+    old_reach = []
+    i = 1
+    while i <= n
+        push!(old_out, 255)
+        push!(old_reach, false)
+        i += 1
+    end
+    graph = [ops, args]
+    stable = false
+    rounds = 0
+    final_in = []
+    final_reach = []
+    while !stable && rounds <= n + 1
+        new_out = []
+        new_reach = []
+        new_in = []
+        stable = true
+        i = 1
+        previous = [old_out, old_reach]
+        while i <= n
+            state = cfg25_step(graph, previous, i, function_root)
+            push!(new_in, state[1])
+            push!(new_out, state[2])
+            push!(new_reach, state[3])
+            if old_out[i] != state[2] || old_reach[i] != state[3]
+                stable = false
+            end
+            i += 1
+        end
+        old_out = new_out
+        old_reach = new_reach
+        final_in = new_in
+        final_reach = new_reach
+        rounds += 1
+    end
+    asm_need(stable)
+    i = 1
+    while i <= n
+        if final_reach[i] && cfg25_read(ops[i])
+            offset = asm_uint(args[i])
+            asm_need(cfg25_known(final_in[i], offset))
+        end
+        i += 1
+    end
+    true
+end

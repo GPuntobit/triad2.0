@@ -84,7 +84,7 @@ function asm_tokens(src)
 end
 
 function asm_has_arg(op)
-    asm_same(op, "label") || asm_same(op, "byte") || asm_same(op, "mov_edi") || asm_same(op, "mov_eax") || asm_same(op, "mov_edx") || asm_same(op, "add_edi") || asm_same(op, "sub_edi") || asm_same(op, "cmp_edi") || asm_same(op, "sub_rsp") || asm_same(op, "add_rsp") || asm_same(op, "load_edi_rsp") || asm_same(op, "store_edi_rsp") || asm_same(op, "add_edi_rsp") || asm_same(op, "sub_edi_rsp") || asm_same(op, "cmp_edi_rsp") || asm_same(op, "jmp") || asm_same(op, "jz") || asm_same(op, "jnz") || asm_same(op, "call") || asm_same(op, "lea_rsi")
+    asm_same(op, "label") || asm_same(op, "byte") || asm_same(op, "mov_edi") || asm_same(op, "mov_eax") || asm_same(op, "mov_edx") || asm_same(op, "add_edi") || asm_same(op, "sub_edi") || asm_same(op, "cmp_edi") || asm_same(op, "sub_rsp") || asm_same(op, "add_rsp") || asm_same(op, "load_edi_rsp") || asm_same(op, "store_edi_rsp") || asm_same(op, "add_edi_rsp") || asm_same(op, "sub_edi_rsp") || asm_same(op, "cmp_edi_rsp") || asm_same(op, "load_esi_rsp") || asm_same(op, "store_esi_rsp") || asm_same(op, "mov_esi") || asm_same(op, "jmp") || asm_same(op, "jz") || asm_same(op, "jnz") || asm_same(op, "call") || asm_same(op, "lea_rsi")
 end
 
 function asm_is_target(op)
@@ -97,13 +97,13 @@ function asm_size(op)
         n = 0
     elseif asm_same(op, "byte") || asm_same(op, "nop") || asm_same(op, "ret")
         n = 1
-    elseif asm_same(op, "syscall") || asm_same(op, "xor_edi") || asm_same(op, "inc_edi") || asm_same(op, "dec_edi") || asm_same(op, "test_edi")
+    elseif asm_same(op, "syscall") || asm_same(op, "xor_edi") || asm_same(op, "inc_edi") || asm_same(op, "dec_edi") || asm_same(op, "test_edi") || asm_same(op, "mov_eax_edi") || asm_same(op, "mov_edi_eax")
         n = 2
-    elseif asm_same(op, "mov_edi") || asm_same(op, "mov_eax") || asm_same(op, "mov_edx") || asm_same(op, "jmp") || asm_same(op, "call")
+    elseif asm_same(op, "mov_edi") || asm_same(op, "mov_eax") || asm_same(op, "mov_edx") || asm_same(op, "mov_esi") || asm_same(op, "jmp") || asm_same(op, "call")
         n = 5
     elseif asm_same(op, "add_edi") || asm_same(op, "sub_edi") || asm_same(op, "cmp_edi") || asm_same(op, "jz") || asm_same(op, "jnz")
         n = 6
-    elseif asm_same(op, "load_edi_rsp") || asm_same(op, "store_edi_rsp") || asm_same(op, "add_edi_rsp") || asm_same(op, "sub_edi_rsp") || asm_same(op, "cmp_edi_rsp")
+    elseif asm_same(op, "load_edi_rsp") || asm_same(op, "store_edi_rsp") || asm_same(op, "add_edi_rsp") || asm_same(op, "sub_edi_rsp") || asm_same(op, "cmp_edi_rsp") || asm_same(op, "load_esi_rsp") || asm_same(op, "store_esi_rsp")
         n = 4
     elseif asm_same(op, "lea_rsi") || asm_same(op, "sub_rsp") || asm_same(op, "add_rsp")
         n = 7
@@ -169,23 +169,33 @@ function asm_encode(op, arg, here, symbols)
         out = "ffcf"
     elseif asm_same(op, "test_edi")
         out = "85ff"
+    elseif asm_same(op, "mov_eax_edi")
+        out = "89f8"
+    elseif asm_same(op, "mov_edi_eax")
+        out = "89c7"
     elseif asm_same(op, "mov_edi")
         out = mov_edi(asm_uint(arg))
     elseif asm_same(op, "mov_eax")
         out = mov_eax(asm_uint(arg))
     elseif asm_same(op, "mov_edx")
         out = "ba" * little(asm_uint(arg), 4)
+    elseif asm_same(op, "mov_esi")
+        out = "be" * little(asm_uint(arg), 4)
     elseif asm_same(op, "add_edi")
         out = "81c7" * little(asm_uint(arg), 4)
     elseif asm_same(op, "sub_edi")
         out = "81ef" * little(asm_uint(arg), 4)
     elseif asm_same(op, "cmp_edi")
         out = "81ff" * little(asm_uint(arg), 4)
-    elseif asm_same(op, "load_edi_rsp") || asm_same(op, "store_edi_rsp") || asm_same(op, "add_edi_rsp") || asm_same(op, "sub_edi_rsp") || asm_same(op, "cmp_edi_rsp")
+    elseif asm_same(op, "load_edi_rsp") || asm_same(op, "store_edi_rsp") || asm_same(op, "add_edi_rsp") || asm_same(op, "sub_edi_rsp") || asm_same(op, "cmp_edi_rsp") || asm_same(op, "load_esi_rsp") || asm_same(op, "store_esi_rsp")
         offset = asm_uint(arg)
         asm_need(offset <= 28 && offset % 4 == 0)
         if asm_same(op, "load_edi_rsp")
             out = "8b7c24" * hex_byte(offset)
+        elseif asm_same(op, "load_esi_rsp")
+            out = "8b7424" * hex_byte(offset)
+        elseif asm_same(op, "store_esi_rsp")
+            out = "897424" * hex_byte(offset)
         elseif asm_same(op, "store_edi_rsp")
             out = "897c24" * hex_byte(offset)
         elseif asm_same(op, "add_edi_rsp")

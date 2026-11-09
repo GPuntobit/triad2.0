@@ -6,6 +6,30 @@ written in **Triad-Core** and run under the existing native x86-64 seed.
 There is no JavaScript/Node, Python, C, Rust, or external assembler involved
 in generating the machine-code bytes.
 
+## S2.5 — Native typed AST, CFG fixed point and i32 function ABI
+
+[`README_S2_5.md`](README_S2_5.md) describes the S2.5 restricted
+function compiler. In Triad-Core it builds typed AST expression records,
+compiles one/two `i32` parameters and return values using SysV AMD64
+register conventions, and runs a separate Triad-native iterative
+**CFG definite-assignment verifier** before producing an ELF64 binary.
+
+```sh
+sh selfhost/toolchain/tests/run_s2_5.sh
+sh selfhost/toolchain/compile-triad-s2-5.sh selfhost/toolchain/tests/frontend25/add.triad /tmp/triad-add
+```
+
+The S2.5 functions profile is intentionally narrow, separately tested
+from the S2.4 multi-variable `if/while` profile. Neither implements
+arbitrary Triad source, the complete self-hosted compiler or the
+regeneration of the full S0 seed.
+
+## S2.4 — Native multi-variable stack and structured control flow
+
+[`README_S2_4.md`](README_S2_4.md) documents up to eight `i32`
+locals, a 32-byte native stack frame and the streaming source/IR/
+assembler chain needed for larger source programs.
+
 ## S2.3 — first Triad source-to-IR frontend
 
 The experimental frontend in [`README_S2_3.md`](README_S2_3.md)

@@ -1,0 +1,23 @@
+start
+i32_frame 32
+i32_const 5
+i32_store 0
+i32_const 7
+i32_store 4
+i32_load 0
+i32_arg2_load 4
+i32_call add
+i32_store 8
+i32_load 8
+exit
+label add
+i32_enter 40
+i32_store 0
+i32_arg2_store 4
+i32_load 0
+i32_add_slot 4
+i32_store 8
+i32_load 8
+i32_result
+i32_leave 40
+return
