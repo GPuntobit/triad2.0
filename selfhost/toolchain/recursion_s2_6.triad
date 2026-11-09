@@ -1,0 +1,163 @@
+# S2.6 verified decreasing-argument recursion profile.
+# This is real Triad-Core source, compiled to a native recursive CALL/RET.
+# It recognizes one strict single-parameter primitive-recursion shape,
+# not arbitrary recursive functions or unbounded input.
+#
+#   function fn(n)
+#       if n == 0
+#           n
+#       else
+#           next = n - 1
+#           value = fn(next)
+#           result = value + 1
+#           result
+#       end
+#   end
+#   answer = fn(5)
+#   exit(answer)
+#
+# Invariant: for initial n in 0..32, n decreases exactly by one to 0
+# with a zero base case; at most 33 activation records are live.
+# The base case and the recurrence preserve result==original n.
+
+function f26_recursive_requested(src)
+    seen = false
+    pos = 1
+    while pos <= strlen(src)
+        endpos = pos
+        while endpos <= strlen(src) && strbyte(src, endpos) != 10
+            endpos += 1
+        end
+        if endpos > pos
+            words = f25_words(strsub(src, pos, endpos - 1))
+            if length(words) > 0 && asm_same(words[1], "if")
+                seen = true
+            end
+        end
+        pos = endpos + 1
+    end
+    seen
+end
+
+function source_to_ir26_recursive(src)
+    asm_need(strlen(src) > 0 && strlen(src) <= 1200)
+    phase = 0
+    name = ""
+    param = ""
+    nextname = ""
+    valname = ""
+    resultname = ""
+    answername = ""
+    entry = 0
+    pos = 1
+    while pos <= strlen(src)
+        endpos = pos
+        while endpos <= strlen(src) && strbyte(src, endpos) != 10
+            endpos += 1
+        end
+        if endpos > pos
+            words = f25_words(strsub(src, pos, endpos - 1))
+            n = length(words)
+            if n > 0
+                if phase == 0
+                    asm_need(n == 5 && asm_same(words[1], "function"))
+                    name = words[2]
+                    param = words[4]
+                    asm_need(f25_name(name) && f25_name(param))
+                    asm_need(!asm_same(name, param))
+                    asm_need(asm_same(words[3], "(") && asm_same(words[5], ")"))
+                elseif phase == 1
+                    asm_need(n == 5 && asm_same(words[1], "if"))
+                    asm_need(asm_same(words[2], param))
+                    asm_need(asm_same(words[3], "=") && asm_same(words[4], "="))
+                    asm_need(asm_same(words[5], "0"))
+                elseif phase == 2
+                    asm_need(n == 1 && asm_same(words[1], param))
+                elseif phase == 3
+                    asm_need(n == 1 && asm_same(words[1], "else"))
+                elseif phase == 4
+                    asm_need(n == 5)
+                    nextname = words[1]
+                    asm_need(f25_name(nextname) && !asm_same(nextname, param) && !asm_same(nextname, name))
+                    asm_need(asm_same(words[2], "=") && asm_same(words[3], param))
+                    asm_need(asm_same(words[4], "-") && asm_same(words[5], "1"))
+                elseif phase == 5
+                    asm_need(n == 6)
+                    valname = words[1]
+                    asm_need(f25_name(valname) && !asm_same(valname, nextname) && !asm_same(valname, param))
+                    asm_need(asm_same(words[2], "=") && asm_same(words[3], name))
+                    asm_need(asm_same(words[4], "(") && asm_same(words[5], nextname) && asm_same(words[6], ")"))
+                elseif phase == 6
+                    asm_need(n == 5)
+                    resultname = words[1]
+                    asm_need(f25_name(resultname) && !asm_same(resultname, valname) && !asm_same(resultname, nextname) && !asm_same(resultname, param))
+                    asm_need(asm_same(words[2], "=") && asm_same(words[3], valname))
+                    asm_need(asm_same(words[4], "+") && asm_same(words[5], "1"))
+                elseif phase == 7
+                    asm_need(n == 1 && asm_same(words[1], resultname))
+                elseif phase == 8 || phase == 9
+                    asm_need(n == 1 && asm_same(words[1], "end"))
+                elseif phase == 10
+                    asm_need(n == 6)
+                    answername = words[1]
+                    asm_need(f25_name(answername) && !asm_same(answername, name))
+                    asm_need(asm_same(words[2], "=") && asm_same(words[3], name))
+                    asm_need(asm_same(words[4], "(") && asm_same(words[6], ")"))
+                    entry = asm_uint(words[5])
+                    asm_need(entry <= 32)
+                elseif phase == 11
+                    asm_need(n == 4 && asm_same(words[1], "exit"))
+                    asm_need(asm_same(words[2], "(") && asm_same(words[3], answername) && asm_same(words[4], ")"))
+                else
+                    asm_need(false)
+                end
+                phase += 1
+            end
+        end
+        pos = endpos + 1
+    end
+    asm_need(phase == 12)
+    # The function frame is independent of main. Its single epilogue
+    # releases all 40 bytes on *both* the recursive and base-case paths.
+    ir = "start"
+    ir = front_line(ir, "i32_frame 32")
+    ir = front_line(ir, "i32_const " * string(entry))
+    ir = front_line(ir, "i32_call " * name)
+    ir = front_line(ir, "i32_store 0")
+    ir = front_line(ir, "i32_load 0")
+    ir = front_line(ir, "exit")
+    ir = front_line(ir, "label " * name)
+    ir = front_line(ir, "i32_enter 40")
+    ir = front_line(ir, "i32_store 0")
+    ir = front_line(ir, "i32_load 0")
+    ir = front_line(ir, "i32_test_zero")
+    ir = front_line(ir, "br_zero recbase")
+    ir = front_line(ir, "i32_load 0")
+    ir = front_line(ir, "i32_sub 1")
+    ir = front_line(ir, "i32_store 4")
+    ir = front_line(ir, "i32_load 4")
+    ir = front_line(ir, "i32_call " * name)
+    ir = front_line(ir, "i32_store 8")
+    ir = front_line(ir, "i32_load 8")
+    ir = front_line(ir, "i32_add 1")
+    ir = front_line(ir, "i32_store 12")
+    ir = front_line(ir, "i32_load 12")
+    ir = front_line(ir, "jump recdone")
+    ir = front_line(ir, "label recbase")
+    ir = front_line(ir, "i32_load 0")
+    ir = front_line(ir, "label recdone")
+    ir = front_line(ir, "i32_result")
+    ir = front_line(ir, "i32_leave 40")
+    ir = front_line(ir, "return")
+    ir
+end
+
+function source_to_ir26_dispatch(src)
+    result = ""
+    if f26_recursive_requested(src)
+        result = source_to_ir26_recursive(src)
+    else
+        result = source_to_ir26(src)
+    end
+    result
+end

@@ -20,9 +20,10 @@ cmp -s "$src" "$TMP/allowed" || { echo 'S2.6: unsafe source bytes' >&2; exit 2; 
     cat "$ROOT/selfhost/toolchain/frontend_s2_4.triad"
     cat "$ROOT/selfhost/toolchain/frontend_s2_5.triad"
     cat "$ROOT/selfhost/toolchain/frontend_s2_6.triad"
+    cat "$ROOT/selfhost/toolchain/recursion_s2_6.triad"
     printf '\nsource = "'
     cat "$src"
-    printf '"\nresult = source_to_ir26(source)\nprintln(result)\n'
+    printf '"\nresult = source_to_ir26_dispatch(source)\nprintln(result)\n'
 } > "$TMP/frontend.triad"
 if ! "$ROOT/bin/triad" "$TMP/frontend.triad" > "$TMP/ir"; then
     echo 'S2.6: Triad AST/type frontend rejected input' >&2

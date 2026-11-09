@@ -1,0 +1,30 @@
+start
+i32_frame 32
+i32_const 5
+i32_call count
+i32_store 0
+i32_load 0
+exit
+label count
+i32_enter 40
+i32_store 0
+i32_load 0
+i32_test_zero
+br_zero recbase
+i32_load 0
+i32_sub 1
+i32_store 4
+i32_load 4
+i32_call count
+i32_store 8
+i32_load 8
+i32_add 1
+i32_store 12
+i32_load 12
+jump recdone
+label recbase
+i32_load 0
+label recdone
+i32_result
+i32_leave 40
+return

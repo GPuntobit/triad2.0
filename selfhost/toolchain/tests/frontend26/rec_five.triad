@@ -1,0 +1,12 @@
+function count(n)
+    if n == 0
+        n
+    else
+        next = n - 1
+        value = count(next)
+        result = value + 1
+        result
+    end
+end
+answer = count(5)
+exit(answer)

@@ -89,6 +89,7 @@ function source_to_ir26(src)
     completed_function = false
     finished = false
     saw_call = false
+    main_started = false
     defs = 0
     statements = 0
     pos = 1
@@ -103,7 +104,7 @@ function source_to_ir26(src)
                 op = words[1]
                 asm_need(!finished)
                 if asm_same(op, "function")
-                    asm_need(state == 0 && !completed_function)
+                    asm_need(state == 0 && !completed_function && !main_started)
                     asm_need(length(words) == 5 || length(words) == 7)
                     name = words[2]
                     asm_need(f25_name(name) && f26_arity(signatures, name) == 0)
@@ -238,6 +239,7 @@ function source_to_ir26(src)
                     finished = true
                 else
                     asm_need(state == 0 && defs >= 2)
+                    main_started = true
                     asm_need(length(words) >= 3)
                     asm_need(length(words) >= 3 && asm_same(words[2], "="))
                     dest = words[1]
