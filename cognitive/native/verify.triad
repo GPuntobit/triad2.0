@@ -291,8 +291,7 @@ function memory_projection(data, history)
     true
 end
 
-data = trid_data
-history = trid_history
+
 validate_data(data)
 check_journal(history)
 check_history(data, history)
