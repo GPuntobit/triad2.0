@@ -1,6 +1,6 @@
 function plus(value)
     result = 3 + value
-    return result
+    result
 end
 a = 4
 answer = plus(a)
