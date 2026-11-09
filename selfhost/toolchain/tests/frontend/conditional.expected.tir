@@ -1,0 +1,10 @@
+start
+i32_const 2
+i32_compare 2
+br_nonzero felse1
+i32_add 7
+jump fend1
+label felse1
+i32_const 1
+label fend1
+exit
