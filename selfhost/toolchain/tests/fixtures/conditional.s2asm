@@ -1,0 +1,8 @@
+mov_edi 2
+add_edi 3
+cmp_edi 5
+jz success
+mov_edi 99
+label success
+mov_eax 60
+syscall

@@ -1,0 +1,7 @@
+mov_edi 3
+label loop
+sub_edi 1
+cmp_edi 0
+jnz loop
+mov_eax 60
+syscall
