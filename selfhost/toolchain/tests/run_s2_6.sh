@@ -74,6 +74,16 @@ for name in rec_zero rec_five rec_twelve; do
     cmp "$TMP/rec.elf.out" "$TMP/rec.s0.out"
 done
 
+# At the declared maximum entry 32, test real kernel CALL/RET and unwind.
+# The S0 oracle is compared for depths 0, 5 and 12 above; this boundary
+# test checks the generated ELF without assuming S0 recursion-depth support.
+sh "$ROOT/selfhost/toolchain/compile-triad-s2-6.sh" "$ROOT/selfhost/toolchain/tests/frontend26/rec_thirtytwo.triad" "$TMP/rec_thirtytwo.elf"
+set +e
+"$TMP/rec_thirtytwo.elf"
+upper=$?
+set -e
+[ "$upper" -eq 32 ] || { echo "S2.6: max-depth recursive result $upper, expected 32" >&2; exit 1; }
+
 # The structural termination proof fails closed for bad base conditions,
 # nondecreasing recursive arguments and out-of-range initial depths.
 for invalid in \
