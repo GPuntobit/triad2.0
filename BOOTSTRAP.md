@@ -197,6 +197,25 @@ the admitted tests.
 compilation, seed regeneration or fixed-point self-hosting. Consult
 `selfhost/toolchain/README_S2_3.md`.
 
+## S2.5 — Native typed AST, function calls and fixed-point CFG
+
+The restricted compiler at `selfhost/toolchain/frontend_s2_5.triad`
+parses typed expression nodes and native function parameters. The
+generated ELF uses `EDI`/`ESI` for the first two `i32` arguments,
+`EAX` for the return value, and a separate 40-byte callee stack frame.
+A Triad-native fixed-point verifier checks definite assignment on
+reachable CFG nodes, including backwards edges and branch joins,
+**before** native IR lowering.
+
+`sh selfhost/toolchain/tests/run_s2_5.sh` compares generated IR,
+SysV register opcodes, execution status and output against directly
+interpreted Core examples. The S2.4 native streaming pipeline and all
+S2.0–S2.3 tests remain regression gates.
+
+The limited one-function subset is **not** full Triad-Core, a general
+ABI/runtime implementation, seed S0 regeneration or S3 compiler
+self-hosting. See `selfhost/toolchain/README_S2_5.md`.
+
 ## 8. Compliance Agreement
 The executable specification is `conformance/`: each case is
 ```
