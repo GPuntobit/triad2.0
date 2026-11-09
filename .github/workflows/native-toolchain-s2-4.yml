@@ -38,6 +38,18 @@ jobs:
             echo "RC=$?"
             [ -f /tmp/probe.s2asm ] && cat /tmp/probe.s2asm
           done
+      - name: Diagnose long nested IR lowering thresholds
+        run: |
+          set +e
+          sh selfhost/toolchain/lower-triad-s2-4.sh selfhost/toolchain/tests/frontend24/nested.triad /tmp/nested.tir
+          wc -lc /tmp/nested.tir
+          for n in 8 12 16 20 23 26 28 30 35; do
+            head -n "$n" /tmp/nested.tir > /tmp/prefix.tir
+            printf 'exit\n' >> /tmp/prefix.tir
+            sh selfhost/toolchain/lower-ir.sh /tmp/prefix.tir /tmp/prefix.s2asm > /tmp/probe.stdout 2> /tmp/probe.stderr
+            echo "PREFIX $n RC=$?"
+            cat /tmp/probe.stderr
+          done
       - name: S2.4 native multi-variable, stack, CFG and S0 differential
         run: sh selfhost/toolchain/tests/run_s2_4.sh
       - name: S2.3 frontend regression
