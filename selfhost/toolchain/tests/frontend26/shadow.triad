@@ -1,0 +1,12 @@
+function first(value)
+    temp = value + 1
+    temp
+end
+function second(value)
+    temp = value + 2
+    result = first(temp)
+    result
+end
+value = 9
+temp = second(value)
+exit(temp)
