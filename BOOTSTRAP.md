@@ -153,6 +153,20 @@ Triad source-to-native compiler and **not** a regenerated S0 interpreter.
 The existing seed hex dumps still lack a native source regeneration tool.
 See `selfhost/toolchain/README.md` for next milestones.
 
+## S2.1 — assembler Triad a etichette e salti (experimental)
+
+Il prototipo `selfhost/toolchain/assembler_s2_1.triad` esegue due
+passaggi nativi per validare un sottoinsieme x86-64, risolvere nomi
+di etichette e displacement relativi con segno e produrre ELF64
+standalone. Supporta `jmp`, `jz`, `jnz`, `call`, `ret`,
+operazioni su EDI, byte di dati e accessi RIP-relative tramite `lea_rsi`.
+Il test `sh selfhost/toolchain/tests/run_s2_1.sh` confronta i
+byte generati con golden indipendenti ed esegue i binari su Linux.
+
+La compatibilità S2.0 e il controllo zero-JavaScript restano obbligatori.
+**Questa non è una rigenerazione del seed S0 né un compilatore Triad
+generale o self-hosted.** Si veda `selfhost/toolchain/README_S2_1.md`.
+
 ## 8. Compliance Agreement
 The executable specification is `conformance/`: each case is
 ```
