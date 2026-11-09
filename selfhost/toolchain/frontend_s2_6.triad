@@ -204,16 +204,16 @@ function source_to_ir26(src)
                             fn = node[3]
                             first = node[4]
                             second = node[5]
-                            arity = f26_arity(signatures, fn)
-                            asm_need(arity == 1 || arity == 2)
+                            called_arity = f26_arity(signatures, fn)
+                            asm_need(called_arity == 1 || called_arity == 2)
                             asm_need(!asm_same(fn, current_name))
-                            if arity == 1
+                            if called_arity == 1
                                 asm_need(strlen(second) == 0)
                             else
                                 asm_need(strlen(second) > 0)
                             end
                             out = mv_value(out, symbols, mask, first)
-                            if arity == 2
+                            if called_arity == 2
                                 out = f25_second(out, symbols, mask, second)
                             end
                             out = front_line(out, "i32_call " * fn)
@@ -239,15 +239,14 @@ function source_to_ir26(src)
                 else
                     asm_need(state == 0 && defs >= 2)
                     asm_need(length(words) >= 3)
-                    node = f26_expr(words, 3, length(words))
-                    if asm_same(node[1], "call")
-                        saw_call = true
-                    end
                     asm_need(length(words) >= 3 && asm_same(words[2], "="))
                     dest = words[1]
                     asm_need(f25_name(dest))
                     node = f26_expr(words, 3, length(words))
                     kind = node[1]
+                    if asm_same(kind, "call")
+                        saw_call = true
+                    end
                     asm_need(asm_same(node[2], "i32"))
                     out = main_ir
                     if asm_same(kind, "binary")
@@ -284,17 +283,17 @@ function source_to_ir26(src)
                         fn = node[3]
                         first = node[4]
                         second = node[5]
-                        arity = f26_arity(signatures, fn)
-                        asm_need(arity == 1 || arity == 2)
+                        called_arity = f26_arity(signatures, fn)
+                        asm_need(called_arity == 1 || called_arity == 2)
                         asm_need(!asm_same(fn, ""))
-                        if arity == 1
-                            asm_need(strlen(second) == 0)
+                        if called_arity == 1
+                                asm_need(strlen(second) == 0)
                         else
                             asm_need(strlen(second) > 0)
                         end
                         out = mv_value(out, globals, global_mask, first)
-                        if arity == 2
-                            out = f25_second(out, globals, global_mask, second)
+                        if called_arity == 2
+                                out = f25_second(out, globals, global_mask, second)
                         end
                         out = front_line(out, "i32_call " * fn)
                     else
