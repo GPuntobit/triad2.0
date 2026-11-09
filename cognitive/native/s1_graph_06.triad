@@ -29,10 +29,4 @@ fact fuel(:h6, :h5)
 rule active_node(?from, ?to, ?seen, ?budget) :- fuel(?budget, ?less), association(?from, ?to), not(in_path(?to, ?seen))
 rule active_node(?from, ?to, ?seen, ?budget) :- fuel(?budget, ?less), association(?from, ?next), not(in_path(?next, ?seen)), active_node(?next, ?to, [?next | ?seen], ?less)
 
-# Output contract: stable lines for native integration tests.
-# A proof remains a derivation from *assumed* source-labelled premises.
-println([s.sources for s in solve proof_path(:trid, :deep5, [:trid], ?sources)])
-println([s.sources for s in solve retained_path(:trid, :deep5, [:trid], ?sources)])
-println([s.sources for s in solve suspended_path(:trid, :deep5, [:trid], ?sources)])
-println([s.to for s in solve active_node(:trid, ?to, [:trid], :h6)])
-println([s.state for s in solve rule_state(:path_generalization, ?state)])
+# Queries are separately executed for bounded S1 heap/step usage.
