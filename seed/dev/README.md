@@ -29,4 +29,4 @@ conformance gates.
 The files `certified-corpus.txt` and `certified-subset.txt` are historical
 test/profile references, not executable JavaScript.
 
-See `docs/NO_JAVASCRIPT_MIGRATION.md` for the migration boundaries.
+See [the migration policy](../../docs/NO_JAVASCRIPT_MIGRATION.md) for the migration boundaries.
