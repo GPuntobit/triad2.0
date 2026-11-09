@@ -48,6 +48,8 @@ function f25_expr(words, first, last)
     count = last - first + 1
     asm_need(count > 0)
     node = []
+    println("F25-EXPR")
+    println(count)
     if count == 1
         operand = words[first]
         if mv_number(operand)
@@ -192,6 +194,8 @@ function source_to_ir25(src)
             words = f25_words(line)
             if length(words) > 0
                 op = words[1]
+                println("F25-LINE")
+                println(op)
                 asm_need(!ended)
                 if phase == 0
                     asm_need(asm_same(op, "function"))
