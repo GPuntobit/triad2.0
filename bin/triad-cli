@@ -11,8 +11,8 @@
 #    triad-cli status                  -> info ambiente (deterministico)
 #
 #  Exit code = quello del comando delegato; exit 2 = errori d'uso.
-#  I comandi dev (seed generate, ai verify, ext check|package) restano
-#  nella CLI Node di sviluppo: node cli/triad-cli.mjs <comando>.
+#  I comandi avanzati non implementati sono esplicitamente indisponibili,
+#  senza ripiegare su un interprete o una CLI JavaScript.
 #
 #  Uso: triad-cli <comando> [opzioni]
 # =====================================================================

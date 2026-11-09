@@ -10,6 +10,7 @@ Triad is a standalone programming language featuring block syntax, declared type
 https://github.com/user-attachments/assets/2e01cb37-ea17-44af-a92b-7636bdaee3d5
 <p align="center">
   <video src="docs/assets/video/anteprima-codice.mp4" controls width="552"></video>
+  <br><sub>A demonstration of Triad-Core syntax. The supported runtime is now the native machine-code seed. Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
   <br><sub>A typed and executed Triad-Core program (archived demonstration from an earlier development interpreter). Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
 </p>
 <p align="center">
@@ -62,7 +63,7 @@ https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
   must pass.
 - **AI:** [ai/](ai/README.md) — benchmark for Triad code generation by LLMs, with
   system prompts and an automatic verifier.
-- **Implementation:** the reference runtime is the machine code seed (S0); the plan for a Triad without host languages is in [BOOTSTRAP.md](BOOTSTRAP.md).
+- **Implementation:** the runtime is the native machine-code seed (S0); the plan for a self-hosted toolchain is in [BOOTSTRAP.md](BOOTSTRAP.md).
 - **Editors:** [editors/](editors/README.md) — VS Code, Vim/Neovim, and a GitHub Linguist entry.
 - **Extension:** `.triad` (canonical), `.td` (historical alias).
 
@@ -108,6 +109,17 @@ triad-cli status                   # toolchain and environment status
 triad-cli test all                 # full gate: conformance + probes
 ```
 
+Legacy JavaScript development commands have been retired from the working tree. Advanced seed regeneration, AI verification and extension tooling require new native implementations; they are not available through the current CLI:
+
+```sh
+triad-cli status          # native CLI status
+triad-cli test all        # Core and S1 conformance
+sh scripts/no-js.sh      # checks that JavaScript sources/tooling are absent
+```
+
+For current supported capabilities, use the native `bin/triad` and POSIX `bin/triad-cli` launchers. Development features removed with the JavaScript tools require native replacements.
+
+See [cli/README.md](cli/README.md) for the complete development CLI documentation.
 Advanced seed regeneration, the foreign-language reference oracle, the
 browser playground and the old development CLI have been retired. The
 native **Triad-to-seed generator is not implemented yet**: the committed
@@ -164,6 +176,7 @@ The retired JS oracle's differential coverage is **not yet restored**.
 ## Project Structure
 
 ```text
+bin/                        POSIX and Windows native launchers (triad, triad-cli)
 bin/                        POSIX and Windows launchers (triad, triad-cli)
 bin/triad-cli               POSIX native CLI (run, test, status)
 conformance/                golden suite: executable contract for implementations
@@ -171,11 +184,13 @@ conformance/run.sh          conformance harness (POSIX, without Node)
 seed/                       S0 machine code seed (Windows PE + Linux ELF E2)
 seed/windows-x86_64/        seed.hex (source) and seed.exe: Triad-Core interpreter
 seed/linux-x86_64/          seed.hex (source) and seed: Triad-Core interpreter (ELF E2)
+seed/dev/                   historical maintenance documentation; JavaScript generators removed
 seed/dev/                   native bootstrap contracts and archived technical documentation
 selfhost/                   S1: Triad interpreter written in Triad-Core (in progress)
 scripts/docs/               native/Python document utilities and download chart
 scripts/seed-runner/        seed experiment harnesses (wine runner for the PE)
 scripts/experiments/        LLM streaming/translation experiment scripts
+tools/                      retained non-JavaScript developer utilities
 tools/site-gen/             Triad-native static-site generators and POSIX driver
 tools/site-jekyll/          legacy Jekyll scaffold (the Pages site is deployed from docs/)
 editors/                    VS Code, Vim/Neovim, and Linguist entry
@@ -208,6 +223,7 @@ LICENSE                     MIT license (open source)
 - **Triad Standard:** no dependencies; it is defined by this repository (`SPEC.md` + `conformance/`).
 - **Runtime:** machine code seed (S0); no dependencies on Julia or other host languages.
   Execution requires an x86-64 platform (Windows PE or Linux ELF seed).
+- **Development:** no Node.js/npm source or runtime is part of the checked-out tree. Native bootstrap, conformance and the supported development commands use Triad or POSIX shell; features without a native replacement remain unavailable.
 - **Development:** POSIX shell, core system tools and the committed native
   Triad seed. No JavaScript runtime or npm dependency is shipped.
   Seed source regeneration is not yet supported in the native toolchain.
@@ -216,6 +232,11 @@ LICENSE                     MIT license (open source)
 
 The S0 seeds are native executables for x86-64 only (`seed/windows-x86_64/seed.exe`, `seed/linux-x86_64/seed`) and cannot run on Android devices, which are ARM64. There is no ARM64 native seed yet (see [STATUS.md](STATUS.md)); `bin/triad` always executes the seed and reports a clear error where no seed can run.
 
+On Termux (Android ARM64) and other platforms without a supported x86-64 native seed, **local execution is not supported yet**. A Triad-native ARM64 seed or a compatible native port is required. No JavaScript fallback interpreter is shipped, and the launcher never delegates to Node.js.
+
+## Website
+
+The project website is in `docs/` and is published with GitHub Pages. It consists of static HTML/CSS; it does not execute Triad inside the browser. Run source files locally with the native seed.
 The former development reference interpreter has been removed. ARM64
 execution requires a future native seed or compiler port. The project does
 **not** fall back to a scripting-language interpreter on unsupported systems.

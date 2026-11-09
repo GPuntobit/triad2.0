@@ -19,10 +19,8 @@
 #  Uso:
 #    ./install.sh [--prefix DIR] [--desktop] [--no-desktop]
 #
-#  Nessuna dipendenza oltre a una shell POSIX. Node.js NON serve al
-#  percorso utente (triad / triad-cli run|test|status): serve solo per i
-#  comandi di sviluppo (node cli/triad-cli.mjs), fuori dalla promessa
-#  zero-install.
+#  Nessuna dipendenza da Node.js o npm: i precedenti strumenti di sviluppo
+#  JavaScript sono stati ritirati e attendono sostituzioni native.
 #
 #  Fuori da Linux x86-64 l'installazione è parziale (soli launcher +
 #  PATH): decodifica e smoke test saltati con avviso, exit 0 (07 Q6).

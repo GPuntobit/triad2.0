@@ -17,6 +17,7 @@
 set -u
 root=$(CDPATH= cd "$(dirname "$0")" && pwd) || exit 2
 
+sh "$root/scripts/no-js.sh" || exit 1
 sh "$root/conformance/gate.sh" || exit 1
 sh "$root/tests/probes/run_probes.sh" || exit 1
 sh "$root/conformance/logic/run.sh" || exit 1
