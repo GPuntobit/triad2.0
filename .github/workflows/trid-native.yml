@@ -25,6 +25,11 @@ jobs:
           cat cognitive/native/common.triad cognitive/native/discover.triad > /tmp/trid-discover-debug.triad
           : > /tmp/trid-empty-journal.log
           node seed/dev/triad_core.cjs /tmp/trid-discover-debug.triad cognitive/native/fixture.txt /tmp/trid-empty-journal.log || true
+          printf 'println(length(ARGS))\nprintln(ARGS[1])\n' > /tmp/trid-args-debug.triad
+          echo 'Native S0 arguments diagnostic:'
+          ./bin/triad /tmp/trid-args-debug.triad alpha beta || true
+          echo 'Native S0 direct discovery diagnostic:'
+          ./bin/triad /tmp/trid-discover-debug.triad cognitive/native/fixture.txt /tmp/trid-empty-journal.log || true
       - name: Native Triad cognitive regression (no Python/Node interpreter)
         run: sh cognitive/native/tests/run.sh
       - name: Existing native Triad conformance gate
