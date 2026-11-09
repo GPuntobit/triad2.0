@@ -171,62 +171,61 @@ function source_to_ir26(src)
                         asm_need(asm_same(node[2], "i32"))
                         out = body
                         if asm_same(kind, "binary")
-                        operation = node[4]
-                        asm_need(asm_same(operation, "+") || asm_same(operation, "-"))
-                        if length(words) == 9
-                        # Copy all primitive AST fields before calling further Triad
-                        # functions: S0 has small evaluator frames for nested List values.
-                        left = node[3]
-                        right = node[5]
-                        first = left[3]
-                        inner_left = right[3]
-                        inner_right = right[5]
-                        inner_first = inner_left[3]
-                        inner_second = inner_right[3]
-                        inner_operation = right[4]
-                        asm_need(asm_same(left[2], "i32") && asm_same(right[2], "i32"))
-                        out = mv_value(out, vars, mask, inner_first)
-                        out = mv_arithmetic(out, vars, mask, inner_operation * inner_second)
-                        out = front_line(out, "i32_store 28")
-                        out = mv_value(out, vars, mask, first)
-                        if asm_same(operation, "+")
-                        out = front_line(out, "i32_add_slot 28")
-                        else
-                        out = front_line(out, "i32_sub_slot 28")
-                        end
-                        else
-                        first = node[3]
-                        second = node[5]
-                        out = mv_value(out, vars, mask, first)
-                        out = mv_arithmetic(out, vars, mask, operation * second)
-                        end
+                            operation = node[4]
+                            asm_need(asm_same(operation, "+") || asm_same(operation, "-"))
+                            if length(words) == 9
+                                # Copy all primitive AST fields before calling further Triad
+                                # functions: S0 has small evaluator frames for nested List values.
+                                left = node[3]
+                                right = node[5]
+                                first = left[3]
+                                inner_left = right[3]
+                                inner_right = right[5]
+                                inner_first = inner_left[3]
+                                inner_second = inner_right[3]
+                                inner_operation = right[4]
+                                asm_need(asm_same(left[2], "i32") && asm_same(right[2], "i32"))
+                                out = mv_value(out, symbols, mask, inner_first)
+                                out = mv_arithmetic(out, symbols, mask, inner_operation * inner_second)
+                                out = front_line(out, "i32_store 28")
+                                out = mv_value(out, symbols, mask, first)
+                                if asm_same(operation, "+")
+                                    out = front_line(out, "i32_add_slot 28")
+                                else
+                                    out = front_line(out, "i32_sub_slot 28")
+                                end
+                            else
+                                first = node[3]
+                                second = node[5]
+                                out = mv_value(out, symbols, mask, first)
+                                out = mv_arithmetic(out, symbols, mask, operation * second)
+                            end
                         elseif asm_same(kind, "call")
-                        fn = node[3]
-                        first = node[4]
-                        second = node[5]
-                        arity = f26_arity(signatures, fn)
-                        asm_need(arity == 1 || arity == 2)
-                        asm_need(!asm_same(fn, current_name))
-                        if arity == 1
-                        asm_need(strlen(second) == 0)
+                            fn = node[3]
+                            first = node[4]
+                            second = node[5]
+                            arity = f26_arity(signatures, fn)
+                            asm_need(arity == 1 || arity == 2)
+                            asm_need(!asm_same(fn, current_name))
+                            if arity == 1
+                                asm_need(strlen(second) == 0)
+                            else
+                                asm_need(strlen(second) > 0)
+                            end
+                            out = mv_value(out, symbols, mask, first)
+                            if arity == 2
+                                out = f25_second(out, symbols, mask, second)
+                            end
+                            out = front_line(out, "i32_call " * fn)
                         else
-                        asm_need(strlen(second) > 0)
+                            asm_need(asm_same(kind, "const") || asm_same(kind, "var"))
+                            first = node[3]
+                            out = mv_value(out, symbols, mask, first)
                         end
-                        out = mv_value(out, vars, mask, first)
-                        if arity == 2
-                        out = f25_second(out, vars, mask, second)
-                        end
-                        out = front_line(out, "i32_call " * fn)
-                        else
-                        asm_need(asm_same(kind, "const") || asm_same(kind, "var"))
-                        first = node[3]
-                        out = mv_value(out, vars, mask, first)
-                        end
-                        slot = mv_allocate(vars, dest)
+                        slot = mv_allocate(symbols, dest)
                         asm_need(slot <= 24)
                         out = front_line(out, "i32_store " * string(slot))
                         mask = mv_mark(mask, slot)
-                        
                         body = out
                     end
                 elseif asm_same(op, "exit")
@@ -252,62 +251,61 @@ function source_to_ir26(src)
                     asm_need(asm_same(node[2], "i32"))
                     out = main_ir
                     if asm_same(kind, "binary")
-                    operation = node[4]
-                    asm_need(asm_same(operation, "+") || asm_same(operation, "-"))
-                    if length(words) == 9
-                    # Copy all primitive AST fields before calling further Triad
-                    # functions: S0 has small evaluator frames for nested List values.
-                    left = node[3]
-                    right = node[5]
-                    first = left[3]
-                    inner_left = right[3]
-                    inner_right = right[5]
-                    inner_first = inner_left[3]
-                    inner_second = inner_right[3]
-                    inner_operation = right[4]
-                    asm_need(asm_same(left[2], "i32") && asm_same(right[2], "i32"))
-                    out = mv_value(out, globals, global_mask, inner_first)
-                    out = mv_arithmetic(out, globals, global_mask, inner_operation * inner_second)
-                    out = front_line(out, "i32_store 28")
-                    out = mv_value(out, globals, global_mask, first)
-                    if asm_same(operation, "+")
-                    out = front_line(out, "i32_add_slot 28")
-                    else
-                    out = front_line(out, "i32_sub_slot 28")
-                    end
-                    else
-                    first = node[3]
-                    second = node[5]
-                    out = mv_value(out, globals, global_mask, first)
-                    out = mv_arithmetic(out, globals, global_mask, operation * second)
-                    end
+                        operation = node[4]
+                        asm_need(asm_same(operation, "+") || asm_same(operation, "-"))
+                        if length(words) == 9
+                            # Copy all primitive AST fields before calling further Triad
+                            # functions: S0 has small evaluator frames for nested List values.
+                            left = node[3]
+                            right = node[5]
+                            first = left[3]
+                            inner_left = right[3]
+                            inner_right = right[5]
+                            inner_first = inner_left[3]
+                            inner_second = inner_right[3]
+                            inner_operation = right[4]
+                            asm_need(asm_same(left[2], "i32") && asm_same(right[2], "i32"))
+                            out = mv_value(out, globals, global_mask, inner_first)
+                            out = mv_arithmetic(out, globals, global_mask, inner_operation * inner_second)
+                            out = front_line(out, "i32_store 28")
+                            out = mv_value(out, globals, global_mask, first)
+                            if asm_same(operation, "+")
+                                out = front_line(out, "i32_add_slot 28")
+                            else
+                                out = front_line(out, "i32_sub_slot 28")
+                            end
+                        else
+                            first = node[3]
+                            second = node[5]
+                            out = mv_value(out, globals, global_mask, first)
+                            out = mv_arithmetic(out, globals, global_mask, operation * second)
+                        end
                     elseif asm_same(kind, "call")
-                    fn = node[3]
-                    first = node[4]
-                    second = node[5]
-                    arity = f26_arity(signatures, fn)
-                    asm_need(arity == 1 || arity == 2)
-                    asm_need(!asm_same(fn, ""))
-                    if arity == 1
-                    asm_need(strlen(second) == 0)
+                        fn = node[3]
+                        first = node[4]
+                        second = node[5]
+                        arity = f26_arity(signatures, fn)
+                        asm_need(arity == 1 || arity == 2)
+                        asm_need(!asm_same(fn, ""))
+                        if arity == 1
+                            asm_need(strlen(second) == 0)
+                        else
+                            asm_need(strlen(second) > 0)
+                        end
+                        out = mv_value(out, globals, global_mask, first)
+                        if arity == 2
+                            out = f25_second(out, globals, global_mask, second)
+                        end
+                        out = front_line(out, "i32_call " * fn)
                     else
-                    asm_need(strlen(second) > 0)
-                    end
-                    out = mv_value(out, globals, global_mask, first)
-                    if arity == 2
-                    out = f25_second(out, globals, global_mask, second)
-                    end
-                    out = front_line(out, "i32_call " * fn)
-                    else
-                    asm_need(asm_same(kind, "const") || asm_same(kind, "var"))
-                    first = node[3]
-                    out = mv_value(out, globals, global_mask, first)
+                        asm_need(asm_same(kind, "const") || asm_same(kind, "var"))
+                        first = node[3]
+                        out = mv_value(out, globals, global_mask, first)
                     end
                     slot = mv_allocate(globals, dest)
                     asm_need(slot <= 24)
                     out = front_line(out, "i32_store " * string(slot))
                     global_mask = mv_mark(global_mask, slot)
-                    
                     main_ir = out
                 end
                 statements += 1
