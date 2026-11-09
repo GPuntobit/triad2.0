@@ -39,6 +39,8 @@ jobs:
           ( cd /tmp/trid-native-debug; "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-native-debug/functions-only.triad ) || true
           echo 'Native S0 discovery direct diagnostic:'
           ( cd /tmp/trid-native-debug; "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-native-debug/discover.triad ) || true
+      - name: Native S1 logic smoke test
+        run: ./bin/triad --logic cognitive/native/s1_discovery.triad
       - name: Native Triad cognitive regression (no Python/Node interpreter)
         run: sh cognitive/native/tests/run.sh
       - name: Existing native Triad conformance gate
