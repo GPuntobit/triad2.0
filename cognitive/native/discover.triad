@@ -182,9 +182,11 @@ function discover_target(data, target, journal, events)
 end
 
 println("BEGIN 1")
-data = parse_file("fixture.txt")
+fixture_content = readfile("fixture.txt")
+data = parse_text(fixture_content)
 println("BEGIN 2 ", length(data))
-journal = parse_file("journal.log")
+journal_content = readfile("journal.log")
+journal = parse_text(journal_content)
 println("BEGIN 3")
 validate_data(data)
 check_journal(journal)
