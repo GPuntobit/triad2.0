@@ -76,6 +76,23 @@ jobs:
           sed '/^println("BEGIN 1")/,$d' discover.triad > function.triad
           printf 'data = parse_text(readfile("fixture.txt"))\nprintln("C:", length(data))\n' >> function.triad
           "$GITHUB_WORKSPACE/bin/triad" function.triad; echo "parser=$?"
+      - name: Native seed List primitives diagnostic
+        run: |
+          set +e
+          mkdir -p /tmp/trid-lists
+          cat > /tmp/trid-lists/a.triad <<'TRIAD'
+          data = []
+          println("EMPTY ", length(data))
+          push!(data, ["edge", "family"])
+          println("ONE ", length(data))
+          println("NESTED ", length(data[1]))
+          TRIAD
+          "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-lists/a.triad; echo "list-status=$?"
+          cat > /tmp/trid-lists/b.triad <<'TRIAD'
+          data = [["edge", "family"], ["edge", "parent"]]
+          println("LITERAL ", length(data))
+          TRIAD
+          "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-lists/b.triad; echo "literal-status=$?"
       - name: Native S1 logic smoke test
         run: ./bin/triad --logic cognitive/native/s1_discovery.triad
       - name: Native Triad cognitive regression (no Python/Node interpreter)
