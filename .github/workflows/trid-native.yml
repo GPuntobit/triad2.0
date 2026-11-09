@@ -103,7 +103,22 @@ jobs:
           printf 'a = [1,2]\nprintln(length(a))\n' > /tmp/trid-atom/v4.triad
           printf 'a = []\nprintln("OK")\n' > /tmp/trid-atom/v5.triad
           printf 'a = []\npush!(a, 7)\nprintln("OK")\n' > /tmp/trid-atom/v6.triad
-          for i in 1 2 3 4 5 6; do
+          cat > /tmp/trid-atom/v7.triad <<'TRIAD'
+          data = []
+          row = ["edge", "family"]
+          push!(data, row)
+          println("SEVEN", length(data))
+          TRIAD
+          cat > /tmp/trid-atom/v8.triad <<'TRIAD'
+          data = []
+          push!(data, ["edge", "family"])
+          println("EIGHT", length(data))
+          TRIAD
+          cat > /tmp/trid-atom/v9.triad <<'TRIAD'
+          data = []
+          println("NINE", length(data))
+          TRIAD
+          for i in 1 2 3 4 5 6 7 8 9; do
             echo "CASE-$i"
             "$GITHUB_WORKSPACE/bin/triad" "/tmp/trid-atom/v$i.triad"
             echo "CODE-$i=$?"
