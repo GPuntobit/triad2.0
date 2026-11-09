@@ -1,6 +1,6 @@
 function add(left, right)
     total = left + right
-    return total
+    total
 end
 a = 5
 b = 7
