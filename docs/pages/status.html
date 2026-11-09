@@ -36,7 +36,7 @@
 <h2>1. Ready today</h2>
 <ul class='feature-list'>
 <li><strong>Standard</strong> - SPEC.md version 0.2.0, SPEC-CORE.md, VERSION and CHANGELOG.md.</li>
-<li><strong>Conformance</strong> - the Node runner, Triad-Core 37 of 37 green, with the goldens versioned as text.</li>
+<li><strong>Conformance</strong> - the native POSIX conformance harness and committed Core goldens, with the goldens versioned as text.</li>
 <li><strong>Seed S0</strong> - a Windows PE interpreter with integers, variables, functions in both forms, recursion, Bool, operators, conditionals, loops, blocks, lambdas, closures, strings and concatenation.</li>
 <li><strong>Launcher and CLI</strong> - the launcher locates the runtime for you; the Julia implementation has been removed.</li>
 <li><strong>Continuous integration</strong> - the conformance job on Ubuntu, the Windows job on the PE seed and the Linux ELF job.</li>
@@ -49,8 +49,8 @@
 <p>The goal is not complete. S0 is a machine code interpreter, but S1, the interpreter written in Triad-Core, has not finished, so there is no self-hosting yet. S2 and S3, the native compiler and its fixed point, have not started, and the Linux ELF port is at its first stage. External recognition, the Linguist pull request and the publication of the extensions still depend on the maintainer: the MIT license is in place since October 2026, the rest is a step outside the repository.</p>
 <h2>4. Verification</h2>
 <div class='code-card'>
-node conformance/run.mjs                                 # Core, 37 cases
-node conformance/run.mjs --cases conformance/cases       # Full, 12 cases
+sh conformance/run.sh                                 # Core, 37 cases
+sh conformance/run.sh --cases conformance/cases       # Full, 12 cases
 </div>
 <p>Every change to the lexicon, to the parser, to the types, to the evaluation or to the input and output has to come with a case in <code>conformance/</code> and must keep the Core cases green.</p>
 <p>The documentation was consolidated under <code>docs/</code>, with the tutorial, the wiki and the security records beside the site; the small probe programs live in <code>tests/probes/</code> and the legacy scaffold of the old site is still in <code>tools/site-jekyll/</code>. The paths that other tools depend on did not change.</p>
