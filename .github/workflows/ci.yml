@@ -125,7 +125,29 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Launcher bin/triad esegue un programma (senza Node)
-        run: ./bin/triad tests/probes/test_simple.td | grep -q '^test$'
+        run: ./bin/triad tests/probes/test_simple.td | grep -q '^test      - name: install.sh (utente non root, prefix temporaneo)
+        run: |
+          ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop
+          export PATH="$RUNNER_TEMP/triad-bin:$PATH"
+          triad tests/probes/test_let.td | grep -q '^15$'
+          triad-cli status
+      - name: Sessione desktop (installazione e persistenza dopo errori)
+        run: sh tests/desktop.sh
+      - name: Smoke test negativo (golden diverso => installazione fallisce)
+        run: |
+          cp tests/probes/test_simple.expected.out "$RUNNER_TEMP/golden.bak"
+          echo "tamper" >> tests/probes/test_simple.expected.out
+          if ./install.sh --prefix "$RUNNER_TEMP/triad-neg" --no-desktop; then
+            echo "ERRORE: install.sh ha accettato un golden diverso"; exit 1
+          fi
+          mv "$RUNNER_TEMP/golden.bak" tests/probes/test_simple.expected.out
+      - name: Conformance via launcher installato (CLI sh, senza Node)
+        run: |
+          export PATH="$RUNNER_TEMP/triad-bin:$PATH"
+          triad-cli test all
+
+      - name: "TRID native: discovery stage (S1)"
+        run: sh cognitive/tests/run.sh
       - name: install.sh (utente non root, prefix temporaneo)
         run: |
           ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop
