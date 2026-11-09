@@ -7,9 +7,30 @@ executable with its existing native S0/S1 machine-code bootstrap. This policy
 applies to the checked-out tree after the migration is merged, not to historical
 Git commits (whose history is intentionally preserved).
 
-## Baseline inventory on main (2026-11-09)
+## Stato attuale del repository
 
-The GitHub recursive tree contains **94 JavaScript/TypeScript files**:
+La scansione dell'albero Git `main` del 9 novembre 2026 mostra:
+- **0 file sorgente** con estensioni `.js`, `.cjs`, `.mjs`,
+  `.jsx`, `.ts`, `.tsx`, `.mts`, `.cts`.
+- **0 manifest npm** o lockfile npm/yarn/pnpm.
+- **0 archivi** `.zip`, `.tgz`, `.tar`, `.gz` nei file versionati.
+- 22 file HTML/SVG da sorvegliare tramite `scripts/no-js.sh`.
+- Un gate CI di sicurezza e documentazione statica che esegue
+  `scripts/no-js.sh`, ora richiamato anche da `verify.sh`.
+
+Questa è un'ispezione dell'albero versionato, **non dell'intera storia Git**.
+L'assenza di sorgenti JavaScript non prova che le dipendenze di
+**GitHub Actions di terze parti** non usino JavaScript internamente.
+Lo sviluppo avanzato (generazione dei seed, plugin e strumenti web
+storici) non ha necessariamente ancora un sostituto nativo.
+
+Le istruzioni storiche riportate nella sezione successiva sono mantenute
+esclusivamente come inventario della migrazione precedente, **non** come
+funzionalità attuali.
+
+## Inventario storico precedente alla rimozione (2026-11-09)
+
+Prima della migrazione, l'albero Git conteneva **94 file JavaScript/TypeScript**:
 50 `.js`, 38 `.mjs`, three `.cjs`, three `.tsx` (~5.7 MB), of which ~5 MB
 are vendored Obsidian plugins. This is not the whole JavaScript surface:
 HTML pages embed `<script>` elements and remote JS dependencies, npm
@@ -48,7 +69,7 @@ manifests bring Node toolchains, and multiple CI jobs execute Node.
    GitHub-hosted Actions must also be replaced with native shell/self-hosted
    equivalents and reviewed separately.
 
-## Acceptance checklist
+## Criteri di accettazione
 
 - [ ] Tracked repo has **zero** `*.js`, `*.cjs`, `*.mjs`, `*.jsx`, `*.ts`,
   `*.tsx`, `*.mts`, `*.cts`.
