@@ -61,7 +61,11 @@ fi
 cat "$JOURNAL" "$TMP/events.log" > "$TMP/new-journal.log"
 make_source "$ROOT/cognitive/native/verify.triad" "$TMP/new-journal.log" "$TMP/verify.triad"
 echo "TRID native: independent verification stage" >&2
-( cd "$TMP"; "$ROOT/bin/triad" "$TMP/verify.triad" > "$TMP/new-memory.txt" )
+if ! ( cd "$TMP"; "$ROOT/bin/triad" "$TMP/verify.triad" > "$TMP/new-memory.txt" ); then
+    echo "TRID: native verifier failed; stdout tail follows:" >&2
+    tail -n 30 "$TMP/new-memory.txt" >&2
+    exit 1
+fi
 mv "$TMP/new-journal.log" "$JOURNAL"
 mv "$TMP/new-memory.txt" "$MEMORY"
 printf 'TRID native: memory updated; %s total events\n' "$(wc -l < "$JOURNAL" | tr -d ' ')"
