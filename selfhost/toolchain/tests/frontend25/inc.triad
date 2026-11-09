@@ -1,0 +1,7 @@
+function increment(value)
+    next = value + 3
+    return next
+end
+a = 4
+answer = increment(a)
+exit(answer)
