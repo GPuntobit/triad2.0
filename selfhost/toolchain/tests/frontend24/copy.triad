@@ -1,0 +1,6 @@
+first = 13
+second = first
+third = second
+third = third - first
+third += 9
+exit(third)
