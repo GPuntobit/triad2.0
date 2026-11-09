@@ -4,7 +4,7 @@
 # Translates IR into S2.1 assembler; DOES NOT implement Triad-Full source.
 
 function ir_has_arg(op)
-    asm_same(op, "i32_const") || asm_same(op, "i32_add") || asm_same(op, "i32_sub") || asm_same(op, "i32_compare") || asm_same(op, "label") || asm_same(op, "jump") || asm_same(op, "br_zero") || asm_same(op, "br_nonzero") || asm_same(op, "call")
+    asm_same(op, "i32_const") || asm_same(op, "i32_add") || asm_same(op, "i32_sub") || asm_same(op, "i32_compare") || asm_same(op, "i32_frame") || asm_same(op, "i32_load") || asm_same(op, "i32_store") || asm_same(op, "i32_add_slot") || asm_same(op, "i32_sub_slot") || asm_same(op, "i32_compare_slot") || asm_same(op, "label") || asm_same(op, "jump") || asm_same(op, "br_zero") || asm_same(op, "br_nonzero") || asm_same(op, "call")
 end
 
 function ir_piece(op, arg)
@@ -25,6 +25,18 @@ function ir_piece(op, arg)
         result = "cmp_edi " * arg
     elseif asm_same(op, "i32_test_zero")
         result = "test_edi"
+    elseif asm_same(op, "i32_frame")
+        result = "sub_rsp " * arg
+    elseif asm_same(op, "i32_load")
+        result = "load_edi_rsp " * arg
+    elseif asm_same(op, "i32_store")
+        result = "store_edi_rsp " * arg
+    elseif asm_same(op, "i32_add_slot")
+        result = "add_edi_rsp " * arg
+    elseif asm_same(op, "i32_sub_slot")
+        result = "sub_edi_rsp " * arg
+    elseif asm_same(op, "i32_compare_slot")
+        result = "cmp_edi_rsp " * arg
     elseif asm_same(op, "label")
         result = "label " * arg
     elseif asm_same(op, "jump")
@@ -56,6 +68,7 @@ function lower_ir(src)
     statement_count = 0
     saw_exit = false
     flags_ready = false
+    frame_seen = false
     out = ""
     newline = "
 "
@@ -82,6 +95,14 @@ function lower_ir(src)
             else
                 asm_need(!asm_same(op, "start"))
             end
+            if asm_same(op, "i32_frame")
+                asm_need(statement_count == 1 && !frame_seen && asm_uint(arg) == 32)
+                frame_seen = true
+            elseif asm_same(op, "i32_load") || asm_same(op, "i32_store") || asm_same(op, "i32_add_slot") || asm_same(op, "i32_sub_slot") || asm_same(op, "i32_compare_slot")
+                asm_need(frame_seen)
+                slot = asm_uint(arg)
+                asm_need(slot <= 28 && slot % 4 == 0)
+            end
             if asm_same(op, "label") || asm_same(op, "jump") || asm_same(op, "br_zero") || asm_same(op, "br_nonzero") || asm_same(op, "call")
                 asm_need(asm_name_ok(arg))
             elseif takes
@@ -98,7 +119,7 @@ function lower_ir(src)
                 end
                 out = out * piece
             end
-            if asm_same(op, "i32_compare") || asm_same(op, "i32_test_zero")
+            if asm_same(op, "i32_compare") || asm_same(op, "i32_compare_slot") || asm_same(op, "i32_test_zero")
                 flags_ready = true
             else
                 flags_ready = false
