@@ -153,8 +153,7 @@ function discover_target(data, target, journal, events)
     candidates = []
     i = 1
     while i <= length(shapes)
-        println("NATIVE SHAPE ", shapes[i])
-        push!(candidates, metrics(data, target, shapes[i]))
+            push!(candidates, metrics(data, target, shapes[i]))
         i += 1
     end
     best = selected_candidate(candidates)
@@ -181,21 +180,15 @@ function discover_target(data, target, journal, events)
     events
 end
 
-println("BEGIN 1")
-data = parse_file("fixture.txt")
-println("BEGIN 2 ", length(data))
-journal = parse_file("journal.log")
-println("BEGIN 3")
+data = parse_text(trid_fixture)
+journal = parse_text(trid_journal)
 validate_data(data)
 check_journal(journal)
-println("BEGIN 4")
 events = []
 i = 1
 while i <= length(data)
     row = data[i]
-    println("ROW ", i)
     if same(row[1], "target")
-        println("TARGET ", row[3])
         discover_target(data, row, journal, events)
     end
     i += 1
