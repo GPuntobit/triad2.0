@@ -1,0 +1,199 @@
+# TRID Native discovery — executed by the Triad-Core S0 seed.
+# Requires common.triad prepended by run.sh.
+
+function bind_pair(a, b, shape)
+    if shape == "chain"
+        if a[5] != b[4]
+            return []
+        end
+        x = a[4]
+        y = a[5]
+        z = b[5]
+    elseif shape == "reverse_chain"
+        if a[4] != b[5]
+            return []
+        end
+        x = a[5]
+        y = a[4]
+        z = b[4]
+    elseif shape == "common_source"
+        if a[4] != b[4]
+            return []
+        end
+        x = a[5]
+        y = a[4]
+        z = b[5]
+    elseif shape == "common_target"
+        if a[5] != b[5]
+            return []
+        end
+        x = a[4]
+        y = a[5]
+        z = b[4]
+    else
+        return []
+    end
+    if x == z
+        return []
+    end
+    return [x, z, y, a[6], b[6]]
+end
+
+function same_proof(a, b)
+    if length(a) != length(b)
+        return false
+    end
+    i = 1
+    while i <= length(a)
+        if a[i] != b[i]
+            return false
+        end
+        i += 1
+    end
+    return true
+end
+
+function enumerate(data, target, shape)
+    results = []
+    i = 1
+    while i <= length(data)
+        a = data[i]
+        if a[1] == "edge" && a[2] == target[2] && a[3] == target[4]
+            j = 1
+            while j <= length(data)
+                b = data[j]
+                if b[1] == "edge" && b[2] == target[2] && b[3] == target[4]
+                    p = bind_pair(a, b, shape)
+                    if length(p) == 5
+                        found = false
+                        k = 1
+                        while k <= length(results)
+                            if same_proof(results[k], p)
+                                found = true
+                            end
+                            k += 1
+                        end
+                        if !found
+                            need(length(results) < 60, "too many candidate witnesses")
+                            push!(results, p)
+                        end
+                    end
+                end
+                j += 1
+            end
+        end
+        i += 1
+    end
+    return results
+end
+
+function pair_present(proofs, x, z)
+    i = 1
+    while i <= length(proofs)
+        p = proofs[i]
+        if p[1] == x && p[2] == z
+            return true
+        end
+        i += 1
+    end
+    return false
+end
+
+function review_counts(data, name, mode, proofs)
+    hits = 0
+    total = 0
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        if r[1] == "review" && r[2] == name && r[3] * r[4] == mode
+            total += 1
+            if pair_present(proofs, r[5], r[6])
+                hits += 1
+            end
+        end
+        i += 1
+    end
+    return [hits, total]
+end
+
+function metrics(data, target, shape)
+    proofs = enumerate(data, target, shape)
+    trainpos = review_counts(data, target[3], "trainpositive", proofs)
+    trainneg = review_counts(data, target[3], "trainnegative", proofs)
+    testpos = review_counts(data, target[3], "testpositive", proofs)
+    testneg = review_counts(data, target[3], "testnegative", proofs)
+    tp = trainpos[1]
+    fp = trainneg[1]
+    fn = trainpos[2] - tp
+    ttp = testpos[1]
+    tfp = testneg[1]
+    tfn = testpos[2] - ttp
+    score = 3 * tp - 5 * fp - 2 * fn
+    if fp > 0 || tfp > 0
+        state = "refuted"
+    else
+        state = "experimental"
+    end
+    return [shape, tp, fp, fn, ttp, tfp, tfn, score, state, proofs]
+end
+
+function candidate_event(target, c, selected)
+    return "evaluation|" * target[3] * "|" * c[1] * "|" * c[9] * "|" * string(c[2]) * "|" * string(c[3]) * "|" * string(c[4]) * "|" * string(c[5]) * "|" * string(c[6]) * "|" * string(c[7]) * "|" * string(c[8]) * "|" * selected
+end
+
+function selected_candidate(candidates)
+    best = 1
+    i = 2
+    while i <= length(candidates)
+        if candidates[i][8] > candidates[best][8]
+            best = i
+        end
+        i += 1
+    end
+    return best
+end
+
+function discover_target(data, target, journal, events)
+    shapes = ["chain", "common_source", "common_target", "reverse_chain"]
+    candidates = []
+    i = 1
+    while i <= length(shapes)
+        push!(candidates, metrics(data, target, shapes[i]))
+        i += 1
+    end
+    best = selected_candidate(candidates)
+    i = 1
+    while i <= length(candidates)
+        c = candidates[i]
+        selected = "no"
+        if i == best && c[2] > 0 && c[3] == 0
+            selected = "yes"
+        end
+        queue(events, journal, candidate_event(target, c, selected))
+        if selected == "yes" && c[9] != "refuted"
+            proofs = c[10]
+            j = 1
+            while j <= length(proofs)
+                p = proofs[j]
+                body = "proof|" * target[3] * "|" * c[1] * "|" * p[1] * "|" * p[2] * "|" * p[3] * "|" * p[4] * "|" * p[5]
+                queue(events, journal, body)
+                j += 1
+            end
+        end
+        i += 1
+    end
+end
+
+args = read_args()
+data = args[1]
+journal = args[2]
+events = []
+i = 1
+while i <= length(data)
+    row = data[i]
+    if row[1] == "target"
+        discover_target(data, row, journal, events)
+    end
+    i += 1
+end
+emit(events, journal)
