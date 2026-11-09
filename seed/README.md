@@ -9,7 +9,7 @@ The complete chain is described in [`../BOOTSTRAP.md`](../BOOTSTRAP.md).
 | M1 — prints a line and exits with 0 | Windows x86-64 (PE) | ✅ |
 | M2 — reads the file from the first argument and writes its bytes | Windows x86-64 (PE) | ✅ |
 | M3 — Triad-Core interpreter | Windows x86-64 (PE) | in progress: M3b1 ✅, M3b2a ✅, M3b2b1 ✅, M3b2b2 ✅, M3b2b3a-e ✅, **M3b2b3f** ⚠️ (unstable capture), **M3b2b3g** ✅ (`!`, `&&`, `||`, `+=`), **M3b2b3h** ✅ (`function … end`), **M3b2b3i** ✅ (multi-statement body), **M3b2b3j** ✅ (lexical frames, `let`; `scope`), **M3b2b3k** ✅ (closures; `closure`/`closures`), **M3b2b3l** ✅ (`begin`/`end`), **M3b2b3m** ✅ (base strings), **M3b2b3n** ✅ (`nothing`), **M3b2b3o** ✅ (concatenation), **M3b2b3p** ✅ (symbols `:name`; `base_symbols`); `string()`, multi-binding capture, `elseif`, lists | remain
-| M7 — Linux port (ELF) | Linux x86-64 | ✅ **E0 → E1 → E2 → E3**: minimal ELF (write/exit) → file runner (argv + I/O) → **Triad-Core interpreter** (11465 byte, parità byte-exatta col PE: conformance 42/42 + probe 55/55 + golden S1) → **toolchain senza Node** (`install.sh` → `bin/triad`/`bin/triad-cli`, CI `seed-linux` nativa) |
+| M7 — Linux port (ELF) | Linux x86-64 | ✅ **E0 → E1 → E2 → E3**: minimal ELF (write/exit) → file runner (argv + I/O) → **Triad-Core interpreter** (11977 byte, parità byte-exatta col PE: conformance 42/42 + probe 57/57 + golden S1) → **toolchain senza Node** (`install.sh` → `bin/triad`/`bin/triad-cli`, CI `seed-linux` nativa) |
 ## Contratto del seed
 Il seed **non** è un'implementazione Triad-Core completa: è un interprete diretto
 (scannerless) scritto in codice macchina, e fa da *veicolo di transizione* per S1 (il
@@ -52,14 +52,15 @@ Divergenze note dal comportamento di `SPEC-CORE.md` (misurate sul seed):
 | D19 | newline dopo un operatore | §2 separatore | **prosegue** l'espressione |
 | D20 | corpo di `if`/`while` | §5 ambiente proprio | **nessun** ambiente proprio (il nome resta visibile fuori) |
 | D21 | condizione `while` non-`Bool` | §5 solo `Bool` | **salta** il corpo in silenzio |
-| D22 | keyword dentro un letterale o un identificatore | §2 | contate dai byte grezzi: l'annidamento dei blocchi sbaglia |
 | D24 | assegnazione composta a indice `xs[i] += v` | §7 (oltre la grammatica di Core) | assente (exit 1); `xs[i] = v` funziona |
 | D25 | interi a 64 bit con wrap | §5 | il tag occupa il bit basso: il range utile è `[-2^61, 2^61−1]`; un letterale o un risultato aritmetico fuori range è **rifiutato** (exit 1, `seed: integer overflow` su stderr ELF), non prodotto sbagliato in silenzio (decisione `docs/adr/0003-range-interi-del-seed.md`) |
 
 Divergenze **risolte** dal seed (non sono più nel contratto): **D6** (`-=`, `*=` a nome),
 **D9** (chiamata in posizione finale: viene valutata), **D13** (indicizzazione `xs[i]`
 1-based e scrittura `xs[i] = v`), **D16** (primitivi §8 `readfile`, `strlen`, `strbyte`,
-`strsub`), **D23** (ternario con simbolo).
+`strsub`), **D22** (le parole chiave sono token *esatti*: `iffy`, `myif`, `endx`,
+`elsewhere` non sono keyword, e il testo di un letterale non conta per
+l'annidamento dei blocchi), **D23** (ternario con simbolo).
 
 Correzioni senza id (divergenze *non dichiarate*, cioè bug): `exit(n)` era dichiarato
 disponibile ma **non esisteva** (exit 1); i **simboli non sono più stringhe** (un
@@ -133,7 +134,7 @@ chmod +x seed/linux-x86_64/seed
 ./seed/linux-x86_64/seed               # usage su stderr, exit 2
 ./seed/linux-x86_64/seed non_esiste.td # errore su stderr, exit 1
 sh seed/linux-x86_64/check_seed.sh     # 7 casi (contratto errori/limiti)
-sh verify.sh                           # gate completo: conformance 42 + probe 55 + golden S1
+sh verify.sh                           # gate completo: conformance 42 + probe 57 + golden S1
 ```
 
 The Windows PE and the Linux ELF cover the **same machine-code domain** and pass

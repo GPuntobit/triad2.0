@@ -99,8 +99,8 @@ jobs:
       - name: Hash check (PE + ELF, gate anti-tampering decisione 04)
         run: |
           printf '%s\n' \
-            'a5fa3e506b91bf444d8ee6d673f703bbec31df649f01d7061264f91424c441d8  seed/linux-x86_64/seed.hex' \
-            '0432c4ca79c110e43d8b3621a8ebaf66ded4e4855adcb761fac98d823b300fd4  seed/windows-x86_64/seed.hex' \
+            '8457051f7d083ab834ec860502605a58f1ecce4a5abca88391a804898315d613  seed/linux-x86_64/seed.hex' \
+            '20aa566dae21d2b102e684f7a8c1b67b1b2b44c61c1116e16d196de31683d7b7  seed/windows-x86_64/seed.hex' \
             | sha256sum --check
       - name: Reproducible dump (anti-drift, PE + ELF)
         run: |
@@ -125,29 +125,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Launcher bin/triad esegue un programma (senza Node)
-        run: ./bin/triad tests/probes/test_simple.td | grep -q '^test      - name: install.sh (utente non root, prefix temporaneo)
-        run: |
-          ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop
-          export PATH="$RUNNER_TEMP/triad-bin:$PATH"
-          triad tests/probes/test_let.td | grep -q '^15$'
-          triad-cli status
-      - name: Sessione desktop (installazione e persistenza dopo errori)
-        run: sh tests/desktop.sh
-      - name: Smoke test negativo (golden diverso => installazione fallisce)
-        run: |
-          cp tests/probes/test_simple.expected.out "$RUNNER_TEMP/golden.bak"
-          echo "tamper" >> tests/probes/test_simple.expected.out
-          if ./install.sh --prefix "$RUNNER_TEMP/triad-neg" --no-desktop; then
-            echo "ERRORE: install.sh ha accettato un golden diverso"; exit 1
-          fi
-          mv "$RUNNER_TEMP/golden.bak" tests/probes/test_simple.expected.out
-      - name: Conformance via launcher installato (CLI sh, senza Node)
-        run: |
-          export PATH="$RUNNER_TEMP/triad-bin:$PATH"
-          triad-cli test all
-
-      - name: "TRID native: discovery stage (S1)"
-        run: sh cognitive/tests/run.sh
+        run: ./bin/triad tests/probes/test_simple.td | grep -q '^test$'
       - name: install.sh (utente non root, prefix temporaneo)
         run: |
           ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop

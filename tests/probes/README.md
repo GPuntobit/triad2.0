@@ -61,9 +61,11 @@ repo; nessun fallback JS. Lo stesso entry point copre la parità PE via wine:
 | concatenazione stringhe con `*` | sì | sì | `ok_ciclo_concat.td` |
 | `+=` su stringhe | **no** (spazzatura) | sì | `bad_stringa_plus_equals.td` |
 | escape `\n`, `\t`, `\"`, `\\` nelle stringhe | **no** | sì | `bad_escape_stringa.td` |
-| letterale con `if` **dentro un blocco** | **no** | sì | `bad_if_in_blocco.td`, `bad_if_in_blocco_while.td` |
+| letterale con `if` **dentro un blocco** | sì | sì | `ok_if_in_blocco.td`, `ok_if_in_blocco_while.td` |
 | letterale con `if` a livello di programma | sì | sì | `ok_stringa_toplevel.td` |
 | letterale con `end` dentro un blocco | sì | sì | `ok_stringa_end_in_blocco.td` |
+| parole chiave come token *esatti* (`iffy`, `myif`, `endx`, `elsewhere`, `whilex`) | sì | sì | `ok_keyword_confine.td` |
+| parola chiave come **primo byte della sorgente** | sì | sì | `ok_keyword_inizio_sorgente.td` |
 | confronto fra stringhe con `==` | **no** (sempre `false`) | sì | `bad_confronto_stringa.td` |
 | `readfile` | sì (max 1 MiB, path max 1024 byte) | sì | `ok_readfile.td` |
 | `strlen`, `strbyte`, `strsub` (§8) | sì | sì | `ok_strlen.td`, `ok_strbyte.td`, `ok_strsub.td` |
@@ -77,10 +79,12 @@ repo; nessun fallback JS. Lo stesso entry point copre la parità PE via wine:
 
 ## Note sui limiti misurati
 
-1. **`if` dentro un letterale in un blocco.** Il contatore di annidamento del
-   seed conta anche le occorrenze della sottostringa `if` nel *testo* del
-   letterale: il blocco sembra più annidato e il programma termina con exit 1.
-   Il testo lungo va quindi stampato a livello di programma.
+1. ~~**`if` dentro un letterale in un blocco.**~~ **RISOLTO il 2026-11-09
+   (D22).** Il seed contava anche le occorrenze della sottostringa `if` nel
+   *testo* del letterale: il blocco sembrava più annidato e il programma
+   terminava con exit 1. Ora il seed **salta il testo di un letterale** quando
+   scandisce la fine di un blocco: il testo lungo si può stampare anche dentro
+   un blocco (`ok_if_in_blocco.td`, `ok_if_in_blocco_while.td`).
 2. **Chiamata come ultima espressione.** Con i dump di `ff222c2`, il probe
    `ok_chiamata_ultima_espressione.td` passa: stdout `4` + newline, exit 0,
    identico al riferimento JS. Il precedente rifiuto non è più atteso.
@@ -124,7 +128,8 @@ machine-leggibile (`seed/dev/certified-subset.txt`, leggibile in `seed/README.md
 presidî la applicano:
 
 - `node tools/selfhost-guard/guard.mjs` — guardie statiche: una regola per divergenza
-  (`G-D01`…`G-D22`, `G-D24`), attive solo se la divergenza è ancora nel contratto (quando il seed
+  (`G-D01`…`G-D21`, `G-D24`; `G-D22` è stata rimossa con la risoluzione di D22),
+  attive solo se la divergenza è ancora nel contratto (quando il seed
   viene corretto, la regola si spegne da sola); il corpus certificato è
   `seed/dev/certified-corpus.txt`;
 - `node tools/selfhost-guard/differential.mjs` — gate differenziale: per ogni programma
@@ -137,7 +142,8 @@ finale (gli altri builtin e le funzioni utente no); il seed **risolve** i riferi
 avanti *fra funzioni* (rifiuta solo la chiamata a livello di file che precede la
 definizione); i corpi di `if`/`while` non hanno un ambiente proprio (`let`/`begin` sì), e il
 caso del nome *già legato* coincide nei due runtime (decisione normativa pending); le
-keyword cieche contano solo dentro un corpo di blocco.
+keyword cieche contavano solo dentro un corpo di blocco — **limite rimosso il
+2026-11-09** (D22 risolta: vedi la sezione dedicata in fondo).
 
 ## Riallineamento dei probe ai dump `ff222c2` — 2026-11-08
 
@@ -220,3 +226,43 @@ aritmetico fuori range e potenza fuori range sono un errore di esecuzione
 Il letterale decimale è ammesso fino a `2^61 − 1`; il risultato aritmetico
 deve stare in `[-2^61, 2^61 − 1]`. Nessun golden di conformance è stato
 riscritto (nessun caso Core usa valori fuori range).
+
+## Ciclo D22: le parole chiave sono token *esatti* — 2026-11-09
+
+Il seed confrontava le parole chiave con i **byte grezzi** del sorgente: un
+identificatore che *inizia* con una keyword (`iffy`, `myif`) veniva scambiato
+per il costrutto, e dentro un corpo di blocco il contatore di annidamento
+contava anche le keyword contenute nel *testo* di un letterale (`"if end else
+while"`), spostando la fine del blocco (exit 1). Era la divergenza `D22`.
+
+Ora il seed:
+
+- riconosce le parole chiave come token **esatti**, con confine bilatero
+  (helper `kw_bound` in `seed/dev/core.js`): `iffy`, `myif`, `endx`,
+  `elsewhere`, `whilex` sono identificatori, non keyword;
+- **salta il testo di un letterale** quando scandisce la fine di un blocco
+  (helper `sc_string`): le keyword dentro una stringa non contano per
+  l'annidamento dei blocchi.
+
+| Caso | seed | interprete JS | probe |
+|---|---|---|---|
+| identificatore che contiene una keyword (`iffy`, `myif`, `endx`, `elsewhere`, `whilex`) | sì | sì | `ok_keyword_confine.td` |
+| keyword come primo byte della sorgente (`if` a offset 0) | sì | sì | `ok_keyword_inizio_sorgente.td` |
+| letterale con `if` dentro un blocco `if` | sì | sì | `ok_if_in_blocco.td` |
+| letterale con `if` dentro un blocco `while` | sì | sì | `ok_if_in_blocco_while.td` |
+
+Conseguenze:
+
+1. `D22` **esce** dal contratto (`seed/dev/certified-subset.txt`) e la guardia
+   statica `G-D22` è rimossa: il fixture «rifiutato» è diventato «ammesso»
+   (`tools/selfhost-guard/fixtures/risolto_keyword_cieca.td`).
+2. La regola `E010` del lint del generatore del sito
+   (`node tools/site-gen/lint.mjs`, «letterale con `if` dentro un blocco») è
+   rimossa: il testo lungo si può stampare anche dentro un blocco.
+3. I due probe `bad_if_in_blocco`/`bad_if_in_blocco_while` sono diventati
+   `ok_if_in_blocco`/`ok_if_in_blocco_while` (con golden sidecar), e sono
+   state aggiunte `ok_keyword_confine` e `ok_keyword_inizio_sorgente`.
+
+Conteggi: la suite cablata è ora **57 probe** (55 programmi in
+`tests/probes/` + i 2 golden del front-end S1 `selfhost/source.td` e
+`selfhost/main.td`). Nessun golden di conformance è stato riscritto.

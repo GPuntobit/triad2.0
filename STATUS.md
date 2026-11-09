@@ -1,5 +1,47 @@
 # Triad and S0 bootstrap status
 
+## D22 risolta: le parole chiave sono token *esatti* nel seed — 2026-11-09
+
+Il seed confrontava le parole chiave con i **byte grezzi** del sorgente. Ne
+venivano due limiti, raccolti nella divergenza `D22`:
+
+1. un identificatore che *inizia* con una keyword (`iffy`, `myif`, `endx`,
+   `elsewhere`) veniva scambiato dal seed per il costrutto (exit 1);
+2. dentro un corpo di blocco il contatore di annidamento contava anche le
+   keyword contenute nel **testo di un letterale** (`"if end else while"`):
+   il blocco sembrava più annidato e il programma terminava con exit 1.
+
+Il seed ora riconosce le parole chiave come token **esatti** (confine
+bilatero: il carattere precedente e quello successivo devono essere
+delimitatori) e **salta il testo di un letterale** quando scandisce la fine di
+un blocco. Implementazione in `seed/dev/core.js`: nuovo helper `kw_bound`
+(confine della parola) e nuova routine `sc_string` (salto del letterale),
+usate da tutti i punti in cui il seed riconosce `if`, `else`, `elseif`, `end`,
+`let`, `while`, `begin`, `function`, `break`, `continue`, `return`.
+
+Conseguenze:
+
+- **contratto**: `D22` esce da `seed/dev/certified-subset.txt` (era `noisy`);
+- **guardie**: la regola `G-D22` è rimossa (come `G-D06`, `G-D09`, `G-D13`);
+  il fixture «rifiutato» è diventato «ammesso»
+  (`tools/selfhost-guard/fixtures/risolto_keyword_cieca.td`);
+- **generatore del sito**: la regola `E010` del lint (`tools/site-gen/lint.mjs`,
+  «letterale con `if` dentro un blocco») è rimossa: il testo lungo si può
+  stampare anche dentro un blocco;
+- **probe**: `bad_if_in_blocco`/`bad_if_in_blocco_while` diventano
+  `ok_if_in_blocco`/`ok_if_in_blocco_while` (con golden sidecar); nuovi
+  `ok_keyword_confine` (identificatori che contengono una keyword) e
+  `ok_keyword_inizio_sorgente` (keyword al primo byte della sorgente):
+  **55 → 57 probe** nella suite cablata;
+- **artefatti**: dump PE (25088 byte, codice 11996 byte) ed ELF (11977 byte)
+  rigenerati, hash CI aggiornati (PE `20aa566d…`, ELF `8457051f…`), binari
+  decodificati e README del seed allineati.
+
+Verifiche PASS: conformance **42/42**, probe **57/57** (ELF nativo e PE via
+wine, parità byte-esatta), logica **29/29**, guardie 23 test, differenziale 0
+differenze, `check_seed.sh` 7 casi, anti-drift `cmp` e hash CI verdi. Nessun
+golden di conformance riscritto.
+
 ## D16 risolta: i primitivi §8 (`readfile`, `strlen`, `strbyte`, `strsub`) sono nel seed — 2026-11-08
 
 Il seed implementava i soli primitivi §8 `get` ed `exit`, e **dichiarava `exit` disponibile
