@@ -1,0 +1,34 @@
+start
+i32_frame 32
+i32_const 4
+i32_store 0
+i32_load 0
+i32_arg2_const 3
+i32_call combine
+i32_store 4
+i32_load 4
+exit
+label inc
+i32_enter 40
+i32_store 0
+i32_load 0
+i32_add 2
+i32_store 4
+i32_load 4
+i32_result
+i32_leave 40
+return
+label combine
+i32_enter 40
+i32_store 0
+i32_arg2_store 4
+i32_load 0
+i32_call inc
+i32_store 8
+i32_load 8
+i32_add_slot 4
+i32_store 12
+i32_load 12
+i32_result
+i32_leave 40
+return
