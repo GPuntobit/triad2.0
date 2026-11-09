@@ -209,9 +209,14 @@ function is_revoked(data, source)
 end
 
 function read_data()
+    println("NATIVE INPUT START")
     data = parse_file("fixture.txt")
+    println("NATIVE FIXTURE READ")
     history = parse_file("journal.log")
+    println("NATIVE JOURNAL READ")
     validate_data(data)
+    println("NATIVE FIXTURE VALID")
     check_journal(history)
+    println("NATIVE JOURNAL VALID")
     [data, history]
 end
