@@ -39,7 +39,8 @@ function valid_name(s)
     good
 end
 
-function parse_text(src)
+function parse_file(path)
+    src = readfile(path)
     println("PARSE START", strlen(src))
     rows = []
     fields = []
@@ -211,9 +212,9 @@ end
 
 function read_data()
     println("NATIVE INPUT START")
-    data = parse_text(readfile("fixture.txt"))
+    data = parse_file("fixture.txt")
     println("NATIVE FIXTURE READ")
-    history = parse_text(readfile("journal.log"))
+    history = parse_file("journal.log")
     println("NATIVE JOURNAL READ")
     validate_data(data)
     println("NATIVE FIXTURE VALID")
