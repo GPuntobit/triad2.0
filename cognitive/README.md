@@ -60,3 +60,19 @@ The project currently records 20 agreed decisions: 1–12 D; 13 A
 (definitions); 14–17 D; 18 A (logical argument comparison); 19 A
 (source-first reliability); 20 A (logical deduction discovery). These are
 **requirements**, not claims that this proof of concept implements all of them.
+
+## TRID-Core 0.2 experimental lab (branch feature/trid-core-0.2)
+
+The additional example `cognitive/examples/laboratory.triad` derives candidate
+composed edges and joins them to separately supplied positive and negative
+observations, preserving review source identifiers. No negative evidence is
+inferred from missing observations. This does not yet invent the generic rule
+schema or persist runtime-discovered hypotheses.
+
+```sh
+sh cognitive/tests/run_02.sh
+```
+
+For its scope and explicit limitations, see
+[cognitive/laboratory/README.md](laboratory/README.md). The 0.1 example and its
+golden test are retained unchanged.
