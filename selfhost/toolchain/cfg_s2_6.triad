@@ -7,6 +7,8 @@
 # Dependencies: cfg_s2_5.triad and assembler_s2_1.triad.
 
 function cfg26_check_unit(src)
+    println("CFG26-ENTRY")
+    println(strlen(src))
     ops = []
     args = []
     pos = 1
@@ -17,6 +19,8 @@ function cfg26_check_unit(src)
         end
         if line_end > pos
             words = asm_tokens(strsub(src, pos, line_end - 1))
+            println("CFG26-LINE")
+            println(words[1])
             if !asm_same(words[1], "@")
                 asm_need(length(words) == 2 || length(words) == 3)
                 push!(ops, words[1])
@@ -25,6 +29,7 @@ function cfg26_check_unit(src)
                     arg = words[2]
                 end
                 push!(args, arg)
+                println("CFG26-APPEND")
                 asm_need(length(ops) <= 45)
             end
         end
