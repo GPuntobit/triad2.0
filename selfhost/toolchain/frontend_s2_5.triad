@@ -159,9 +159,13 @@ function f25_assign(ir, vars, state, words)
     else
         out = mv_value(out, vars, mask, node[3])
     end
+    println("F25-BEFORE-ALLOC")
     slot = mv_allocate(vars, target)
+    println("F25-AFTER-ALLOC")
     out = front_line(out, "i32_store " * string(slot))
+    println("F25-AFTER-STORE")
     mask = mv_mark(mask, slot)
+    println("F25-AFTER-MARK")
     [out, mask]
 end
 
@@ -247,6 +251,7 @@ function source_to_ir25(src)
                         asm_need(!saw_return)
                         state = [local_mask, function_name, parameters, true]
                         pair = f25_assign(body_ir, locals, state, words)
+                        println("F25-PAIR-FUNCTION")
                         body_ir = pair[1]
                         local_mask = pair[2]
                     end
