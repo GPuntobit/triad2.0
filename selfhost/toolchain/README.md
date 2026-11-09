@@ -6,6 +6,19 @@ written in **Triad-Core** and run under the existing native x86-64 seed.
 There is no JavaScript/Node, Python, C, Rust, or external assembler involved
 in generating the machine-code bytes.
 
+## S2.2 — native i32 IR lowering & auditable S0 seed fragments
+
+The next experiment is documented in [`README_S2_2.md`](README_S2_2.md):
+a constrained typed `i32` intermediate representation is lowered **by
+Triad-Core** into readable S2.1 assembly, then assembled to a native ELF64.
+The test suite also reconstructs and checks the *actual first 64 ELF
+header bytes* and *first seven machine-code bytes* from the committed
+S0 seed, without claiming the full seed is reproducible yet.
+
+```sh
+sh selfhost/toolchain/tests/run_s2_2.sh
+```
+
 ## S2.1 — assembler nativo a due passaggi
 
 La fase successiva è ora disponibile nel prototipo
