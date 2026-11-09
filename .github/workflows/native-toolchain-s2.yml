@@ -16,6 +16,18 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Diagnose native Core emitter functions (nonblocking)
+        run: |
+          set +e
+          for probe in 'emit_digit(10)' 'emit_byte(127)' 'emit_le(132, 8)' 'emit_zeros(2)' 'emit_elf_exit(42)'; do
+            cp selfhost/toolchain/elf64_exit.triad /tmp/triad-native-emitter.triad
+            printf '\n%s\n' "$probe" >> /tmp/triad-native-emitter.triad
+            echo "NATIVE PROBE $probe"
+            ./bin/triad /tmp/triad-native-emitter.triad > /tmp/triad-probe-out 2>&1
+            echo "NATIVE RC=$?"
+            head -c 160 /tmp/triad-probe-out
+            echo
+          done
       - name: Native ELF code generation using Triad-Core
         run: sh selfhost/toolchain/tests/run.sh
       - name: Ensure zero JavaScript and current Triad conformance
