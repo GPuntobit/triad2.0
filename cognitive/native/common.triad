@@ -35,6 +35,7 @@ function parse_file(path)
     i = 1
     n = strlen(s)
     while i <= n + 1
+        ch = 10
         if i == n + 1
             ch = 10
         else
