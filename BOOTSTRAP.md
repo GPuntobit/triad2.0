@@ -181,6 +181,22 @@ instruction at offset 120. The test compares both with
 not complete S0 seed regeneration and not full self-hosting.** See
 `selfhost/toolchain/README_S2_2.md`.
 
+## S2.3 — native frontend for an actual Triad-Core subset
+
+`selfhost/toolchain/frontend_s2_3.triad` implements a restricted
+source-language frontend entirely in Triad-Core. It accepts one integer
+variable `x`, assignment and arithmetic updates, nested
+`while`/`if`/`else` blocks, and terminal `exit(x)`, then
+lowers to the S2.2 IR and the existing S2.1 native ELF assembler.
+
+`sh selfhost/toolchain/tests/run_s2_3.sh` verifies actual source-to-IR
+goldens and executable equivalence against direct S0 interpretation for
+the admitted tests.
+
+**This remains a narrow compiler**, not full Triad-Core or Full language
+compilation, seed regeneration or fixed-point self-hosting. Consult
+`selfhost/toolchain/README_S2_3.md`.
+
 ## 8. Compliance Agreement
 The executable specification is `conformance/`: each case is
 ```
