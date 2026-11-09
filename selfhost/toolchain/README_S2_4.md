@@ -174,4 +174,5 @@ The S2.4 tests include:
 S2.4 is developed on a branch stacked over the already implemented
 S2.3/S2.2 lineage. Do not claim complete S2/S3 self-hosting from
 these limited native source-to-ELF tests.
-\nFor S0 compatibility, the frontend and the assembler process **one source line at a time**; neither stores the full token stream in a single S0 list. This retains labels and dataflow across lines, while preserving the original fixed-size seed limits.\n
+
+For S0 compatibility, the frontend and the assembler process **one source line at a time**; neither stores the full token stream in a single S0 list. This retains labels and dataflow across lines, while preserving the original fixed-size seed limits.\n
