@@ -170,6 +170,32 @@ jobs:
             "$GITHUB_WORKSPACE/bin/triad" "/tmp/trid-atom/z$i.triad"
             echo "val-$i=$?"
           done
+      - name: Native column-symbol representation smoke test
+        run: |
+          set +e
+          cat > /tmp/trid-atom/columns.triad <<'TRIAD'
+          c1 = [:xedge, :xreview]
+          c2 = [:xfamily, :xgrandparent]
+          function col(i, k)
+              item = :x
+              if k == 1
+                  item = c1[i]
+              else
+                  item = c2[i]
+              end
+              value = string(item)
+              result = ""
+              if strlen(value) > 1
+                  result = strsub(value, 2, strlen(value))
+              end
+              result
+          end
+          println("ROWS ", length(c1))
+          println("C1 ", col(1, 1))
+          println("C2 ", col(2, 2))
+          TRIAD
+          "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-atom/columns.triad
+          echo "column-status=$?"
       - name: Native S1 logic smoke test
         run: ./bin/triad --logic cognitive/native/s1_discovery.triad
       - name: Native Triad cognitive regression (no Python/Node interpreter)
