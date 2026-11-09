@@ -107,7 +107,8 @@ function review_counts(data, name, mode, proofs)
         end
         i += 1
     end
-    [hits, total]
+    result = [hits, total]
+    result
 end
 
 function metrics(data, target, shape)
@@ -127,7 +128,8 @@ function metrics(data, target, shape)
     if fp > 0 || tfp > 0
         state = "refuted"
     end
-    [shape, tp, fp, fn, ttp, tfp, tfn, score, state, proofs]
+    result = [shape, tp, fp, fn, ttp, tfp, tfn, score, state, proofs]
+    result
 end
 
 function candidate_event(target, c, selected)
