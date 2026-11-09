@@ -1,0 +1,319 @@
+# TRIAD S2.6 — native multi-function, lexical i32 scopes, nested typed AST.
+# Dependencies: S2.5 frontend, S2.4 lexical locals, S2.1 ELF.
+# Profile: up to 3 single/two-argument functions, declared before main;
+# calls inside functions only to earlier declarations (acyclic call graph).
+# Recursive functions have a separate, statically checked profile.
+# Every function and top-level owns a distinct fixed native stack frame.
+# Internal slots 28..31 reserved for nested expression temporary storage.
+
+function f26_atom(word)
+    node = []
+    if mv_number(word)
+        asm_uint(word)
+        push!(node, "const")
+    else
+        asm_need(f25_name(word))
+        push!(node, "var")
+    end
+    push!(node, "i32")
+    push!(node, word)
+    node
+end
+
+# Expression AST: left-associative single binary or one nested RHS group.
+# e.g. a + (b - 2) gives [binary,i32,[var,i32,a],+,
+#                              [binary,i32,[var,i32,b],-,[const,i32,2]]].
+function f26_expr(words, first, last)
+    count = last - first + 1
+    node = []
+    if count == 7
+        lhs = f26_atom(words[first])
+        operation = words[first + 1]
+        asm_need(asm_same(operation, "+") || asm_same(operation, "-"))
+        asm_need(asm_same(words[first + 2], "("))
+        inner_lhs = f26_atom(words[first + 3])
+        inner_op = words[first + 4]
+        asm_need(asm_same(inner_op, "+") || asm_same(inner_op, "-"))
+        inner_rhs = f26_atom(words[first + 5])
+        asm_need(asm_same(words[first + 6], ")"))
+        inner = ["binary", "i32", inner_lhs, inner_op, inner_rhs]
+        node = ["binary", "i32", lhs, operation, inner]
+    else
+        basic = f25_expr(words, first, last)
+        kind = basic[1]
+        if asm_same(kind, "binary") || asm_same(kind, "const") || asm_same(kind, "var")
+            node = basic
+        else
+            asm_need(asm_same(kind, "call"))
+            node = basic
+        end
+    end
+    node
+end
+
+# The flattened signature table stores [name, arity, name, arity, ...].
+function f26_arity(signatures, wanted)
+    result = 0
+    i = 1
+    while i <= length(signatures)
+        if asm_same(signatures[i], wanted)
+            result = signatures[i + 1]
+        end
+        i += 2
+    end
+    result
+end
+
+# AST lowering is inlined into the owning source frame for S0:
+# nested calls passing live AST lists can overflow its tiny eval frames.
+# Context: [locals, definite-mask, visible signatures, current fn].
+
+
+# More than one function may define the same local names (lexical isolation).
+# The function code is concatenated after the top-level exit so each call
+# retains the x86-64 stack and EAX result ABI from S2.5.
+function source_to_ir26(src)
+    asm_need(strlen(src) > 0 && strlen(src) <= 8000)
+    main_ir = "start"
+    main_ir = front_line(main_ir, "i32_frame 32")
+    bodies = ""
+    body = ""
+    symbols = []
+    globals = []
+    signatures = []
+    mask = 0
+    global_mask = 0
+    current_name = ""
+    state = 0
+    arity = 0
+    completed_function = false
+    finished = false
+    saw_call = false
+    defs = 0
+    statements = 0
+    pos = 1
+    while pos <= strlen(src)
+        line_end = pos
+        while line_end <= strlen(src) && strbyte(src, line_end) != 10
+            line_end += 1
+        end
+        if line_end > pos
+            words = f25_words(strsub(src, pos, line_end - 1))
+            if length(words) > 0
+                op = words[1]
+                asm_need(!finished)
+                if asm_same(op, "function")
+                    asm_need(state == 0 && !completed_function)
+                    asm_need(length(words) == 5 || length(words) == 7)
+                    name = words[2]
+                    asm_need(f25_name(name) && f26_arity(signatures, name) == 0)
+                    asm_need(asm_same(words[3], "("))
+                    asm_need(asm_same(words[length(words)], ")"))
+                    first_param = words[4]
+                    asm_need(f25_name(first_param))
+                    defs += 1
+                    asm_need(defs <= 3)
+                    arity = 1
+                    if length(words) == 7
+                        asm_need(asm_same(words[5], ","))
+                        second_param = words[6]
+                        asm_need(f25_name(second_param) && !asm_same(first_param, second_param))
+                        arity = 2
+                    end
+                    # Append this declaration only after its own body is
+                    # parsed: function bodies can call earlier declarations,
+                    # never unknown names, themselves or later functions.
+                    current_name = name
+                    symbols = []
+                    mask = 0
+                    body = front_line(body, "label " * current_name)
+                    body = front_line(body, "i32_enter 40")
+                    first_slot = mv_allocate(symbols, first_param)
+                    asm_need(first_slot == 0)
+                    body = front_line(body, "i32_store 0")
+                    mask = mv_mark(mask, 0)
+                    if arity == 2
+                        second_slot = mv_allocate(symbols, second_param)
+                        asm_need(second_slot == 4)
+                        body = front_line(body, "i32_arg2_store 4")
+                        mask = mv_mark(mask, 4)
+                    end
+                    state = 1
+                elseif state == 1
+                    if asm_same(op, "end")
+                        asm_need(completed_function && length(words) == 1)
+                        bodies = front_line(bodies, body)
+                        body = ""
+                        push!(signatures, current_name)
+                        push!(signatures, arity)
+                        completed_function = false
+                        state = 0
+                    elseif length(words) == 1 || asm_same(op, "return")
+                        asm_need(!completed_function)
+                        result_name = op
+                        if asm_same(op, "return")
+                            asm_need(length(words) == 2)
+                            result_name = words[2]
+                        end
+                        offset = mv_require(symbols, mask, result_name)
+                        body = front_line(body, "i32_load " * string(offset))
+                        body = front_line(body, "i32_result")
+                        body = front_line(body, "i32_leave 40")
+                        body = front_line(body, "return")
+                        completed_function = true
+                    else
+                        asm_need(!completed_function)
+                        asm_need(length(words) >= 3 && asm_same(words[2], "="))
+                        dest = words[1]
+                        asm_need(f25_name(dest))
+                        node = f26_expr(words, 3, length(words))
+                        kind = node[1]
+                        asm_need(asm_same(node[2], "i32"))
+                        out = body
+                        if asm_same(kind, "binary")
+                            operation = node[4]
+                            asm_need(asm_same(operation, "+") || asm_same(operation, "-"))
+                            if length(words) == 9
+                                # Copy all primitive AST fields before calling further Triad
+                                # functions: S0 has small evaluator frames for nested List values.
+                                left = node[3]
+                                right = node[5]
+                                first = left[3]
+                                inner_left = right[3]
+                                inner_right = right[5]
+                                inner_first = inner_left[3]
+                                inner_second = inner_right[3]
+                                inner_operation = right[4]
+                                asm_need(asm_same(left[2], "i32") && asm_same(right[2], "i32"))
+                                out = mv_value(out, symbols, mask, inner_first)
+                                out = mv_arithmetic(out, symbols, mask, inner_operation * inner_second)
+                                out = front_line(out, "i32_store 28")
+                                out = mv_value(out, symbols, mask, first)
+                                if asm_same(operation, "+")
+                                    out = front_line(out, "i32_add_slot 28")
+                                else
+                                    out = front_line(out, "i32_sub_slot 28")
+                                end
+                            else
+                                first = node[3]
+                                second = node[5]
+                                out = mv_value(out, symbols, mask, first)
+                                out = mv_arithmetic(out, symbols, mask, operation * second)
+                            end
+                        elseif asm_same(kind, "call")
+                            fn = node[3]
+                            first = node[4]
+                            second = node[5]
+                            called_arity = f26_arity(signatures, fn)
+                            asm_need(called_arity == 1 || called_arity == 2)
+                            asm_need(!asm_same(fn, current_name))
+                            if called_arity == 1
+                                asm_need(strlen(second) == 0)
+                            else
+                                asm_need(strlen(second) > 0)
+                            end
+                            out = mv_value(out, symbols, mask, first)
+                            if called_arity == 2
+                                out = f25_second(out, symbols, mask, second)
+                            end
+                            out = front_line(out, "i32_call " * fn)
+                        else
+                            asm_need(asm_same(kind, "const") || asm_same(kind, "var"))
+                            first = node[3]
+                            out = mv_value(out, symbols, mask, first)
+                        end
+                        slot = mv_allocate(symbols, dest)
+                        asm_need(slot <= 24)
+                        out = front_line(out, "i32_store " * string(slot))
+                        mask = mv_mark(mask, slot)
+                        body = out
+                    end
+                elseif asm_same(op, "exit")
+                    asm_need(state == 0 && defs >= 2)
+                    asm_need(length(words) == 4)
+                    asm_need(asm_same(words[2], "(") && asm_same(words[4], ")"))
+                    slot = mv_require(globals, global_mask, words[3])
+                    main_ir = front_line(main_ir, "i32_load " * string(slot))
+                    main_ir = front_line(main_ir, "exit")
+                    finished = true
+                else
+                    asm_need(state == 0 && defs >= 2)
+                    asm_need(length(words) >= 3)
+                    asm_need(length(words) >= 3 && asm_same(words[2], "="))
+                    dest = words[1]
+                    asm_need(f25_name(dest))
+                    node = f26_expr(words, 3, length(words))
+                    kind = node[1]
+                    if asm_same(kind, "call")
+                        saw_call = true
+                    end
+                    asm_need(asm_same(node[2], "i32"))
+                    out = main_ir
+                    if asm_same(kind, "binary")
+                        operation = node[4]
+                        asm_need(asm_same(operation, "+") || asm_same(operation, "-"))
+                        if length(words) == 9
+                            # Copy all primitive AST fields before calling further Triad
+                            # functions: S0 has small evaluator frames for nested List values.
+                            left = node[3]
+                            right = node[5]
+                            first = left[3]
+                            inner_left = right[3]
+                            inner_right = right[5]
+                            inner_first = inner_left[3]
+                            inner_second = inner_right[3]
+                            inner_operation = right[4]
+                            asm_need(asm_same(left[2], "i32") && asm_same(right[2], "i32"))
+                            out = mv_value(out, globals, global_mask, inner_first)
+                            out = mv_arithmetic(out, globals, global_mask, inner_operation * inner_second)
+                            out = front_line(out, "i32_store 28")
+                            out = mv_value(out, globals, global_mask, first)
+                            if asm_same(operation, "+")
+                                out = front_line(out, "i32_add_slot 28")
+                            else
+                                out = front_line(out, "i32_sub_slot 28")
+                            end
+                        else
+                            first = node[3]
+                            second = node[5]
+                            out = mv_value(out, globals, global_mask, first)
+                            out = mv_arithmetic(out, globals, global_mask, operation * second)
+                        end
+                    elseif asm_same(kind, "call")
+                        fn = node[3]
+                        first = node[4]
+                        second = node[5]
+                        called_arity = f26_arity(signatures, fn)
+                        asm_need(called_arity == 1 || called_arity == 2)
+                        asm_need(!asm_same(fn, ""))
+                        if called_arity == 1
+                                asm_need(strlen(second) == 0)
+                        else
+                            asm_need(strlen(second) > 0)
+                        end
+                        out = mv_value(out, globals, global_mask, first)
+                        if called_arity == 2
+                                out = f25_second(out, globals, global_mask, second)
+                        end
+                        out = front_line(out, "i32_call " * fn)
+                    else
+                        asm_need(asm_same(kind, "const") || asm_same(kind, "var"))
+                        first = node[3]
+                        out = mv_value(out, globals, global_mask, first)
+                    end
+                    slot = mv_allocate(globals, dest)
+                    asm_need(slot <= 24)
+                    out = front_line(out, "i32_store " * string(slot))
+                    global_mask = mv_mark(global_mask, slot)
+                    main_ir = out
+                end
+                statements += 1
+                asm_need(statements <= 42 && strlen(main_ir) + strlen(bodies) + strlen(body) <= 11000)
+            end
+        end
+        pos = line_end + 1
+    end
+    asm_need(state == 0 && finished && completed_function == false)
+    asm_need(defs >= 2 && saw_call)
+    front_line(main_ir, bodies)
+end

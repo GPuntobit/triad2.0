@@ -1,0 +1,14 @@
+function one(v)
+    r = v + 1
+    r
+end
+function two(v)
+    r = one(v)
+    r
+end
+function three(v)
+    r = two(v)
+    r
+end
+value = three(4)
+exit(value)

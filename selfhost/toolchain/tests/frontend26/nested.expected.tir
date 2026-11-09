@@ -1,0 +1,32 @@
+start
+i32_frame 32
+i32_const 7
+i32_call passthru
+i32_store 0
+i32_load 0
+exit
+label calc
+i32_enter 40
+i32_store 0
+i32_arg2_store 4
+i32_load 4
+i32_sub 2
+i32_store 28
+i32_load 0
+i32_add_slot 28
+i32_store 8
+i32_load 8
+i32_result
+i32_leave 40
+return
+label passthru
+i32_enter 40
+i32_store 0
+i32_load 0
+i32_arg2_const 4
+i32_call calc
+i32_store 4
+i32_load 4
+i32_result
+i32_leave 40
+return
