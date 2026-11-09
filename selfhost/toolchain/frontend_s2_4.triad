@@ -145,7 +145,9 @@ end
 
 # A condition is type Bool (comparison of two i32 values). The result is
 # carried in x86 flags, consumed immediately by a typed conditional branch.
-function mv_condition(ir, table, mask, lhs, rhs)
+function mv_condition(ir, table, mask, operands)
+    lhs = operands[1]
+    rhs = operands[2]
     offset = mv_require(table, mask, lhs)
     out = front_line(ir, "i32_load " * string(offset))
     if mv_number(rhs)
@@ -199,7 +201,8 @@ function source_to_ir24(src)
                 if asm_same(op, "while")
                     ir = front_line(ir, "label wloop" * string(block_id))
                 end
-                ir = mv_condition(ir, symbols, mask, lhs, rhs)
+                operands = [lhs, rhs]
+                ir = mv_condition(ir, symbols, mask, operands)
                 target = "felse" * string(block_id)
                 if asm_same(op, "while")
                     target = "wend" * string(block_id)
