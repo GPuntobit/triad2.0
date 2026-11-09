@@ -3,7 +3,7 @@
 
 function need(ok, msg)
     if !ok
-        println("TRID error: ", msg)
+        println("TRID error: " * msg)
         exit(1)
     end
     ok
@@ -152,7 +152,7 @@ function emit(lines, history)
     while i <= length(lines)
         line = string(seq) * "|" * string(prev) * "|" * lines[i]
         prev = checksum(line)
-        println(line, "|", prev)
+        println(line * "|" * string(prev))
         seq += 1
         i += 1
     end

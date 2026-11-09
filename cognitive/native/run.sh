@@ -19,8 +19,9 @@ MEMORY="$STATE/memory.txt"
 [ -e "$JOURNAL" ] || : > "$JOURNAL"
 # S0 cannot reliably assign/pass a readfile result. Transport data as literals.
 # Reject every byte that could escape a Triad quoted multiline string.
+# Allowed: letters, digits, '_', '|' (field separator) and '-' (negative metric).
 safe_records() {
-    if LC_ALL=C grep '[^a-zA-Z0-9_|]' "$1" >/dev/null; then
+    if LC_ALL=C grep '[^a-zA-Z0-9_|.-]' "$1" >/dev/null; then
         echo "TRID: unsafe input bytes in $1" >&2
         exit 1
     fi
@@ -47,7 +48,6 @@ make_source() {
             */verify.triad) emit_rows "$2" history ;;
             *) emit_rows "$2" journal ;;
         esac
-        printf 'println("PREFIX-DATA ", length(data))\\n'
         cat "$ROOT/cognitive/native/common.triad" "$1"
     } > "$3"
 }

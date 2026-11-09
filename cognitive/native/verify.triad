@@ -270,7 +270,7 @@ function memory_projection(data, history)
                     state = "suspended_dependency"
                 end
             end
-            println("rule|", target[3], "|", shape, "|", state, "|", row[13], "|", ref)
+            println("rule|" * target[3] * "|" * shape * "|" * state * "|" * row[13] * "|" * ref)
             if gate
                 j = 1
                 while j <= length(history)
@@ -280,7 +280,7 @@ function memory_projection(data, history)
                         if is_revoked(data, p[9]) || is_revoked(data, p[10]) || is_revoked(data, ref)
                             stateclaim = "suspended"
                         end
-                        println("claim|", target[3], "|", p[6], "|", p[7], "|", shape, "|", p[8], "|", p[9], "|", p[10], "|", ref, "|", stateclaim)
+                        println("claim|" * target[3] * "|" * p[6] * "|" * p[7] * "|" * shape * "|" * p[8] * "|" * p[9] * "|" * p[10] * "|" * ref * "|" * stateclaim)
                     end
                     j += 1
                 end

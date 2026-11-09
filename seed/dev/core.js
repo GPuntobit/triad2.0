@@ -147,6 +147,26 @@ const xorEbX = () => B(0x31, 0xdb);
 const xorEdi = () => B(0x31, 0xff);
 const leaR15R14 = d => { B(0x4d, 0x8d, 0xbe); B32(d); };
 const movzxEaxRsi = () => B(0x0f, 0xb6, 0x06);
+// movzx eax, byte [rsi+rdx] (indirizzo con indice: serve al controllo
+// di confine delle parole chiave).
+// ModRM 0x04 = mod 00, reg eax, rm=SIB; SIB 0x16 = scale 1, index=010 (rdx),
+// base=110 (rsi).  ATTENZIONE: index=100 (SIB 0x26) in 64-bit significa
+// "nessun indice" (l'eccezione di REX.X), non RDX: con 0x26 l'istruzione
+// leggeva [rsi] e il confine di parola risultava sempre "identificatore".
+const movzxEaxRsiRdx = () => B(0x0f, 0xb6, 0x04, 0x16);
+// movzx eax, byte [rsi-1] (carattere *precedente* la parola chiave:
+// serve al confine bilatero di parola).
+const movzxEaxRsiMinus1 = () => B(0x0f, 0xb6, 0x46, 0xff);
+// cmp r14, rsi (opcode 39 = CMP r/m64, r64): r14 e' la base dell'arena, la
+// sorgente parte da r14+0, quindi rsi == r14 significa "primo byte della
+// sorgente" (nessun carattere precedente da leggere).
+// ATTENZIONE all'incodifica: REX 0x49 = W|R=0|B=1, quindi rm (B=1) e' r14 e
+// reg (R=0) e' rsi: il ModRM deve essere mod=11, reg=110 (rsi), rm=110
+// (r14+B) -> 0xF6. Con 0xFE (reg=111 -> rdi) l'istruzione confrontava
+// r14 con rdi: la comparazione era sempre falsa e kw_bound leggeva
+// [rsi-1] fuori dall'arena (segfault) quando la keyword era il primo byte
+// della sorgente.
+const cmpRsiR14 = () => B(0x49, 0x39, 0xf6);
 const orAlImm = v => { B(0x0c, v & 255); };
 const cmpAlImm = v => { B(0x3c, cc(v) & 255); };
 const movR8Rsi = () => B(0x49, 0x89, 0xf0);
@@ -557,6 +577,7 @@ maskLoad(); testAlImm(1); jz('pp_no_end');
 cmpByteRsiImm('e'); jne('pp_no_end');
 cmpByteRsiDispImm(1, 'n'); jne('pp_no_end');
 cmpByteRsiDispImm(2, 'd'); jne('pp_no_end');
+movEdx(3); callL('kw_bound'); jne('pp_no_end');
 ret();
 L('pp_no_end');
 // stop su 'else' se maschera bit 2
@@ -565,6 +586,12 @@ cmpByteRsiImm('e'); jne('pp_no_else');
 cmpByteRsiDispImm(1, 'l'); jne('pp_no_else');
 cmpByteRsiDispImm(2, 's'); jne('pp_no_else');
 cmpByteRsiDispImm(3, 'e'); jne('pp_no_else');
+cmpByteRsiDispImm(4, 'i'); jne('pp_else_word');
+cmpByteRsiDispImm(5, 'f'); jne('pp_else_word');
+movEdx(6); callL('kw_bound'); jne('pp_no_else');
+ret();
+L('pp_else_word');
+movEdx(4); callL('kw_bound'); jne('pp_no_else');
 ret();
 L('pp_no_else');
 // statement begin
@@ -573,12 +600,14 @@ cmpByteRsiDispImm(1, 'e'); jne('pp_not_begin');
 cmpByteRsiDispImm(2, 'g'); jne('pp_not_begin');
 cmpByteRsiDispImm(3, 'i'); jne('pp_not_begin');
 cmpByteRsiDispImm(4, 'n'); jne('pp_not_begin');
+movEdx(5); callL('kw_bound'); jne('pp_not_begin');
 jmp('st_begin');
 L('pp_not_begin');
 // statement let
 cmpByteRsiImm('l'); jne('pp_not_let');
 cmpByteRsiDispImm(1, 'e'); jne('pp_not_let');
 cmpByteRsiDispImm(2, 't'); jne('pp_not_let');
+movEdx(3); callL('kw_bound'); jne('pp_not_let');
 jmp('st_let');
 L('pp_not_let');
 // statement while
@@ -587,11 +616,13 @@ cmpByteRsiDispImm(1, 'h'); jne('pp_not_while');
 cmpByteRsiDispImm(2, 'i'); jne('pp_not_while');
 cmpByteRsiDispImm(3, 'l'); jne('pp_not_while');
 cmpByteRsiDispImm(4, 'e'); jne('pp_not_while');
+movEdx(5); callL('kw_bound'); jne('pp_not_while');
 jmp('st_while');
 L('pp_not_while');
 // statement if
 cmpByteRsiImm('i'); jne('pp_not_if');
 cmpByteRsiDispImm(1, 'f'); jne('pp_not_if');
+movEdx(2); callL('kw_bound'); jne('pp_not_if');
 jmp('st_if');
 L('pp_not_if');
 cmpByteRsiImm('f'); jne('pp_not_function');
@@ -602,6 +633,7 @@ cmpByteRsiDispImm(4, 't'); jne('pp_not_function');
 cmpByteRsiDispImm(5, 'i'); jne('pp_not_function');
 cmpByteRsiDispImm(6, 'o'); jne('pp_not_function');
 cmpByteRsiDispImm(7, 'n'); jne('pp_not_function');
+movEdx(8); callL('kw_bound'); jne('pp_not_function');
 jmp('st_function');
 L('pp_not_function');
 // statement break
@@ -610,6 +642,7 @@ cmpByteRsiDispImm(1, 'r'); jne('pp_not_break');
 cmpByteRsiDispImm(2, 'e'); jne('pp_not_break');
 cmpByteRsiDispImm(3, 'a'); jne('pp_not_break');
 cmpByteRsiDispImm(4, 'k'); jne('pp_not_break');
+movEdx(5); callL('kw_bound'); jne('pp_not_break');
 jmp('st_break');
 L('pp_not_break');
 cmpByteRsiDispImm(0, 'p'); jne('stmt_assign');
@@ -619,6 +652,7 @@ cmpByteRsiDispImm(3, 'n'); jne('stmt_assign');
 cmpByteRsiDispImm(4, 't'); jne('stmt_assign');
 cmpByteRsiDispImm(5, 'l'); jne('stmt_assign');
 cmpByteRsiDispImm(6, 'n'); jne('stmt_assign');
+movEdx(7); callL('kw_bound'); jne('stmt_assign');
 addRsiImm(7);
 callL('skip_ws');
 cmpByteRsiImm('('); jne('fail');
@@ -834,9 +868,14 @@ xorEdi();
 L('sc_loop');
 cmpByteRsiImm(0); je('fail');
 cmpByteRsiImm('#'); je('sc_comment');
+// il testo di un letterale non e' codice: le parole chiave che ci sono
+// dentro non contano per l'annidamento dei blocchi (SPEC-CORE.md §2:
+// il letterale e' testo, la parola chiave e' un token esatto).
+cmpByteRsiImm('"'); je('sc_string');
 cmpByteRsiImm('l'); jne('sc_try_fn');
 cmpByteRsiDispImm(1, 'e'); jne('sc_try_fn');
 cmpByteRsiDispImm(2, 't'); jne('sc_try_fn');
+movEdx(3); callL('kw_bound'); jne('sc_try_fn');
 incRdi(); addRsiImm(3); jmp('sc_loop');
 L('sc_try_fn');
 cmpByteRsiImm('f'); jne('sc_try_while');
@@ -847,6 +886,7 @@ cmpByteRsiDispImm(4, 't'); jne('sc_try_while');
 cmpByteRsiDispImm(5, 'i'); jne('sc_try_while');
 cmpByteRsiDispImm(6, 'o'); jne('sc_try_while');
 cmpByteRsiDispImm(7, 'n'); jne('sc_try_while');
+movEdx(8); callL('kw_bound'); jne('sc_try_while');
 incRdi(); addRsiImm(8); jmp('sc_loop');
 L('sc_try_while');
 cmpByteRsiImm('w'); jne('sc_try_if');
@@ -854,6 +894,7 @@ cmpByteRsiDispImm(1, 'h'); jne('sc_try_if');
 cmpByteRsiDispImm(2, 'i'); jne('sc_try_if');
 cmpByteRsiDispImm(3, 'l'); jne('sc_try_if');
 cmpByteRsiDispImm(4, 'e'); jne('sc_try_if');
+movEdx(5); callL('kw_bound'); jne('sc_try_if');
 incRdi(); addRsiImm(5); jmp('sc_loop');
 L('sc_try_if');
 cmpByteRsiImm('e'); jne('sc_if_keyword');
@@ -862,6 +903,7 @@ cmpByteRsiDispImm(2, 's'); jne('sc_if_keyword');
 cmpByteRsiDispImm(3, 'e'); jne('sc_if_keyword');
 cmpByteRsiDispImm(4, 'i'); jne('sc_if_keyword');
 cmpByteRsiDispImm(5, 'f'); jne('sc_if_keyword');
+movEdx(6); callL('kw_bound'); jne('sc_if_keyword');
 testRdi(); jnz('sc_elseif_skip');
 testR9d(); jz('sc_elseif_skip');
 movR10dImm(2); ret();
@@ -870,17 +912,20 @@ addRsiImm(6); jmp('sc_loop');
 L('sc_if_keyword');
 cmpByteRsiImm('i'); jne('sc_try_end');
 cmpByteRsiDispImm(1, 'f'); jne('sc_try_end');
+movEdx(2); callL('kw_bound'); jne('sc_try_end');
 incRdi(); addRsiImm(2); jmp('sc_loop');
 L('sc_try_end');
 cmpByteRsiImm('e'); jne('sc_adv');
 cmpByteRsiDispImm(1, 'n'); jne('sc_try_else');
 cmpByteRsiDispImm(2, 'd'); jne('sc_try_else');
+movEdx(3); callL('kw_bound'); jne('sc_try_else');
 testRdi(); jz('sc_end_found');
 decRdi(); addRsiImm(3); jmp('sc_loop');
 L('sc_try_else');
 cmpByteRsiDispImm(1, 'l'); jne('sc_adv');
 cmpByteRsiDispImm(2, 's'); jne('sc_adv');
 cmpByteRsiDispImm(3, 'e'); jne('sc_adv');
+movEdx(4); callL('kw_bound'); jne('sc_adv');
 testRdi(); jnz('sc_adv');
 testR9d(); jz('sc_adv');
 movR10dImm(1); ret();
@@ -890,6 +935,22 @@ L('sc_comment');
 incRsi();
 cmpByteRsiImm(0); je('fail');
 cmpByteRsiImm(0x0a); jne('sc_comment');
+incRsi(); jmp('sc_loop');
+// sc_string: salta il letterale fino alla '"' di chiusura. Il seed non
+// decodifica escape (SPEC-CORE.md §2: i letterali sono testo grezzo), quindi
+// la chiusura e' la '"' successiva, come in pf_string; un letterale non
+// terminato e' errore.
+// ATTENZIONE: il controllo della '"' deve avvenire *prima* dell'incremento
+// del cursore (come in pf_string): con l'incremento prima del controllo la
+// virgoletta di chiusura veniva saltata e la scansione proseguiva fino a
+// EOF (errore sulle stringhe dentro un blocco).
+L('sc_string');
+incRsi();                          // oltre la '"' di apertura
+L('sc_string_loop');
+cmpByteRsiImm(0); je('fail');
+cmpByteRsiImm('"'); je('sc_string_end');
+incRsi(); jmp('sc_string_loop');
+L('sc_string_end');
 incRsi(); jmp('sc_loop');
 
 // if cond <blocco> [elseif cond <blocco>]* [else <blocco>] end
@@ -921,15 +982,21 @@ L('st_if_false');
 cmpByteRsiImm('e'); jne('fail');
 cmpByteRsiDispImm(1, 'n'); jne('st_if_false_else');
 cmpByteRsiDispImm(2, 'd'); jne('st_if_false_else');
+movEdx(3); callL('kw_bound'); jne('st_if_false_else');
 addRsiImm(3); jmp('st_if_done');
 L('st_if_false_else');
 cmpByteRsiDispImm(1, 'l'); jne('fail');
 cmpByteRsiDispImm(2, 's'); jne('fail');
 cmpByteRsiDispImm(3, 'e'); jne('fail');
-cmpByteRsiDispImm(4, 'i'); jne('st_if_else');
-cmpByteRsiDispImm(5, 'f'); jne('st_if_else');
+cmpByteRsiDispImm(4, 'i'); jne('st_if_else_check');
+cmpByteRsiDispImm(5, 'f'); jne('st_if_else_check');
+movEdx(6); callL('kw_bound'); jne('st_if_else_check');
 addRsiImm(6); callL('skip_ws');
 jmp('st_if_elseif_cond');
+L('st_if_else_check');
+// 'else' esatto: il carattere dopo la parola chiave non deve continuare
+// l'identificatore ('elsewhere' non e' la parola chiave 'else').
+movEdx(4); callL('kw_bound'); jne('fail');
 L('st_if_else');
 addRsiImm(4); callL('skip_ws');
 maskLoad(); pushRax(); maskStoreImm(1);
@@ -1943,6 +2010,50 @@ incRsi(); incRcx();
 L('ident_return');
 movR9Rcx();
 ret();
+
+// kw_bound: confine di parola per le parole chiave.
+// Le parole chiave sono riconosciute dal seed confrontando i byte: senza un
+// controllo di confine, un identificatore che contiene una parola chiave
+// ('iffy', 'endx', 'elsewhere', 'whiles', 'myif') verrebbe scambiato per la
+// parola chiave stessa (SPEC-CORE.md §2: l'identificatore e' "letter or `_`,
+// then letters/digits/`_`"; la parola chiave e' un token esatto, non un
+// prefisso).
+// Il confine e' *bilatero*: il carattere che segue la parola chiave non puo'
+// continuare un identificatore (`iffy`) e nemmeno il carattere che la
+// precede (`myif`, `myend`). Il chiamante passa in edx lo scarto del
+// carattere successivo alla parola chiave; kw_bound lascia ZF=1 se la parola
+// chiave e' delimitata correttamente. Clobbera rax (scratch).
+L('kw_bound');
+// carattere precedente (a r14 non c'e' predecessore: niente da leggere)
+cmpRsiR14(); je('kw_no_prev');
+movzxEaxRsiMinus1();
+callL('is_ident');             // ZF=0 se il carattere e' di identificatore
+jne('kw_not_word');
+L('kw_no_prev');
+// carattere successivo
+movzxEaxRsiRdx();
+callL('is_ident');
+jne('kw_not_word');
+xorEax(); ret();               // ZF=1: confine rispettato
+L('kw_not_word');
+movEaxImm(1); testEax(); ret(); // ZF=0: la parola non e' un token esatto
+// (testEax serve: `mov` non tocca i flag, ZF doveva essere forzato a 0)
+
+// is_ident: al = carattere; lascia ZF=0 se e' un carattere di identificatore
+// ([A-Za-z0-9_!]), ZF=1 altrimenti. Clobbera rax (scratch).
+L('is_ident');
+cmpAlImm('_'); je('ii_yes');
+cmpAlImm('!'); je('ii_yes');
+cmpAlImm('0'); jb('ii_no');
+cmpAlImm('9'); jbe('ii_yes');
+cmpAlImm('A'); jb('ii_no');
+cmpAlImm('Z'); jbe('ii_yes');
+cmpAlImm('a'); jb('ii_no');
+cmpAlImm('z'); jbe('ii_yes');
+L('ii_no');
+xorEax(); ret();               // ZF=1: non e' un carattere di identificatore
+L('ii_yes');
+movEaxImm(1); testEax(); ret(); // ZF=0: e' un carattere di identificatore
 
 // env_find: r8=ptr name, r9=len -> rdx = entry or 0 (search from most recent)
 L('env_find');
