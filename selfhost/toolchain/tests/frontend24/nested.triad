@@ -1,0 +1,12 @@
+remaining = 3
+result = 0
+step = 2
+while remaining != 0
+    if remaining == step
+        result += step
+    else
+        result = result + 1
+    end
+    remaining -= 1
+end
+exit(result)

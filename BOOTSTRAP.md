@@ -167,6 +167,36 @@ La compatibilità S2.0 e il controllo zero-JavaScript restano obbligatori.
 **Questa non è una rigenerazione del seed S0 né un compilatore Triad
 generale o self-hosted.** Si veda `selfhost/toolchain/README_S2_1.md`.
 
+## S2.2 — Triad intermediate representation and real S0 fragments
+
+The experimental `selfhost/toolchain/ir_s2_2.triad` lowers a small
+typed accumulator `i32` IR to audited S2.1 assembly, which the native
+Triad assembler converts to Linux x86-64 ELF64. The implementation also
+reproduces two specific *real* S0 byte ranges from readable source:
+the 64-byte ELF header at offset 0 and the 7-byte first native stack
+instruction at offset 120. The test compares both with
+`seed/linux-x86_64/seed.hex`, not merely with a synthetic example.
+
+**This is not the source-to-IR compiler for general Triad programs,
+not complete S0 seed regeneration and not full self-hosting.** See
+`selfhost/toolchain/README_S2_2.md`.
+
+## S2.3 — native frontend for an actual Triad-Core subset
+
+`selfhost/toolchain/frontend_s2_3.triad` implements a restricted
+source-language frontend entirely in Triad-Core. It accepts one integer
+variable `x`, assignment and arithmetic updates, nested
+`while`/`if`/`else` blocks, and terminal `exit(x)`, then
+lowers to the S2.2 IR and the existing S2.1 native ELF assembler.
+
+`sh selfhost/toolchain/tests/run_s2_3.sh` verifies actual source-to-IR
+goldens and executable equivalence against direct S0 interpretation for
+the admitted tests.
+
+**This remains a narrow compiler**, not full Triad-Core or Full language
+compilation, seed regeneration or fixed-point self-hosting. Consult
+`selfhost/toolchain/README_S2_3.md`.
+
 ## 8. Compliance Agreement
 The executable specification is `conformance/`: each case is
 ```

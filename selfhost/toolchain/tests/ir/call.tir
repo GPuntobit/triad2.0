@@ -1,0 +1,6 @@
+start
+call body
+exit
+label body
+i32_const 17
+return

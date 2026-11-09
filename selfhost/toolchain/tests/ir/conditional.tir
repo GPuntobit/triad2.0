@@ -1,0 +1,8 @@
+start
+i32_const 2
+i32_add 3
+i32_compare 5
+br_zero success
+i32_const 99
+label success
+exit

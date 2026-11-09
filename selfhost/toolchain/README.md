@@ -6,6 +6,34 @@ written in **Triad-Core** and run under the existing native x86-64 seed.
 There is no JavaScript/Node, Python, C, Rust, or external assembler involved
 in generating the machine-code bytes.
 
+## S2.3 — first Triad source-to-IR frontend
+
+The experimental frontend in [`README_S2_3.md`](README_S2_3.md)
+compiles a **restricted but actual Triad-Core source subset** (one integer
+variable, assignments, nested `while`/`if`/`else`, `exit(x)`)
+to native IR, then uses S2.2 and S2.1 to produce Linux ELF64. The tests
+compare executable behavior against the existing native S0 interpreter.
+
+```sh
+sh selfhost/toolchain/tests/run_s2_3.sh
+```
+
+This is the first source-level compiler path, **not** full Triad-Core
+compatibility or compiler self-hosting.
+
+## S2.2 — native i32 IR lowering & auditable S0 seed fragments
+
+The next experiment is documented in [`README_S2_2.md`](README_S2_2.md):
+a constrained typed `i32` intermediate representation is lowered **by
+Triad-Core** into readable S2.1 assembly, then assembled to a native ELF64.
+The test suite also reconstructs and checks the *actual first 64 ELF
+header bytes* and *first seven machine-code bytes* from the committed
+S0 seed, without claiming the full seed is reproducible yet.
+
+```sh
+sh selfhost/toolchain/tests/run_s2_2.sh
+```
+
 ## S2.1 — assembler nativo a due passaggi
 
 La fase successiva è ora disponibile nel prototipo

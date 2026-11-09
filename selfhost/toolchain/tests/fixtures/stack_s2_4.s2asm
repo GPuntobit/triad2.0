@@ -1,0 +1,11 @@
+sub_rsp 32
+mov_edi 7
+store_edi_rsp 0
+mov_edi 4
+store_edi_rsp 4
+load_edi_rsp 0
+add_edi_rsp 4
+cmp_edi_rsp 0
+sub_edi_rsp 4
+mov_eax 60
+syscall

@@ -1,0 +1,26 @@
+name: Triad Native IR S2.2
+on:
+  push:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-2.yml'
+  pull_request:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-2.yml'
+permissions:
+  contents: read
+jobs:
+  native-ir:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Native Triad IR lowering, executable ELF and byte-exact S0 fragment checks
+        run: sh selfhost/toolchain/tests/run_s2_2.sh
+      - name: S2.1 assembler regression
+        run: sh selfhost/toolchain/tests/run_s2_1.sh
+      - name: S2.0 emitter regression
+        run: sh selfhost/toolchain/tests/run.sh
+      - name: Native conformance and zero JavaScript
+        run: sh verify.sh
