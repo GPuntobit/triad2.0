@@ -39,9 +39,7 @@ function valid_name(s)
     good
 end
 
-function parse_file(path)
-    src = readfile(path)
-    println("PARSE START", strlen(src))
+function parse_text(src)
     rows = []
     fields = []
     start = 1
@@ -70,7 +68,6 @@ function parse_file(path)
         end
         i += 1
     end
-    println("PARSE FINISH ", length(rows))
     rows
 end
 
@@ -103,11 +100,11 @@ function check_journal(rows)
     while i <= length(rows)
         r = rows[i]
         need(length(r) >= 6, "invalid journal")
-        need(same(r[1], i), "invalid sequence")
-        need(same(r[2], previous), "invalid predecessor")
+        need(same(r[1], i), "journal sequence mismatch")
+        need(same(r[2], previous), "journal predecessor mismatch")
         body = join_parts(r, 1, length(r) - 1)
         current = checksum(body)
-        need(same(r[length(r)], current), "invalid checksum")
+        need(same(r[length(r)], current), "journal checksum mismatch")
         previous = current
         i += 1
     end
@@ -212,9 +209,9 @@ end
 
 function read_data()
     println("NATIVE INPUT START")
-    data = parse_file("fixture.txt")
+    data = parse_text(trid_fixture)
     println("NATIVE FIXTURE READ")
-    history = parse_file("journal.log")
+    history = parse_text(trid_journal)
     println("NATIVE JOURNAL READ")
     validate_data(data)
     println("NATIVE FIXTURE VALID")
