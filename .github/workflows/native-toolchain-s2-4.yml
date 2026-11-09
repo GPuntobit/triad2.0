@@ -43,12 +43,24 @@ jobs:
           set +e
           sh selfhost/toolchain/lower-triad-s2-4.sh selfhost/toolchain/tests/frontend24/nested.triad /tmp/nested.tir
           wc -lc /tmp/nested.tir
-          for n in 8 12 16 20 23 26 28 30 35; do
+          for n in 8 12 16 20 21 22 23 24 26 28 30 35; do
             head -n "$n" /tmp/nested.tir > /tmp/prefix.tir
             printf 'exit\n' >> /tmp/prefix.tir
             sh selfhost/toolchain/lower-ir.sh /tmp/prefix.tir /tmp/prefix.s2asm > /tmp/probe.stdout 2> /tmp/probe.stderr
             echo "PREFIX $n RC=$?"
             cat /tmp/probe.stderr
+          done
+          for n in 12 20 24 30 40; do
+            printf 'start\ni32_frame 32\n' > /tmp/repeat.tir
+            i=0
+            while [ "$i" -lt "$n" ]; do
+              printf 'i32_const 1\ni32_store 0\n' >> /tmp/repeat.tir
+              i=$((i+1))
+            done
+            printf 'exit\n' >> /tmp/repeat.tir
+            sh selfhost/toolchain/lower-ir.sh /tmp/repeat.tir /tmp/repeat.s2asm > /tmp/repeat.stdout 2> /tmp/repeat.stderr
+            echo "REPEAT $n RC=$?"
+            cat /tmp/repeat.stderr
           done
       - name: S2.4 native multi-variable, stack, CFG and S0 differential
         run: sh selfhost/toolchain/tests/run_s2_4.sh
