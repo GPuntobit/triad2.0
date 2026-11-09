@@ -19,10 +19,10 @@ MEMORY="$STATE/memory.txt"
 cat "$ROOT/cognitive/native/common.triad" "$ROOT/cognitive/native/discover.triad" > "$TMP/discover.triad"
 cat "$ROOT/cognitive/native/common.triad" "$ROOT/cognitive/native/verify.triad" > "$TMP/verify.triad"
 echo "TRID native: discovery stage" >&2
-"$ROOT/bin/triad" "$TMP/discover.triad" "$FIXTURE" "$JOURNAL" > "$TMP/events.log"
+( exec 3< "$FIXTURE" 4< "$JOURNAL"; "$ROOT/bin/triad" "$TMP/discover.triad" > "$TMP/events.log" )
 cat "$JOURNAL" "$TMP/events.log" > "$TMP/new-journal.log"
 echo "TRID native: independent verification stage" >&2
-"$ROOT/bin/triad" "$TMP/verify.triad" "$FIXTURE" "$TMP/new-journal.log" > "$TMP/new-memory.txt"
+( exec 3< "$FIXTURE" 4< "$TMP/new-journal.log"; "$ROOT/bin/triad" "$TMP/verify.triad" > "$TMP/new-memory.txt" )
 mv "$TMP/new-journal.log" "$JOURNAL"
 mv "$TMP/new-memory.txt" "$MEMORY"
 printf 'TRID native: memory updated; %s total events\n' "$(wc -l < "$JOURNAL" | tr -d ' ')"
