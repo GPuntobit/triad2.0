@@ -16,6 +16,28 @@ jobs:
     timeout-minutes: 18
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Isolate native S2.4 IR failing operation (temporary)
+        run: |
+          set +e
+          sh selfhost/toolchain/lower-triad-s2-4.sh selfhost/toolchain/tests/frontend24/multi.triad /tmp/multi.tir
+          echo 'FRONTEND IR:'
+          cat /tmp/multi.tir
+          sh selfhost/toolchain/lower-ir.sh /tmp/multi.tir /tmp/multi.s2asm
+          echo "full ir rc=$?"
+          for spec in basic frame store load add compare; do
+            case "$spec" in
+              basic) printf 'start\ni32_const 4\nexit\n' > /tmp/probe.tir ;;
+              frame) printf 'start\ni32_frame 32\ni32_const 4\nexit\n' > /tmp/probe.tir ;;
+              store) printf 'start\ni32_frame 32\ni32_const 4\ni32_store 0\nexit\n' > /tmp/probe.tir ;;
+              load) printf 'start\ni32_frame 32\ni32_const 4\ni32_store 0\ni32_load 0\nexit\n' > /tmp/probe.tir ;;
+              add) printf 'start\ni32_frame 32\ni32_const 4\ni32_store 0\ni32_load 0\ni32_add_slot 0\nexit\n' > /tmp/probe.tir ;;
+              compare) printf 'start\ni32_frame 32\ni32_const 4\ni32_store 0\ni32_load 0\ni32_compare_slot 0\nbr_zero ok\nlabel ok\nexit\n' > /tmp/probe.tir ;;
+            esac
+            echo "CASE: $spec"
+            sh selfhost/toolchain/lower-ir.sh /tmp/probe.tir /tmp/probe.s2asm
+            echo "RC=$?"
+            [ -f /tmp/probe.s2asm ] && cat /tmp/probe.s2asm
+          done
       - name: S2.4 native multi-variable, stack, CFG and S0 differential
         run: sh selfhost/toolchain/tests/run_s2_4.sh
       - name: S2.3 frontend regression
