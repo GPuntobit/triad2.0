@@ -295,11 +295,26 @@ function memory_projection(data, history)
 end
 
 
+function diag_one(xs)
+    println("DIAG-ONE-ENTER")
+    println("DIAG-ONE-LENGTH ", length(xs))
+    true
+end
+
+function diag_two(xs, ys)
+    println("DIAG-TWO-ENTER")
+    println("DIAG-TWO-X ", length(xs))
+    println("DIAG-TWO-Y ", length(ys))
+    true
+end
+
 println("DIAG-VERIFY-START")
 validate_data(data)
 println("DIAG-DATA-OK")
 check_journal(history)
 println("DIAG-JOURNAL-OK")
+diag_one(history)
+diag_two(data, history)
 check_history(data, history)
 println("DIAG-HISTORY-OK")
 memory_projection(data, history)
