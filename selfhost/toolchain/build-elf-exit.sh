@@ -16,7 +16,7 @@ esac
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT HUP INT TERM
 cat "$ROOT/selfhost/toolchain/elf64_exit.triad" > "$TMP/emit.triad"
-printf '\nemit_elf_exit(%s)\n' "$status" >> "$TMP/emit.triad"
+printf '\nimage = elf_exit(%s)\nprintln(image)\n' "$status" >> "$TMP/emit.triad"
 "$ROOT/bin/triad" "$TMP/emit.triad" > "$TMP/code.hex"
 # Hex decoder is only an output transporter, never a code generator.
 xxd -r -p "$TMP/code.hex" "$TMP/program"
