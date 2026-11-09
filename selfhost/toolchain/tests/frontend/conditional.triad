@@ -1,0 +1,7 @@
+x = 2
+if x == 2
+    x = x + 7
+else
+    x = 1
+end
+exit(x)
