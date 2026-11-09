@@ -1,0 +1,6 @@
+xor_edi
+inc_edi
+inc_edi
+dec_edi
+mov_eax 60
+syscall
