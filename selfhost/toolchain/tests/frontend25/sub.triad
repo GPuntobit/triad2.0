@@ -1,6 +1,6 @@
 function subtract(left, right)
     result = left - right
-    return result
+    result
 end
 a = 11
 b = 4
