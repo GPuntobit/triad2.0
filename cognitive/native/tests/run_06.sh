@@ -6,6 +6,11 @@ TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT HUP INT TERM
 export TRID_GRAPH_STATE_DIR="$TMP/graph"
 sh "$ROOT/cognitive/native/run_06.sh" > "$TMP/first"
+if ! cmp -s "$ROOT/cognitive/native/tests/expected_06.out" "$TMP/first"; then
+    echo "TRID 0.6: base graph proof/pulse mismatch" >&2
+    diff -u "$ROOT/cognitive/native/tests/expected_06.out" "$TMP/first" >&2 || true
+    exit 1
+fi
 [ -s "$TRID_GRAPH_STATE_DIR/graph.facts" ]
 cp "$TRID_GRAPH_STATE_DIR/graph.facts" "$TMP/graph-before"
 sh "$ROOT/cognitive/native/run_06.sh" > "$TMP/second"
@@ -14,6 +19,11 @@ cmp "$TRID_GRAPH_STATE_DIR/graph.facts" "$TMP/graph-before"
 # Mutation is explicit; a new source revocation survives a restart.
 printf 'fact revoked(:src_g)\n' >> "$TRID_GRAPH_STATE_DIR/graph.facts"
 sh "$ROOT/cognitive/native/run_06.sh" > "$TMP/after-revoke"
+if ! cmp -s "$ROOT/cognitive/native/tests/expected_06_revoked.out" "$TMP/after-revoke"; then
+    echo "TRID 0.6: revoked-source proof mismatch" >&2
+    diff -u "$ROOT/cognitive/native/tests/expected_06_revoked.out" "$TMP/after-revoke" >&2 || true
+    exit 1
+fi
 grep -q 'src_g' "$TRID_GRAPH_STATE_DIR/graph.facts"
 # Reject attempted program injection; preserve the durable graph untouched.
 printf 'println(:injected)\n' >> "$TRID_GRAPH_STATE_DIR/graph.facts"
