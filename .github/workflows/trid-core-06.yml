@@ -31,7 +31,7 @@ jobs:
           # Each case is built from successively larger sets of Horn clauses.
           awk '/^# Output contract:/{exit}{print}' cognitive/native/s1_graph_06.triad > /tmp/trid06/rules
           head -n 0 /tmp/trid06/rules > /tmp/trid06/none
-          for n in 0 1 2 3 4 5; do
+          for n in 0 1 2 3 4 5 6 7; do
             case "$n" in
               0) { cat /tmp/trid06/facts; echo 'println([s.z for s in solve evidence(:trid, ?z, ?src)])'; } > /tmp/trid06/case.triad ;;
               1) { cat /tmp/trid06/facts; grep '^rule in_path' /tmp/trid06/rules; echo 'println(solve in_path(:trid, [:trid]))'; } > /tmp/trid06/case.triad ;;
@@ -39,6 +39,8 @@ jobs:
               3) { cat /tmp/trid06/facts; grep '^rule in_path\|^rule proof_path\|^rule uses_revoked\|^rule retained_path\|^rule suspended_path' /tmp/trid06/rules; echo 'println([s.sources for s in solve retained_path(:trid, :deep5, [:trid], ?sources)])'; } > /tmp/trid06/case.triad ;;
               4) { cat /tmp/trid06/facts; grep '^rule in_path\|^rule active_node\|^fact fuel' /tmp/trid06/rules; echo 'println([s.to for s in solve active_node(:trid, ?to, [:trid], :h6)])'; } > /tmp/trid06/case.triad ;;
               5) cat /tmp/trid06/facts cognitive/native/s1_graph_06.triad > /tmp/trid06/case.triad ;;
+              6) { cat /tmp/trid06/facts; grep '^rule in_path\|^rule proof_path\|^rule uses_revoked\|^rule suspended_path' /tmp/trid06/rules; echo 'println([s.sources for s in solve suspended_path(:trid, :deep5, [:trid], ?sources)])'; } > /tmp/trid06/case.triad ;;
+              7) { cat /tmp/trid06/facts; grep '^rule uses_revoked' /tmp/trid06/rules; echo 'println(solve uses_revoked([:src_a, :src_b, :src_c]))'; } > /tmp/trid06/case.triad ;;
             esac
             echo "CASE-$n"
             "$ROOT/bin/triad" --logic /tmp/trid06/case.triad > /tmp/trid06/result 2> /tmp/trid06/error
