@@ -1,0 +1,287 @@
+# TRID Native proof verification and conditional memory projection.
+# Independent of discover.triad: only common.triad is prepended.
+
+function target_for(data, name)
+    i = 1
+    while i <= length(data)
+        row = data[i]
+        if row[1] == "target" && row[3] == name
+            return row
+        end
+        i += 1
+    end
+    return []
+end
+
+function ground_pair(a, b, shape, pair)
+    x = pair[1]
+    z = pair[2]
+    if x == z
+        return false
+    end
+    if shape == "chain"
+        return a[4] == x && a[5] == b[4] && b[5] == z
+    elseif shape == "reverse_chain"
+        return a[5] == x && a[4] == b[5] && b[4] == z
+    elseif shape == "common_source"
+        return a[5] == x && a[4] == b[4] && b[5] == z
+    elseif shape == "common_target"
+        return a[4] == x && a[5] == b[5] && b[4] == z
+    end
+    return false
+end
+
+function entails(data, target, shape, pair)
+    i = 1
+    while i <= length(data)
+        a = data[i]
+        if a[1] == "edge" && a[2] == target[2] && a[3] == target[4]
+            j = 1
+            while j <= length(data)
+                b = data[j]
+                if b[1] == "edge" && b[2] == target[2] && b[3] == target[4]
+                    if ground_pair(a, b, shape, pair)
+                        return true
+                    end
+                end
+                j += 1
+            end
+        end
+        i += 1
+    end
+    return false
+end
+
+function independent_metrics(data, target, shape)
+    tp = 0
+    fp = 0
+    fn = 0
+    ttp = 0
+    tfp = 0
+    tfn = 0
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        if r[1] == "review" && r[2] == target[3]
+            result = entails(data, target, shape, [r[5], r[6]])
+            if r[3] == "train" && r[4] == "positive"
+                if result
+                    tp += 1
+                else
+                    fn += 1
+                end
+            elseif r[3] == "train" && r[4] == "negative"
+                if result
+                    fp += 1
+                end
+            elseif r[3] == "test" && r[4] == "positive"
+                if result
+                    ttp += 1
+                else
+                    tfn += 1
+                end
+            elseif r[3] == "test" && r[4] == "negative"
+                if result
+                    tfp += 1
+                end
+            end
+        end
+        i += 1
+    end
+    score = 3 * tp - 5 * fp - 2 * fn
+    state = "experimental"
+    if fp > 0 || tfp > 0
+        state = "refuted"
+    end
+    return [tp, fp, fn, ttp, tfp, tfn, score, state]
+end
+
+function expected_choice(data, target, shape)
+    shapes = ["chain", "common_source", "common_target", "reverse_chain"]
+    best = ""
+    bestscore = -999999
+    besttp = 0
+    bestfp = 0
+    i = 1
+    while i <= length(shapes)
+        scores = independent_metrics(data, target, shapes[i])
+        if scores[7] > bestscore
+            bestscore = scores[7]
+            best = shapes[i]
+            besttp = scores[1]
+            bestfp = scores[2]
+        end
+        i += 1
+    end
+    return best == shape && besttp > 0 && bestfp == 0
+end
+
+function evidence_consistent(data, target)
+    i = 1
+    while i <= length(data)
+        a = data[i]
+        if a[1] == "review" && a[2] == target[3]
+            j = 1
+            while j <= length(data)
+                b = data[j]
+                if b[1] == "review" && b[2] == target[3] && a[5] == b[5] && a[6] == b[6] && a[4] != b[4]
+                    return false
+                end
+                j += 1
+            end
+        end
+        i += 1
+    end
+    return true
+end
+
+function definition_ref(data, target, shape)
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        if r[1] == "definition" && r[2] == target[3] && r[3] == target[2] && r[4] == target[4] && r[5] == shape
+            return r[6]
+        end
+        i += 1
+    end
+    return ""
+end
+
+function is_approved(data, target, shape)
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        if r[1] == "approve" && r[2] == target[3] && r[3] == shape
+            return true
+        end
+        i += 1
+    end
+    return false
+end
+
+function proven_witness(data, proof, target)
+    shape = proof[5]
+    x = proof[6]
+    z = proof[7]
+    y = proof[8]
+    s1 = proof[9]
+    s2 = proof[10]
+    if x == z
+        return false
+    end
+    if shape == "chain"
+        a = [x, y, s1]
+        b = [y, z, s2]
+    elseif shape == "reverse_chain"
+        a = [y, x, s1]
+        b = [z, y, s2]
+    elseif shape == "common_source"
+        a = [y, x, s1]
+        b = [y, z, s2]
+    elseif shape == "common_target"
+        a = [x, y, s1]
+        b = [z, y, s2]
+    else
+        return false
+    end
+    return edge_exists(data, target[2], target[4], a) && edge_exists(data, target[2], target[4], b)
+end
+
+function find_eval(history, target, shape)
+    i = 1
+    while i <= length(history)
+        r = history[i]
+        if r[3] == "evaluation" && r[4] == target && r[5] == shape
+            return r
+        end
+        i += 1
+    end
+    return []
+end
+
+function proof_count(history, target, shape)
+    count = 0
+    i = 1
+    while i <= length(history)
+        r = history[i]
+        if r[3] == "proof" && r[4] == target && r[5] == shape
+            count += 1
+        end
+        i += 1
+    end
+    return count
+end
+
+function check_history(data, history)
+    need(length(history) > 0, "empty hypothesis journal")
+    i = 1
+    while i <= length(history)
+        r = history[i]
+        if r[3] == "evaluation"
+            need(length(r) == 15, "invalid evaluation event")
+            target = target_for(data, r[4])
+            need(length(target) == 4, "evaluation target missing")
+            m = independent_metrics(data, target, r[5])
+            need(r[6] == m[8] && r[7] == string(m[1]) && r[8] == string(m[2]) && r[9] == string(m[3]), "evaluation training mismatch")
+            need(r[10] == string(m[4]) && r[11] == string(m[5]) && r[12] == string(m[6]) && r[13] == string(m[7]), "evaluation testing mismatch")
+            expected = "no"
+            if expected_choice(data, target, r[5])
+                expected = "yes"
+            end
+            need(r[14] == expected, "selected rule mismatch")
+        elseif r[3] == "proof"
+            need(length(r) == 11, "invalid proof record")
+            target = target_for(data, r[4])
+            need(length(target) == 4, "proof target missing")
+            ev = find_eval(history, r[4], r[5])
+            need(length(ev) == 15 && ev[14] == "yes" && ev[6] == "experimental", "proof for invalid candidate")
+            need(proven_witness(data, r, target), "false ground proof")
+        else
+            need(false, "unknown journal event")
+        end
+        i += 1
+    end
+end
+
+function memory_projection(data, history)
+    i = 1
+    while i <= length(history)
+        row = history[i]
+        if row[3] == "evaluation"
+            target = target_for(data, row[4])
+            shape = row[5]
+            ref = definition_ref(data, target, shape)
+            isgood = row[14] == "yes" && row[6] == "experimental" && row[9] == "0" && row[12] == "0" && row[7] != "0" && row[10] != "0"
+            gate = isgood && ref != "" && is_approved(data, target, shape) && evidence_consistent(data, target) && proof_count(history, target[3], shape) > 0
+            state = row[6]
+            if gate
+                state = "consolidated_conditional"
+                if is_revoked(data, ref)
+                    state = "suspended_dependency"
+                end
+            end
+            println("rule|", target[3], "|", shape, "|", state, "|", row[13], "|", ref)
+            if gate
+                j = 1
+                while j <= length(history)
+                    p = history[j]
+                    if p[3] == "proof" && p[4] == target[3] && p[5] == shape
+                        stateclaim = "demonstrated_conditional"
+                        if is_revoked(data, p[9]) || is_revoked(data, p[10]) || is_revoked(data, ref)
+                            stateclaim = "suspended"
+                        end
+                        println("claim|", target[3], "|", p[6], "|", p[7], "|", shape, "|", p[8], "|", p[9], "|", p[10], "|", ref, "|", stateclaim)
+                    end
+                    j += 1
+                end
+            end
+        end
+        i += 1
+    end
+end
+
+args = read_args()
+data = args[1]
+history = args[2]
+check_history(data, history)
+memory_projection(data, history)
