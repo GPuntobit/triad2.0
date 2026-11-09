@@ -18,7 +18,9 @@ write-to-disk API. The POSIX wrapper performs restricted record validation and
 concatenates facts with the Triad logic program; **all graph reasoning runs in
 Triad S1**.
 
-The wrapper executes each recursive proof/activation query in a separate S1 process to reset the seed's finite bump-heap budget; it concatenates the outputs in a deterministic order. Byte-exact golden files cover retained and suspended alternative proofs, activated nodes, and the changed status after revoking a second source.\n\nThe wrapper accepts only `fact evidence`, `fact association`, `fact revoked`
+The wrapper executes each recursive proof/activation query in a separate S1 process to reset the seed's finite bump-heap budget; it concatenates the outputs in a deterministic order. Byte-exact golden files cover retained and suspended alternative proofs, activated nodes, and the changed status after revoking a second source.
+
+The wrapper accepts only `fact evidence`, `fact association`, `fact revoked`
 and `fact rule_state` records with constrained ASCII atoms, not arbitrary
 Triad code. Rejecting invalid records is necessary because the S1 input is
 compiled from text. Changes and revocations to `graph.facts` remain across
@@ -57,8 +59,8 @@ restart. This is not an append-only tamper-evident audit journal.
   older S0 journal.
 - No continuous scheduler, weighted pulses, autonomous goals, natural-language
   learning or arbitrary metacognitive planning.
-- The previous 0.4 S0 journal workflow remains a separate, unresolved gate;
-  this feature does not replace it.
+- The S0 journal gate is independent; past failures were addressed in PR #99,
+  but end-to-end parity requires a green run on the candidate SHA.
 
 Further work should add verified source-to-file persistence of the proof graph,
 a committed revision/event schema, negative evidence and independent proof
