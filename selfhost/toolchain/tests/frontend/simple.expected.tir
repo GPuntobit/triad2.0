@@ -1,0 +1,4 @@
+start
+i32_const 3
+i32_add 2
+exit
