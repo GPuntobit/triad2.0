@@ -1,0 +1,10 @@
+function difference(a, b)
+    value = a - (b - 3)
+    value
+end
+function copy(x)
+    temp = difference(x, 7)
+    temp
+end
+result = copy(15)
+exit(result)
