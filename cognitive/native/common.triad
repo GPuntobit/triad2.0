@@ -1,65 +1,75 @@
-# TRID Native Core: byte-based record reader, integrity, bounded IO.
-# This is Triad-Core, executed by the native S0 seed. It does not use Python.
-# Persistent writes are handled by the POSIX launcher through stdout redirection.
+# TRID Native Core: certified Triad-Core subset (no return, no string ==).
+# POSIX transport stages fixture.txt and journal.log in the process cwd.
 
 function need(ok, msg)
     if !ok
         println("TRID error: ", msg)
         exit(1)
     end
+    ok
 end
 
-function valid_name(s)
-    if strlen(s) == 0
-        return false
-    end
+function same(a, b)
+    sa = string(a)
+    sb = string(b)
+    good = strlen(sa) == strlen(sb)
     i = 1
-    while i <= strlen(s)
-        c = strbyte(s, i)
-        if i == 1 && !(c >= 97 && c <= 122)
-            return false
-        end
-        if !((c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c == 95)
-            return false
+    while i <= strlen(sa) && good
+        if strbyte(sa, i) != strbyte(sb, i)
+            good = false
         end
         i += 1
     end
-    return true
+    good
+end
+
+function valid_name(s)
+    good = strlen(s) > 0
+    i = 1
+    while i <= strlen(s) && good
+        c = strbyte(s, i)
+        if i == 1 && !(c >= 97 && c <= 122)
+            good = false
+        end
+        if !((c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c == 95)
+            good = false
+        end
+        i += 1
+    end
+    good
 end
 
 function parse_file(path)
-    s = readfile(path)
+    src = readfile(path)
     rows = []
     fields = []
     start = 1
     i = 1
-    n = strlen(s)
+    n = strlen(src)
     while i <= n + 1
         ch = 10
-        if i == n + 1
-            ch = 10
-        else
-            ch = strbyte(s, i)
+        if i <= n
+            ch = strbyte(src, i)
         end
         if ch == 124 || ch == 10
+            part = ""
             if i > start
-                push!(fields, strsub(s, start, i - 1))
-            else
-                push!(fields, "")
+                part = strsub(src, start, i - 1)
             end
+            push!(fields, part)
             start = i + 1
             if ch == 10
-                if length(fields) > 1 || fields[1] != ""
+                if length(fields) > 1 || !same(fields[1], "")
                     push!(rows, fields)
                 end
                 fields = []
             end
         else
-            need(ch >= 32 && ch <= 126, "non-ASCII record byte")
+            need(ch >= 32 && ch <= 126, "invalid input byte")
         end
         i += 1
     end
-    return rows
+    rows
 end
 
 function join_parts(xs, a, b)
@@ -72,7 +82,7 @@ function join_parts(xs, a, b)
         result = result * xs[i]
         i += 1
     end
-    return result
+    result
 end
 
 function checksum(s)
@@ -82,7 +92,7 @@ function checksum(s)
         h = (h * 131 + strbyte(s, i)) % 1000000007
         i += 1
     end
-    return h
+    h
 end
 
 function check_journal(rows)
@@ -90,44 +100,50 @@ function check_journal(rows)
     i = 1
     while i <= length(rows)
         r = rows[i]
-        need(length(r) >= 6, "malformed journal event")
-        need(r[1] == string(i), "journal sequence mismatch")
-        need(r[2] == string(previous), "journal predecessor mismatch")
+        need(length(r) >= 6, "invalid journal")
+        need(same(r[1], i), "invalid sequence")
+        need(same(r[2], previous), "invalid predecessor")
         body = join_parts(r, 1, length(r) - 1)
-        need(r[length(r)] == string(checksum(body)), "journal checksum mismatch")
-        previous = checksum(body)
+        current = checksum(body)
+        need(same(r[length(r)], current), "invalid checksum")
+        previous = current
         i += 1
     end
-    return previous
+    previous
 end
 
 function has_record(rows, body)
+    found = false
     i = 1
     while i <= length(rows)
         r = rows[i]
-        if length(r) >= 6 && join_parts(r, 3, length(r) - 1) == body
-            return true
+        if length(r) >= 6
+            if same(join_parts(r, 3, length(r) - 1), body)
+                found = true
+            end
         end
         i += 1
     end
-    return false
+    found
 end
 
 function has_line(lines, line)
+    found = false
     i = 1
     while i <= length(lines)
-        if lines[i] == line
-            return true
+        if same(lines[i], line)
+            found = true
         end
         i += 1
     end
-    return false
+    found
 end
 
 function queue(lines, history, body)
     if !has_record(history, body) && !has_line(lines, body)
         push!(lines, body)
     end
+    lines
 end
 
 function emit(lines, history)
@@ -141,6 +157,7 @@ function emit(lines, history)
         seq += 1
         i += 1
     end
+    seq
 end
 
 function validate_data(data)
@@ -149,63 +166,52 @@ function validate_data(data)
         r = data[i]
         size = length(r)
         key = r[1]
-        ok = (key == "edge" && size == 6) || (key == "target" && size == 4) || (key == "review" && size == 7) || (key == "definition" && size == 6) || (key == "approve" && size == 4) || (key == "revoke" && size == 2)
+        ok = (same(key, "edge") && size == 6) || (same(key, "target") && size == 4) || (same(key, "review") && size == 7) || (same(key, "definition") && size == 6) || (same(key, "approve") && size == 4) || (same(key, "revoke") && size == 2)
         need(ok, "invalid fixture record")
         j = 2
         while j <= size
             need(valid_name(r[j]), "invalid fixture atom")
             j += 1
         end
-        if key == "review"
-            need(r[3] == "train" || r[3] == "test", "invalid split")
-            need(r[4] == "positive" || r[4] == "negative", "invalid polarity")
+        if same(key, "review")
+            need(same(r[3], "train") || same(r[3], "test"), "invalid split")
+            need(same(r[4], "positive") || same(r[4], "negative"), "invalid polarity")
         end
         i += 1
     end
-end
-
-function find_record(rows, kind, a, b)
-    i = 1
-    while i <= length(rows)
-        r = rows[i]
-        if r[1] == kind && (a == "" || r[2] == a) && (b == "" || r[3] == b)
-            return r
-        end
-        i += 1
-    end
-    return []
+    length(data)
 end
 
 function edge_exists(data, domain, relation, triple)
+    found = false
     i = 1
     while i <= length(data)
         r = data[i]
-        if r[1] == "edge" && r[2] == domain && r[3] == relation && r[4] == triple[1] && r[5] == triple[2] && r[6] == triple[3]
-            return true
+        if same(r[1], "edge") && same(r[2], domain) && same(r[3], relation) && same(r[4], triple[1]) && same(r[5], triple[2]) && same(r[6], triple[3])
+            found = true
         end
         i += 1
     end
-    return false
+    found
 end
 
 function is_revoked(data, source)
+    found = false
     i = 1
     while i <= length(data)
         r = data[i]
-        if r[1] == "revoke" && r[2] == source
-            return true
+        if same(r[1], "revoke") && same(r[2], source)
+            found = true
         end
         i += 1
     end
-    return false
+    found
 end
 
-function read_args()
-    # Native S0 executes from a working directory staged by the POSIX launcher.
-    # Input names are fixed; no ARGS or undocumented descriptor passing.
+function read_data()
     data = parse_file("fixture.txt")
     history = parse_file("journal.log")
     validate_data(data)
     check_journal(history)
-    return [data, history]
+    [data, history]
 end
