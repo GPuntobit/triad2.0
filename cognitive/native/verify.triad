@@ -291,8 +291,8 @@ function memory_projection(data, history)
     true
 end
 
-data = parse_file("fixture.txt")
-history = parse_file("journal.log")
+data = parse_text(trid_fixture)
+history = parse_text(trid_journal)
 validate_data(data)
 check_journal(history)
 check_history(data, history)
