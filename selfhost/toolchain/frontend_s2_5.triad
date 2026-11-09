@@ -188,9 +188,14 @@ function source_to_ir25(src)
                     end
                     phase = 1
                 elseif phase == 1
-                    if asm_same(op, "return")
-                        asm_need(!saw_return && length(words) == 2)
-                        slot = mv_require(locals, local_mask, words[2])
+                    if asm_same(op, "return") || (length(words) == 1 && !asm_same(op, "end") && f25_name(op))
+                        asm_need(!saw_return)
+                        result_name = op
+                        if asm_same(op, "return")
+                            asm_need(length(words) == 2)
+                            result_name = words[2]
+                        end
+                        slot = mv_require(locals, local_mask, result_name)
                         body_ir = front_line(body_ir, "i32_load " * string(slot))
                         body_ir = front_line(body_ir, "i32_result")
                         body_ir = front_line(body_ir, "i32_leave 40")
