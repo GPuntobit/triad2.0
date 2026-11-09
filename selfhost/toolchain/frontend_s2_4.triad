@@ -170,7 +170,7 @@ end
 # At if without else and at while exit: restore the pre-block set because
 # the branch/body may execute zero times. This is a conservative CFG analysis.
 function source_to_ir24(src)
-    words = front_words(src)
+    asm_need(strlen(src) > 0 && strlen(src) <= 8000)
     symbols = []
     frames = []
     ir = "start"
@@ -180,12 +180,18 @@ function source_to_ir24(src)
     block_id = 0
     done = false
     statements = 0
-    index = 1
-    while index <= length(words)
-        op = words[index]
-        if asm_same(op, "@")
-            index += 1
-        else
+    pos = 1
+    while pos <= strlen(src)
+        line_end = pos
+        while line_end <= strlen(src) && strbyte(src, line_end) != 10
+            line_end += 1
+        end
+        if line_end > pos
+            raw_line = strsub(src, pos, line_end - 1)
+            words = front_words(raw_line)
+            index = 1
+            op = words[index]
+            if !asm_same(op, "@")
             asm_need(!done)
             step = 0
             if asm_same(op, "while") || asm_same(op, "if")
@@ -308,8 +314,10 @@ function source_to_ir24(src)
             end
             statements += 1
             asm_need(statements <= 240 && strlen(ir) <= 12000)
-            index += step
+            asm_need(length(words) == step)
+            end
         end
+        pos = line_end + 1
     end
     asm_need(done && current == 0 && length(symbols) > 0)
     ir
