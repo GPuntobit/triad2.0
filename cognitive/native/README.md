@@ -98,3 +98,24 @@ There is no modification to S0, S1, `SPEC.md` or their conformance files.
 Once the experimental features pass native tests, improving the S0/S1 I/O
 interface and the type-safe representation of proof DAGs should be handled
 as separately reviewed language/runtime milestones.
+
+## Real GitHub Actions status — native migration is NOT yet complete
+
+The `TRID Native Core` workflow has executed on Ubuntu 24.04 using the
+machine-code seed. The stand-alone `s1_discovery.triad` sample **passed**
+the native S1 smoke check. The larger native S0
+`common.triad + discover.triad + verify.triad` implementation
+**still fails** with `seed: error` during discovery, and the end-to-end
+persistent-laboratory regression has **not passed**. The branch and PR must
+remain draft.
+
+The sources were adjusted for actual seed gaps (no function `return`,
+no reliable native string `==`, no usable `ARGS`), and a static seed
+guard pass is not a substitute for a real execution test. The current
+S0 implementation contains temporary diagnostic output; it is **not ready
+for persistent production data**. Do not treat it as a drop-in replacement
+for the Python reference tool until a native regression is green.
+
+The S1 sample is a verified native deduction **from a manually declared
+logical schema**; it is not autonomous rule synthesis. Existing Python
+0.3/0.4 tools remain retained for preservation and baseline comparison.
