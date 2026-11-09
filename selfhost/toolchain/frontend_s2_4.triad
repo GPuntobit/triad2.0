@@ -203,7 +203,7 @@ function source_to_ir24(src)
                 rhs = words[index + 4]
                 asm_need(asm_same(words[index + 5], "@"))
                 block_id += 1
-                asm_need(block_id <= 90)
+                asm_need(block_id <= 10)
                 if asm_same(op, "while")
                     ir = front_line(ir, "label wloop" * string(block_id))
                 end

@@ -6,4 +6,5 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT HUP INT TERM
 sh "$ROOT/selfhost/toolchain/lower-triad-s2-4.sh" "$1" "$TMP/program.tir"
-sh "$ROOT/selfhost/toolchain/compile-ir.sh" "$TMP/program.tir" "$2"
+sh "$ROOT/selfhost/toolchain/lower-ir-s2-4.sh" "$TMP/program.tir" "$TMP/program.s2asm"
+sh "$ROOT/selfhost/toolchain/assemble-s2-4.sh" "$TMP/program.s2asm" "$2"

@@ -6,7 +6,6 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT HUP INT TERM
 for name in multi loop join compare nested eight else_false copy; do
-    echo "S2.4 CASE: $name" >&2
     src="$ROOT/selfhost/toolchain/tests/frontend24/$name.triad"
     sh "$ROOT/selfhost/toolchain/lower-triad-s2-4.sh" "$src" "$TMP/$name.tir"
     golden="$ROOT/selfhost/toolchain/tests/frontend24/$name.expected.tir"
@@ -15,8 +14,6 @@ for name in multi loop join compare nested eight else_false copy; do
         diff -u "$golden" "$TMP/$name.tir" >&2 || true
         exit 1
     fi
-    echo "S2.4 frontend golden OK: $name" >&2
-    if [ "$name" = nested ]; then echo "S2.4 nested IR:" >&2; cat "$TMP/$name.tir" >&2; fi
     sh "$ROOT/selfhost/toolchain/compile-triad-s2-4.sh" "$src" "$TMP/$name.elf"
     set +e
     "$TMP/$name.elf" > "$TMP/$name.compiled.out" 2> "$TMP/$name.compiled.err"
@@ -45,7 +42,7 @@ sh "$ROOT/selfhost/toolchain/compile-triad-s2-4.sh" "$ROOT/selfhost/toolchain/te
 cmp "$TMP/multi.elf" "$TMP/rebuilt"
 
 # Validate each machine opcode against an independent reviewed golden.
-sh "$ROOT/selfhost/toolchain/assemble.sh" "$ROOT/selfhost/toolchain/tests/fixtures/stack_s2_4.s2asm" "$TMP/stack"
+sh "$ROOT/selfhost/toolchain/assemble-s2-4.sh" "$ROOT/selfhost/toolchain/tests/fixtures/stack_s2_4.s2asm" "$TMP/stack"
 xxd -p -s 120 -c 8192 "$TMP/stack" > "$TMP/stack.code.hex"
 cmp "$ROOT/selfhost/toolchain/tests/golden/stack_s2_4.code.hex" "$TMP/stack.code.hex"
 set +e
@@ -141,10 +138,10 @@ i32_frame 32
 i32_const 1
 exit'; do
     printf '%s\n' "$bad" > "$TMP/bad.tir"
-    if sh "$ROOT/selfhost/toolchain/compile-ir.sh" "$TMP/bad.tir" "$TMP/bad-from-ir" > "$TMP/ir.log" 2>&1; then
+    if sh "$ROOT/selfhost/toolchain/lower-ir-s2-4.sh" "$TMP/bad.tir" "$TMP/bad.s2asm" > "$TMP/ir.log" 2>&1; then
         echo "S2.4: invalid typed IR unexpectedly assembled: $bad" >&2
         exit 1
     fi
-    [ ! -e "$TMP/bad-from-ir" ]
+    [ ! -e "$TMP/bad.s2asm" ]
 done
 echo 'Triad native S2.4 multi-variable stack and structured CFG: PASS'
