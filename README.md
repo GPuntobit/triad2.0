@@ -10,7 +10,7 @@ Triad is a standalone programming language featuring block syntax, declared type
 https://github.com/user-attachments/assets/2e01cb37-ea17-44af-a92b-7636bdaee3d5
 <p align="center">
   <video src="docs/assets/video/anteprima-codice.mp4" controls width="552"></video>
-  <br><sub>A typed and executed Triad-Core program (actual output from the JS interpreter, ~35s in a loop). Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
+  <br><sub>A demonstration of Triad-Core syntax. The supported runtime is now the native machine-code seed. Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
 </p>
 <p align="center">
   <img src="docs/assets/img/anteprima-hello.svg" alt="Typed Hello World in Triad-Core" width="552">
@@ -62,7 +62,7 @@ https://github.com/user-attachments/assets/22802bf3-1028-4696-8a2a-f65271100d5b
   must pass.
 - **AI:** [ai/](ai/README.md) — benchmark for Triad code generation by LLMs, with
   system prompts and an automatic verifier.
-- **Implementation:** the reference runtime is the machine code seed (S0); the plan for a Triad without host languages is in [BOOTSTRAP.md](BOOTSTRAP.md).
+- **Implementation:** the runtime is the native machine-code seed (S0); the plan for a self-hosted toolchain is in [BOOTSTRAP.md](BOOTSTRAP.md).
 - **Editors:** [editors/](editors/README.md) — VS Code, Vim/Neovim, and a GitHub Linguist entry.
 - **Extension:** `.triad` (canonical), `.td` (historical alias).
 
@@ -108,16 +108,15 @@ triad-cli status                   # toolchain and environment status
 triad-cli test all                 # full gate: conformance + probes
 ```
 
-Development commands (seed generation, AI benchmark, VS Code extension) live in
-the Node CLI and are outside the zero-install promise:
+Legacy JavaScript development commands have been retired from the working tree. Advanced seed regeneration, AI verification and extension tooling require new native implementations; they are not available through the current CLI:
 
 ```sh
-node cli/triad-cli.mjs seed generate windows   # regenerates the PE dump
-node cli/triad-cli.mjs ai verify               # verifies AI solutions
-node cli/triad-cli.mjs ext check               # validates the VS Code extension
+triad-cli status          # native CLI status
+triad-cli test all        # Core and S1 conformance
+sh scripts/no-js.sh      # checks that JavaScript sources/tooling are absent
 ```
 
-Standalone executable (no need to install `cli/`): download `triad-cli.exe` (Windows) or `triad-cli` (Linux) from the [beta release](https://github.com/GPuntobit/triad2.0/releases) and copy it to the repository root or `bin/`; to rebuild it: `cd cli && npm run build:exe`.
+For current supported capabilities, use the native `bin/triad` and POSIX `bin/triad-cli` launchers. Development features removed with the JavaScript tools require native replacements.
 
 See [cli/README.md](cli/README.md) for the complete development CLI documentation.
 
@@ -168,19 +167,18 @@ without Node), `security`, `site-gen`.
 ## Project Structure
 
 ```text
-bin/                        POSIX and Windows launchers (triad, triad-cli)
-cli/                        development CLI (triad-cli.mjs, Node.js: seed/ai/ext)
+bin/                        POSIX and Windows native launchers (triad, triad-cli)
 conformance/                golden suite: executable contract for implementations
 conformance/run.sh          conformance harness (POSIX, without Node)
 seed/                       S0 machine code seed (Windows PE + Linux ELF E2)
 seed/windows-x86_64/        seed.hex (source) and seed.exe: Triad-Core interpreter
 seed/linux-x86_64/          seed.hex (source) and seed: Triad-Core interpreter (ELF E2)
-seed/dev/                   seed generators and triad_core.cjs reference interpreter
+seed/dev/                   historical maintenance documentation; JavaScript generators removed
 selfhost/                   S1: Triad interpreter written in Triad-Core (in progress)
 scripts/docs/               book/EPUB/DOCX builders, download chart, Triad-generated site
 scripts/seed-runner/        seed experiment harnesses (wine runner for the PE)
 scripts/experiments/        LLM streaming/translation experiment scripts
-tools/                      developer utilities (webcmd-graphify plugin, push helper)
+tools/                      retained non-JavaScript developer utilities
 tools/site-jekyll/          legacy Jekyll scaffold (the Pages site is deployed from docs/)
 editors/                    VS Code, Vim/Neovim, and Linguist entry
 examples/*.triad, *.td      Triad examples (.triad canonical, .td historical alias)
@@ -212,9 +210,7 @@ LICENSE                     MIT license (open source)
 - **Triad Standard:** no dependencies; it is defined by this repository (`SPEC.md` + `conformance/`).
 - **Runtime:** machine code seed (S0); no dependencies on Julia or other host languages.
   Execution requires an x86-64 platform (Windows PE or Linux ELF seed).
-- **Development:** Node.js 20 for `cli/`, the generators in `seed/dev/`, the
-  reference interpreter and the site generators; the verification harness
-  (`conformance/run.sh`, `tests/probes/run_probes.sh`) is pure POSIX shell.
+- **Development:** no Node.js/npm source or runtime is part of the checked-out tree. Native bootstrap, conformance and the supported development commands use Triad or POSIX shell; features without a native replacement remain unavailable.
 
 ### Termux (Android) and non-x86-64 platforms
 
@@ -238,7 +234,7 @@ Notes:
 
 ## Website
 
-The project website is in `docs/` and is published via GitHub Pages using `.github/workflows/pages.yml`. To enable it: Settings -> Pages -> Source: "GitHub Actions". The site includes a landing page and a documentation viewer (SPEC, TUTORIAL, BOOTSTRAP, STATUS, README, conformance, editor, AI, license) that loads Markdown directly from the repository.
+The project website is in `docs/` and is published with GitHub Pages. It consists of static HTML/CSS; it does not execute Triad inside the browser. Run source files locally with the native seed.
 
 ## License
 
