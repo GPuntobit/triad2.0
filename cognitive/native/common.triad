@@ -218,5 +218,6 @@ function read_data()
     println("NATIVE FIXTURE VALID")
     check_journal(history)
     println("NATIVE JOURNAL VALID")
-    [data, history]
+    result = [data, history]
+    result
 end
