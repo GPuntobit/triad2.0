@@ -201,10 +201,10 @@ function is_revoked(data, source)
 end
 
 function read_args()
-    # S0 does not currently expose ARGS reliably. POSIX launcher passes two
-    # inherited read-only file descriptors; all parsing remains native Triad.
-    data = parse_file("/dev/fd/3")
-    history = parse_file("/dev/fd/4")
+    # Native S0 executes from a working directory staged by the POSIX launcher.
+    # Input names are fixed; no ARGS or undocumented descriptor passing.
+    data = parse_file("fixture.txt")
+    history = parse_file("journal.log")
     validate_data(data)
     check_journal(history)
     return [data, history]
