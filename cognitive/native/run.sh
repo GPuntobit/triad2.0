@@ -59,13 +59,11 @@ if ! ( cd "$TMP"; "$ROOT/bin/triad" "$TMP/discover.triad" > "$TMP/events.log" );
     exit 1
 fi
 cat "$JOURNAL" "$TMP/events.log" > "$TMP/new-journal.log"
-echo "DIAG-EVENT-COUNT $(wc -l < "$TMP/events.log")" >&2
-echo "DIAG-JOURNAL-COUNT $(wc -l < "$TMP/new-journal.log")" >&2
 make_source "$ROOT/cognitive/native/verify.triad" "$TMP/new-journal.log" "$TMP/verify.triad"
 echo "TRID native: independent verification stage" >&2
 if ! ( cd "$TMP"; "$ROOT/bin/triad" "$TMP/verify.triad" > "$TMP/new-memory.txt" ); then
-    echo "TRID: native verifier failed; stdout tail follows:" >&2
-    tail -n 30 "$TMP/new-memory.txt" >&2
+    echo "TRID: verifier failed; last diagnostic/output lines:" >&2
+    tail -n 40 "$TMP/new-memory.txt" >&2
     exit 1
 fi
 mv "$TMP/new-journal.log" "$JOURNAL"
