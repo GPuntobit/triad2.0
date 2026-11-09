@@ -109,14 +109,16 @@ function asm_size(op)
     n
 end
 
-function asm_label_at(names, addresses, wanted)
+# Flat symbol table [name1, offset1, name2, offset2, ...] keeps S0
+# function calls within its certified four-argument limit.
+function asm_label_at(symbols, wanted)
     result = -1
     i = 1
-    while i <= length(names)
-        if asm_same(names[i], wanted)
-            result = addresses[i]
+    while i <= length(symbols)
+        if asm_same(symbols[i], wanted)
+            result = symbols[i + 1]
         end
-        i += 1
+        i += 2
     end
     result
 end
@@ -145,7 +147,7 @@ function asm_rel32(offset)
     result
 end
 
-function asm_encode(op, arg, here, names, addresses)
+function asm_encode(op, arg, here, symbols)
     out = ""
     if asm_same(op, "byte")
         value = asm_uint(arg)
@@ -170,7 +172,7 @@ function asm_encode(op, arg, here, names, addresses)
     elseif asm_same(op, "cmp_edi")
         out = "81ff" * little(asm_uint(arg), 4)
     elseif asm_is_target(op)
-        target = asm_label_at(names, addresses, arg)
+        target = asm_label_at(symbols, arg)
         asm_need(target >= 0)
         displacement = target - (here + asm_size(op))
         encoded = asm_rel32(displacement)
@@ -215,8 +217,7 @@ end
 # A label resolves to an offset within the payload, not to a host pointer.
 function assemble_text(src)
     words = asm_tokens(src)
-    labels = []
-    addresses = []
+    symbols = []
     here = 0
     index = 1
     statements = 0
@@ -242,9 +243,9 @@ function assemble_text(src)
             end
             if asm_same(op, "label")
                 asm_need(asm_name_ok(arg))
-                asm_need(asm_label_at(labels, addresses, arg) < 0)
-                push!(labels, arg)
-                push!(addresses, here)
+                asm_need(asm_label_at(symbols, arg) < 0)
+                push!(symbols, arg)
+                push!(symbols, here)
             elseif asm_is_target(op)
                 asm_need(asm_name_ok(arg))
             elseif takes
@@ -278,7 +279,7 @@ function assemble_text(src)
                 step = 3
             end
             if size > 0
-                code = code * asm_encode(op, arg, here, labels, addresses)
+                code = code * asm_encode(op, arg, here, symbols)
             end
             here += size
             index += step
