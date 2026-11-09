@@ -1,0 +1,83 @@
+# S2.4 native x86-64 two-pass streaming assembler for larger source files.
+# Each source line is tokenized in isolation, while symbol offsets and fixups
+# are computed by Triad. POSIX has no instruction or relocation logic.
+
+function assemble_stream24(src)
+    asm_need(strlen(src) > 0 && strlen(src) <= 12000)
+    symbols = []
+    here = 0
+    statements = 0
+    pos = 1
+    # Pass 1: layout and bounded label table.
+    while pos <= strlen(src)
+        line_end = pos
+        while line_end <= strlen(src) && strbyte(src, line_end) != 10
+            line_end += 1
+        end
+        if line_end > pos
+            raw_line = strsub(src, pos, line_end - 1)
+            words = asm_tokens(raw_line)
+            op = words[1]
+            if !asm_same(op, "@")
+                size = asm_size(op)
+                asm_need(size >= 0)
+                takes = asm_has_arg(op)
+                arg = ""
+                if takes
+                    asm_need(length(words) == 3 && asm_same(words[3], "@"))
+                    arg = words[2]
+                else
+                    asm_need(length(words) == 2 && asm_same(words[2], "@"))
+                end
+                if asm_same(op, "label")
+                    asm_need(asm_name_ok(arg))
+                    asm_need(asm_label_at(symbols, arg) < 0 && length(symbols) < 48)
+                    push!(symbols, arg)
+                    push!(symbols, here)
+                elseif asm_is_target(op)
+                    asm_need(asm_name_ok(arg))
+                elseif takes
+                    value = asm_uint(arg)
+                    if asm_same(op, "byte")
+                        asm_need(value <= 255)
+                    end
+                end
+                here += size
+                statements += 1
+                asm_need(here <= 4096 && statements <= 256)
+            end
+        end
+        pos = line_end + 1
+    end
+    total = here
+    asm_need(total > 0)
+    pos = 1
+    here = 0
+    code = ""
+    # Pass 2: encode and resolve signed PC-relative offsets.
+    while pos <= strlen(src)
+        line_end = pos
+        while line_end <= strlen(src) && strbyte(src, line_end) != 10
+            line_end += 1
+        end
+        if line_end > pos
+            raw_line = strsub(src, pos, line_end - 1)
+            words = asm_tokens(raw_line)
+            op = words[1]
+            if !asm_same(op, "@")
+                size = asm_size(op)
+                arg = ""
+                if asm_has_arg(op)
+                    arg = words[2]
+                end
+                if size > 0
+                    code = code * asm_encode(op, arg, here, symbols)
+                end
+                here += size
+            end
+        end
+        pos = line_end + 1
+    end
+    asm_need(here == total)
+    asm_elf_image(code, total)
+end
