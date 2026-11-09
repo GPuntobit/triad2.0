@@ -1,0 +1,38 @@
+# TRID-Core 0.6 — native S1 recursive proof DAG and bounded pulse propagation.
+# Inputs are injected as validated S1 facts by a POSIX-only transport script.
+# This file is logic, never interpreted by the shell. Keep all rules ONE line.
+# Source-labelled deductions remain conditional; activation is NOT belief.
+
+# Cycle guard for finite list of visited nodes.
+rule in_path(?x, [?x | ?rest])
+rule in_path(?x, [?head | ?rest]) :- in_path(?x, ?rest)
+
+# Find all simple (cycle-free) evidence paths, arbitrary finite graph topology.
+# Every result carries the ordered source-id list: a checkable proof witness.
+rule proof_path(?from, ?to, ?seen, [?source]) :- evidence(?from, ?to, ?source), not(in_path(?to, ?seen))
+rule proof_path(?from, ?to, ?seen, [?source | ?tail]) :- evidence(?from, ?next, ?source), not(in_path(?next, ?seen)), proof_path(?next, ?to, [?next | ?seen], ?tail)
+
+# Explicit revocation affects the *individual proof path*, not its conclusion.
+rule uses_revoked([?src | ?rest]) :- revoked(?src)
+rule uses_revoked([?src | ?rest]) :- uses_revoked(?rest)
+rule retained_path(?from, ?to, ?seen, ?sources) :- proof_path(?from, ?to, ?seen, ?sources), not(uses_revoked(?sources))
+rule suspended_path(?from, ?to, ?seen, ?sources) :- proof_path(?from, ?to, ?seen, ?sources), uses_revoked(?sources)
+
+# Associative pulse propagation does not consult evidence, source trust, or proofs.
+# Fuel decreases on *each hop*; visited nodes prevent cycles. :h0 stops.
+fact fuel(:h1, :h0)
+fact fuel(:h2, :h1)
+fact fuel(:h3, :h2)
+fact fuel(:h4, :h3)
+fact fuel(:h5, :h4)
+fact fuel(:h6, :h5)
+rule active_node(?from, ?to, ?seen, ?budget) :- fuel(?budget, ?less), association(?from, ?to), not(in_path(?to, ?seen))
+rule active_node(?from, ?to, ?seen, ?budget) :- fuel(?budget, ?less), association(?from, ?next), not(in_path(?next, ?seen)), active_node(?next, ?to, [?next | ?seen], ?less)
+
+# Output contract: stable lines for native integration tests.
+# A proof remains a derivation from *assumed* source-labelled premises.
+println([s.sources for s in solve proof_path(:trid, :deep5, [:trid], ?sources)])
+println([s.sources for s in solve retained_path(:trid, :deep5, [:trid], ?sources)])
+println([s.sources for s in solve suspended_path(:trid, :deep5, [:trid], ?sources)])
+println([s.to for s in solve active_node(:trid, ?to, [:trid], :h6)])
+println([s.state for s in solve rule_state(:path_generalization, ?state)])
