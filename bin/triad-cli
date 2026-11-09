@@ -51,7 +51,7 @@ usage() {
     echo "  test all                    gate completo (verify.sh)"
     echo "  status                      stato della toolchain e dell'ambiente"
     echo ""
-    echo "comandi dev (richiedono Node): node cli/triad-cli.mjs <seed|ai|ext>"
+    echo "comandi avanzati: migrazione in corso verso Triad nativo"
 }
 
 cmd=${1:-}
