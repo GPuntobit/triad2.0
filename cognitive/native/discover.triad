@@ -185,11 +185,15 @@ println("NATIVE DISCOVERY BEGIN")
 args = read_data()
 println("NATIVE READ DATA OK")
 data = args[1]
+println("NATIVE DATA LENGTH ", length(data))
 journal = args[2]
+println("NATIVE JOURNAL LENGTH ", length(journal))
 events = []
 i = 1
 while i <= length(data)
+    println("NATIVE ROW INDEX ", i)
     row = data[i]
+    println("NATIVE ROW LENGTH ", length(row))
     if same(row[1], "target")
         println("NATIVE TARGET ", row[3])
         discover_target(data, row, journal, events)
