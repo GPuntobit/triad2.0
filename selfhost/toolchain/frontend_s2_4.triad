@@ -119,7 +119,10 @@ function mv_value(ir, table, mask, operand)
     out
 end
 
-function mv_arithmetic(ir, table, mask, operator, operand)
+function mv_arithmetic(ir, table, mask, operation)
+    asm_need(strlen(operation) >= 2)
+    operator = strsub(operation, 1, 1)
+    operand = strsub(operation, 2, strlen(operation))
     out = ir
     asm_need(asm_same(operator, "+") || asm_same(operator, "-"))
     if mv_number(operand)
@@ -283,7 +286,7 @@ function source_to_ir24(src)
                         final = words[index + 4]
                         asm_need(asm_same(words[index + 5], "@"))
                         ir = mv_value(ir, symbols, mask, operand)
-                        ir = mv_arithmetic(ir, symbols, mask, next, final)
+                        ir = mv_arithmetic(ir, symbols, mask, next * final)
                         step = 6
                     end
                 else
@@ -294,7 +297,7 @@ function source_to_ir24(src)
                     asm_need(asm_same(words[index + 4], "@"))
                     mv_require(symbols, mask, op)
                     ir = front_line(ir, "i32_load " * string(slot))
-                    ir = mv_arithmetic(ir, symbols, mask, operator, operand)
+                    ir = mv_arithmetic(ir, symbols, mask, operator * operand)
                     step = 5
                 end
                 ir = front_line(ir, "i32_store " * string(slot))
