@@ -1,0 +1,116 @@
+# S2.2 native Triad intermediate representation (IR) lowerer.
+# Dependencies: elf64_exit.triad + assembler_s2_1.triad.
+# Input format: restricted line-oriented, typed i32 accumulator operations.
+# Translates IR into S2.1 assembler; DOES NOT implement Triad-Full source.
+
+function ir_has_arg(op)
+    asm_same(op, "i32_const") || asm_same(op, "i32_add") || asm_same(op, "i32_sub") || asm_same(op, "i32_compare") || asm_same(op, "label") || asm_same(op, "jump") || asm_same(op, "br_zero") || asm_same(op, "br_nonzero") || asm_same(op, "call")
+end
+
+function ir_piece(op, arg)
+    result = ""
+    if asm_same(op, "i32_const")
+        result = "mov_edi " * arg
+    elseif asm_same(op, "i32_zero")
+        result = "xor_edi"
+    elseif asm_same(op, "i32_add")
+        result = "add_edi " * arg
+    elseif asm_same(op, "i32_sub")
+        result = "sub_edi " * arg
+    elseif asm_same(op, "i32_inc")
+        result = "inc_edi"
+    elseif asm_same(op, "i32_dec")
+        result = "dec_edi"
+    elseif asm_same(op, "i32_compare")
+        result = "cmp_edi " * arg
+    elseif asm_same(op, "i32_test_zero")
+        result = "test_edi"
+    elseif asm_same(op, "label")
+        result = "label " * arg
+    elseif asm_same(op, "jump")
+        result = "jmp " * arg
+    elseif asm_same(op, "br_zero")
+        result = "jz " * arg
+    elseif asm_same(op, "br_nonzero")
+        result = "jnz " * arg
+    elseif asm_same(op, "call")
+        result = "call " * arg
+    elseif asm_same(op, "return")
+        result = "ret"
+    elseif asm_same(op, "exit")
+        newline = "
+"
+        result = "mov_eax 60" * newline * "syscall"
+    else
+        asm_need(asm_same(op, "start"))
+    end
+    result
+end
+
+# Each IR program starts with 'start' and must contain at least one exit.
+# Branches require immediately preceding explicit i32_compare/i32_test_zero.
+# This is a local instruction discipline, not yet a typed CFG verifier.
+function lower_ir(src)
+    words = asm_tokens(src)
+    index = 1
+    statement_count = 0
+    saw_exit = false
+    flags_ready = false
+    out = ""
+    newline = "
+"
+    while index <= length(words)
+        op = words[index]
+        if asm_same(op, "@")
+            index += 1
+        else
+            takes = ir_has_arg(op)
+            arg = ""
+            step = 2
+            if takes
+                asm_need(index + 2 <= length(words))
+                arg = words[index + 1]
+                asm_need(!asm_same(arg, "@"))
+                asm_need(asm_same(words[index + 2], "@"))
+                step = 3
+            else
+                asm_need(index + 1 <= length(words))
+                asm_need(asm_same(words[index + 1], "@"))
+            end
+            if statement_count == 0
+                asm_need(asm_same(op, "start"))
+            else
+                asm_need(!asm_same(op, "start"))
+            end
+            if asm_same(op, "label") || asm_same(op, "jump") || asm_same(op, "br_zero") || asm_same(op, "br_nonzero") || asm_same(op, "call")
+                asm_need(asm_name_ok(arg))
+            elseif takes
+                value = asm_uint(arg)
+                asm_need(value <= 65535)
+            end
+            if asm_same(op, "br_zero") || asm_same(op, "br_nonzero")
+                asm_need(flags_ready)
+            end
+            piece = ir_piece(op, arg)
+            if strlen(piece) > 0
+                if strlen(out) > 0
+                    out = out * newline
+                end
+                out = out * piece
+            end
+            if asm_same(op, "i32_compare") || asm_same(op, "i32_test_zero")
+                flags_ready = true
+            else
+                flags_ready = false
+            end
+            if asm_same(op, "exit")
+                saw_exit = true
+            end
+            statement_count += 1
+            asm_need(statement_count <= 1024 && strlen(out) <= 12000)
+            index += step
+        end
+    end
+    asm_need(statement_count >= 2 && saw_exit)
+    out
+end
