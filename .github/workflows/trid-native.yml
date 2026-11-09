@@ -29,6 +29,8 @@ jobs:
           printf 'println(strlen(readfile("fixture.txt")))\n' > /tmp/trid-native-debug/read.triad
           echo 'Native S0 readfile check:'
           ( cd /tmp/trid-native-debug; "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-native-debug/read.triad ) || true
+          echo 'Seed certified-subset static diagnostics:'
+          node tools/selfhost-guard/guard.mjs /tmp/trid-native-debug/discover.triad || true
           echo 'Development oracle diagnostic:'
           ( cd /tmp/trid-native-debug; node "$GITHUB_WORKSPACE/seed/dev/triad_core.cjs" /tmp/trid-native-debug/discover.triad ) || true
           echo 'Native S0 discovery direct diagnostic:'
