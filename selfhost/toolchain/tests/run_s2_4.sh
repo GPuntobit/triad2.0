@@ -16,6 +16,7 @@ for name in multi loop join compare nested eight else_false copy; do
         exit 1
     fi
     echo "S2.4 frontend golden OK: $name" >&2
+    if [ "$name" = nested ]; then echo "S2.4 nested IR:" >&2; cat "$TMP/$name.tir" >&2; fi
     sh "$ROOT/selfhost/toolchain/compile-triad-s2-4.sh" "$src" "$TMP/$name.elf"
     set +e
     "$TMP/$name.elf" > "$TMP/$name.compiled.out" 2> "$TMP/$name.compiled.err"
