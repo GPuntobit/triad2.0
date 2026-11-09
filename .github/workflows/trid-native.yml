@@ -20,16 +20,19 @@ jobs:
         run: |
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Diagnostic parse with development oracle (not the application runtime)
+      - name: Diagnostic native file reading and development oracle (development only)
         run: |
-          cat cognitive/native/common.triad cognitive/native/discover.triad > /tmp/trid-discover-debug.triad
-          : > /tmp/trid-empty-journal.log
-          node seed/dev/triad_core.cjs /tmp/trid-discover-debug.triad cognitive/native/fixture.txt /tmp/trid-empty-journal.log || true
-          printf 'println(length(ARGS))\nprintln(ARGS[1])\n' > /tmp/trid-args-debug.triad
-          echo 'Native S0 arguments diagnostic:'
-          ./bin/triad /tmp/trid-args-debug.triad alpha beta || true
-          echo 'Native S0 direct discovery diagnostic:'
-          ./bin/triad /tmp/trid-discover-debug.triad cognitive/native/fixture.txt /tmp/trid-empty-journal.log || true
+          mkdir -p /tmp/trid-native-debug
+          cp cognitive/native/fixture.txt /tmp/trid-native-debug/fixture.txt
+          : > /tmp/trid-native-debug/journal.log
+          cat cognitive/native/common.triad cognitive/native/discover.triad > /tmp/trid-native-debug/discover.triad
+          printf 'println(strlen(readfile("fixture.txt")))\n' > /tmp/trid-native-debug/read.triad
+          echo 'Native S0 readfile check:'
+          ( cd /tmp/trid-native-debug; "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-native-debug/read.triad ) || true
+          echo 'Development oracle diagnostic:'
+          ( cd /tmp/trid-native-debug; node "$GITHUB_WORKSPACE/seed/dev/triad_core.cjs" /tmp/trid-native-debug/discover.triad ) || true
+          echo 'Native S0 discovery direct diagnostic:'
+          ( cd /tmp/trid-native-debug; "$GITHUB_WORKSPACE/bin/triad" /tmp/trid-native-debug/discover.triad ) || true
       - name: Native Triad cognitive regression (no Python/Node interpreter)
         run: sh cognitive/native/tests/run.sh
       - name: Existing native Triad conformance gate
