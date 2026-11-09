@@ -1,0 +1,8 @@
+function subtract(left, right)
+    result = left - right
+    return result
+end
+a = 11
+b = 4
+difference = subtract(a, b)
+exit(difference)
