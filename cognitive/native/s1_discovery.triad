@@ -1,0 +1,15 @@
+# TRID - native S1 logic discovery fixture.
+# This works on the existing Triad-Core self-hosted logic interpreter.
+# A two-step deductive schema is explicit, NOT autonomously synthesized.
+fact edge(:family, :parent, :mario, :luca, :book_01)
+fact edge(:family, :parent, :luca, :antonio, :book_02)
+fact edge(:family, :parent, :luca, :antonella, :book_02)
+fact edge(:family, :parent, :marta, :paolo, :book_05)
+fact edge(:family, :parent, :marta, :giulia, :book_05)
+
+rule two_step(?domain, ?relation, ?x, ?z, ?via, ?src1, ?src2) :- edge(?domain, ?relation, ?x, ?via, ?src1), edge(?domain, ?relation, ?via, ?z, ?src2)
+rule common_source(?domain, ?relation, ?x, ?z, ?via, ?src1, ?src2) :- edge(?domain, ?relation, ?via, ?x, ?src1), edge(?domain, ?relation, ?via, ?z, ?src2), ?x != ?z
+
+println([s.z for s in solve two_step(:family, :parent, :mario, ?z, ?via, ?src1, ?src2)])
+println([s.via for s in solve two_step(:family, :parent, :mario, ?z, ?via, ?src1, ?src2)])
+println([s.z for s in solve common_source(:family, :parent, :paolo, ?z, ?via, ?src1, ?src2)])
