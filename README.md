@@ -11,6 +11,7 @@ https://github.com/user-attachments/assets/2e01cb37-ea17-44af-a92b-7636bdaee3d5
 <p align="center">
   <video src="docs/assets/video/anteprima-codice.mp4" controls width="552"></video>
   <br><sub>A demonstration of Triad-Core syntax. The supported runtime is now the native machine-code seed. Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
+  <br><sub>A typed and executed Triad-Core program (archived demonstration from an earlier development interpreter). Video: <a href="docs/assets/video/anteprima-codice.mp4">MP4</a>.</sub>
 </p>
 <p align="center">
   <img src="docs/assets/img/anteprima-hello.svg" alt="Typed Hello World in Triad-Core" width="552">
@@ -119,10 +120,18 @@ sh scripts/no-js.sh      # checks that JavaScript sources/tooling are absent
 For current supported capabilities, use the native `bin/triad` and POSIX `bin/triad-cli` launchers. Development features removed with the JavaScript tools require native replacements.
 
 See [cli/README.md](cli/README.md) for the complete development CLI documentation.
+Advanced seed regeneration, the foreign-language reference oracle, the
+browser playground and the old development CLI have been retired. The
+native **Triad-to-seed generator is not implemented yet**: the committed
+machine-code ELF/PE dumps remain hash-verified but cannot currently be
+recreated from a Triad-native generator.
+
+For details, remaining work and known feature losses, see
+[JavaScript removal and native migration](docs/NO_JAVASCRIPT_MIGRATION.md).
 
 ## Quick Example (`examples/assaggio.td`)
 
-```julia
+```triad
 struct Point
     x::Float
     y::Float
@@ -159,26 +168,30 @@ Status: Core 42/42 green byte-exact on both the PE and the ELF seeds; Full only
 `error` passes (the rest of the Full language is not yet implemented). If a case
 fails with a missing golden, the checkout lacks `expected.out`: run `git pull`.
 
-CI (`.github/workflows/ci.yml`): `conformance-core` (Core suite + selfhost
-sources), `seed-linux` (native ELF: `check_seed.sh`, PE/ELF hash gates,
-reproducible dumps, `verify.sh`), `linux-toolchain` (launcher + `install.sh`
-without Node), `security`, `site-gen`.
+CI (`.github/workflows/ci.yml`) checks the native Core/S1 conformance,
+TRID experimental and graph tests, native seed SHA-256 integrity, installation,
+security, static documentation generation and the no-JavaScript source gate.
+The retired JS oracle's differential coverage is **not yet restored**.
 
 ## Project Structure
 
 ```text
 bin/                        POSIX and Windows native launchers (triad, triad-cli)
+bin/                        POSIX and Windows launchers (triad, triad-cli)
+bin/triad-cli               POSIX native CLI (run, test, status)
 conformance/                golden suite: executable contract for implementations
 conformance/run.sh          conformance harness (POSIX, without Node)
 seed/                       S0 machine code seed (Windows PE + Linux ELF E2)
 seed/windows-x86_64/        seed.hex (source) and seed.exe: Triad-Core interpreter
 seed/linux-x86_64/          seed.hex (source) and seed: Triad-Core interpreter (ELF E2)
 seed/dev/                   historical maintenance documentation; JavaScript generators removed
+seed/dev/                   native bootstrap contracts and archived technical documentation
 selfhost/                   S1: Triad interpreter written in Triad-Core (in progress)
-scripts/docs/               book/EPUB/DOCX builders, download chart, Triad-generated site
+scripts/docs/               native/Python document utilities and download chart
 scripts/seed-runner/        seed experiment harnesses (wine runner for the PE)
 scripts/experiments/        LLM streaming/translation experiment scripts
 tools/                      retained non-JavaScript developer utilities
+tools/site-gen/             Triad-native static-site generators and POSIX driver
 tools/site-jekyll/          legacy Jekyll scaffold (the Pages site is deployed from docs/)
 editors/                    VS Code, Vim/Neovim, and Linguist entry
 examples/*.triad, *.td      Triad examples (.triad canonical, .td historical alias)
@@ -192,8 +205,8 @@ docs/wiki/                  English project wiki (Home, Getting Started, Languag
 docs/security/              security review, backlog triage and severity triage records
 docs/releases/              per-version release notes
 docs/worklog/               PR descriptions (current draft + archived)
-obsidian-triad/             Obsidian vault with index and Graphify graph of the repository
-.github/workflows/          CI (ci.yml) and Pages publishing (pages.yml, static.yml)
+obsidian-triad/             Markdown vault (vendored JavaScript plugins removed)
+.github/workflows/          Native CI (ci.yml), static Pages publishing (pages.yml)
 BOOTSTRAP.md                plan for independence from Julia and any other language
 SPEC.md                     Triad standard: normative specification (0.2.0)
 SPEC-CORE.md                Triad-Core profile (normative, for self-hosted bootstrap)
@@ -211,6 +224,9 @@ LICENSE                     MIT license (open source)
 - **Runtime:** machine code seed (S0); no dependencies on Julia or other host languages.
   Execution requires an x86-64 platform (Windows PE or Linux ELF seed).
 - **Development:** no Node.js/npm source or runtime is part of the checked-out tree. Native bootstrap, conformance and the supported development commands use Triad or POSIX shell; features without a native replacement remain unavailable.
+- **Development:** POSIX shell, core system tools and the committed native
+  Triad seed. No JavaScript runtime or npm dependency is shipped.
+  Seed source regeneration is not yet supported in the native toolchain.
 
 ### Termux (Android) and non-x86-64 platforms
 
@@ -221,6 +237,13 @@ On Termux (Android ARM64) and other platforms without a supported x86-64 native 
 ## Website
 
 The project website is in `docs/` and is published with GitHub Pages. It consists of static HTML/CSS; it does not execute Triad inside the browser. Run source files locally with the native seed.
+The former development reference interpreter has been removed. ARM64
+execution requires a future native seed or compiler port. The project does
+**not** fall back to a scripting-language interpreter on unsupported systems.
+
+## Website
+
+The project website is in `docs/` and is published via GitHub Pages using `.github/workflows/pages.yml`. To enable it: Settings -> Pages -> Source: "GitHub Actions". The site contains static HTML/CSS/SVG documentation. The browser playground was retired; Triad programs run with the native seed. The pages can be regenerated using `sh tools/site-gen/build.sh --dry-run`.
 
 ## License
 

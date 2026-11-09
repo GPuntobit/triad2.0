@@ -35,6 +35,7 @@
 <p class='section-sub'>Triad 2.0 is a standalone language with a normative specification, an executable conformance suite and no dependency on other languages. This page takes you from an empty folder to a running program.</p>
 <h2>1. Requirements</h2>
 <p>Triad runs through a native x86-64 machine-code seed. The supported Linux setup needs Git, a POSIX shell, and standard command-line utilities; no JavaScript interpreter, Node.js, npm, or browser runtime is required. On other architectures the native seed may not be available.</p>
+<p>There is no package to install and no compiler to set up: cloning the repository is enough to start. You need <strong>Linux x86-64 with the native Triad seed</strong> for the reference interpreter, the conformance runner and the development CLI, and <strong>Git</strong> to fetch the project. That is the whole list on purpose, because a language that wants to be independent from other languages cannot ask for a toolchain before it can run.</p>
 <div class='code-card'>
 git clone https://github.com/GPuntobit/triad2.0.git
 cd triad2.0
@@ -49,6 +50,12 @@ triad-cli status
 triad tests/probes/test_simple.td
 triad-cli run tests/probes/test_simple.td
 ./bin/triad --logic cognitive/native/s1_discovery.triad
+<p>The launcher finds a runtime for you: the machine code seed when it is usable, no foreign-language fallback otherwise. Both run the same Triad-Core programs; the differences between them are listed in chapter 15 of the tutorial.</p>
+<div class='code-card'>
+triad examples/benvenuto.triad              # launcher
+bin/triad.cmd examples/benvenuto.triad     # Windows wrapper
+./bin/triad hello.triad   # native machine-code seed
+./bin/triad examples/benvenuto.triad
 </div>
 <p>Triad's native seed runs files rather than accepting arbitrary programs from standard input. Check <a href='../../selfhost/logic/README.md'>S1 syntax and limits</a> before using logic rules.</p>
 <h2>3. Your first program</h2>
@@ -80,6 +87,14 @@ sh cognitive/native/tests/run.sh
 sh cognitive/native/tests/run_05.sh
 sh cognitive/native/tests/run_06.sh
 sh scripts/no-js.sh
+<p>The <code>examples/</code> folder holds ready programs: <code>benvenuto.triad</code> is the welcome program that runs today, while <code>famiglia.td</code>, <code>garanzie.td</code>, <code>macro.td</code> and <code>tour.td</code> show the Triad-Full features. The native interpreter runs the same interpreter in the browser, so a program can be tried without installing anything.</p>
+<h2>4. The development CLI and the conformance suite</h2>
+<p>The CLI wraps the development tasks and the conformance runner checks an implementation against the golden cases. The REPL belongs to Triad-Full: the Core profile defines script execution only, and section 10 of SPEC-CORE.md says so explicitly.</p>
+<div class='code-card'>
+sh conformance/run.sh                          # 37 Core cases
+sh conformance/run.sh --cases conformance/cases # 12 Full cases
+bin/triad-cli status
+bin/triad-cli help
 </div>
 <p class='section-sub'>Source: README.md, docs/tutorial/TUTORIAL.md (chapter 2), docs/index.html, SPEC-CORE.md §10.</p>
 </div>

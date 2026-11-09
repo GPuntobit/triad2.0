@@ -70,21 +70,36 @@ manifests bring Node toolchains, and multiple CI jobs execute Node.
    equivalents and reviewed separately.
 
 ## Criteri di accettazione
+## Implementation status (2026-11-09)
 
-- [ ] Tracked repo has **zero** `*.js`, `*.cjs`, `*.mjs`, `*.jsx`, `*.ts`,
+PR #101 has been merged into `main`: all 94 tracked JS/TS files, npm manifests,
+plugin bundles and inline HTML scripts were removed. GitHub Actions run
+42625038339 validated the no-JS gate, native bootstrap, TRID regressions,
+security and static documentation. The separate PR #102 adds a Triad-native
+site generator and is subject to its own CI verification.
+
+**Open engineering debt:** seed regeneration from a native high-level source,
+independent non-JS oracle/differential verification, and replacement of
+retired developer CLI and browser features. This debt must be resolved before
+claiming tooling feature parity. Git history and upstream GitHub Actions are
+outside the checked-out-source scope.
+
+## Acceptance checklist
+
+- [x] Tracked repo has **zero** `*.js`, `*.cjs`, `*.mjs`, `*.jsx`, `*.ts`,
   `*.tsx`, `*.mts`, `*.cts`.
-- [ ] No npm manifests / dependency locks / bundled plugin archives.
-- [ ] No inline browser scripts, event handlers, JS URLs or remote JS loads.
-- [ ] No Node/npm commands in runtime, installer, build workflows.
-- [ ] `sh scripts/no-js.sh` passes.
-- [ ] `sh verify.sh` passes on supported x86-64 Linux.
-- [ ] `sh cognitive/native/tests/run.sh` passes.
-- [ ] `sh cognitive/native/tests/run_05.sh` and `run_06.sh` pass.
-- [ ] Native PE and ELF seed hashes are checked without regenerating them via JS.
-- [ ] Security and static documentation gates do not silently disappear.
+- [x] No npm manifests / dependency locks / bundled plugin archives.
+- [x] No inline browser scripts, event handlers, JS URLs or remote JS loads.
+- [x] No Node/npm commands in runtime, installer, build workflows.
+- [x] `sh scripts/no-js.sh` passes.
+- [x] `sh verify.sh` passes on supported x86-64 Linux.
+- [x] `sh cognitive/native/tests/run.sh` passes.
+- [x] `sh cognitive/native/tests/run_05.sh` and `run_06.sh` pass.
+- [x] Native PE and ELF seed hashes are checked without regenerating them via JS.
+- [x] Security and static documentation gates do not silently disappear.
 - [ ] Excluded capabilities have explicit replacement tickets and
   user-facing status in README.
-- [ ] CI green on the draft PR before merge.
+- [x] CI green on the draft PR before merge.
 
 **Important:** Removing JavaScript source without equivalent Triad replacements
 necessarily disables some development functionality and the browser playground.
