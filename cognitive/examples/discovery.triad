@@ -1,0 +1,24 @@
+# TRID-Core 0.1: proof-of-concept of relation composition on native S1.
+# A source is an identifier, not a verified reliability judgement.
+# This program is intentionally inside the currently executable logic subset.
+
+fact edge(:family, :parent, :mario, :luca, :book_01)
+fact edge(:family, :parent, :luca, :antonio, :book_02)
+fact edge(:family, :parent, :luca, :antonella, :book_02)
+
+fact edge(:learning, :requires, :trid, :logic, :spec_01)
+fact edge(:learning, :requires, :logic, :unification, :spec_02)
+
+# Discover a candidate composed relation with an explicit witness and both sources.
+# The relation is a candidate only: the two-hop path is proven relative to facts,
+# but its interpretation (e.g., grandparent) requires a separately defined concept.
+rule candidate(?domain, ?kind, ?from, ?to, ?via, ?source1, ?source2) :-
+    edge(?domain, ?kind, ?from, ?via, ?source1),
+    edge(?domain, ?kind, ?via, ?to, ?source2)
+
+println([s.to for s in solve candidate(:family, :parent, :mario, ?to, ?via, ?source1, ?source2)])
+println([s.via for s in solve candidate(:family, :parent, :mario, ?to, ?via, ?source1, ?source2)])
+println([s.source1 for s in solve candidate(:family, :parent, :mario, ?to, ?via, ?source1, ?source2)])
+println([s.source2 for s in solve candidate(:family, :parent, :mario, ?to, ?via, ?source1, ?source2)])
+println([s.to for s in solve candidate(:learning, :requires, :trid, ?to, ?via, ?source1, ?source2)])
+println([s.to for s in solve candidate(:family, :parent, :antonio, ?to, ?via, ?source1, ?source2)])
