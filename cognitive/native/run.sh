@@ -25,15 +25,25 @@ safe_records() {
         exit 1
     fi
 }
+# Convert validated pipe-separated records to native Triad List literals.
+# Shell performs only serialization; all induction and checking are Triad code.
+emit_rows() {
+    path="$1"
+    variable="$2"
+    printf '%s = []\n' "$variable"
+    while IFS= read -r line || [ -n "$line" ]; do
+        [ -n "$line" ] || continue
+        printf 'push!(%s, ["' "$variable"
+        printf '%s' "$line" | sed 's/|/", "/g'
+        printf '"])\n'
+    done < "$path"
+}
 make_source() {
     safe_records "$FIXTURE"
     safe_records "$2"
     {
-        printf 'trid_fixture = "'
-        cat "$FIXTURE"
-        printf '"\ntrid_journal = "'
-        cat "$2"
-        printf '"\n'
+        emit_rows "$FIXTURE" trid_data
+        emit_rows "$2" trid_history
         cat "$ROOT/cognitive/native/common.triad" "$1"
     } > "$3"
 }
