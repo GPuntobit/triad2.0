@@ -199,6 +199,7 @@ function find_eval(history, name, shape)
     i = 1
     while i <= length(history)
         r = history[i]
+        println("DIAG-EVENT ", i, " ", r[3])
         if same(r[3], "evaluation") && same(r[4], name) && same(r[5], shape)
             item = r
         end
@@ -292,7 +293,12 @@ function memory_projection(data, history)
 end
 
 
+println("DIAG-VERIFY-START")
 validate_data(data)
+println("DIAG-DATA-OK")
 check_journal(history)
+println("DIAG-JOURNAL-OK")
 check_history(data, history)
+println("DIAG-HISTORY-OK")
 memory_projection(data, history)
+println("DIAG-PROJECTION-OK")
