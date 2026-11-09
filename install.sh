@@ -291,6 +291,4 @@ echo "  triad tuo_programma.td          # esegue un programma Triad"
 echo "  triad-cli status                # stato della toolchain"
 echo "  triad-cli test all              # gate completo (conformance + probe)"
 echo ""
-echo "Nota: i comandi di sviluppo (seed generate, ai verify, ext) richiedono"
-echo "Node e si invocano come: node cli/triad-cli.mjs <comando> (fuori dalla"
-echo "promessa zero-install)."
+echo "Nota: i comandi di sviluppo avanzati saranno implementati in Triad nativo."\n
