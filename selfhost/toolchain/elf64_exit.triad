@@ -1,0 +1,91 @@
+# S2.0: deterministic native Triad-Core Linux x86-64 ELF emitter.
+# Produces one line of hexadecimal bytes via println; no unsupported print.
+# Caller appends: image = elf_exit(STATUS); println(image)
+
+function hex_digit(n)
+    digits = "0123456789abcdef"
+    strsub(digits, n + 1, n + 1)
+end
+
+function hex_byte(n)
+    if n < 0 || n > 255
+        exit(1)
+    end
+    high = 0
+    low = n
+    while low >= 16
+        low -= 16
+        high += 1
+    end
+    hex_digit(high) * hex_digit(low)
+end
+
+function zeros(count)
+    out = ""
+    i = 0
+    while i < count
+        out = out * "00"
+        i += 1
+    end
+    out
+end
+
+# Little-endian hex encoding with integer-only quotient (no division).
+function little(n, count)
+    if n < 0
+        exit(1)
+    end
+    out = ""
+    i = 0
+    while i < count
+        quotient = 0
+        remainder = n
+        while remainder >= 256
+            remainder -= 256
+            quotient += 1
+        end
+        out = out * hex_byte(remainder)
+        n = quotient
+        i += 1
+    end
+    if n != 0
+        exit(1)
+    end
+    out
+end
+
+function mov_edi(n)
+    hex_byte(191) * little(n, 4)
+end
+
+function mov_eax(n)
+    hex_byte(184) * little(n, 4)
+end
+
+function syscall_bytes()
+    hex_byte(15) * hex_byte(5)
+end
+
+# 64-byte ELF header, 56-byte PT_LOAD, 12-byte code.
+function elf_exit(status)
+    if status < 0 || status > 255
+        exit(1)
+    end
+    out = ""
+    out = out * hex_byte(127) * hex_byte(69) * hex_byte(76) * hex_byte(70)
+    out = out * hex_byte(2) * hex_byte(1) * hex_byte(1) * zeros(9)
+    out = out * little(2, 2) * little(62, 2) * little(1, 4)
+    # e_entry = 0x400078
+    out = out * hex_byte(120) * hex_byte(0) * hex_byte(64) * zeros(5)
+    out = out * little(64, 8) * zeros(8) * little(0, 4)
+    out = out * little(64, 2) * little(56, 2) * little(1, 2)
+    out = out * little(0, 2) * little(0, 2) * little(0, 2)
+    # PT_LOAD: type 1, flags R|X 5, file offset 0.
+    out = out * little(1, 4) * little(5, 4) * little(0, 8)
+    # p_vaddr and p_paddr = 0x400000.
+    out = out * hex_byte(0) * hex_byte(0) * hex_byte(64) * zeros(5)
+    out = out * hex_byte(0) * hex_byte(0) * hex_byte(64) * zeros(5)
+    out = out * little(132, 8) * little(132, 8) * little(4096, 8)
+    out = out * mov_edi(status) * mov_eax(60) * syscall_bytes()
+    out
+end

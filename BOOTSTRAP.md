@@ -140,6 +140,19 @@ playground and reference interpreter are unavailable.
 See `docs/NO_JAVASCRIPT_MIGRATION.md` for the acceptance contract and
 remaining work.
 
+## S2.0 — first Triad-native ELF machine-code emitter (experimental)
+
+`selfhost/toolchain/elf64_exit.triad` is a bounded **Triad-Core**
+assembler/emitter that produces a full 132-byte Linux x86-64 ELF image
+performing `exit(status)` directly via syscall. No JS, Node or C compiler
+is used. `sh selfhost/toolchain/tests/run.sh` compares a byte-exact
+golden and executes the ELF under the Linux kernel.
+
+**Scope boundary:** this is a small machine-code generation milestone, not a
+Triad source-to-native compiler and **not** a regenerated S0 interpreter.
+The existing seed hex dumps still lack a native source regeneration tool.
+See `selfhost/toolchain/README.md` for next milestones.
+
 ## 8. Compliance Agreement
 The executable specification is `conformance/`: each case is
 ```
