@@ -121,3 +121,14 @@ the remaining power-loss/filesystem limitations.
 
 The example S1 proofs remain conditional on manually supplied premises;
 there is no autonomous rule synthesis or free-text understanding.
+
+## Optional TRID-011 / TRID-012 event store and source-backed unified view
+
+The [versioned event ledger](LEDGER_V1.md) and [S0/S1 unified
+projection](UNIFIED_V1.md) are opt-in research paths, not changes to the
+historical S0 memory format or S1 resolver. The ledger retains SHA-256-chained
+events in immutable-by-convention revisions with deterministic native replay.
+The projection imports S0 fixture and independently verified S0 memory records
+alongside the restricted S1 graph grammar, preserving source metadata and
+separating activation/association data from evidence and proofs. Neither tool
+automatically approves an experimental rule or establishes source reliability.
