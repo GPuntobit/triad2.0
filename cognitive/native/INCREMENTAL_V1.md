@@ -14,8 +14,8 @@ cambiano se una riga viene inserita prima di un'altra.
 
 TRID-013 seleziona in modo deterministico una **chiave naturale**
 in Triad-Core per ogni record importato. L'identificatore v1 è
-`k` seguito dai primi 63 caratteri esadecimali di SHA-256
-della chiave più newline (digest da 252 bit). Il trasporto calcola
+`k` seguito dai primi 40 caratteri esadecimali di SHA-256
+della chiave più newline (digest da 160 bit). Il trasporto calcola
 l'hash ma non decide quale osservazione sia equivalente a un'altra.
 Due chiavi naturali uguali nello stesso snapshot sono rifiutate.
 
