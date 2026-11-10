@@ -65,12 +65,12 @@ fi
 [ ! -s "$WORK/invalid.out" ]
 # Crash before the one pointer rename leaves entire previous history intact.
 cat "$WORK/second.v1" > "$WORK/third.v1"
-printf 'v1|experiment|manual_new|audit|none|proposed|1|none|none|new_test|none|bounded_change\n' >> "$WORK/third.v1"
+printf 'v1|fact|legacy_153|legacy_s0|book_04|asserted_conditional|1|book_04|none|legacy_s0_fixture|none|edge,family,parent,new_child,new_parent,book_04\n' >> "$WORK/third.v1"
 if TRID_TEST_LEDGER_CRASH_AT=before_pointer sh "$JOURNAL" --reconcile "$WORK/third.v1" > "$WORK/crash.out" 2> "$WORK/crash.err"; then
     echo 'TRID stream: injected SIGKILL unexpectedly succeeded' >&2; exit 1
 fi
-# The new explicit experiment has unsupported import origin; reconcile MUST
-# fail before the crash point (the previous revision is unchanged either way).
+# The new source-backed edge is valid. A crash before pointer publication
+# must preserve the old complete chain and permit deterministic recovery.
 [ "$second_ptr" = "$(readlink "$TRID_EVENT_STATE_DIR/.current")" ]
 sh "$JOURNAL" --recover > "$WORK/recovered.out" 2> "$WORK/recovered.err"
 sh "$JOURNAL" --replay > "$WORK/recovered.v1"
