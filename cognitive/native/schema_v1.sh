@@ -42,7 +42,6 @@ trap 'rm -rf -- "$TMP"' EXIT
 } > "$TMP/schema.triad"
 if ! "$ROOT/bin/triad" "$TMP/schema.triad" > "$TMP/validated.out" 2> "$TMP/diagnostics.err"; then
     echo 'TRID schema: native validation failed (no records published)' >&2
-    cat "$TMP/validated.out" >&2
     cat "$TMP/diagnostics.err" >&2
     exit 1
 fi
