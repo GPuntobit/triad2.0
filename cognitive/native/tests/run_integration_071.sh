@@ -111,6 +111,18 @@ fi
 [ ! -s "$W/injected.out" ]
 grep -q 'invalid graph record' "$W/injected.err"
 [ "$before" = "$(readlink "$TRID_EVENT_STATE_DIR/.current")" ]
+# A graph symlink and an aliased state path are not acceptable inputs.
+mkdir "$W/s1-symlink-graph"
+ln -s "$W/s1.graph" "$W/s1-symlink-graph/graph.facts"
+if TRID_GRAPH_STATE_DIR="$W/s1-symlink-graph" sh "$S1" > "$W/symlink-graph.out" 2> "$W/symlink-graph.err"; then
+  echo 'TRID-071: accepted symlink graph input' >&2; exit 1
+fi
+grep -q 'invalid graph path' "$W/symlink-graph.err"
+ln -s "$W/s1-symlink-graph" "$W/state-alias"
+if TRID_GRAPH_STATE_DIR="$W/state-alias" sh "$S1" > "$W/state-alias.out" 2> "$W/state-alias.err"; then
+  echo 'TRID-071: accepted symlink state directory' >&2; exit 1
+fi
+grep -q 'unsafe state symlink' "$W/state-alias.err"
 # Rebuild the old S0 polynomial chain with native Triad after changing the
 # first proof witness. This bypasses a mere checksum mismatch but MUST fail
 # independent proof-grounding; no new state publication is permitted.
