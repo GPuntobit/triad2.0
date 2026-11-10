@@ -26,7 +26,9 @@ store_active() {
     store_id_ok "$ACTIVE_ID" || store_die "invalid revision identifier"
     [ "$tgt" = ".revisions/$ACTIVE_ID" ] || store_die "invalid revision target"
     ACTIVE_DIR="$STATE/.revisions/$ACTIVE_ID"
-    store_check "$ACTIVE_DIR" || store_die "integrity checksum mismatch in $ACTIVE_ID"
+    if [ "${STORE_IGNORE_CHECK:-0}" != 1 ]; then
+      store_check "$ACTIVE_DIR" || store_die "integrity checksum mismatch in $ACTIVE_ID"
+    fi
   elif [ -e "$STATE/.current" ]; then
     store_die "invalid current pointer"
   fi
@@ -73,7 +75,7 @@ store_next() {
 }
 store_crash() {
   # SIGKILL injection only for deterministic regression tests.
-  if [ "$TRID_TEST_CRASH_AT" = "$1" ]; then kill -KILL "$$"; fi
+  if [ "${TRID_TEST_CRASH_AT:-}" = "$1" ]; then kill -KILL "$$"; fi
 }
 store_commit() {
   [ -f "$1" ] && [ ! -L "$1" ] || store_die "invalid journal candidate"
@@ -129,7 +131,12 @@ store_backup() {
   printf 'TRID state: backup %s\n' "$ACTIVE_ID"
 }
 store_restore() {
-  store_open
+  # Explicit restore is allowed after current-file corruption; the selected
+  # backup must still pass SHA-256 and the current pointer must be well formed.
+  STORE_IGNORE_CHECK=1
+  store_dirs
+  store_active
+  STORE_IGNORE_CHECK=0
   req="$1"
   store_id_ok "$req" || store_die "invalid backup identifier"
   backup="$STATE/.backups/$req"
