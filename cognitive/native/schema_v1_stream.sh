@@ -59,8 +59,8 @@ check_pairs() {
         NR > 1 && $3 == previous_id {
             pair=previous_line "\n" $0 "\n"
             if (length(pair) > 5000) exit 2
-            if (size + length(pair) > 5000) { index++; size=0 }
-            filename=out sprintf("%06d",index)
+            if (size + length(pair) > 5000) { bucket++; size=0 }
+            filename=out sprintf("%06d",bucket)
             printf "%s",pair >> filename
             size+=length(pair)
         }
