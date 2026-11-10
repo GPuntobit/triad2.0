@@ -26,6 +26,8 @@ if [ "${TRID_TEST_GRAPH_CRASH_AT:-}" = after_lock ]; then
     kill -KILL "$$"
 fi
 GRAPH="$STATE/graph.facts"
+# Reject even a *dangling* symlink before first-boot cp could follow it.
+[ ! -L "$GRAPH" ] || { echo 'TRID 0.6: invalid graph path' >&2; exit 1; }
 [ -e "$GRAPH" ] || cp "$ROOT/cognitive/native/graph_06.facts" "$GRAPH"
 [ -f "$GRAPH" ] && [ ! -L "$GRAPH" ] && [ -r "$GRAPH" ] ||
     { echo 'TRID 0.6: invalid graph path' >&2; exit 1; }
