@@ -54,6 +54,18 @@ bad "$TMP/duplicate-id"
 printf 'println(:injected)\n' > "$TMP/injected"
 bad "$TMP/injected"
 # Non-lossy fixture bridge for the historical S0 pipe-file domain.
+# Pinpoint first failure in the native legacy importer.
+total=$(wc -l < "$ROOT/cognitive/native/fixture.txt")
+i=1
+while [ "$i" -le "$total" ]; do
+    head -n "$i" "$ROOT/cognitive/native/fixture.txt" > "$TMP/old-prefix"
+    if ! sh "$SCHEMA" --import-s0 "$TMP/old-prefix" > "$TMP/old-prefix.out" 2> "$TMP/old-prefix.err"; then
+        echo "TRID schema: legacy prefix of $i rows failed" >&2
+        cat "$TMP/old-prefix.err" >&2
+        exit 1
+    fi
+    i=$((i + 1))
+done
 sh "$SCHEMA" --import-s0 "$ROOT/cognitive/native/fixture.txt" > "$TMP/imported"
 sh "$SCHEMA" --validate "$TMP/imported" > "$TMP/import-checked"
 cmp "$TMP/imported" "$TMP/import-checked"
