@@ -51,6 +51,18 @@ sed '1s/|parent,mario,luca$/|parent,mario,luca|extra/' "$TMP/v1" > "$TMP/bad-ari
 cat "$TMP/v1" > "$TMP/duplicate-id"
 head -n 1 "$TMP/v1" >> "$TMP/duplicate-id"
 bad "$TMP/duplicate-id"
+# Same typed identity may have a new revision, but cannot change kind.
+cp "$TMP/v1" "$TMP/revised"
+printf 'v1|fact|fact_a|family|book_01|suspended|2|book_01|none|event_new|none|parent,mario,luca\n' >> "$TMP/revised"
+sh "$SCHEMA" --validate "$TMP/revised" > "$TMP/revised.out"
+cmp "$TMP/revised" "$TMP/revised.out"
+cp "$TMP/v1" "$TMP/drift-kind"
+printf 'v1|evidence|fact_a|family|book_01|reviewed_positive|2|book_01|none|event_new|none|reviewed,mario,luca\n' >> "$TMP/drift-kind"
+bad "$TMP/drift-kind"
+cp "$TMP/v1" "$TMP/drift-timestamp"
+printf 'v1|experiment|experiment_b|family|none|proposed|1|none|none|event_new|tomorrow|candidate\n' >> "$TMP/drift-timestamp"
+bad "$TMP/drift-timestamp"
+
 printf 'println(:injected)\n' > "$TMP/injected"
 bad "$TMP/injected"
 # Non-lossy fixture bridge for the historical S0 pipe-file domain.
