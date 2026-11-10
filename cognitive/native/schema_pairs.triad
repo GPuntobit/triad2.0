@@ -11,6 +11,11 @@ function schema_pair_gate(rows, ordered)
         schema_assert(same(previous[3], candidate[3]))
         schema_assert(same(previous[2], candidate[2]))
         schema_assert(same(previous[4], candidate[4]))
+        if strlen(previous[3]) == 41
+            if same(previous[10], "legacy_s0_fixture") || same(previous[10], "s0_verified_projection") || same(previous[10], "s1_graph")
+                schema_assert(same(identity_core(previous), identity_core(candidate)))
+            end
+        end
         if ordered
             schema_assert(schema_newer(candidate[7], previous[7]))
         else
