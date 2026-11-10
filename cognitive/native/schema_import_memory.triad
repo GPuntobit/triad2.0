@@ -1,0 +1,49 @@
+# TRID-012 native bridge for independent S0 verifier projections.
+# Keeps the complete original rule/claim line as an opaque data payload.
+function s0memory_row(r, position)
+    k = r[1]
+    kind = ""
+    source = "none"
+    assumption = "none"
+    dependencies = "none"
+    state = ""
+    if same(k, "rule")
+        schema_assert(length(r) == 6)
+        kind = "rule_candidate"
+        state = r[4]
+        if same(state, "suspended_dependency")
+            state = "suspended"
+        end
+        schema_assert(schema_state(state))
+        if !same(r[6], "")
+            source = r[6]
+            assumption = r[6]
+        end
+    elseif same(k, "claim")
+        schema_assert(length(r) == 10)
+        kind = "proof_node"
+        state = r[10]
+        schema_assert(same(state, "demonstrated_conditional") || same(state, "suspended"))
+        source = r[7]
+        assumption = r[9]
+        dependencies = r[7] * "," * r[8] * "," * r[9]
+    else
+        schema_assert(false)
+    end
+    payload = schema_legacy_payload(r)
+    id = "s0memory_" * string(position)
+    event = ["v1", kind, id, "s0_memory", source, state, "1", assumption, dependencies, "s0_verified_projection", "none", payload]
+    schema_check_row(event)
+    event
+end
+
+function schema_import_s0_memory(rows)
+    events = []
+    i = 1
+    while i <= length(rows)
+        event = s0memory_row(rows[i], i)
+        push!(events, event)
+        i += 1
+    end
+    schema_emit(events)
+end
