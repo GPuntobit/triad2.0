@@ -1,0 +1,214 @@
+# TRID-010 schema v1, strict native Triad-Core parser and canonical serializer.
+# Requires cognitive/native/common.triad. No S1 evaluation of input as code.
+function schema_assert(ok)
+    if !ok
+        exit(1)
+    end
+    ok
+end
+
+function schema_kind(s)
+    same(s, "fact") || same(s, "rule_candidate") || same(s, "evidence") || same(s, "proof_node") || same(s, "proof_edge") || same(s, "revocation") || same(s, "activation_pulse") || same(s, "source") || same(s, "definition") || same(s, "revision") || same(s, "experiment")
+end
+
+function schema_state(s)
+    same(s, "asserted_conditional") || same(s, "experimental") || same(s, "refuted") || same(s, "suspended") || same(s, "unknown") || same(s, "consolidated_conditional") || same(s, "demonstrated_conditional") || same(s, "active") || same(s, "proposed") || same(s, "declared") || same(s, "reviewed_positive") || same(s, "reviewed_negative") || same(s, "approved_conditional") || same(s, "revoked") || same(s, "created")
+end
+
+function schema_number(s)
+    good = strlen(s) > 0 && strlen(s) <= 12
+    i = 1
+    while i <= strlen(s)
+        c = strbyte(s, i)
+        if c < 48 || c > 57
+            good = false
+        end
+        i += 1
+    end
+    if strlen(s) > 1
+        if strbyte(s, 1) == 48
+            good = false
+        end
+    end
+    good
+end
+
+function schema_deps(s)
+    good = true
+    if !same(s, "none")
+        start = 1
+        i = 1
+        n = strlen(s)
+        if n > 256
+            good = false
+        end
+        while i <= n + 1 && good
+            delimiter = i > n
+            if i <= n
+                delimiter = strbyte(s, i) == 44
+            end
+            if delimiter
+                if i == start
+                    good = false
+                else
+                    name = strsub(s, start, i - 1)
+                    if !valid_name(name)
+                        good = false
+                    end
+                end
+                start = i + 1
+            end
+            i += 1
+        end
+    end
+    good
+end
+
+function schema_payload(s)
+    good = strlen(s) > 0 && strlen(s) <= 256
+    i = 1
+    while i <= strlen(s)
+        c = strbyte(s, i)
+        allowed = (c >= 97 && c <= 122) || (c >= 48 && c <= 57) || c == 95 || c == 44 || c == 46 || c == 58 || c == 61 || c == 45
+        if !allowed
+            good = false
+        end
+        i += 1
+    end
+    good
+end
+
+function schema_check_row(r)
+    schema_assert(length(r) == 12)
+    schema_assert(same(r[1], "v1"))
+    schema_assert(schema_kind(r[2]))
+    schema_assert(valid_name(r[3]))
+    schema_assert(valid_name(r[4]))
+    schema_assert(valid_name(r[5]))
+    schema_assert(schema_state(r[6]))
+    schema_assert(schema_number(r[7]))
+    schema_assert(valid_name(r[8]))
+    schema_assert(schema_deps(r[9]))
+    schema_assert(valid_name(r[10]))
+    if !same(r[11], "none")
+        schema_assert(schema_number(r[11]))
+    end
+    schema_assert(schema_payload(r[12]))
+    if same(r[2], "revocation")
+        schema_assert(same(r[6], "revoked"))
+    end
+    if same(r[2], "activation_pulse")
+        schema_assert(same(r[6], "active"))
+    end
+    true
+end
+
+function schema_check_all(rows)
+    i = 1
+    while i <= length(rows)
+        schema_check_row(rows[i])
+        j = 1
+        while j < i
+            a = rows[j]
+            b = rows[i]
+            if same(a[3], b[3])
+                schema_assert(same(a[2], b[2]))
+                schema_assert(!same(a[7], b[7]))
+            end
+            j += 1
+        end
+        i += 1
+    end
+    true
+end
+
+function schema_emit(rows)
+    schema_check_all(rows)
+    i = 1
+    while i <= length(rows)
+        println(join_parts(rows[i], 1, 12))
+        i += 1
+    end
+    true
+end
+
+function schema_legacy_payload(r)
+    s = ""
+    i = 1
+    while i <= length(r)
+        if i > 1
+            s = s * ","
+        end
+        s = s * r[i]
+        i += 1
+    end
+    s
+end
+
+function schema_import_row(r, n)
+    # One-to-one preservation of the original pipe record inside the payload.
+    # Imported input is never automatically a verified world fact.
+    k = r[1]
+    kind = ""
+    state = ""
+    source = "none"
+    assumption = "none"
+    if same(k, "edge")
+        schema_assert(length(r) == 6)
+        kind = "fact"
+        state = "asserted_conditional"
+        source = r[6]
+        assumption = r[6]
+    elseif same(k, "target")
+        schema_assert(length(r) == 4)
+        kind = "definition"
+        state = "declared"
+    elseif same(k, "review")
+        schema_assert(length(r) == 7)
+        kind = "evidence"
+        source = r[7]
+        assumption = r[7]
+        state = "reviewed_negative"
+        if same(r[4], "positive")
+            state = "reviewed_positive"
+        else
+            schema_assert(same(r[4], "negative"))
+        end
+        schema_assert(same(r[3], "train") || same(r[3], "test"))
+    elseif same(k, "definition")
+        schema_assert(length(r) == 6)
+        kind = "definition"
+        state = "declared"
+        source = r[6]
+    elseif same(k, "approve")
+        schema_assert(length(r) == 4)
+        kind = "revision"
+        state = "approved_conditional"
+        source = r[4]
+    elseif same(k, "revoke")
+        schema_assert(length(r) == 2)
+        kind = "revocation"
+        state = "revoked"
+        source = r[2]
+    else
+        schema_assert(false)
+    end
+    i = 2
+    while i <= length(r)
+        schema_assert(valid_name(r[i]))
+        i += 1
+    end
+    payload = schema_legacy_payload(r)
+    id = "legacy_" * string(n)
+    ["v1", kind, id, "legacy_s0", source, state, "1", assumption, "none", "legacy_s0_fixture", "none", payload]
+end
+
+function schema_import_s0(rows)
+    imported = []
+    i = 1
+    while i <= length(rows)
+        push!(imported, schema_import_row(rows[i], i))
+        i += 1
+    end
+    schema_emit(imported)
+end
