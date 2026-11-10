@@ -140,3 +140,13 @@ identities, locked no-op/delta imports and latest-revision projection to the
 TRID-011/012 research tools. It **does not** promote experimental rules or
 suspended proofs into demonstrated knowledge. Use a separate event-state
 directory rather than silently mixing legacy positional import IDs.
+
+## Streaming ledger storage (TRID-011/013 enhancement)
+
+The former 12 KB global ledger limit and 24 KB total delta-input limit
+no longer apply. Each call to the native Triad seed validates a finite
+record window; integrity across windows is checked by native per-ID
+revision and provenance rules. Source input adapters and the native seed
+still have **separate** bounds, while disk/CPU use grows with retained
+copy-on-append revisions. See [LEDGER_V1.md](LEDGER_V1.md) and
+[INCREMENTAL_V1.md](INCREMENTAL_V1.md) for exact boundaries and tests.
