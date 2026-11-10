@@ -4,14 +4,14 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 MODE=${1:-}
 case "$MODE" in
-  --validate|--validate-ledger|--import-s0|--import-s0-memory|--project|--identity)
+  --validate|--validate-ledger|--import-s0|--import-s0-memory|--project|--project-current|--identity)
     [ "$#" -eq 2 ] || { echo 'usage: schema_v1.sh MODE FILE' >&2; exit 2; }
     FILE=$2 ;;
   --delta)
     [ "$#" -eq 3 ] || { echo 'usage: schema_v1.sh --delta HISTORY CANDIDATES' >&2; exit 2; }
     FILE=$2
     OTHER=$3 ;;
-  *) echo 'usage: schema_v1.sh --validate|--validate-ledger|--identity|--delta|--import-s0|--import-s0-memory|--project FILE [CANDIDATES]' >&2; exit 2 ;;
+  *) echo 'usage: schema_v1.sh --validate|--validate-ledger|--identity|--delta|--import-s0|--import-s0-memory|--project|--project-current FILE [CANDIDATES]' >&2; exit 2 ;;
 esac
 export LC_ALL=C
 # Validate byte transport before injecting any data into native Triad source.
@@ -85,6 +85,9 @@ trap 'rm -rf -- "$TMP"' EXIT
         --project)
             cat "$ROOT/cognitive/native/schema_project.triad"
             printf 'schema_project(schema_rows)\n' ;;
+        --project-current)
+            cat "$ROOT/cognitive/native/schema_project.triad"
+            printf 'schema_project_current(schema_rows)\n' ;;
     esac
 } > "$TMP/schema.triad"
 if ! "$ROOT/bin/triad" "$TMP/schema.triad" > "$TMP/validated.out" 2> "$TMP/diagnostics.err"; then
