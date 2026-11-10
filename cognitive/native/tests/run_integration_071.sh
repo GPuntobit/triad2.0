@@ -118,6 +118,13 @@ if TRID_GRAPH_STATE_DIR="$W/s1-symlink-graph" sh "$S1" > "$W/symlink-graph.out" 
   echo 'TRID-071: accepted symlink graph input' >&2; exit 1
 fi
 grep -q 'invalid graph path' "$W/symlink-graph.err"
+mkdir "$W/s1-dangling"
+ln -s "$W/nonexistent-target" "$W/s1-dangling/graph.facts"
+if TRID_GRAPH_STATE_DIR="$W/s1-dangling" sh "$S1" > "$W/dangling.out" 2> "$W/dangling.err"; then
+  echo 'TRID-071: followed dangling source symlink' >&2; exit 1
+fi
+[ ! -e "$W/nonexistent-target" ]
+grep -q 'invalid graph path' "$W/dangling.err"
 ln -s "$W/s1-symlink-graph" "$W/state-alias"
 if TRID_GRAPH_STATE_DIR="$W/state-alias" sh "$S1" > "$W/state-alias.out" 2> "$W/state-alias.err"; then
   echo 'TRID-071: accepted symlink state directory' >&2; exit 1
