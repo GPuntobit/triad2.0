@@ -49,13 +49,14 @@ if [ "$MODE" = --delta ]; then
 fi
 # Line-oriented serialization only; never eval, source, or run input as shell.
 emit_rows() {
+    path_in=$1
     variable=$2
     printf '%s = []\n' "$variable"
     while IFS= read -r line || [ -n "$line" ]; do
         printf 'push!(%s, ["' "$variable"
         printf '%s' "$line" | sed 's/|/", "/g'
         printf '"])\n'
-    done < "$FILE"
+    done < "$path_in"
 }
 TMP=$(mktemp -d)
 trap 'rm -rf -- "$TMP"' EXIT
