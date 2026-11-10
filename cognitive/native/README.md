@@ -75,9 +75,10 @@ The state directory contains `hypotheses.log` (history) and
 3. The native journal uses a **small deterministic polynomial checksum**, NOT
    SHA-256. It detects incidental corruption, **not adversarial tampering**.
    The existing 0.3 Python journal uses SHA-256 and is not binary compatible.
-4. State updates are protected by one lock and staged in temporary files, but
-   the journal and memory file are **not a single transactional filesystem
-   commit**. Keep backups and do not use it for critical data.
+4. TRID-005 publishes a checked pair of journal and memory files via one
+   atomic revision pointer on local Linux filesystems, using a permanent
+   `flock` lock and SHA-256 accidental-corruption checks. This is **not**
+   adversary-resistant authenticity or universal power-loss durability.
 5. Input files must contain ASCII atoms (`[a-z][a-z0-9_]*`) and use
    `|`-delimited records; changing pre-existing evidence after a run causes a
    verification failure rather than automatic truth-maintenance. Append-only
@@ -111,9 +112,12 @@ projections before publishing them. A native verifier debug print has been
 removed. Fault injection checks that failures before publication preserve
 the pre-existing journal and memory bytes.
 
-**Not yet transactional:** journal and memory use two separate renames.
-A crash between them can expose inconsistent revisions. Recovery, backups
-and atomic multi-file publication remain TRID-005 and cannot be claimed here.
+**TRID-005:** the journal and projection are stored together in complete
+revision directories, with a single atomic `.current` pointer. The old
+top-level filenames are compatibility symlinks. Take the state lock for
+consistent pair reads across concurrent commits. See
+[STATE_STORE.md](STATE_STORE.md) for backup, restore, legacy migration and
+the remaining power-loss/filesystem limitations.
 
 The example S1 proofs remain conditional on manually supplied premises;
 there is no autonomous rule synthesis or free-text understanding.

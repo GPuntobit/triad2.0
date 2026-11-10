@@ -7,7 +7,7 @@ trap 'rm -rf "$TMP"' EXIT HUP INT TERM
 mkdir -p "$TMP/mock/cognitive/native" "$TMP/mock/bin"
 cp "$ROOT/cognitive/native/run.sh" "$ROOT/cognitive/native/common.triad" \
    "$ROOT/cognitive/native/discover.triad" "$ROOT/cognitive/native/verify.triad" \
-   "$TMP/mock/cognitive/native/"
+   "$ROOT/cognitive/native/state_store.sh" "$TMP/mock/cognitive/native/"
 cat > "$TMP/mock/bin/triad" <<'EOF'
 #!/bin/sh
 case "$1" in
@@ -32,8 +32,6 @@ chmod +x "$TMP/mock/bin/triad"
 printf 'target|family|grandparent|parent\n' > "$TMP/fixture"
 export TRID_STATE_DIR="$TMP/state"
 sh "$TMP/mock/cognitive/native/run.sh" "$TMP/fixture" > "$TMP/initial.out" 2>&1
-printf '1|0|proof|grandparent|chain|mario|antonio|luca|book_01|book_02|1234\n' > "$TRID_STATE_DIR/hypotheses.log"
-printf 'preexisting memory bytes\n' > "$TRID_STATE_DIR/memory.txt"
 cp "$TRID_STATE_DIR/hypotheses.log" "$TMP/journal-before"
 cp "$TRID_STATE_DIR/memory.txt" "$TMP/memory-before"
 for mode in discovery_failure bad_event verification_failure bad_memory empty_memory; do
