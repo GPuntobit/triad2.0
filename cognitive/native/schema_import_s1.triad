@@ -9,8 +9,13 @@ function s1_atoms(s)
         schema_assert(strbyte(s, i) == 58)
         i += 1
         start = i
-        while i <= n && strbyte(s, i) != 44
-            i += 1
+        done = false
+        while i <= n && !done
+            if strbyte(s, i) == 44
+                done = true
+            else
+                i += 1
+            end
         end
         schema_assert(i > start)
         atom = strsub(s, start, i - 1)
