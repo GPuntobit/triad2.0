@@ -112,8 +112,8 @@ function reconcile_delta(old, incoming)
         if found
             if !reconcile_same_except_revision(previous, row)
                 reconcile_no_auto_promotion(previous, row)
-                row[7] = reconcile_next_revision(previous[7])
-                push!(pending, row)
+                revised = [row[1], row[2], row[3], row[4], row[5], row[6], reconcile_next_revision(previous[7]), row[8], row[9], row[10], row[11], row[12]]
+                push!(pending, revised)
             end
         else
             push!(pending, row)
