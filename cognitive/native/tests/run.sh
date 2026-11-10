@@ -30,6 +30,8 @@ fi
 grep -q 'integrity checksum mismatch' "$TMP/failed.out"
 sh "$ROOT/cognitive/native/tests/run_transport.sh"
 sh "$ROOT/cognitive/native/tests/run_store.sh"
+sh "$ROOT/cognitive/native/tests/run_contract.sh"
+sh "$ROOT/cognitive/native/tests/run_schema_v1.sh"
 if LC_ALL=C grep -E '^(DIAG-|NATIVE |TRID error:|[0-9]+$)' "$M" >/dev/null; then
     echo 'TRID: diagnostics contaminated the committed memory' >&2
     exit 1
