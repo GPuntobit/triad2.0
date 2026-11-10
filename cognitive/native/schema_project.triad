@@ -105,3 +105,27 @@ function schema_project(rows)
     end
     true
 end
+
+
+# Latest-only materialized view; the append-only event history still retains
+# every older revision for audit and exact replay.
+function schema_project_current(rows)
+    schema_check_ledger(rows)
+    i = 1
+    while i <= length(rows)
+        row = rows[i]
+        latest = true
+        j = i + 1
+        while j <= length(rows)
+            if same(row[3], rows[j][3])
+                latest = false
+            end
+            j += 1
+        end
+        if latest
+            println(projection_lane(row) * "|" * projection_status(rows, row) * "|" * join_parts(row, 1, 12))
+        end
+        i += 1
+    end
+    true
+end

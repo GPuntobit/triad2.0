@@ -132,3 +132,11 @@ The projection imports S0 fixture and independently verified S0 memory records
 alongside the restricted S1 graph grammar, preserving source metadata and
 separating activation/association data from evidence and proofs. Neither tool
 automatically approves an experimental rule or establishes source reliability.
+
+## TRID-013: opt-in stable-ID incremental reconciliation
+
+The [incremental v1 contract](INCREMENTAL_V1.md) adds native natural-key
+identities, locked no-op/delta imports and latest-revision projection to the
+TRID-011/012 research tools. It **does not** promote experimental rules or
+suspended proofs into demonstrated knowledge. Use a separate event-state
+directory rather than silently mixing legacy positional import IDs.

@@ -76,3 +76,12 @@ verify exact replay after restart, reject duplicate/nonmonotone updates,
 check a preserved prefix, competing locks, hash tampering and truncation.
 The same-SHA TRID cognitive baseline runs these tests alongside native
 S0 and S1 conformance.
+
+## TRID-013 incremental extension
+
+The optional `journal_v1.sh --reconcile SNAPSHOT.v1` command acquires the same
+permanent lock, verifies the current chain, computes native stable identity
+keys and a conservative delta, and commits only new/revised events. An exact
+repeat returns success without advancing the commit pointer. See
+[INCREMENTAL_V1.md](INCREMENTAL_V1.md). The original `--append` command
+and historical replay remain unchanged.
