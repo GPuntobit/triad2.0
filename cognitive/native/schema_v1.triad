@@ -151,7 +151,6 @@ function schema_legacy_payload(r)
 end
 
 function schema_import_row(r, n)
-    println("DBG import row begin")
     # One-to-one preservation of the original pipe record inside the payload.
     # Imported input is never automatically a verified world fact.
     k = r[1]
@@ -204,23 +203,19 @@ function schema_import_row(r, n)
         schema_assert(valid_name(r[i]))
         i += 1
     end
-    println("DBG import row validated")
     payload = schema_legacy_payload(r)
     id = "legacy_" * string(n)
-    println("DBG import row ready")
-    ["v1", kind, id, "legacy_s0", source, state, "1", assumption, "none", "legacy_s0_fixture", "none", payload]
+    result = ["v1", kind, id, "legacy_s0", source, state, "1", assumption, "none", "legacy_s0_fixture", "none", payload]
+    result
 end
 
 function schema_import_s0(rows)
-    println("DBG import start")
     imported = []
     i = 1
     while i <= length(rows)
         item = schema_import_row(rows[i], i)
-        println("DBG item returned")
         push!(imported, item)
         i += 1
     end
-    println("DBG import collected")
     schema_emit(imported)
 end
