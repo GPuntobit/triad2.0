@@ -1,0 +1,107 @@
+# TRID-012 deterministic read-only projection over validated v1 events.
+# Activation/salience never changes a proof or fact's epistemic status.
+function projection_family(domain)
+    result = domain
+    if same(domain, "legacy_s0") || same(domain, "s0_memory")
+        result = "s0"
+    elseif same(domain, "s1_graph") || same(domain, "s1_association")
+        result = "s1"
+    end
+    result
+end
+
+function projection_dependency_has(dependencies, source)
+    found = false
+    if !same(dependencies, "none")
+        n = strlen(dependencies)
+        start = 1
+        i = 1
+        while i <= n + 1
+            separator = i > n
+            if i <= n
+                separator = strbyte(dependencies, i) == 44
+            end
+            if separator
+                if i > start
+                    item = strsub(dependencies, start, i - 1)
+                    if same(item, source)
+                        found = true
+                    end
+                end
+                start = i + 1
+            end
+            i += 1
+        end
+    end
+    found
+end
+
+function projection_uses_source(row, source)
+    same(row[5], source) || same(row[8], source) || projection_dependency_has(row[9], source)
+end
+
+function projection_revoked(rows, row)
+    revoked = false
+    family = projection_family(row[4])
+    i = 1
+    while i <= length(rows)
+        event = rows[i]
+        if same(event[2], "revocation") && same(event[6], "revoked")
+            if same(family, projection_family(event[4]))
+                source = event[5]
+                if !same(source, "none")
+                    if projection_uses_source(row, source)
+                        revoked = true
+                    end
+                end
+            end
+        end
+        i += 1
+    end
+    revoked
+end
+
+function projection_lane(row)
+    kind = row[2]
+    lane = "metadata"
+    if same(kind, "fact") || same(kind, "evidence")
+        lane = "evidence"
+        if same(row[4], "s1_association")
+            lane = "activation_network"
+        end
+    elseif same(kind, "proof_node") || same(kind, "proof_edge")
+        lane = "proofs"
+    elseif same(kind, "rule_candidate")
+        lane = "hypotheses"
+    elseif same(kind, "revocation")
+        lane = "revocations"
+    elseif same(kind, "activation_pulse")
+        lane = "activation"
+    end
+    lane
+end
+
+function projection_status(rows, row)
+    state = row[6]
+    kind = row[2]
+    eligible = same(kind, "fact") || same(kind, "evidence") || same(kind, "proof_node") || same(kind, "proof_edge") || same(kind, "rule_candidate")
+    if eligible && !same(state, "refuted")
+        if projection_revoked(rows, row)
+            state = "suspended"
+        end
+    end
+    state
+end
+
+function schema_project(rows)
+    schema_check_ledger(rows)
+    i = 1
+    while i <= length(rows)
+        row = rows[i]
+        lane = projection_lane(row)
+        effective = projection_status(rows, row)
+        println(lane * "|" * effective * "|" * join_parts(row, 1, 12))
+        i += 1
+    end
+    true
+end

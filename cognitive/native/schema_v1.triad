@@ -245,7 +245,7 @@ function schema_newer(a, b)
     greater
 end
 
-function schema_emit_ledger(rows)
+function schema_check_ledger(rows)
     schema_check_all(rows)
     i = 1
     while i <= length(rows)
@@ -261,6 +261,11 @@ function schema_emit_ledger(rows)
         end
         i += 1
     end
+    true
+end
+
+function schema_emit_ledger(rows)
+    schema_check_ledger(rows)
     i = 1
     while i <= length(rows)
         println(join_parts(rows[i], 1, 12))

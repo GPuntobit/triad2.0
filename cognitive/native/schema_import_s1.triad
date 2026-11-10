@@ -1,0 +1,97 @@
+# TRID-012 native import of the bounded S1 graph_06 fact syntax.
+# Input strings are carried as data, never evaluated as Triad source.
+function s1_atoms(s)
+    parts = []
+    i = 1
+    n = strlen(s)
+    schema_assert(n > 0)
+    while i <= n
+        schema_assert(strbyte(s, i) == 58)
+        i += 1
+        start = i
+        done = false
+        while i <= n && !done
+            if strbyte(s, i) == 44
+                done = true
+            else
+                i += 1
+            end
+        end
+        schema_assert(i > start)
+        atom = strsub(s, start, i - 1)
+        schema_assert(schema_name(atom))
+        push!(parts, atom)
+        if i <= n
+            schema_assert(strbyte(s, i) == 44)
+            i += 1
+            schema_assert(i <= n)
+            schema_assert(strbyte(s, i) == 32)
+            i += 1
+        end
+    end
+    parts
+end
+
+function s1_event(line, position)
+    n = strlen(line)
+    schema_assert(n > 10)
+    schema_assert(same(strsub(line, 1, 5), "fact "))
+    schema_assert(strbyte(line, n) == 41)
+    p = 6
+    while p < n && strbyte(line, p) != 40
+        p += 1
+    end
+    schema_assert(p < n)
+    predicate = strsub(line, 6, p - 1)
+    args = s1_atoms(strsub(line, p + 1, n - 1))
+    kind = ""
+    domain = "s1_graph"
+    source = "none"
+    state = ""
+    assumption = "none"
+    if same(predicate, "evidence")
+        schema_assert(length(args) == 3)
+        kind = "evidence"
+        source = args[3]
+        assumption = args[3]
+        state = "asserted_conditional"
+    elseif same(predicate, "association")
+        schema_assert(length(args) == 2)
+        kind = "fact"
+        domain = "s1_association"
+        state = "declared"
+    elseif same(predicate, "revoked")
+        schema_assert(length(args) == 1)
+        kind = "revocation"
+        source = args[1]
+        state = "revoked"
+    elseif same(predicate, "rule_state")
+        schema_assert(length(args) == 2)
+        kind = "rule_candidate"
+        state = args[2]
+        schema_assert(same(state, "experimental") || same(state, "refuted") || same(state, "consolidated_conditional"))
+    else
+        schema_assert(false)
+    end
+    payload = predicate
+    i = 1
+    while i <= length(args)
+        payload = payload * "," * args[i]
+        i += 1
+    end
+    id = "s1graph_" * string(position)
+    event = ["v1", kind, id, domain, source, state, "1", assumption, "none", "s1_graph", "none", payload]
+    schema_check_row(event)
+    event
+end
+
+function schema_import_s1(lines)
+    events = []
+    i = 1
+    while i <= length(lines)
+        event = s1_event(lines[i], i)
+        push!(events, event)
+        i += 1
+    end
+    schema_emit(events)
+end

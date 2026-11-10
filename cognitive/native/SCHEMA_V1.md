@@ -1,9 +1,11 @@
 # TRID-010 — common native cognitive record schema v1
 
 **Status:** bounded, typed research data format and native Triad-Core
-validation/serialization. This is **not** a unified persistent database,
-append-only journal, proof checker, or S0/S1 projection engine. Those are
-TRID-011, TRID-012, TRID-020 and successors.
+validation/serialization. The separately implemented
+[TRID-011 ledger](LEDGER_V1.md) and
+[TRID-012 S0/S1 projection](UNIFIED_V1.md) use this format. The schema
+itself is **not** a transactional database, independently authenticated
+proof checker, or autonomous knowledge-consolidation engine.
 
 ## Canonical representation
 
@@ -84,6 +86,9 @@ replace the original data. The mapping is idempotent for the same fixture;
 line insertions can renumber legacy_N IDs, so it is **not** a global
 cross-import identity service.
 
-Old S1 graph_06.facts and Python JSONL 0.3/0.4 imports remain separate
-tasks and are not silently treated as this format (TRID-012/014).
-No native durable writing or rollback is claimed for the schema parser.
+A bounded explicit import for the original S1 graph_06.facts grammar and for
+verified S0 rule/claim projections is now available through TRID-012.
+Python JSONL 0.3/0.4 migration remains a separate task (TRID-014);
+no arbitrary S1 code or free text is accepted as an event. The schema parser
+still has no native direct-write API; TRID-011 provides separate POSIX/Linux
+durable event transport and replay.
