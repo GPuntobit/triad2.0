@@ -28,12 +28,13 @@ validated bytes through the TRID-011 ledger.
    Association links are **not** converted into proven conclusions or
    observed activation pulses.
 
-All generated events have a stable identity only for an *unchanged*
-snapshot input and row order. Changing the input before reimport can
-reassign _N identities. Reimporting the same snapshot into the same
-journal is intentionally rejected as a duplicate, not interpreted as a
-second independent observation. Versioned cross-snapshot reconciliation
-and import from Python JSONL are future milestones (TRID-013/014).
+The original --build/--ingest snapshot mode still generates positional
+_N identities; input reordering can change those names, and repeated
+--ingest is rejected as a duplicate. The new opt-in
+[TRID-013 reconciliation mode](INCREMENTAL_V1.md) derives stable natural-key
+identities and appends only changed observations with monotone revisions.
+Reconciliation against an older *positional* ledger fails closed instead of
+silently guessing a migration. Python JSONL import remains TRID-014.
 
 ## Commands
 
