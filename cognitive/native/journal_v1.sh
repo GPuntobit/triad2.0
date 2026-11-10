@@ -117,7 +117,7 @@ mkdir "$TMP/stage"
 if [ -n "$SOURCE" ]; then cp "$SOURCE" "$TMP/stage/events.log"; else : > "$TMP/stage/events.log"; fi
 while IFS= read -r record || [ -n "$record" ]; do
   n=$((n + 1))
-  [ "$n" -le 1000 ] || die 'bounded event count exceeded'
+
   digest=$(printf '%s\n' "$n|$last|$record" | sha256sum | cut -d ' ' -f1)
   printf '%s|%s|%s|%s\n' "$n" "$last" "$digest" "$record" >> "$TMP/stage/events.log"
   last=$digest
