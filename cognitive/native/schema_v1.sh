@@ -2,10 +2,10 @@
 # POSIX byte transport only; validation, semantics and migration run in Triad.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-[ "$#" -eq 2 ] || { echo 'usage: schema_v1.sh --validate|--import-s0 FILE' >&2; exit 2; }
+[ "$#" -eq 2 ] || { echo 'usage: schema_v1.sh --validate|--validate-ledger|--import-s0 FILE' >&2; exit 2; }
 MODE=$1
 FILE=$2
-case "$MODE" in --validate|--import-s0) ;; *) echo 'TRID schema: unknown mode' >&2; exit 2 ;; esac
+case "$MODE" in --validate|--validate-ledger|--import-s0) ;; *) echo 'TRID schema: unknown mode' >&2; exit 2 ;; esac
 [ -f "$FILE" ] && [ -r "$FILE" ] || { echo 'TRID schema: input not readable' >&2; exit 2; }
 [ ! -L "$FILE" ] || { echo 'TRID schema: symlink input forbidden' >&2; exit 2; }
 export LC_ALL=C
@@ -37,6 +37,7 @@ trap 'rm -rf -- "$TMP"' EXIT
     cat "$ROOT/cognitive/native/schema_v1.triad"
     case "$MODE" in
         --validate) printf 'schema_emit(schema_rows)\n' ;;
+        --validate-ledger) printf 'schema_emit_ledger(schema_rows)\n' ;;
         --import-s0) printf 'schema_import_s0(schema_rows)\n' ;;
     esac
 } > "$TMP/schema.triad"
