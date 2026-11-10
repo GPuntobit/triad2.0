@@ -57,18 +57,27 @@ They are **not a cryptographic signature, remote trust anchor, immutable
 storage policy, or protection against an attacker who can rewrite both
 events and hashes**. Separate backups and suitable permissions remain needed.
 
-The current research seed and schema transport bound the entire v1 payload
-stream to 12,000 bytes and the chain to at most 1,000 events. This is not an
-unbounded event database; the actual byte budget is typically reached first.
-No external clocks, random IDs, full S1 graph import, automatic approval
-or semantic truth promotion are performed. Integration with S0 and S1
-projections is TRID-012, not a claim of this ledger alone.
+The former global 12,000-byte and 1,000-event limits have been removed
+from the ledger. Native record validation now runs in bounded windows and
+checks same-ID revision boundaries across them, so a longer history is
+verified without materializing the whole set in one Triad seed invocation.
+Replay is still deterministic, byte-exact and fail-closed. The incremental
+bridge likewise supports old+candidate inputs beyond 24,000 bytes through
+native delta windows. A current projection folds revocations across windows.
+
+This is **not** an infinitely scalable storage engine: generations are
+complete copy-on-append snapshots, and validation still scans the history.
+Host disk capacity, filesystem performance, time, number of revisions and
+native per-record/seed limits remain. Source import adapters have their own
+separate size bounds. No external clocks, source authentication, automatic
+approval or semantic truth promotion are introduced.
 
 ## Verification
 
 Run:
 
     sh cognitive/native/tests/run_ledger_v1.sh
+    sh cognitive/native/tests/run_stream_v1.sh
     sh cognitive/native/tests/run.sh
 
 The tests inject SIGKILL at after_stage, before_pointer and after_pointer,
