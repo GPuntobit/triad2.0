@@ -9,10 +9,7 @@ function s1_atoms(s)
         schema_assert(strbyte(s, i) == 58)
         i += 1
         start = i
-        while i <= n
-            if strbyte(s, i) == 44
-                break
-            end
+        while i <= n && strbyte(s, i) != 44
             i += 1
         end
         schema_assert(i > start)
@@ -36,10 +33,7 @@ function s1_event(line, position)
     schema_assert(same(strsub(line, 1, 5), "fact "))
     schema_assert(strbyte(line, n) == 41)
     p = 6
-    while p < n
-        if strbyte(line, p) == 40
-            break
-        end
+    while p < n && strbyte(line, p) != 40
         p += 1
     end
     schema_assert(p < n)
