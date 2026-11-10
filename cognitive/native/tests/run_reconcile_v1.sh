@@ -137,4 +137,19 @@ if sh "$UNIFY" --reconcile "$WORK/first.fixture" "$WORK/first.memory" "$WORK/fir
   echo 'TRID-013: accepted implicit rewrite of positional history' >&2; exit 1
 fi
 grep -q 'native' "$WORK/legacy.err"
+# Integration against native S0 independently verified output and the full
+# restricted S1 0.6 graph, rather than solely the small synthetic fixtures.
+export TRID_STATE_DIR="$WORK/full-s0"
+sh "$ROOT/cognitive/native/run.sh" "$ROOT/cognitive/native/fixture.txt" > "$WORK/full-s0.out"
+export TRID_EVENT_STATE_DIR="$WORK/full-v1"
+sh "$UNIFY" --build "$ROOT/cognitive/native/fixture.txt" \
+  "$TRID_STATE_DIR/.current/memory.txt" \
+  "$ROOT/cognitive/native/graph_06.facts" > "$WORK/full-raw"
+sh "$NORMALIZE" "$WORK/full-raw" > "$WORK/full-stable"
+sh "$UNIFY" --reconcile "$ROOT/cognitive/native/fixture.txt" \
+  "$TRID_STATE_DIR/.current/memory.txt" "$ROOT/cognitive/native/graph_06.facts"
+sh "$JOURNAL" --replay > "$WORK/full-replayed"
+cmp "$WORK/full-stable" "$WORK/full-replayed"
+sh "$UNIFY" --project-current "$WORK/full-replayed" > "$WORK/full-current"
+[ "$(wc -l < "$WORK/full-current")" -eq "$(wc -l < "$WORK/full-replayed")" ]
 echo 'TRID-013 stable IDs, monotone incremental replay and no auto-promotion: PASS'
