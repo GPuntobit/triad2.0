@@ -27,9 +27,9 @@ EOF
 sh "$UNIFY" --build "$WORK/first.fixture" "$WORK/first.memory" "$WORK/first.graph" > "$WORK/first.import.v1"
 sh "$NORMALIZE" "$WORK/first.import.v1" > "$WORK/first.stable.v1"
 [ "$(wc -l < "$WORK/first.stable.v1")" -eq 9 ]
-if grep -v -E '^v1[|][a-z_]+[|]k[a-f0-9]{63}[|]' "$WORK/first.stable.v1" > "$WORK/bad-stable"; then
+if grep -v -E '^v1[|][a-z_]+[|]k[a-f0-9]{40}[|]' "$WORK/first.stable.v1" > "$WORK/bad-stable"; then
   if [ -s "$WORK/bad-stable" ]; then
-    echo 'TRID-013: normalized ID is not a stable 252-bit digest' >&2; exit 1
+    echo 'TRID-013: normalized ID is not a stable 160-bit digest' >&2; exit 1
   fi
 fi
 sh "$UNIFY" --reconcile "$WORK/first.fixture" "$WORK/first.memory" "$WORK/first.graph"
