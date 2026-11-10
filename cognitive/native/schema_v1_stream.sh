@@ -53,6 +53,7 @@ check_pairs() {
     input=$1
     action=$2
     LC_ALL=C sort -s -t '|' -k3,3 "$input" > "$TMP/sorted"
+    rm -rf -- "$TMP/pairs"
     mkdir "$TMP/pairs"
     if ! awk -F '|' -v out="$TMP/pairs/pair." '
         NR > 1 && $3 == previous_id {
