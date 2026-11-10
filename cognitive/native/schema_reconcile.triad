@@ -1,0 +1,157 @@
+# TRID-013 native incremental reconciliation over TRID-011 event history.
+# Input candidate IDs were obtained from native logical keys + SHA-256 bytes.
+# Only new/changed source records become new ledger revisions.
+
+function reconcile_managed_origin(s)
+    same(s, "legacy_s0_fixture") || same(s, "s0_verified_projection") || same(s, "s1_graph")
+end
+
+function reconcile_stable_id(s)
+    good = strlen(s) == 41
+    if good
+        good = strbyte(s, 1) == 107
+        i = 2
+        while i <= strlen(s)
+            b = strbyte(s, i)
+            if !((b >= 97 && b <= 102) || (b >= 48 && b <= 57))
+                good = false
+            end
+            i += 1
+        end
+    end
+    good
+end
+
+function reconcile_same_except_revision(a, b)
+    eq = true
+    i = 1
+    while i <= 12
+        if i != 7
+            if !same(a[i], b[i])
+                eq = false
+            end
+        end
+        i += 1
+    end
+    eq
+end
+
+function reconcile_next_revision(s)
+    schema_assert(schema_number(s))
+    n = 0
+    i = 1
+    while i <= strlen(s)
+        n = n * 10 + strbyte(s, i) - 48
+        i += 1
+    end
+    next = string(n + 1)
+    schema_assert(schema_number(next))
+    next
+end
+
+function reconcile_no_auto_promotion(old, candidate)
+    # A changed source snapshot is not a human approval or proof.
+    if same(old[2], "rule_candidate")
+        if !same(old[6], "consolidated_conditional") && same(candidate[6], "consolidated_conditional")
+            schema_assert(false)
+        end
+        if !same(old[6], "demonstrated_conditional") && same(candidate[6], "demonstrated_conditional")
+            schema_assert(false)
+        end
+    end
+    if same(old[2], "proof_node") || same(old[2], "proof_edge")
+        if !same(old[6], "demonstrated_conditional") && same(candidate[6], "demonstrated_conditional")
+            schema_assert(false)
+        end
+    end
+    true
+end
+
+function reconcile_delta(old, incoming)
+    schema_check_ledger(old)
+    schema_check_ledger(incoming)
+    # Require a newly provisioned stable-ID import namespace. Do not
+    # silently migrate previous positional IDs into another identity.
+    i = 1
+    while i <= length(old)
+        r = old[i]
+        if reconcile_managed_origin(r[10])
+            schema_assert(reconcile_stable_id(r[3]))
+        end
+        i += 1
+    end
+    i = 1
+    while i <= length(incoming)
+        schema_assert(reconcile_managed_origin(incoming[i][10]))
+        schema_assert(reconcile_stable_id(incoming[i][3]))
+        schema_assert(same(incoming[i][7], "1"))
+        i += 1
+    end
+    # Confirm the candidate key really hashes to the same logical record
+    # as any previously committed revision sharing that ID. The shell
+    # separately computes the SHA digest from the native identity key.
+    pending = []
+    i = 1
+    while i <= length(incoming)
+        row = incoming[i]
+        found = false
+        previous = row
+        j = 1
+        while j <= length(old)
+            item = old[j]
+            if same(item[3], row[3])
+                schema_assert(reconcile_managed_origin(item[10]))
+                schema_assert(same(identity_core(item), identity_core(row)))
+                schema_assert(same(item[2], row[2]))
+                schema_assert(same(item[4], row[4]))
+                found = true
+                previous = item
+            end
+            j += 1
+        end
+        if found
+            if !reconcile_same_except_revision(previous, row)
+                reconcile_no_auto_promotion(previous, row)
+                revised = [row[1], row[2], row[3], row[4], row[5], row[6], reconcile_next_revision(previous[7]), row[8], row[9], row[10], row[11], row[12]]
+                push!(pending, revised)
+            end
+        else
+            push!(pending, row)
+        end
+        i += 1
+    end
+    # Validate complete proposed replay BEFORE emitting any records.
+    combined = []
+    i = 1
+    while i <= length(old)
+        push!(combined, old[i])
+        i += 1
+    end
+    i = 1
+    while i <= length(pending)
+        push!(combined, pending[i])
+        i += 1
+    end
+    schema_check_ledger(combined)
+    i = 1
+    while i <= length(pending)
+        println(join_parts(pending[i], 1, 12))
+        i += 1
+    end
+    true
+end
+
+
+# Used to verify every historical managed event before the indexer selects
+# the latest version for incremental comparison. No positional-ID migration.
+function reconcile_check_managed(rows)
+    i = 1
+    while i <= length(rows)
+        schema_check_row(rows[i])
+        if reconcile_managed_origin(rows[i][10])
+            schema_assert(reconcile_stable_id(rows[i][3]))
+        end
+        i += 1
+    end
+    true
+end

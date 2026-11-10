@@ -121,3 +121,32 @@ the remaining power-loss/filesystem limitations.
 
 The example S1 proofs remain conditional on manually supplied premises;
 there is no autonomous rule synthesis or free-text understanding.
+
+## Optional TRID-011 / TRID-012 event store and source-backed unified view
+
+The [versioned event ledger](LEDGER_V1.md) and [S0/S1 unified
+projection](UNIFIED_V1.md) are opt-in research paths, not changes to the
+historical S0 memory format or S1 resolver. The ledger retains SHA-256-chained
+events in immutable-by-convention revisions with deterministic native replay.
+The projection imports S0 fixture and independently verified S0 memory records
+alongside the restricted S1 graph grammar, preserving source metadata and
+separating activation/association data from evidence and proofs. Neither tool
+automatically approves an experimental rule or establishes source reliability.
+
+## TRID-013: opt-in stable-ID incremental reconciliation
+
+The [incremental v1 contract](INCREMENTAL_V1.md) adds native natural-key
+identities, locked no-op/delta imports and latest-revision projection to the
+TRID-011/012 research tools. It **does not** promote experimental rules or
+suspended proofs into demonstrated knowledge. Use a separate event-state
+directory rather than silently mixing legacy positional import IDs.
+
+## Streaming ledger storage (TRID-011/013 enhancement)
+
+The former 12 KB global ledger limit and 24 KB total delta-input limit
+no longer apply. Each call to the native Triad seed validates a finite
+record window; integrity across windows is checked by native per-ID
+revision and provenance rules. Source input adapters and the native seed
+still have **separate** bounds, while disk/CPU use grows with retained
+copy-on-append revisions. See [LEDGER_V1.md](LEDGER_V1.md) and
+[INCREMENTAL_V1.md](INCREMENTAL_V1.md) for exact boundaries and tests.

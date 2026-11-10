@@ -33,6 +33,9 @@ sh "$ROOT/cognitive/native/tests/run_store.sh"
 sh "$ROOT/cognitive/native/tests/run_contract.sh"
 sh "$ROOT/cognitive/native/tests/run_schema_v1.sh"
 sh "$ROOT/cognitive/native/tests/run_ledger_v1.sh"
+sh "$ROOT/cognitive/native/tests/run_unify_v1.sh"
+sh "$ROOT/cognitive/native/tests/run_reconcile_v1.sh"
+sh "$ROOT/cognitive/native/tests/run_stream_v1.sh"
 if LC_ALL=C grep -E '^(DIAG-|NATIVE |TRID error:|[0-9]+$)' "$M" >/dev/null; then
     echo 'TRID: diagnostics contaminated the committed memory' >&2
     exit 1

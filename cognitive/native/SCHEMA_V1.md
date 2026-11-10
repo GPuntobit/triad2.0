@@ -1,9 +1,11 @@
 # TRID-010 — common native cognitive record schema v1
 
 **Status:** bounded, typed research data format and native Triad-Core
-validation/serialization. This is **not** a unified persistent database,
-append-only journal, proof checker, or S0/S1 projection engine. Those are
-TRID-011, TRID-012, TRID-020 and successors.
+validation/serialization. The separately implemented
+[TRID-011 ledger](LEDGER_V1.md) and
+[TRID-012 S0/S1 projection](UNIFIED_V1.md) use this format. The schema
+itself is **not** a transactional database, independently authenticated
+proof checker, or autonomous knowledge-consolidation engine.
 
 ## Canonical representation
 
@@ -67,12 +69,21 @@ layer; the schema alone does not authorize promotion in memory.
     sh cognitive/native/schema_v1.sh --import-s0 cognitive/native/fixture.txt
     sh cognitive/native/tests/run_schema_v1.sh
 
-The POSIX wrapper only rejects hostile bytes and serializes input rows
-as safe Triad string literals. Native functions in schema_v1.triad
-validate all rows before output and reconstruct the **same 12 fields in
-their original order**, byte for byte. An invalid input causes nonzero
-exit and *no published normalized records*. No Python/Node/LLM inference
-runs on the data.
+The POSIX wrapper rejects unsafe bytes and serializes safe input into
+bounded Triad source windows. Native functions in schema_v1.triad validate
+the 12 fields, check all same-ID revisions across byte windows and preserve
+the original order and bytes. Large histories are divided on disk without
+a global byte ceiling in the validation/replay paths; native code performs
+the semantic checks at every window boundary. For current projections a
+Triad reduction carries effective revocation status across windows.
+Invalid input fails before *any normalized stdout is published*.
+No Python/Node/LLM inference runs on the data.
+
+The individual legacy --import-s0/--import-s0-memory adapters retain
+source-input bounds; the removal of the ledger limit does not itself
+make arbitrary legacy source files or individual records unbounded.
+See [LEDGER_V1.md](LEDGER_V1.md) for storage costs and
+[INCREMENTAL_V1.md](INCREMENTAL_V1.md) for replay/delta windows.
 
 For the old S0 fixture format, --import-s0 emits deterministic
 identifiers legacy_1, legacy_2, etc., in original line order. The entire
@@ -84,6 +95,9 @@ replace the original data. The mapping is idempotent for the same fixture;
 line insertions can renumber legacy_N IDs, so it is **not** a global
 cross-import identity service.
 
-Old S1 graph_06.facts and Python JSONL 0.3/0.4 imports remain separate
-tasks and are not silently treated as this format (TRID-012/014).
-No native durable writing or rollback is claimed for the schema parser.
+A bounded explicit import for the original S1 graph_06.facts grammar and for
+verified S0 rule/claim projections is now available through TRID-012.
+Python JSONL 0.3/0.4 migration remains a separate task (TRID-014);
+no arbitrary S1 code or free text is accepted as an event. The schema parser
+still has no native direct-write API; TRID-011 provides separate POSIX/Linux
+durable event transport and replay.
