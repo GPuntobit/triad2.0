@@ -65,7 +65,9 @@ done
 # Per-window size only; no whole-ledger or whole-snapshot byte cap.
 # The window driver never asks this process to parse more than 7 KiB.
 if [ "${TRID_SCHEMA_WINDOW:-0}" = 1 ]; then
-  total=$(( $(wc -c < "$FILE") + $(test -z "${OTHER:-}" || wc -c < "$OTHER") + $(test -z "${THIRD:-}" || wc -c < "$THIRD") ))
+  total=$(wc -c < "$FILE")
+  if [ -n "${OTHER:-}" ]; then total=$((total + $(wc -c < "$OTHER"))); fi
+  if [ -n "${THIRD:-}" ]; then total=$((total + $(wc -c < "$THIRD"))); fi
   [ "$total" -le 8000 ] ||
     { echo 'TRID schema: native window budget exceeded' >&2; exit 2; }
 fi
