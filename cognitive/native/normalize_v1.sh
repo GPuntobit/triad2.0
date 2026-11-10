@@ -13,7 +13,7 @@ TMP=$(mktemp -d)
 trap 'rm -rf -- "$TMP"' EXIT
 sh "$ROOT/cognitive/native/schema_v1.sh" --identity "$SOURCE" > "$TMP/keys"
 # The keys are selected by native Triad. SHA-256 is only byte identity
-# transport; keep one alphabetic prefix plus 63 hex digits (252 bits).
+# transport; keep one alphabetic prefix plus 40 hex digits (160 bits).
 [ "$(wc -l < "$TMP/keys")" -eq "$(wc -l < "$SOURCE")" ] ||
     { echo 'TRID identity: native key count mismatch' >&2; exit 1; }
 exec 8< "$TMP/keys"
@@ -24,7 +24,7 @@ while IFS= read -r line || [ -n "$line" ]; do
         exit 1
     fi
     [ -n "$key" ] || { echo 'TRID identity: empty key' >&2; exit 1; }
-    digest=$(printf '%s\n' "$key" | sha256sum | cut -d ' ' -f1 | cut -c1-63)
+    digest=$(printf '%s\n' "$key" | sha256sum | cut -d ' ' -f1 | cut -c1-40)
     id="k$digest"
     printf '%s\n' "$line" |
       awk -F '[|]' -v id="$id" '
