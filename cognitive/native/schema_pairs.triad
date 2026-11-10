@@ -1,0 +1,22 @@
+# TRID 0.6+ streaming conformance: each adjacent pair belongs to ONE ID.
+# POSIX sort performs only key-indexed data transport; Triad decides validity.
+function schema_pair_gate(rows, ordered)
+    schema_assert(length(rows) % 2 == 0)
+    i = 1
+    while i <= length(rows)
+        previous = rows[i]
+        candidate = rows[i + 1]
+        schema_check_row(previous)
+        schema_check_row(candidate)
+        schema_assert(same(previous[3], candidate[3]))
+        schema_assert(same(previous[2], candidate[2]))
+        schema_assert(same(previous[4], candidate[4]))
+        if ordered
+            schema_assert(schema_newer(candidate[7], previous[7]))
+        else
+            schema_assert(!same(previous[7], candidate[7]))
+        end
+        i += 2
+    end
+    true
+end
