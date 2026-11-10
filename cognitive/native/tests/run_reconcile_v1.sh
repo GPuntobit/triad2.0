@@ -151,6 +151,12 @@ sh "$UNIFY" --reconcile "$ROOT/cognitive/native/fixture.txt" \
   "$TRID_STATE_DIR/.current/memory.txt" "$ROOT/cognitive/native/graph_06.facts"
 sh "$JOURNAL" --replay > "$WORK/full-replayed"
 cmp "$WORK/full-stable" "$WORK/full-replayed"
+# A complete, unchanged native S0 + S1 snapshot must be idempotent too.
+full_pointer=$(readlink "$TRID_EVENT_STATE_DIR/.current")
+sh "$UNIFY" --reconcile "$ROOT/cognitive/native/fixture.txt" \
+  "$TRID_STATE_DIR/.current/memory.txt" "$ROOT/cognitive/native/graph_06.facts" > "$WORK/full-noop.out" 2> "$WORK/full-noop.err"
+[ "$full_pointer" = "$(readlink "$TRID_EVENT_STATE_DIR/.current")" ]
+grep -q 'no changes' "$WORK/full-noop.err"
 sh "$UNIFY" --project-current "$WORK/full-replayed" > "$WORK/full-current"
 [ "$(wc -l < "$WORK/full-current")" -eq "$(wc -l < "$WORK/full-replayed")" ]
 echo 'TRID-013 stable IDs, monotone incremental replay and no auto-promotion: PASS'
