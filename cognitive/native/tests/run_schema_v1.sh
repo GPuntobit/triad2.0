@@ -19,6 +19,17 @@ v1|definition|def_a|family|book_01|declared|1|none|none|event_i|none|parent_defi
 v1|revision|revision_a|family|none|created|1|none|fact_a|event_j|1794300000|baseline
 v1|experiment|experiment_a|family|none|proposed|1|none|rule_a|event_k|none|candidate_holdout
 EOF
+# Locate the first failing positive prefix without weakening the golden.
+i=1
+while [ "$i" -le 11 ]; do
+    head -n "$i" "$TMP/v1" > "$TMP/prefix"
+    if ! sh "$SCHEMA" --validate "$TMP/prefix" > "$TMP/prefix.out" 2> "$TMP/prefix.err"; then
+        echo "TRID schema: valid prefix of $i records failed" >&2
+        cat "$TMP/prefix.err" >&2
+        exit 1
+    fi
+    i=$((i + 1))
+done
 sh "$SCHEMA" --validate "$TMP/v1" > "$TMP/canonical"
 cmp "$TMP/v1" "$TMP/canonical"
 # Run the canonical bytes through the native parser a second time.
