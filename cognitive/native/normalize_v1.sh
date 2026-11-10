@@ -35,6 +35,9 @@ while IFS= read -r line || [ -n "$line" ]; do
 done < "$SOURCE"
 # Normalize order, never sort. Check schema and all canonical bytes before
 # making a single validated snapshot visible to downstream consumers.
+if [ "${TRID_DIAG_SIZE:-0}" = 1 ]; then
+  printf 'TRID-013 full fixture normalized_bytes=%s\n' "$(wc -c < "$TMP/normalized.v1" | tr -d ' ')" >&2
+fi
 sh "$ROOT/cognitive/native/schema_v1.sh" --validate-ledger "$TMP/normalized.v1" > "$TMP/checked.v1"
 cmp -s "$TMP/normalized.v1" "$TMP/checked.v1" ||
     { echo 'TRID identity: normalized output is not canonical' >&2; exit 1; }
