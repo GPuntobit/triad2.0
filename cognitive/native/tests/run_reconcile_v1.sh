@@ -145,7 +145,8 @@ export TRID_EVENT_STATE_DIR="$WORK/full-v1"
 sh "$UNIFY" --build "$ROOT/cognitive/native/fixture.txt" \
   "$TRID_STATE_DIR/.current/memory.txt" \
   "$ROOT/cognitive/native/graph_06.facts" > "$WORK/full-raw"
-sh "$NORMALIZE" "$WORK/full-raw" > "$WORK/full-stable"
+printf 'TRID-013 full fixture raw_bytes=%s\n' "$(wc -c < "$WORK/full-raw" | tr -d ' ')" >&2
+TRID_DIAG_SIZE=1 sh "$NORMALIZE" "$WORK/full-raw" > "$WORK/full-stable"
 sh "$UNIFY" --reconcile "$ROOT/cognitive/native/fixture.txt" \
   "$TRID_STATE_DIR/.current/memory.txt" "$ROOT/cognitive/native/graph_06.facts"
 sh "$JOURNAL" --replay > "$WORK/full-replayed"
