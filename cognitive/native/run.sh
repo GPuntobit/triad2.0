@@ -2,24 +2,40 @@
 # POSIX filesystem transport only. All cognitive decisions in Triad-Core.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
-FIXTURE=${1:-"$ROOT/cognitive/native/fixture.txt"}
 STATE=${TRID_STATE_DIR:-"$HOME/.local/state/trid-native"}
 umask 077
+[ ! -L "$STATE" ] || { echo 'TRID: symlink state path is forbidden' >&2; exit 1; }
 mkdir -p "$STATE"
 STATE=$(CDPATH= cd -- "$STATE" && pwd)
-if ! mkdir "$STATE/.lock" 2>/dev/null; then
-    echo 'TRID: another session is running (or stale lock)' >&2
+[ ! -L "$STATE/.mutex" ] || { echo 'TRID: unsafe lockfile' >&2; exit 1; }
+# Never unlink .mutex: flock locks an inode and is released by SIGKILL.
+exec 9>> "$STATE/.mutex"
+if ! flock -n 9; then
+    echo 'TRID: another session has the state lock' >&2
     exit 1
 fi
-TMP="$STATE/.lock"
-trap 'rm -rf "$TMP"' EXIT HUP INT TERM
+TMP=$(mktemp -d "$STATE/.work.XXXXXXXX")
+trap 'rm -rf -- "$TMP"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+. "$ROOT/cognitive/native/state_store.sh"
+case "$#" in 0) CMD="" ;; *) CMD=$1 ;; esac
+case "$CMD" in
+    --recover) store_recover; exit 0 ;;
+    --backup) store_backup; exit 0 ;;
+    --restore) store_restore "$2"; exit 0 ;;
+    --migrate) store_migrate; exit 0 ;;
+esac
+FIXTURE=$CMD
+[ -n "$FIXTURE" ] || FIXTURE="$ROOT/cognitive/native/fixture.txt"
+store_open
 [ -r "$FIXTURE" ] || { echo 'TRID: fixture cannot be read' >&2; exit 1; }
 JOURNAL="$STATE/hypotheses.log"
 MEMORY="$STATE/memory.txt"
-# An absent journal must not be created before successful verification.
-ORIGINAL_JOURNAL="$JOURNAL"
-if [ ! -e "$JOURNAL" ]; then
-    ORIGINAL_JOURNAL="$TMP/empty-journal.log"
+ORIGINAL_JOURNAL="$TMP/empty-journal.log"
+if [ -n "$ACTIVE_ID" ]; then
+    ORIGINAL_JOURNAL="$ACTIVE_DIR/hypotheses.log"
+else
     : > "$ORIGINAL_JOURNAL"
 fi
 # S0 cannot reliably assign/pass a readfile result. Transport data as literals.
@@ -120,6 +136,5 @@ if ! ( cd "$TMP"; "$ROOT/bin/triad" "$TMP/verify.triad" > "$TMP/new-memory.txt" 
     exit 1
 fi
 validate_memory "$TMP/new-memory.txt"
-mv "$TMP/new-journal.log" "$JOURNAL"
-mv "$TMP/new-memory.txt" "$MEMORY"
+store_commit "$TMP/new-journal.log" "$TMP/new-memory.txt"
 printf 'TRID native: memory updated; %s total events\n' "$(wc -l < "$JOURNAL" | tr -d ' ')"
