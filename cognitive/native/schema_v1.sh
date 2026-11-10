@@ -44,8 +44,8 @@ for path in "$FILE" ${OTHER:+"$OTHER"}; do
 done
 if [ "$MODE" = --delta ]; then
     total=$(( $(wc -c < "$FILE") + $(wc -c < "$OTHER") ))
-    [ "$total" -le 12000 ] ||
-      { echo 'TRID schema: delta combined input exceeds 12000 bytes' >&2; exit 2; }
+    [ "$total" -le 24000 ] ||
+      { echo 'TRID schema: delta combined input exceeds 24000 bytes' >&2; exit 2; }
 fi
 # Line-oriented serialization only; never eval, source, or run input as shell.
 emit_rows() {
