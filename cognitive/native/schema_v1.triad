@@ -219,3 +219,52 @@ function schema_import_s0(rows)
     end
     schema_emit(imported)
 end
+
+
+# Ledger-only rule: IDs may recur only at strictly increasing revisions.
+# Compare canonical decimal strings as bytes; do not depend on seed Int casts.
+function schema_newer(a, b)
+    greater = false
+    if strlen(a) > strlen(b)
+        greater = true
+    elseif strlen(a) == strlen(b)
+        i = 1
+        decided = false
+        while i <= strlen(a)
+            if !decided
+                if strbyte(a, i) > strbyte(b, i)
+                    greater = true
+                    decided = true
+                elseif strbyte(a, i) < strbyte(b, i)
+                    decided = true
+                end
+            end
+            i += 1
+        end
+    end
+    greater
+end
+
+function schema_emit_ledger(rows)
+    schema_check_all(rows)
+    i = 1
+    while i <= length(rows)
+        r = rows[i]
+        j = 1
+        while j < i
+            prev = rows[j]
+            if same(prev[3], r[3])
+                schema_assert(schema_newer(r[7], prev[7]))
+                schema_assert(same(prev[4], r[4]))
+            end
+            j += 1
+        end
+        i += 1
+    end
+    i = 1
+    while i <= length(rows)
+        println(join_parts(rows[i], 1, 12))
+        i += 1
+    end
+    true
+end
