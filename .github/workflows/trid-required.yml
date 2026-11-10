@@ -1,0 +1,120 @@
+name: TRID Required
+
+# No path filters: a required check MUST exist for every pull request,
+# including documentation-only changes. Gate blocks on failed/cancelled jobs.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trid-required-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  trid-s0:
+    name: TRID / S0
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Native S0 seed and independent verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "SHA=$(git rev-parse HEAD) OS=$(uname -s) ARCH=$(uname -m)" >&2
+          xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
+          chmod +x seed/linux-x86_64/seed
+          ulimit -v 2097152
+          timeout -k 10s 900s sh cognitive/native/tests/run.sh
+
+  trid-s1:
+    name: TRID / S1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: S1 proof, graph, pulse and golden
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "SHA=$(git rev-parse HEAD)" >&2
+          xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
+          chmod +x seed/linux-x86_64/seed
+          ulimit -v 2097152
+          timeout -k 10s 600s sh cognitive/tests/run.sh
+          timeout -k 10s 600s sh cognitive/native/tests/run_05.sh
+          timeout -k 10s 600s sh cognitive/native/tests/run_06.sh
+
+  trid-epistemic:
+    name: TRID / Epistemic
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: TRID-070 invariants and byte-exact golden
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "SHA=$(git rev-parse HEAD)" >&2
+          xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
+          chmod +x seed/linux-x86_64/seed
+          ulimit -v 2097152
+          timeout -k 10s 900s sh cognitive/native/tests/run_epistemic_070.sh
+
+  trid-integration:
+    name: TRID / Integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: TRID-071 real S0/S1/filesystem, SIGKILL, history recovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "SHA=$(git rev-parse HEAD)" >&2
+          xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
+          chmod +x seed/linux-x86_64/seed
+          ulimit -v 2097152
+          timeout -k 10s 1200s sh cognitive/native/tests/run_integration_071.sh
+
+  trid-conformance:
+    name: TRID / Conformance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Seed and normative S0/S1 conformance
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "SHA=$(git rev-parse HEAD)" >&2
+          xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
+          chmod +x seed/linux-x86_64/seed
+          ulimit -v 2097152
+          timeout -k 10s 900s sh verify.sh
+          sh cognitive/native/tests/run_gate_policy_074.sh
+
+  trid-merge-gate:
+    name: TRID / Merge Gate
+    needs: [trid-s0, trid-s1, trid-epistemic, trid-integration, trid-conformance]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    env:
+      CHECK_S0: ${{ needs.trid-s0.result }}
+      CHECK_S1: ${{ needs.trid-s1.result }}
+      CHECK_EPISTEMIC: ${{ needs.trid-epistemic.result }}
+      CHECK_INTEGRATION: ${{ needs.trid-integration.result }}
+      CHECK_CONFORMANCE: ${{ needs.trid-conformance.result }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Fail unless all five independent jobs succeeded
+        shell: bash
+        run: |
+          set -euo pipefail
+          sh scripts/trid_required_gate.sh \
+            "$CHECK_S0" "$CHECK_S1" "$CHECK_EPISTEMIC" \
+            "$CHECK_INTEGRATION" "$CHECK_CONFORMANCE"
