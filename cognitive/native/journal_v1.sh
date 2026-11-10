@@ -63,7 +63,6 @@ if [ -n "$SOURCE" ]; then
     digest=${rest%%|*}
     record=${rest#*|}
     n=$((n + 1))
-    [ "$n" -le 1000 ] || die 'bounded event count exceeded'
     [ "$seq" = "$n" ] || die 'event sequence gap'
     [ "$before" = "$last" ] || die 'predecessor hash mismatch'
     hash_ok "$digest" || die 'invalid event SHA-256 format'
@@ -78,8 +77,7 @@ if [ -n "$SOURCE" ]; then
   fi
 fi
 if [ -s "$TMP/rows.v1" ]; then
-  [ "$(wc -c < "$TMP/rows.v1")" -le 12000 ] || die 'native event budget exceeded'
-  if ! sh "$ROOT/cognitive/native/schema_v1.sh" --validate-ledger "$TMP/rows.v1" > "$TMP/checked.v1"; then
+    if ! sh "$ROOT/cognitive/native/schema_v1.sh" --validate-ledger "$TMP/rows.v1" > "$TMP/checked.v1"; then
     die 'native replay schema validation failed'
   fi
   cmp -s "$TMP/rows.v1" "$TMP/checked.v1" || die 'noncanonical committed events'
@@ -110,7 +108,6 @@ if [ "$MODE" = --reconcile ]; then
   INPUT="$TMP/delta.v1"
 fi
 cat "$TMP/rows.v1" "$INPUT" > "$TMP/complete.v1"
-[ "$(wc -c < "$TMP/complete.v1")" -le 12000 ] || die 'native event budget exceeded'
 if ! sh "$ROOT/cognitive/native/schema_v1.sh" --validate-ledger "$TMP/complete.v1" > "$TMP/canonical.v1"; then
   die 'native validation rejected proposed history'
 fi
@@ -120,7 +117,7 @@ mkdir "$TMP/stage"
 if [ -n "$SOURCE" ]; then cp "$SOURCE" "$TMP/stage/events.log"; else : > "$TMP/stage/events.log"; fi
 while IFS= read -r record || [ -n "$record" ]; do
   n=$((n + 1))
-  [ "$n" -le 1000 ] || die 'bounded event count exceeded'
+
   digest=$(printf '%s\n' "$n|$last|$record" | sha256sum | cut -d ' ' -f1)
   printf '%s|%s|%s|%s\n' "$n" "$last" "$digest" "$record" >> "$TMP/stage/events.log"
   last=$digest

@@ -103,15 +103,27 @@ la nuova riconciliazione in un namespace separato. Non è
 prevista una migrazione automatica che indovini equivalenze
 storiche.
 
-Il registro e ogni snapshot canonico sono limitati a 12.000 byte;
-il confronto incrementale nativo accetta fino a 24.000 byte
-complessivi tra storico e nuovo snapshot. La dimensione totale del
-registro pubblicato resta limitata a 12.000 byte, quindi il numero di
-revisioni ulteriori dipende dallo spazio ancora disponibile. I due stati originali S0 e S1 devono essere acquisiti
-in modo coerente prima della riconciliazione; non viene creata
+Il precedente limite globale di **12.000 byte per registro** e
+**24.000 byte per confronto** è stato eliminato. Un orchestratore
+a finestre suddivide i record su disco e invoca Triad-Core nativo per
+validare ogni evento, le revisioni dello stesso ID e i delta; la
+riconciliazione mantiene il lock dal replay al commit.
+Anche il replay e la vista corrente funzionano su cronologie più grandi
+di una singola finestra. Le soglie locali di ciascuna invocazione
+rimangono finite (circa 5 KB per blocco, meno per le riduzioni delle
+revoche), ma **non costituiscono un limite globale al registro**.
+Le dimensioni massime effettive dipendono da disco, numero di revisioni,
+memoria/tempo di elaborazione e limiti dei singoli record.
+Gli importatori delle singole sorgenti S0 e S1 conservano ancora limiti
+separati da ampliare in futuro: non si dichiara uno storage infinito.
+
+I due stati originali S0 e S1 devono essere acquisiti in modo
+coerente prima della riconciliazione; non viene creata
 una transazione distribuita tra i due storage. Python JSONL,
 archiviazione senza limiti, autenticazione delle fonti e
 autonomia cognitiva completa restano fuori dallo scope.
 
-Test: `sh cognitive/native/tests/run_reconcile_v1.sh`,
+Test: `sh cognitive/native/tests/run_reconcile_v1.sh` e
+`sh cognitive/native/tests/run_stream_v1.sh` (superamento dei limiti
+12 KB, 24 KB e 1.000 eventi, revoche, riproducibilità, crash),
 suite S0/S1 e conformance sul medesimo commit.

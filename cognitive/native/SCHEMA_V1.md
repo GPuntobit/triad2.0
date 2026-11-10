@@ -69,12 +69,21 @@ layer; the schema alone does not authorize promotion in memory.
     sh cognitive/native/schema_v1.sh --import-s0 cognitive/native/fixture.txt
     sh cognitive/native/tests/run_schema_v1.sh
 
-The POSIX wrapper only rejects hostile bytes and serializes input rows
-as safe Triad string literals. Native functions in schema_v1.triad
-validate all rows before output and reconstruct the **same 12 fields in
-their original order**, byte for byte. An invalid input causes nonzero
-exit and *no published normalized records*. No Python/Node/LLM inference
-runs on the data.
+The POSIX wrapper rejects unsafe bytes and serializes safe input into
+bounded Triad source windows. Native functions in schema_v1.triad validate
+the 12 fields, check all same-ID revisions across byte windows and preserve
+the original order and bytes. Large histories are divided on disk without
+a global byte ceiling in the validation/replay paths; native code performs
+the semantic checks at every window boundary. For current projections a
+Triad reduction carries effective revocation status across windows.
+Invalid input fails before *any normalized stdout is published*.
+No Python/Node/LLM inference runs on the data.
+
+The individual legacy --import-s0/--import-s0-memory adapters retain
+source-input bounds; the removal of the ledger limit does not itself
+make arbitrary legacy source files or individual records unbounded.
+See [LEDGER_V1.md](LEDGER_V1.md) for storage costs and
+[INCREMENTAL_V1.md](INCREMENTAL_V1.md) for replay/delta windows.
 
 For the old S0 fixture format, --import-s0 emits deterministic
 identifiers legacy_1, legacy_2, etc., in original line order. The entire
