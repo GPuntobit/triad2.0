@@ -98,7 +98,7 @@ mv -Tf "$TEMP/bad-pointer" "$TRID_EVENT_STATE_DIR/.current"
 if sh "$RUN" --recover > "$TEMP/unsafe.out" 2> "$TEMP/unsafe.err"; then
   echo 'TRID-011: unsafe pointer accepted' >&2; exit 1
 fi
-grep -q 'invalid pointer target' "$TEMP/unsafe.err"
+grep -q 'invalid revision id' "$TEMP/unsafe.err"
 ln -s "$before" "$TEMP/good-pointer"
 mv -Tf "$TEMP/good-pointer" "$TRID_EVENT_STATE_DIR/.current"
 sh "$RUN" --verify > "$TEMP/final.out" 2> "$TEMP/final.err"
