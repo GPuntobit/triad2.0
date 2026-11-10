@@ -103,9 +103,11 @@ la nuova riconciliazione in un namespace separato. Non è
 prevista una migrazione automatica che indovini equivalenze
 storiche.
 
-Il seed e la serializzazione v1 impongono un limite di 12.000
-byte alla somma dello storico già presente e dello snapshot
-proposto. I due stati originali S0 e S1 devono essere acquisiti
+Il registro e ogni snapshot canonico sono limitati a 12.000 byte;
+il confronto incrementale nativo accetta fino a 24.000 byte
+complessivi tra storico e nuovo snapshot. La dimensione totale del
+registro pubblicato resta limitata a 12.000 byte, quindi il numero di
+revisioni ulteriori dipende dallo spazio ancora disponibile. I due stati originali S0 e S1 devono essere acquisiti
 in modo coerente prima della riconciliazione; non viene creata
 una transazione distribuita tra i due storage. Python JSONL,
 archiviazione senza limiti, autenticazione delle fonti e
