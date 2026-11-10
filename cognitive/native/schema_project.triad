@@ -94,7 +94,7 @@ function projection_status(rows, row)
 end
 
 function schema_project(rows)
-    schema_check_all(rows)
+    schema_check_ledger(rows)
     i = 1
     while i <= length(rows)
         row = rows[i]
