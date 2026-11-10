@@ -23,11 +23,12 @@ fact evidence(:alpha, :beta, :src_b)
 fact revoked(:src_b)
 fact association(:trid, :alpha)
 fact rule_state(:path_generalization, :experimental)
+fact evidence(:xnode, :ynode, :book_02)
 EOF
 sh "$UNIFY" --build "$WORK/s0.fixture" "$WORK/s0.memory" "$WORK/s1.facts" > "$WORK/batch.v1"
 sh "$UNIFY" --build "$WORK/s0.fixture" "$WORK/s0.memory" "$WORK/s1.facts" > "$WORK/batch-again.v1"
 cmp "$WORK/batch.v1" "$WORK/batch-again.v1"
-[ "$(wc -l < "$WORK/batch.v1")" -eq 10 ]
+[ "$(wc -l < "$WORK/batch.v1")" -eq 11 ]
 sh "$ROOT/cognitive/native/schema_v1.sh" --validate-ledger "$WORK/batch.v1" > "$WORK/native.v1"
 cmp "$WORK/batch.v1" "$WORK/native.v1"
 # Full source-backed pipeline into TRID-011's immutable event revisions.
@@ -48,7 +49,7 @@ sh "$JOURNAL" --replay > "$WORK/full.v1"
 sh "$UNIFY" --project "$WORK/full.v1" > "$WORK/view"
 sh "$UNIFY" --project "$WORK/full.v1" > "$WORK/view-again"
 cmp "$WORK/view" "$WORK/view-again"
-[ "$(wc -l < "$WORK/view")" -eq 11 ]
+[ "$(wc -l < "$WORK/view")" -eq 12 ]
 # Revoking book_02 changes source-backed claim status, not event bytes.
 grep -q '^proofs|suspended|v1|proof_node|s0memory_2|s0_memory|book_01|demonstrated_conditional|' "$WORK/view"
 grep -q '^evidence|suspended|v1|fact|legacy_2|legacy_s0|book_02|asserted_conditional|' "$WORK/view"
@@ -56,6 +57,8 @@ grep -q '^evidence|asserted_conditional|v1|fact|legacy_1|legacy_s0|book_01|' "$W
 # S1 revocation affects only src_b. Source src_a stays retained.
 grep -q '^evidence|suspended|v1|evidence|s1graph_2|s1_graph|src_b|' "$WORK/view"
 grep -q '^evidence|asserted_conditional|v1|evidence|s1graph_1|s1_graph|src_a|' "$WORK/view"
+# An identically named source across S0 and S1 cannot cross-revoke.
+grep -q '^evidence|asserted_conditional|v1|evidence|s1graph_6|s1_graph|book_02|' "$WORK/view"
 grep -q '^activation_network|declared|v1|fact|s1graph_4|s1_association|' "$WORK/view"
 grep -q '^activation|active|v1|activation_pulse|pulse_a|' "$WORK/view"
 [ "$(grep -c '^activation|' "$WORK/view")" -eq 1 ]
