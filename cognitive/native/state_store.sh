@@ -102,8 +102,25 @@ store_commit() {
   store_links
 }
 store_recover() {
-  store_open
-  # Only remove orphan stages, never committed or uncommitted revisions.
+  store_dirs
+  store_active
+  if [ -n "$ACTIVE_ID" ]; then
+    # Post-pointer SIGKILL during migration: finish legacy view conversion.
+    store_links
+  elif [ -e "$STATE/hypotheses.log" ] || [ -e "$STATE/memory.txt" ]; then
+    # Never treat two old regular files as an automatically published revision.
+    [ -f "$STATE/hypotheses.log" ] && [ ! -L "$STATE/hypotheses.log" ] &&
+    [ -f "$STATE/memory.txt" ] && [ ! -L "$STATE/memory.txt" ] ||
+      store_die "incomplete legacy state; operator inspection required"
+    if [ -d "$STATE/.legacy" ] && [ ! -L "$STATE/.legacy" ] &&
+       [ ! -e "$STATE/.legacy/hypotheses.log" ] &&
+       [ ! -e "$STATE/.legacy/memory.txt" ]; then
+      echo 'TRID state: pre-commit migration interrupted; retry --migrate' >&2
+    else
+      echo 'TRID state: uncommitted legacy pair; explicitly run --migrate' >&2
+    fi
+  fi
+  # Only remove orphan work stages, never any revision or legacy original.
   find "$STATE" -mindepth 1 -maxdepth 1 -type d -name '.work.*' \
       ! -path "$TMP" -exec rm -rf -- {} +
   printf 'TRID state: recovered %s\n' "$ACTIVE_ID"
@@ -152,9 +169,17 @@ store_migrate() {
     [ -f "$STATE/$f" ] && [ ! -L "$STATE/$f" ] ||
       store_die "migration needs two legacy regular files"
   done
-  [ ! -e "$STATE/.legacy" ] && [ ! -L "$STATE/.legacy" ] ||
-    store_die "legacy archive already exists"
-  mkdir "$STATE/.legacy"
+  if [ -e "$STATE/.legacy" ] || [ -L "$STATE/.legacy" ]; then
+    # A dead writer may have created the archive directory before the
+    # pointer commit. Reuse it only while it contains no archived originals.
+    [ -d "$STATE/.legacy" ] && [ ! -L "$STATE/.legacy" ] ||
+      store_die "invalid legacy archive path"
+    [ ! -e "$STATE/.legacy/hypotheses.log" ] &&
+    [ ! -e "$STATE/.legacy/memory.txt" ] ||
+      store_die "legacy archive already contains originals"
+  else
+    mkdir "$STATE/.legacy"
+  fi
   store_commit "$STATE/hypotheses.log" "$STATE/memory.txt"
   printf 'TRID state: migrated into %s\n' "$ACTIVE_ID"
 }
