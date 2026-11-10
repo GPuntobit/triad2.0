@@ -95,6 +95,7 @@ jobs:
           chmod +x seed/linux-x86_64/seed
           ulimit -v 2097152
           timeout -k 10s 900s sh verify.sh
+          sh cognitive/native/tests/run_gate_policy_074.sh
 
   trid-merge-gate:
     name: TRID / Merge Gate
@@ -109,13 +110,11 @@ jobs:
       CHECK_INTEGRATION: ${{ needs.trid-integration.result }}
       CHECK_CONFORMANCE: ${{ needs.trid-conformance.result }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Fail unless all five independent jobs succeeded
         shell: bash
         run: |
           set -euo pipefail
-          for name in CHECK_S0 CHECK_S1 CHECK_EPISTEMIC CHECK_INTEGRATION CHECK_CONFORMANCE; do
-            value="${!name}"
-            printf '%s=%s\n' "$name" "$value" >&2
-            [ "$value" = success ] || { echo "TRID merge gate: $name failed/skipped" >&2; exit 1; }
-          done
-          echo "TRID merge gate: all five jobs succeeded"
+          sh scripts/trid_required_gate.sh \
+            "$CHECK_S0" "$CHECK_S1" "$CHECK_EPISTEMIC" \
+            "$CHECK_INTEGRATION" "$CHECK_CONFORMANCE"
