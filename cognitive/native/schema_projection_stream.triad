@@ -1,0 +1,57 @@
+# All semantic decisions are native. Shell partitions records and passes
+# the previous native projection state as data between bounded windows.
+function projection_stream_begin(rows)
+    i = 1
+    while i <= length(rows)
+        schema_check_row(rows[i])
+        println(rows[i][6])
+        i += 1
+    end
+    true
+end
+
+function projection_stream_fold(rows, revocations, statuses)
+    schema_assert(length(rows) == length(statuses))
+    j = 1
+    while j <= length(revocations)
+        schema_check_row(revocations[j])
+        schema_assert(same(revocations[j][2], "revocation"))
+        j += 1
+    end
+    i = 1
+    while i <= length(rows)
+        row = rows[i]
+        schema_check_row(row)
+        entry = statuses[i]
+        schema_assert(length(entry) == 1)
+        original = row[6]
+        current = entry[1]
+        schema_assert(same(current, original) || same(current, "suspended"))
+        updated = current
+        if !same(current, "suspended")
+            result = projection_status(revocations, row)
+            if same(result, "suspended")
+                updated = "suspended"
+            end
+        end
+        println(updated)
+        i += 1
+    end
+    true
+end
+
+function projection_stream_finish(rows, statuses)
+    schema_assert(length(rows) == length(statuses))
+    i = 1
+    while i <= length(rows)
+        row = rows[i]
+        schema_check_row(row)
+        entry = statuses[i]
+        schema_assert(length(entry) == 1)
+        status = entry[1]
+        schema_assert(same(status, row[6]) || same(status, "suspended"))
+        println(projection_lane(row) * "|" * status * "|" * join_parts(row, 1, 12))
+        i += 1
+    end
+    true
+end
