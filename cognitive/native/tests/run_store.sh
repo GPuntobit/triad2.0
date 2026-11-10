@@ -94,4 +94,36 @@ sh "$RUN" --migrate > "$WORK/migrate.out"
 cmp "$WORK/initial-journal" "$TRID_STATE_DIR/.legacy/hypotheses.log"
 cmp "$WORK/initial-memory" "$TRID_STATE_DIR/.legacy/memory.txt"
 sh "$RUN" --recover > "$WORK/legacy.recover"
+# Interrupt legacy migration before publication; recover must preserve the old
+# regular files and allow an explicit retry without removing .legacy manually.
+for point in after_stage before_pointer; do
+  export TRID_STATE_DIR="$WORK/migrate-$point"
+  mkdir -p "$TRID_STATE_DIR"
+  cp "$WORK/initial-journal" "$TRID_STATE_DIR/hypotheses.log"
+  cp "$WORK/initial-memory" "$TRID_STATE_DIR/memory.txt"
+  if TRID_TEST_CRASH_AT="$point" sh "$RUN" --migrate > "$WORK/migrate-$point.crash" 2>&1; then
+    echo "TRID store: migrate SIGKILL $point unexpectedly succeeded" >&2; exit 1
+  fi
+  [ ! -L "$TRID_STATE_DIR/.current" ]
+  cmp "$WORK/initial-journal" "$TRID_STATE_DIR/hypotheses.log"
+  cmp "$WORK/initial-memory" "$TRID_STATE_DIR/memory.txt"
+  sh "$RUN" --recover > "$WORK/migrate-$point.recovery" 2>&1
+  sh "$RUN" --migrate > "$WORK/migrate-$point.retry"
+  [ -L "$TRID_STATE_DIR/hypotheses.log" ] && [ -L "$TRID_STATE_DIR/memory.txt" ]
+  cmp "$WORK/initial-journal" "$TRID_STATE_DIR/.legacy/hypotheses.log"
+  cmp "$WORK/initial-memory" "$TRID_STATE_DIR/.legacy/memory.txt"
+done
+# SIGKILL just AFTER publication: --recover finishes both compatibility links.
+export TRID_STATE_DIR="$WORK/migrate-after-pointer"
+mkdir -p "$TRID_STATE_DIR"
+cp "$WORK/initial-journal" "$TRID_STATE_DIR/hypotheses.log"
+cp "$WORK/initial-memory" "$TRID_STATE_DIR/memory.txt"
+if TRID_TEST_CRASH_AT=after_pointer sh "$RUN" --migrate > "$WORK/migrate-after-pointer.crash" 2>&1; then
+  echo 'TRID store: post-pointer migrate SIGKILL unexpectedly succeeded' >&2; exit 1
+fi
+[ -L "$TRID_STATE_DIR/.current" ]
+sh "$RUN" --recover > "$WORK/migrate-after-pointer.recovered"
+[ -L "$TRID_STATE_DIR/hypotheses.log" ] && [ -L "$TRID_STATE_DIR/memory.txt" ]
+cmp "$WORK/initial-journal" "$TRID_STATE_DIR/.legacy/hypotheses.log"
+cmp "$WORK/initial-memory" "$TRID_STATE_DIR/.legacy/memory.txt"
 printf 'TRID-005 atomic state, crash recovery, backup/restore: PASS\n'
