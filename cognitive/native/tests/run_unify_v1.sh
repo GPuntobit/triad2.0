@@ -81,4 +81,20 @@ if sh "$UNIFY" --project "$WORK/invalid-pulse.v1" > "$WORK/invalid-view.out" 2> 
   echo 'TRID-012: pulse promoted into proof state' >&2; exit 1
 fi
 [ ! -s "$WORK/invalid-view.out" ]
+# Use the repository's actual S0 verifier and full S1 0.6 source fixture.
+# This is a real native integration check, not just synthetic typed records.
+export TRID_STATE_DIR="$WORK/real-s0"
+sh "$ROOT/cognitive/native/run.sh" "$ROOT/cognitive/native/fixture.txt" > "$WORK/real-s0-run.out"
+sh "$ROOT/cognitive/native/schema_v1.sh" --import-s0-memory \
+  "$TRID_STATE_DIR/.current/memory.txt" > "$WORK/real-s0-memory.v1"
+sh "$ROOT/cognitive/native/schema_v1.sh" --validate "$WORK/real-s0-memory.v1" > "$WORK/real-s0-checked.v1"
+cmp "$WORK/real-s0-memory.v1" "$WORK/real-s0-checked.v1"
+sh "$ROOT/cognitive/native/schema_s1.sh" "$ROOT/cognitive/native/graph_06.facts" > "$WORK/full-s1.v1"
+sh "$ROOT/cognitive/native/schema_v1.sh" --validate "$WORK/full-s1.v1" > "$WORK/full-s1-checked.v1"
+cmp "$WORK/full-s1.v1" "$WORK/full-s1-checked.v1"
+sh "$UNIFY" --build "$ROOT/cognitive/native/fixture.txt" \
+  "$TRID_STATE_DIR/.current/memory.txt" \
+  "$ROOT/cognitive/native/graph_06.facts" > "$WORK/full-import.v1"
+sh "$ROOT/cognitive/native/schema_v1.sh" --validate-ledger "$WORK/full-import.v1" > "$WORK/full-import-verified.v1"
+cmp "$WORK/full-import.v1" "$WORK/full-import-verified.v1"
 printf 'TRID-012 S0/S1 native source-backed unified projection: PASS\n'
