@@ -140,3 +140,18 @@ function reconcile_delta(old, incoming)
     end
     true
 end
+
+
+# Used to verify every historical managed event before the indexer selects
+# the latest version for incremental comparison. No positional-ID migration.
+function reconcile_check_managed(rows)
+    i = 1
+    while i <= length(rows)
+        schema_check_row(rows[i])
+        if reconcile_managed_origin(rows[i][10])
+            schema_assert(reconcile_stable_id(rows[i][3]))
+        end
+        i += 1
+    end
+    true
+end
