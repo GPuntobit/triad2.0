@@ -31,17 +31,17 @@ if command -v update-mime-database >/dev/null 2>&1 &&
         [ "$(XDG_CURRENT_DESKTOP=GNOME xdg-mime query filetype "$tmp/program.td")" = text/x-triad ]
     fi
 fi
-# No file at startup: prompt, missing-file error, then successful execution.
-printf '%s\n%s\n:quit\n' "$tmp/missing.triad" "$program" |
+# No file at startup: choose explicitly, then recover from a missing file.
+printf ':core\n%s\n%s\n:quit\n' "$tmp/missing.triad" "$program" |
     "$root/bin/triad-desktop" > "$tmp/session.log" 2>&1
 grep -q 'codice 1' "$tmp/session.log"
 grep -q 'desktop-pass' "$tmp/session.log"
 grep -q 'codice 0' "$tmp/session.log"
 # Associated file: success and failure both return to the prompt.
-printf ':quit\n' | "$root/bin/triad-desktop" "$program" > "$tmp/open.log" 2>&1
+printf ':core\n:quit\n' | "$root/bin/triad-desktop" "$program" > "$tmp/open.log" 2>&1
 grep -q 'desktop-pass' "$tmp/open.log"
 grep -q 'Percorso del programma' "$tmp/open.log"
-printf ':quit\n' | "$root/bin/triad-desktop" "$tmp/missing.triad" > "$tmp/error.log" 2>&1
+printf ':core\n:quit\n' | "$root/bin/triad-desktop" "$tmp/missing.triad" > "$tmp/error.log" 2>&1
 grep -q 'codice 1' "$tmp/error.log"
 grep -q 'Percorso del programma' "$tmp/error.log"
 "$root/bin/triad-desktop" < /dev/null > "$tmp/eof.log"
@@ -65,17 +65,39 @@ grep -Fq '[:dave]' "$tmp/profiles.log"
 grep -q 'desktop-pass' "$tmp/profiles.log"
 grep -q 'codice 0, profilo logic' "$tmp/profiles.log"
 grep -q 'codice 0, profilo core' "$tmp/profiles.log"
-# Opening a logic file from a file manager now selects S1 by default.
-printf ':quit\n' | "$root/bin/triad-desktop" "$logic_file" > "$tmp/auto-open.log" 2>&1
-grep -Fqx '[:dave]' "$tmp/auto-open.log"
-grep -q 'codice 0, profilo logic' "$tmp/auto-open.log"
-# Manual Core really overrides detection; :auto re-enables it for the next file.
-printf '%s\n:auto\n%s\n:quit\n' "$logic_file" "$logic_file" |
-    "$root/bin/triad-desktop" --core > "$tmp/auto-reset.log" 2>&1
-grep -q 'codice 1, profilo core' "$tmp/auto-reset.log"
-grep -Fq '[:dave]' "$tmp/auto-reset.log"
-grep -q 'codice 0, profilo logic' "$tmp/auto-reset.log"
-printf ':quit\n' | "$root/bin/triad-desktop" \
+# Opening a logic file from the file manager never executes before selection.
+printf ':logic\n:quit\n' | "$root/bin/triad-desktop" "$logic_file" > "$tmp/manual-open.log" 2>&1
+grep -q 'Scegli il profilo' "$tmp/manual-open.log"
+grep -Fqx '[:dave]' "$tmp/manual-open.log"
+grep -q 'codice 0, profilo logic' "$tmp/manual-open.log"
+# Cancellation and EOF must never execute an associated file.
+printf ':quit\n' | "$root/bin/triad-desktop" "$program" > "$tmp/cancel.log" 2>&1
+grep -q 'Esecuzione annullata' "$tmp/cancel.log"
+if grep -q 'desktop-pass' "$tmp/cancel.log"; then
+    echo 'FAIL: cancelled file was executed' >&2
+    exit 1
+fi
+"$root/bin/triad-desktop" "$program" < /dev/null > "$tmp/no-choice.log" 2>&1
+grep -q 'file non eseguito' "$tmp/no-choice.log"
+if grep -q 'desktop-pass' "$tmp/no-choice.log"; then
+    echo 'FAIL: file was executed without a profile' >&2
+    exit 1
+fi
+# :auto and --auto must not enable implicit detection.
+printf ':auto\n:quit\n' | "$root/bin/triad-desktop" > "$tmp/no-auto.log" 2>&1
+grep -q 'Profilo automatico non disponibile' "$tmp/no-auto.log"
+if "$root/bin/triad-desktop" --auto "$program" > "$tmp/auto-flag.log" 2>&1; then
+    echo 'FAIL: --auto was accepted' >&2
+    exit 1
+fi
+grep -q 'Profilo automatico non disponibile' "$tmp/auto-flag.log"
+# Manual Core does not trigger logic; explicitly switching to logic runs S1.
+printf '%s\n:logic\n%s\n:quit\n' "$logic_file" "$logic_file" |
+    "$root/bin/triad-desktop" --core > "$tmp/manual-switch.log" 2>&1
+grep -q 'codice 1, profilo core' "$tmp/manual-switch.log"
+grep -Fq '[:dave]' "$tmp/manual-switch.log"
+grep -q 'codice 0, profilo logic' "$tmp/manual-switch.log"
+printf ':logic\n:quit\n' | "$root/bin/triad-desktop" \
     "$root/conformance/logic/cases/typed_declarations/program.triad" > "$tmp/typed.log" 2>&1
 grep -q 'codice 0, profilo logic' "$tmp/typed.log"
 if command -v xdg-mime >/dev/null 2>&1; then
@@ -92,4 +114,4 @@ fi
 grep -q '^text/plain=example-editor.desktop;' "$tmp/kde-config/mimeapps.list"
 [ "$(KDE_SESSION_VERSION=0 XDG_CURRENT_DESKTOP=X-Generic XDG_CONFIG_HOME="$tmp/kde-config" xdg-mime query default text/x-triad)" = triad.desktop ]
 fi
-echo 'desktop: PASS (install, MIME, auto/Core/logic, switch, errori, EOF)'
+echo 'desktop: PASS (install, MIME, scelta esplicita Core/logic, annulla, switch, errori, EOF)'
