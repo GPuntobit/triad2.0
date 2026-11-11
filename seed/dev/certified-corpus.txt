@@ -1,0 +1,25 @@
+# Corpus certificato del seed
+#
+# I programmi elencati qui devono stare *dentro* il sottoinsieme
+# certificato del seed: le guardie statiche (tools/selfhost-guard/guard.mjs)
+# e il gate differenziale seed<->JS (tools/selfhost-guard/differential.mjs)
+# li presidiano.  Aggiungere un file qui e' un atto deliberato: "questo
+# programma e' parte del progetto e il seed deve poterlo eseguire".
+#
+# I file .td che non sono elencati (prototipi storici in selfhost/, la
+# prima versione del generatore in tools/site-gen/) restano validi — la CI
+# li esegue sul riferimento JS — ma sono "fuori contratto": le guardie li
+# segnalano come avvisi e non falliscono il gate.
+#
+# Formato: un percorso per riga, relativo alla radice del repository.
+
+# front-end di S1 (scanner + parser) e smoke test
+selfhost/source.td
+selfhost/main.td
+
+# generatori del sito (girano sul seed: tools/site-gen/build.mjs confronta
+# l'output dei due runtime byte per byte)
+tools/site-gen/site_pages.td
+tools/site-gen/site_pages2.td
+tools/site-gen/site_playground.td
+tools/site-gen/site_style.td

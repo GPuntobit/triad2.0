@@ -1,74 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Playground — Triad 2.0</title>
-<meta name="description" content="Run Triad code directly in the browser: ready editor, output and examples." />
-<link rel="stylesheet" href="../assets/css/style.css" />
-<style>
-  .pg-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
-  @media (max-width: 900px) { .pg-wrap { grid-template-columns: 1fr; } }
-  .pg-pane { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-  .pg-label { font-size: .85rem; color: var(--muted); font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
-  #pg-editor {
-    width: 100%; min-height: 340px; resize: vertical;
-    background: var(--code-bg); color: var(--text);
-    border: 1px solid var(--border); border-radius: var(--radius);
-    font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .9rem; line-height: 1.55;
-    padding: 16px; tab-size: 4;
-  }
-  #pg-editor:focus { outline: none; border-color: var(--accent); }
-  #pg-output {
-    min-height: 340px; max-height: 520px; overflow: auto;
-    background: var(--code-bg); border: 1px solid var(--border); border-radius: var(--radius);
-    font-family: "JetBrains Mono", ui-monospace, monospace; font-size: .88rem; line-height: 1.55;
-    padding: 16px; white-space: pre-wrap; word-break: break-word; margin: 0;
-  }
-  #pg-output.err { border-color: #f87171; }
-  .pg-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 18px; }
-  .pg-toolbar select {
-    background: var(--bg-card); color: var(--text); border: 1px solid var(--border);
-    border-radius: 8px; padding: 9px 12px; font-size: .9rem;
-  }
-  .pg-status { font-size: .85rem; color: var(--muted); }
-  .kbd-hint { font-size: .8rem; color: var(--muted); }
-.kbd-hint kbd { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-family: inherit; }
-</style>
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>Native execution &mdash; Triad 2.0</title>
+<meta name='description' content='Run Triad programs using the native S0 interpreter on Linux.' />
+<link rel='stylesheet' href='../assets/css/style.css' />
+<link rel='stylesheet' href='../assets/css/triad-generated.css' />
 </head>
 <body>
-<div id="site-header"></div>
-<main class="container">
-  <h1 style="margin-bottom:6px">Playground</h1>
-  <p style="color:var(--muted);max-width:720px">Run Triad programs <strong>directly in the browser</strong>, without installing anything. The code is interpreted by the same reference interpreter used by the conformance suite (<code>seed/dev/triad_core.cjs</code>).</p>
-<div class="pg-toolbar">
-    <button class="btn btn-primary" id="pg-run" type="button">▶ Run</button>
-    <select id="pg-example" aria-label="Choose an example">
-      <option value="">— Load example —</option>
-    </select>
-    <span class="kbd-hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to execute</span>
-    <span class="pg-status" id="pg-status"></span>
-  </div>
-<div class="pg-wrap">
-    <div class="pg-pane">
-      <span class="pg-label">Program (.triad)</span>
-      <textarea id="pg-editor" spellcheck="false" aria-label="Editor Triad"></textarea>
-    </div>
-    <div class="pg-pane">
-      <span class="pg-label">Output</span>
-      <pre id="pg-output" aria-live="polite"></pre>
-    </div>
-  </div>
-<h2 style="margin-top:40px">Notes</h2>
-  <ul class="feature-list">
-    <li>Execution has a time limit of 5 seconds to block infinite loops.</li>
-    <li>The playground uses the reference JS interpreter: the semantics are those of the conformance suite, but the performances are not those of the native seed.</li>
-    <li>No data leaves the browser: everything runs locally.</li>
-  </ul>
+<header class="site-header"><nav class="container" aria-label="Triad navigation"><a href="../index.html"><strong>Triad 2.0</strong></a> · <a href="getting-started.html">Getting started</a> · <a href="spec.html">Specification</a> · <a href="examples.html">Examples</a> · <a href="https://github.com/GPuntobit/triad2.0">GitHub</a></nav></header>
+<main class='container'>
+<div class='doc-layout'>
+<aside class='doc-sidebar'>
+<h4>Documentation</h4>
+<ul>
+<li><a href='getting-started.html'>Get started</a></li>
+<li><a href='language-tour.html'>Tour</a></li>
+<li><a href='spec.html'>Spec</a></li>
+<li><a href='tutorial.html'>Tutorial</a></li>
+<li><a href='apprendimento.html'>Learning</a></li>
+<li><a href='examples.html'>Examples</a></li>
+<li><a href='playground.html' class='active'>Playground</a></li>
+<li><a href='conformance.html'>Conformance</a></li>
+<li><a href='bootstrap.html'>Bootstrap</a></li>
+<li><a href='editors.html'>Editor</a></li>
+<li><a href='ai.html'>AI</a></li>
+<li><a href='status.html'>Status</a></li>
+<li><a href='license.html'>License</a></li>
+</ul>
+</aside>
+<article class='doc-content'>
+<h1>Native execution</h1>
+<p>Triad runs through the native machine-code seed. An interactive browser interpreter is not provided because the project does not ship JavaScript.</p>
+<p class='generated-by'>This page is generated by a Triad program (tools/site-gen/site_playground.td).</p>
+<h2>Run Triad natively</h2><pre class='code-card'>git clone https://github.com/GPuntobit/triad2.0.git
+cd triad2.0
+./install.sh
+printf 'println(42)\n' > hello.triad
+./bin/triad hello.triad</pre><p>Linux x86-64 is currently supported by the native seed. No browser runtime is bundled.</p><h2>Example programs</h2>
+<h3>Functions, short form and recursion</h3>
+<pre class='code-card'>sum(a, b) = a + b
+square(x) = x * x
+println(sum(2, 3))
+println(square(4))
+
+factorial(n) = n &lt; 2 ? 1 : n * factorial(n - 1)
+fib(n) = n &lt; 2 ? n : fib(n - 1) + fib(n - 2)
+println(factorial(5))
+println(fib(10))</pre>
+<h3>Lambdas and closures</h3>
+<pre class='code-card'>double = x -&gt; x * 2
+apply = f -&gt; f(3)
+println(double(5))
+println(apply(x -&gt; x * x))
+
+function add(n)
+  x -&gt; x + n
+end
+f = add(10)
+println(f(5))</pre>
+<h3>Lists and push!</h3>
+<pre class='code-card'>lst = []
+lst = push!(lst, 10)
+lst = push!(lst, 20)
+println(lst)
+println(length(lst))</pre>
+<h3>Control flow</h3>
+<pre class='code-card'>x = 0
+while x &lt; 3
+  println(x)
+  x += 1
+end
+
+if x == 3
+  println(&quot;three&quot;)
+elseif x &gt; 3
+  println(&quot;more&quot;)
+else
+  println(&quot;minus&quot;)
+end</pre>
+<h3>Strings and symbols</h3>
+<pre class='code-card'>s = &quot;Triad&quot;
+println(strlen(s))
+println(strsub(s, 1, 3))
+println(strbyte(s, 1))
+
+p = :alice
+println(p)
+println(typeof(:sym))
+println(Int(&quot;42&quot;))</pre>
+<h2>Cheat sheet</h2>
+<table>
+<thead>
+<tr><th>Feature</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td>Print a line</td><td><code>println(value)</code></td></tr>
+<tr><td>Short function</td><td><code>f(x) = x * 2</code></td></tr>
+<tr><td>Block function</td><td><code>function f(x) ... end</code></td></tr>
+<tr><td>Lambda</td><td><code>x -&gt; x * 2</code></td></tr>
+<tr><td>Branch</td><td><code>if / elseif / else</code></td></tr>
+<tr><td>Loop</td><td><code>while cond ... end</code></td></tr>
+<tr><td>List push</td><td><code>push!(xs, value)</code></td></tr>
+<tr><td>String tools</td><td><code>strlen</code>, <code>strsub</code>, <code>strbyte</code></td></tr>
+<tr><td>Type of a value</td><td><code>typeof(x)</code></td></tr>
+<tr><td>Parse an integer</td><td><code>Int(&quot;42&quot;)</code></td></tr>
+<tr><td>Ternary</td><td><code>cond ? a : b</code></td></tr>
+</tbody>
+</table>
+</article>
+</div>
 </main>
-<div id="site-footer"></div>
-<script src="triad-core.js"></script>
-<script src="../assets/js/playground.js"></script>
-<script>TriadSite.mount('Playground');</script>
+<footer class="site-footer"><div class="container">Triad 2.0 · Native language tools · <a href="spec.html">Specification</a></div></footer>
+
+
+
+
 </body>
 </html>

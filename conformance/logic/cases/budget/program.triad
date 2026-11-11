@@ -1,0 +1,3 @@
+rule spin(?x) :- spin(?x)
+println(solve spin(:a) steps 20)
+println(solve spin(:a) depth 3)

@@ -1,0 +1,7 @@
+function same(value)
+    value
+end
+a = 13
+b = same(a)
+c = same(b)
+exit(c)

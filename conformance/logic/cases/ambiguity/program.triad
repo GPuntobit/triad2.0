@@ -1,0 +1,7 @@
+f(a::Int, b::Number) = :a
+f(a::Number, b::Int) = :b
+println(f(1, 2))
+f(a::Int, b::Int) = :exact
+println(f(1, 2))
+println(f(1, 2.0))
+println(f(1.0, 2))

@@ -1,0 +1,6 @@
+struct Box
+x :: Int
+end
+b = Box(3)
+println(b.x)
+println(Box(:bad))

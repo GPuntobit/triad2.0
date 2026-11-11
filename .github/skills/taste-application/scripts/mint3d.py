@@ -37,7 +37,6 @@ import argparse
 import json
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
 from taste import falapi
 from taste import pack as pack_mod
@@ -251,7 +250,7 @@ def main() -> None:
             try:
                 print(f"  {slot} -> {falapi.use_tier(slot, a.tier)}")
             except falapi.FalError:
-                pass
+                continue  # this tier has no such slot; try the next one
     if not a.prompt and not a.from_stills:
         a.from_stills = 3
 

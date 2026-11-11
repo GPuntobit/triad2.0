@@ -32,11 +32,6 @@ _SPEC_STRING_KEYS = (
 )
 _SPEC_LIST_KEYS = ("mood_adjectives", "avoid")
 
-# Interview answer id -> spec key (palette -> palette_description).
-_KEY_MAP = {
-    "palette": "palette_description",
-    **{k: k for k in _SPEC_STRING_KEYS + _SPEC_LIST_KEYS if k != "palette_description"},
-}
 
 
 class ProviderDisabledError(RuntimeError):

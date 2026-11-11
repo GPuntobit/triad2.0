@@ -1,114 +1,81 @@
-name: CI
+name: CI — Native Triad (no JavaScript)
 on:
   push:
   pull_request:
 permissions:
   contents: read
 jobs:
-  conformance-core:
-    runs-on: ubuntu-latest
+  native-core:
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '20'
-      - name: Decode seed (Linux)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Decode Linux machine-code seed
         run: |
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Conformance Core (Node runner)
-        run: node conformance/run.mjs --cases conformance/core/cases --skip liste
+      - name: Normative Triad Core and S1 regression
+        run: sh verify.sh
+      - name: Native TRID experimental journal
+        run: sh cognitive/native/tests/run.sh
+      - name: Native TRID multilevel proof/pulse suite
+        run: |
+          sh cognitive/native/tests/run_05.sh
+          sh cognitive/native/tests/run_06.sh
 
-  seed-windows:
-    runs-on: windows-latest
+  seed-integrity:
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
-      - name: "AV exclusion (PE generato dal dump: falso positivo noto)"
-        shell: pwsh
-        continue-on-error: true
-        run: Add-MpPreference -ExclusionPath "${{ github.workspace }}\seed\windows-x86_64"
-      - name: Decode seed
-        shell: pwsh
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Validate committed native seed dumps
         run: |
-          Remove-Item seed/windows-x86_64/seed.exe -ErrorAction SilentlyContinue
-          certutil -decodehex seed/windows-x86_64/seed.hex seed/windows-x86_64/seed.exe
-      - name: Seed conformance cases
-        shell: pwsh
-        run: |
-          $cases = @('interi','variabili','funzioni_semplici','ricorsione','confronti','operatori','if_else','if_elseif','if_nested','if_no_else','while_loop','lambda','closure','chiusure','scope','funzioni_blocco','funzioni_io','funzioni','aritmetica','begin_block','formula','stringhe','stringhe_base','nothing_base','stringhe_concat','simboli_base','stringhe_multi','chiusure_local','let_annidato','let_chiusura','chiusura_in_if','liste_base','liste_push')
-          foreach ($c in $cases) {
-            $out = Join-Path $env:TEMP "$c.out"
-            Remove-Item $out -ErrorAction SilentlyContinue
-            $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "conformance\core\cases\$c\program.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
-            if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for $c" }
-            $got = (Get-Content $out -Raw) -replace "`r`n", "`n"
-            $expFile = "conformance\core\cases\$c\expected.out"
-            if (-not (Test-Path $expFile)) { $expFile = "conformance\core\cases\$c\expected.golden" }
-            $exp = (Get-Content $expFile -Raw) -replace "`r`n", "`n"
-            if ($got -ne $exp) { throw "output mismatch for $c" }
-          }
-      - name: Seed get probe
-        shell: pwsh
-        run: |
-          $out = Join-Path $env:TEMP "test_get.out"
-          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "probes\\test_get.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
-          if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for test_get.td" }
-          $got = (Get-Content $out -Raw) -replace "`r`n", "`n"
-          if ($got -cne "20`n") { throw "unexpected output for test_get.td: $got" }
-      - name: Self-hosted environment smoke test (not S1 conformance)
-        shell: pwsh
-        run: |
-          $out = Join-Path $env:TEMP "selfhost-main.out"
-          $p = Start-Process .\seed\windows-x86_64\seed.exe -ArgumentList "selfhost\main.td" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $out
-          if ($p.ExitCode -ne 0) { throw "exit $($p.ExitCode) for selfhost\main.td" }
-          $got = [System.IO.File]::ReadAllBytes($out)
-          $expected = [System.Text.Encoding]::ASCII.GetBytes("Value: 10`n")
-          if ([BitConverter]::ToString($got) -cne [BitConverter]::ToString($expected)) {
-            throw "unexpected byte output for selfhost\main.td: $([System.Text.Encoding]::ASCII.GetString($got))"
-          }
-      - name: Hash check
-        shell: pwsh
-        run: |
-          $h = (Get-FileHash seed/windows-x86_64/seed.hex -Algorithm SHA256).Hash
-          if ($h -ne '3A75A21E2F47D8DC4C88D4BC2580A85D5349BCDF7550E5FFA16E2C0AC7CA8C11') { throw "hash mismatch: $h" }
-  seed-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Decode ELF
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xxd || sudo apt-get install -y vim-common
+          printf '%s\n' \
+            '8457051f7d083ab834ec860502605a58f1ecce4a5abca88391a804898315d613  seed/linux-x86_64/seed.hex' \
+            '20aa566dae21d2b102e684f7a8c1b67b1b2b44c61c1116e16d196de31683d7b7  seed/windows-x86_64/seed.hex' \
+            | sha256sum --check
           xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
           chmod +x seed/linux-x86_64/seed
-      - name: Run E0
-        run: |
-          out=$(./seed/linux-x86_64/seed)
-          test "$out" = "Triad seed Linux OK"
-      - name: Hash check
-        run: |
-          h=$(sha256sum seed/linux-x86_64/seed.hex | cut -d' ' -f1)
-          test "$h" = "ad4c9f08176d9964d5be17d44c72230184434025980447395e7a3250f63ca5ea"
+          sh seed/linux-x86_64/check_seed.sh ./seed/linux-x86_64/seed
 
-  linux-toolchain:
-    # Verifica che l'intera toolchain POSIX funzioni su Linux: launcher,
-    # install.sh (senza root), esecuzione di programmi .td e suite di
-    # conformità tramite i launcher installati.
-    runs-on: ubuntu-latest
+  native-toolchain:
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '20'
-      - name: Launcher bin/triad esegue un programma
-        run: ./bin/triad probes/test_simple.td | grep -q '^test$'
-      - name: install.sh (utente non root, prefix temporaneo)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Native install and CLI
         run: |
           ./install.sh --prefix "$RUNNER_TEMP/triad-bin" --no-desktop
           export PATH="$RUNNER_TEMP/triad-bin:$PATH"
-          triad probes/test_let.td | grep -q '^15$'
-          triad-cli status >/dev/null
-      - name: Conformance via launcher installato
+          triad tests/probes/test_let.td | grep -q '^15$'
+          triad-cli status
+          triad-cli test all
+          sh tests/desktop.sh
+      - name: Reject drift from golden output
         run: |
-          export PATH="$RUNNER_TEMP/triad-bin:$PATH"
-          triad-cli test conformance
+          cp tests/probes/test_simple.expected.out "$RUNNER_TEMP/golden.bak"
+          echo tamper >> tests/probes/test_simple.expected.out
+          if ./install.sh --prefix "$RUNNER_TEMP/triad-bad" --no-desktop; then
+            echo 'ERROR: installation accepted incorrect golden' >&2
+            exit 1
+          fi
+          mv "$RUNNER_TEMP/golden.bak" tests/probes/test_simple.expected.out
+
+  security:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Security and no-JavaScript source policy
+        run: |
+          sh scripts/no-js.sh
+          sh tests/security/run.sh
+
+  static-docs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Validate static HTML documentation without client scripts
+        run: |
+          sh scripts/no-js.sh
+          test -s docs/index.html
+          test -s docs/pages/getting-started.html
+          test -s docs/pages/spec.html
+      - name: Generate static docs with native Triad
+        run: sh tools/site-gen/build.sh --dry-run

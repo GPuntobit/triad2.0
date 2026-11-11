@@ -1,0 +1,10 @@
+lea_rsi message
+mov_edi 1
+mov_edx 1
+mov_eax 1
+syscall
+mov_edi 0
+mov_eax 60
+syscall
+label message
+byte 65

@@ -52,12 +52,12 @@ When the user provides an image file path, AUTOMATICALLY execute the following s
    from Foundation import NSURL
    ```
 
-2. **EasyOCR** ​​(cross-platform):
+2. **EasyOCR** (cross-platform):
    ```bash
    pip install easyocr
    ```
 
-3. **Tesseract OCR** ​​(if available):
+3. **Tesseract OCR** (if available):
    ```bash
    brew install tesseract tesseract-lang
    pip install pytesseract

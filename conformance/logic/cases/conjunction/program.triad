@@ -1,0 +1,5 @@
+fact p(:a)
+fact p(:b)
+fact q(:b)
+println([s.x for s in solve p(?x) && q(?x)])
+println([s.x for s in solve q(?x) || p(?x)])

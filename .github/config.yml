@@ -1,0 +1,18 @@
+# Configurazione CodeRabbit per il repository triad2.0
+# (il review automatico e' disponibile solo con >=10 stelle; questo file
+#  viene comunque applicato quando il bot e' abilitato)
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  changed_files_summary: false
+  sequence_diagrams: false
+  path_filters:
+    - "!docs/assets/**"
+    - "!obsidian-triad/**"
+    - "!.webcmd/**"
+  auto_review:
+    enabled: true
+    drafts: false
+chat:
+  auto_reply: true

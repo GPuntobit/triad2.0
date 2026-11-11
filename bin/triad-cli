@@ -1,29 +1,142 @@
 #!/bin/sh
-# triad-cli — launcher POSIX della CLI di sviluppo (richiede Node.js >= 18).
-# Uso: triad-cli <comando> [opzioni]   (es. triad-cli status)
+# =====================================================================
+#  triad-cli — CLI POSIX della toolchain Triad, SENZA Node
+#
+#  Pura delega (decisione "CLI e toolchain senza Node", N18,
+#  .scratch/seed-linux-nativo/issues/09-cli-toolchain-senza-node.md,
+#  Q1/Q4): tre sotto-comandi coprono il percorso utente —
+#
+#    triad-cli run <file> [-- args]    -> bin/triad
+#    triad-cli test conformance|probes|all -> harness POSIX di 08
+#    triad-cli status                  -> info ambiente (deterministico)
+#
+#  Exit code = quello del comando delegato; exit 2 = errori d'uso.
+#  I comandi avanzati non implementati sono esplicitamente indisponibili,
+#  senza ripiegare su un interprete o una CLI JavaScript.
+#
+#  Uso: triad-cli <comando> [opzioni]
+# =====================================================================
+
 set -e
-# Resolution of the real path of the script (follows symlinks): the launcher can
-# essere installato come link simbolico in ~/.local/bin, quindi dirname $0
-# da solo non basta.
+
+# --- Risoluzione del path reale dello script (segue i symlink, best-effort) ---
 self="$0"
 while [ -L "$self" ]; do
-    link=$(readlink "$self")
+    link=$(readlink "$self" 2>/dev/null) || break
     case $link in
         /*) self="$link" ;;
         *)  self="$(dirname "$self")/$link" ;;
     esac
 done
-TRIAD_HOME=$(CDPATH= cd -- "$(dirname -- "$self")/.." && pwd -P)
-if ! command -v node >/dev/null 2>&1; then
-    echo "triad-cli: Node.js non trovato (serve Node.js >= 18)." >&2
-    exit 1
-fi
-if [ ! -d "$TRIAD_HOME/cli/node_modules" ]; then
-    echo "triad-cli: installo le dipendenze (npm install in cli/)..." >&2
-    if ! (cd "$TRIAD_HOME/cli" && npm install --silent) >&2; then
-        echo "triad-cli: npm install fallito." >&2
-        rm -rf "$TRIAD_HOME/cli/node_modules"
-        exit 1
-    fi
-fi
-TRIAD_HOME="$TRIAD_HOME" exec node "$TRIAD_HOME/cli/triad-cli.mjs" "$@"
+ROOT=$(CDPATH= cd -- "$(dirname -- "$self")/.." && pwd -P)
+
+print_logo() {
+    printf '%s\n' \
+        ' _______  _____  ___   ___  ______' \
+        '|__   __||  ___||   \ /   ||  ____|' \
+        '   | |   | |__  | |\ V /| || |__' \
+        '   | |   |  __| | | \_/ | ||  __|' \
+        '   | |   | |___ | |     | || |____' \
+        '   |_|   |_____||_|     |_||______|'
+}
+
+usage() {
+    print_logo
+    echo "uso: triad-cli <comando> [opzioni]"
+    echo ""
+    echo "comandi:"
+    echo "  run <file> [-- args]        esegue un programma Triad (.triad/.td)"
+    echo "  test conformance [--strict|--update] suite Core (39 casi, gap noti esclusi)"
+    echo "  test probes                 probe ok_*/test_*/bad_* + golden"
+    echo "  test all                    gate completo (verify.sh)"
+    echo "  status                      stato della toolchain e dell'ambiente"
+    echo ""
+    echo "comandi avanzati: migrazione in corso verso Triad nativo"
+}
+
+cmd=${1:-}
+[ -n "$cmd" ] || { usage >&2; exit 2; }
+shift
+
+case "$cmd" in
+    run)
+        [ $# -ge 1 ] || { usage >&2; exit 2; }
+        file=$1
+        shift
+        # separatore opzionale "--" fra percorso file e argomenti del programma
+        if [ "${1:-}" = "--" ]; then
+            shift
+        fi
+        exec "$ROOT/bin/triad" "$file" "$@"
+        ;;
+    test)
+        sub=${1:-}
+        [ -n "$sub" ] || { usage >&2; exit 2; }
+        shift
+        case "$sub" in
+            conformance)
+                # --update rigenera i golden (oracle diretto); --strict usa
+                # l'oracle senza tolleranza dei gap noti; default = gate.
+                case "${1:-}" in
+                    --update) exec sh "$ROOT/conformance/run.sh" --update ;;
+                    --strict) exec sh "$ROOT/conformance/run.sh" ;;
+                    "")      exec sh "$ROOT/conformance/gate.sh" ;;
+                    *)
+                        echo "triad-cli test conformance: opzione sconosciuta: $1" >&2
+                        echo "  uso: triad-cli test conformance [--strict|--update]" >&2
+                        exit 2
+                        ;;
+                esac
+                ;;
+            probes)
+                [ $# -eq 0 ] || { echo "triad-cli test probes: nessuna opzione prevista" >&2; exit 2; }
+                exec sh "$ROOT/tests/probes/run_probes.sh"
+                ;;
+            all)
+                [ $# -eq 0 ] || { echo "triad-cli test all: nessuna opzione prevista" >&2; exit 2; }
+                exec sh "$ROOT/verify.sh"
+                ;;
+            *)
+                echo "triad-cli test: sotto-comando sconosciuto: $sub" >&2
+                usage >&2
+                exit 2
+                ;;
+        esac
+        ;;
+    status)
+        # Info ambiente: output deterministico, niente colori (Q1).
+        seed="$ROOT/seed/linux-x86_64/seed"
+        print_logo
+        case "$(uname -s)" in
+            Linux*) ;;
+            *)      seed="" ;;
+        esac
+        echo "Triad toolchain status"
+        echo "  root: $ROOT"
+        echo "  system: $(uname -s) $(uname -m)"
+        if [ -z "$seed" ]; then
+            echo "  seed: non disponibile su questa piattaforma"
+        elif [ -x "$seed" ]; then
+            echo "  seed: $seed (eseguibile)"
+        elif [ -f "$seed" ]; then
+            echo "  seed: $seed (NON eseguibile)"
+        else
+            echo "  seed: non trovato (atteso: $seed)"
+        fi
+        case ":${PATH}:" in
+            *":${HOME}/.local/bin:"*) pstate="nel PATH" ;;
+            *)                        pstate="NON nel PATH" ;;
+        esac
+        echo "  install-path: ${HOME}/.local/bin ($pstate)"
+        exit 0
+        ;;
+    help|-h|--help)
+        usage
+        exit 0
+        ;;
+    *)
+        echo "triad-cli: comando sconosciuto: $cmd" >&2
+        usage >&2
+        exit 2
+        ;;
+esac

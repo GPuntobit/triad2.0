@@ -28,18 +28,17 @@ import socket
 import urllib.parse
 import urllib.request
 import tempfile
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from pathlib import Path
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from collections import defaultdict
 from typing import Optional
 
 if sys.platform == "win32":
-    try:
+    # Best-effort: reconfigure() is unavailable on some wrapped streams.
+    with suppress(Exception):
         sys.stdout.reconfigure(encoding="utf-8")
         sys.stderr.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
 
 try:
     import fcntl
@@ -259,7 +258,8 @@ def _git_repo_root(cwd: Optional[str] = None) -> Optional[str]:
         if result.returncode == 0:
             return result.stdout.strip()
     except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass
+        # No git binary, or git hung: treat as "not inside a repository".
+        return None
     return None
 
 
@@ -346,7 +346,8 @@ def detect_project() -> dict:
         if result.returncode == 0:
             remote_url = result.stdout.strip()
     except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass
+        # No git binary, or git hung: keep the empty default (no remote).
+        remote_url = ""
 
     raw_remote_url = remote_url
     if remote_url:
@@ -1558,10 +1559,8 @@ def _write_text_atomic(file_path: Path, content: str) -> None:
             os.fsync(f.fileno())
         os.replace(temp_file, file_path)
     finally:
-        try:
+        with suppress(FileNotFoundError):
             temp_file.unlink()
-        except FileNotFoundError:
-            pass
 
 
 def _remove_instinct_from_source(source_file_str: str, instinct_id: str) -> None:
@@ -1950,7 +1949,19 @@ def _evolved_description(trigger: str, instincts: list, kind: str) -> str:
     )
     # `: ` breaks strict YAML parsers in an unquoted scalar; `<`/`>` can inject
     # into the system prompt.
-    return description.replace(': ', ' - ').replace('<', '(').replace('>', ')')
+    sanitized = description.replace(': ', ' - ').replace('<', '(').replace('>', ')')
+    # Fix incomplete multi-character sanitization (CodeQL, High): a single
+    # pass over attacker-controlled text can re-create forbidden markup by
+    # nesting/splicing (e.g. "<scr<script>ipt>" -> "<script>"). Loop to a
+    # fixed point so no "<script" substring can survive, and strip any
+    # remaining '<' or '>' as a belt-and-braces measure against HTML element
+    # injection in every downstream consumer (frontmatter, prompts, viewers).
+    while True:
+        prev = sanitized
+        sanitized = sanitized.replace('<', '(').replace('>', ')')
+        if sanitized == prev:
+            break
+    return sanitized
 
 
 def _generate_evolved(skill_candidates: list, workflow_instincts: list, agent_candidates: list, evolved_dir: Path, limit: int = 0) -> list[str]:
@@ -2212,7 +2223,7 @@ def main() -> int:
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
 
     # Status
-    status_parser = subparsers.add_parser('status', help='Show instinct status (project + global)')
+    subparsers.add_parser('status', help='Show instinct status (project + global)')
 
     # Import
     import_parser = subparsers.add_parser('import', help='Import instincts')

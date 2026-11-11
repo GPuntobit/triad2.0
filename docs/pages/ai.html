@@ -1,44 +1,78 @@
-﻿<!DOCTYPE html>
-<html lang="it">
+<!DOCTYPE html>
+<html lang='en'>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AI benchmark — Triad 2.0</title>
-<link rel="stylesheet" href="../assets/css/style.css" />
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js" integrity="sha384-JEyTNhjM6R1ElGoJns4U2Ln4ofPcqzSsynQkmEc/KGy6336qAZl70tDLufbkla+3" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>AI — Triad 2.0</title>
+<meta name='description' content='The AI benchmark of Triad 2.0: how a language model is asked to write Triad, how the generated solution is verified against the goldens, and how the kit is meant to be used.' />
+<link rel='stylesheet' href='../assets/css/style.css' />
+<link rel='stylesheet' href='../assets/css/triad-generated.css' />
 </head>
 <body>
-<div id="site-header"></div>
-<main class="container">
-  <div class="doc-layout">
-    <aside class="doc-sidebar">
-      <h4>Documentazione</h4>
-      <ul>
-        <li><a href="getting-started.html">Inizia</a></li>
-        <li><a href="language-tour.html">Tour</a></li>
-        <li><a href="spec.html">Spec</a></li>
-        <li><a href="tutorial.html">Tutorial</a></li>
-        <li><a href="examples.html">Esempi</a></li>
-        <li><a href="conformance.html">Conformance</a></li>
-        <li><a href="bootstrap.html">Bootstrap</a></li>
-        <li><a href="editors.html">Editor</a></li>
-        <li><a href="ai.html">AI</a></li>
-        <li><a href="status.html">Stato</a></li>
-        <li><a href="license.html">Licenza</a></li>
-      </ul>
-    </aside>
-    <article class="doc-content">
-      <h1>AI: generazione e verifica</h1>
-      <div id="doc-content"></div>
-    </article>
-  </div>
+<header class="site-header"><nav class="container" aria-label="Triad navigation"><a href="../index.html"><strong>Triad 2.0</strong></a> · <a href="getting-started.html">Getting started</a> · <a href="spec.html">Specification</a> · <a href="examples.html">Examples</a> · <a href="https://github.com/GPuntobit/triad2.0">GitHub</a></nav></header>
+<main class='container'>
+<div class='doc-layout'>
+<aside class='doc-sidebar'>
+<h4>Documentation</h4>
+<ul>
+<li><a href='getting-started.html'>Get started</a></li>
+<li><a href='language-tour.html'>Tour</a></li>
+<li><a href='spec.html'>Spec</a></li>
+<li><a href='tutorial.html'>Tutorial</a></li>
+<li><a href='apprendimento.html'>Learning</a></li>
+<li><a href='examples.html'>Examples</a></li>
+<li><a href='playground.html'>Playground</a></li>
+<li><a href='conformance.html'>Conformance</a></li>
+<li><a href='bootstrap.html'>Bootstrap</a></li>
+<li><a href='editors.html'>Editor</a></li>
+<li><a href='status.html'>Status</a></li>
+<li><a href='ai.html'>AI</a></li>
+<li><a href='license.html'>License</a></li>
+</ul>
+</aside>
+<div class='doc-content'>
+<h1>The AI benchmark</h1>
+<p class='section-sub'>The kit in the ai folder measures whether a language model is able to write Triad. It is a developer tool: it is not part of the S0 to S4 chain, the official conformance stays the one of the conformance folder, and what is measured here is the quality of the generation.</p>
+<h2>1. What it is</h2>
+<p>Inside a task there are the pieces of a small benchmark. The system prompt is given to the model, the task file is the request in natural language, the golden output is the expected standard output, the golden code is the expected exit code, zero by default, and the solution file is the program that the model produced. The model receives the prompt and a task, it answers with a Triad program, the program is saved and it is verified against the goldens.</p>
+<p>The five tasks cover the Core subset and nothing else: the sum with its precedence, the factorial with the recursion and the ternary, the double recursion of the Fibonacci, the strings with the concatenation and the length, and a function that returns a lambda with a capture.</p>
+<div class='code-card'>
+ai/tasks/01_somma/         println, precedence, integers
+ai/tasks/02_fattoriale/    functions, recursion, ternary
+ai/tasks/03_fibonacci/     double recursion
+ai/tasks/04_stringhe/      strings, concatenation, length
+ai/tasks/05_chiusure/      a function that returns a lambda
+</div>
+<h2>2. How to run it</h2>
+<p>The verifier takes every task that has a solution, runs it with the seed and compares the standard output and the exit code with the goldens. It prints a verdict for each case and a summary at the end; a missing solution is skipped and does not make the verification fail, while a single failing solution is enough to make the command exit with the code 1.</p>
+<div class='code-card'>
+# all the tasks
+Native AI benchmark verifier: not yet implemented
+
+# a single case
+Native AI benchmark verifier: not yet implemented
+
+# with the obtained and the expected output side by side
+Native AI benchmark verifier: not yet implemented
+</div>
+<h2>3. The format of the solution</h2>
+<p>The system prompt is strict on purpose: a single block of code, no text outside the block, no markdown around it, only the supported constructs of Triad-Core, no invented libraries, types or functions, and the output produced only with the print statement. The answer is saved as the solution file and it is executed by the Core interpreter.</p>
+<div class='code-card'>
+# the answer to the task 02, as the model has to return it
+fattoriale(n) = n &lt; 2 ? 1 : n * fattoriale(n - 1)
+println(fattoriale(5))
+</div>
+<p>The metrics that can be extracted are the usual ones of the generation benchmarks: the pass at one, a single generation per task with everything green, the pass at k, with k attempts per task where the first success counts, and the classification of the failures, syntax, runtime or wrong output, to understand whether the gap is in the specification, in the examples or in the tooling.</p>
+<h2>4. How not to use it</h2>
+<p>This is a measuring instrument, not a source of implementation: the generated program is not part of the language, the repository does not take it as an implementation and the official conformance remains the one in the conformance folder. The README of the folder says it in one line: developer tool, not part of the S0 to S4 chain.</p>
+<p>There is one real risk, and it is the reason the safety section exists: the verifier executes the generated code. A model can produce an infinite loop or an unexpected program, so the verification has to run inside a virtual machine or a container, without network and with limited resources, and an unverified output must never be pasted into production.</p>
+<p>The rule that binds this repository is the seventh of the agent instructions: when the task is to generate a solution, return only one single block of Triad code, without explanations and without markdown, conforming to the system prompt of the folder, and verify it with the command above.</p>
+<p class='section-sub'>Source: ai/README.md, ai/SYSTEM_PROMPT.md, ai/tasks/*, AGENTS.md §3.</p>
+</div>
+</div>
 </main>
-<div id="site-footer"></div>
-<script src="../assets/js/app.js"></script>
-<script>
-TriadSite.mount('AI');
-TriadSite.loadMarkdown('doc-content', 'ai/README.md');
-</script>
+<footer class="site-footer"><div class="container">Triad 2.0 · Native language tools · <a href="spec.html">Specification</a></div></footer>
+
+
 </body>
 </html>

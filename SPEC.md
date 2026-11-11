@@ -162,8 +162,8 @@ $ julia triad.jl --tree examples/assaggio.td
 The quoted code is a value of type `Expr`: `c.head` and `c.args` inspect it,
 `Expr(:call, :f, 1)` constructs it, `eval(c)` executes it, `parse(s)` and `unparse(c)` convert
 between text and tree, `sexpr(c)` gives the view to S-expression.
-## 4. Values ​​and types
-| type | values ​​|
+## 4. Values and types
+| type | values |
 |---|---|
 | `Int`, `Float` (subtypes of `Number`) | `42`, `3.5` |
 | `Bool` | `true`, `false` |
@@ -215,7 +215,7 @@ end
   - More maximal methods give `Err(:ambiguous)`.
 - **Return type:** `::R` is checked on exit, with Int→Float conversion. If the
   value does not conform you get `Err(:type)`.
-- **First-class values:** functions and operators are values ​​(`reduce(+, xs)`,
+- **First-class values:** functions and operators are values (`reduce(+, xs)`,
 `map(sq, xs)`), lambdas (`x -> x + 1`) are closures.
 - **Local functions:** a `function` defined inside another function is a local closure,
   without dispatch.

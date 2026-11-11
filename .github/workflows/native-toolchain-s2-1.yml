@@ -1,0 +1,24 @@
+name: Triad Native Assembler S2.1
+on:
+  push:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-1.yml'
+  pull_request:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-1.yml'
+permissions:
+  contents: read
+jobs:
+  assembler-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Native Triad S2.1 labels, jumps, calls and addresses
+        run: sh selfhost/toolchain/tests/run_s2_1.sh
+      - name: S2.0 compatibility
+        run: sh selfhost/toolchain/tests/run.sh
+      - name: Full native and no-JavaScript conformance
+        run: sh verify.sh

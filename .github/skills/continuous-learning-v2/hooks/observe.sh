@@ -91,6 +91,14 @@ if [ -z "$PYTHON_CMD" ]; then
   exit 0
 fi
 
+# SECURITY: run every inline Python parser in isolated mode (-I). Without it,
+# CWD and the PYTHONPATH/PYTHONHOME environment variables stay on the module
+# search path, so a repository-controlled json.py (or sitecustomize.py) could
+# shadow the standard library and execute during hook JSON parsing. -I implies
+# -E (ignore PYTHON* env vars) and -s (no user site-packages), and drops the
+# script/CWD directory from sys.path for -c invocations.
+PYTHON_CMD_ARGS=(-I)
+
 # Propagate our stub-aware selection so detect-project.sh (which is sourced
 # below) does not re-resolve and silently fall back to the App Installer stub.
 # detect-project.sh honors an already-set CLV2_PYTHON_CMD.
@@ -103,7 +111,7 @@ export CLV2_PYTHON_CMD="${CLV2_PYTHON_CMD:-$PYTHON_CMD}"
 # Extract cwd from the hook JSON to use for project detection.
 # If cwd is a subdirectory inside a git repo, resolve it to the repo root so
 # observations attach to the project instead of a nested path.
-STDIN_CWD=$(echo "$INPUT_JSON" | "$PYTHON_CMD" -I -c '
+STDIN_CWD=$(echo "$INPUT_JSON" | "$PYTHON_CMD" "${PYTHON_CMD_ARGS[@]}" -c '
 import json, sys
 try:
     data = json.load(sys.stdin)
@@ -166,7 +174,7 @@ esac
 [ "${ECC_SKIP_OBSERVE:-0}" = "1" ] && exit 0
 
 # Layer 4: subagent sessions are automated by definition.
-_ECC_AGENT_ID=$(echo "$INPUT_JSON" | "$PYTHON_CMD" -I -c "import json,sys; print(json.load(sys.stdin).get('agent_id',''))" 2>/dev/null || true)
+_ECC_AGENT_ID=$(echo "$INPUT_JSON" | "$PYTHON_CMD" "${PYTHON_CMD_ARGS[@]}" -c "import json,sys; print(json.load(sys.stdin).get('agent_id',''))" 2>/dev/null || true)
 [ -n "$_ECC_AGENT_ID" ] && exit 0
 
 # Layer 5: known observer-session path exclusions.
@@ -209,7 +217,7 @@ fi
 
 # Parse using Python via stdin pipe (safe for all JSON payloads)
 # Pass HOOK_PHASE via env var since Claude Code does not include hook type in stdin JSON
-PARSED=$(echo "$INPUT_JSON" | HOOK_PHASE="$HOOK_PHASE" "$PYTHON_CMD" -I -c '
+PARSED=$(echo "$INPUT_JSON" | HOOK_PHASE="$HOOK_PHASE" "$PYTHON_CMD" "${PYTHON_CMD_ARGS[@]}" -c '
 import json
 import sys
 import os
@@ -259,13 +267,13 @@ except Exception as e:
 ')
 
 # Check if parsing succeeded
-PARSED_OK=$(echo "$PARSED" | "$PYTHON_CMD" -I -c "import json,sys; print(json.load(sys.stdin).get('parsed', False))" 2>/dev/null || echo "False")
+PARSED_OK=$(echo "$PARSED" | "$PYTHON_CMD" "${PYTHON_CMD_ARGS[@]}" -c "import json,sys; print(json.load(sys.stdin).get('parsed', False))" 2>/dev/null || echo "False")
 
 if [ "$PARSED_OK" != "True" ]; then
   # Fallback: log raw input for debugging (scrub secrets before persisting)
   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   export TIMESTAMP="$timestamp"
-  echo "$INPUT_JSON" | "$PYTHON_CMD" -I -c '
+  echo "$INPUT_JSON" | "$PYTHON_CMD" "${PYTHON_CMD_ARGS[@]}" -c '
 import json, sys, os, re
 
 # Linear-time secret matcher. Bounded quantifiers and a fixed set of auth
@@ -313,7 +321,7 @@ export PROJECT_ID_ENV="$PROJECT_ID"
 export PROJECT_NAME_ENV="$PROJECT_NAME"
 export TIMESTAMP="$timestamp"
 
-echo "$PARSED" | "$PYTHON_CMD" -I -c '
+echo "$PARSED" | "$PYTHON_CMD" "${PYTHON_CMD_ARGS[@]}" -c '
 import json, sys, os, re
 import signal
 
@@ -492,7 +500,7 @@ else
   # Use effective config path for both existence check and reading
   EFFECTIVE_CONFIG="$CONFIG_FILE"
   if [ -f "$EFFECTIVE_CONFIG" ] && [ -n "$PYTHON_CMD" ]; then
-    _enabled=$(CLV2_CONFIG_PATH="$EFFECTIVE_CONFIG" "$PYTHON_CMD" -I -c "
+    _enabled=$(CLV2_CONFIG_PATH="$EFFECTIVE_CONFIG" "$PYTHON_CMD" "${PYTHON_CMD_ARGS[@]}" -c "
 import json, os
 with open(os.environ['CLV2_CONFIG_PATH']) as f:
     cfg = json.load(f)

@@ -1,0 +1,328 @@
+# S2.1 experimental assembler: x86-64 labels, rel32 jumps/calls, RIP addresses.
+# Dependencies: elf64_exit.triad (hex_byte, zeros, little, mov_*).
+# Input: a validated ASCII multiline string, never executable Triad source.
+# This is not yet a compiler for the Triad language.
+
+function asm_need(ok)
+    if !ok
+        exit(1)
+    end
+    ok
+end
+
+function asm_same(a, b)
+    yes = strlen(a) == strlen(b)
+    i = 1
+    while i <= strlen(a) && yes == true
+        if strbyte(a, i) != strbyte(b, i)
+            yes = false
+        end
+        i += 1
+    end
+    yes
+end
+
+function asm_name_ok(name)
+    yes = strlen(name) > 0 && strlen(name) <= 40
+    i = 1
+    while i <= strlen(name) && yes == true
+        ch = strbyte(name, i)
+        if i == 1 && !(ch >= 97 && ch <= 122)
+            yes = false
+        end
+        if !((ch >= 97 && ch <= 122) || (ch >= 48 && ch <= 57) || ch == 95)
+            yes = false
+        end
+        i += 1
+    end
+    yes
+end
+
+function asm_uint(word)
+    asm_need(strlen(word) > 0 && strlen(word) <= 5)
+    value = 0
+    i = 1
+    while i <= strlen(word)
+        digit = strbyte(word, i) - 48
+        asm_need(digit >= 0 && digit <= 9)
+        value = value * 10 + digit
+        asm_need(value <= 65535)
+        i += 1
+    end
+    value
+end
+
+# The only valid whitespace inside the input is space or LF.
+# Token '@' is synthesized from a newline; it cannot occur in the input.
+function asm_tokens(src)
+    asm_need(strlen(src) > 0 && strlen(src) <= 12000)
+    words = []
+    word = ""
+    i = 1
+    while i <= strlen(src)
+        ch = strbyte(src, i)
+        if ch == 32 || ch == 10
+            if strlen(word) > 0
+                push!(words, word)
+                word = ""
+            end
+            if ch == 10
+                push!(words, "@")
+            end
+        else
+            valid = (ch >= 97 && ch <= 122) || (ch >= 48 && ch <= 57) || ch == 95
+            asm_need(valid)
+            word = word * strsub(src, i, i)
+        end
+        i += 1
+    end
+    if strlen(word) > 0
+        push!(words, word)
+    end
+    push!(words, "@")
+    words
+end
+
+function asm_has_arg(op)
+    asm_same(op, "label") || asm_same(op, "byte") || asm_same(op, "mov_edi") || asm_same(op, "mov_eax") || asm_same(op, "mov_edx") || asm_same(op, "add_edi") || asm_same(op, "sub_edi") || asm_same(op, "cmp_edi") || asm_same(op, "sub_rsp") || asm_same(op, "add_rsp") || asm_same(op, "load_edi_rsp") || asm_same(op, "store_edi_rsp") || asm_same(op, "add_edi_rsp") || asm_same(op, "sub_edi_rsp") || asm_same(op, "cmp_edi_rsp") || asm_same(op, "load_esi_rsp") || asm_same(op, "store_esi_rsp") || asm_same(op, "mov_esi") || asm_same(op, "jmp") || asm_same(op, "jz") || asm_same(op, "jnz") || asm_same(op, "call") || asm_same(op, "lea_rsi")
+end
+
+function asm_is_target(op)
+    asm_same(op, "jmp") || asm_same(op, "jz") || asm_same(op, "jnz") || asm_same(op, "call") || asm_same(op, "lea_rsi")
+end
+
+function asm_size(op)
+    n = -1
+    if asm_same(op, "label")
+        n = 0
+    elseif asm_same(op, "byte") || asm_same(op, "nop") || asm_same(op, "ret")
+        n = 1
+    elseif asm_same(op, "syscall") || asm_same(op, "xor_edi") || asm_same(op, "inc_edi") || asm_same(op, "dec_edi") || asm_same(op, "test_edi") || asm_same(op, "mov_eax_edi") || asm_same(op, "mov_edi_eax")
+        n = 2
+    elseif asm_same(op, "mov_edi") || asm_same(op, "mov_eax") || asm_same(op, "mov_edx") || asm_same(op, "mov_esi") || asm_same(op, "jmp") || asm_same(op, "call")
+        n = 5
+    elseif asm_same(op, "add_edi") || asm_same(op, "sub_edi") || asm_same(op, "cmp_edi") || asm_same(op, "jz") || asm_same(op, "jnz")
+        n = 6
+    elseif asm_same(op, "load_edi_rsp") || asm_same(op, "store_edi_rsp") || asm_same(op, "add_edi_rsp") || asm_same(op, "sub_edi_rsp") || asm_same(op, "cmp_edi_rsp") || asm_same(op, "load_esi_rsp") || asm_same(op, "store_esi_rsp")
+        n = 4
+    elseif asm_same(op, "lea_rsi") || asm_same(op, "sub_rsp") || asm_same(op, "add_rsp")
+        n = 7
+    end
+    n
+end
+
+# Flat symbol table [name1, offset1, name2, offset2, ...] keeps S0
+# function calls within its certified four-argument limit.
+function asm_label_at(symbols, wanted)
+    result = -1
+    i = 1
+    while i <= length(symbols)
+        if asm_same(symbols[i], wanted)
+            result = symbols[i + 1]
+        end
+        i += 2
+    end
+    result
+end
+
+# Encode signed relative displacement without expanding a negative value
+# into 2^32: S0 has finite integer/heap budgets.
+function asm_rel32(offset)
+    result = ""
+    if offset >= 0
+        result = little(offset, 4)
+    else
+        remaining = -offset - 1
+        i = 0
+        while i < 4
+            byte = remaining % 256
+            quotient = 0
+            while remaining >= 256
+                remaining -= 256
+                quotient += 1
+            end
+            result = result * hex_byte(255 - byte)
+            remaining = quotient
+            i += 1
+        end
+    end
+    result
+end
+
+function asm_encode(op, arg, here, symbols)
+    out = ""
+    if asm_same(op, "byte")
+        value = asm_uint(arg)
+        asm_need(value <= 255)
+        out = hex_byte(value)
+    elseif asm_same(op, "nop")
+        out = "90"
+    elseif asm_same(op, "ret")
+        out = "c3"
+    elseif asm_same(op, "syscall")
+        out = "0f05"
+    elseif asm_same(op, "xor_edi")
+        out = "31ff"
+    elseif asm_same(op, "inc_edi")
+        out = "ffc7"
+    elseif asm_same(op, "dec_edi")
+        out = "ffcf"
+    elseif asm_same(op, "test_edi")
+        out = "85ff"
+    elseif asm_same(op, "mov_eax_edi")
+        out = "89f8"
+    elseif asm_same(op, "mov_edi_eax")
+        out = "89c7"
+    elseif asm_same(op, "mov_edi")
+        out = mov_edi(asm_uint(arg))
+    elseif asm_same(op, "mov_eax")
+        out = mov_eax(asm_uint(arg))
+    elseif asm_same(op, "mov_edx")
+        out = "ba" * little(asm_uint(arg), 4)
+    elseif asm_same(op, "mov_esi")
+        out = "be" * little(asm_uint(arg), 4)
+    elseif asm_same(op, "add_edi")
+        out = "81c7" * little(asm_uint(arg), 4)
+    elseif asm_same(op, "sub_edi")
+        out = "81ef" * little(asm_uint(arg), 4)
+    elseif asm_same(op, "cmp_edi")
+        out = "81ff" * little(asm_uint(arg), 4)
+    elseif asm_same(op, "load_edi_rsp") || asm_same(op, "store_edi_rsp") || asm_same(op, "add_edi_rsp") || asm_same(op, "sub_edi_rsp") || asm_same(op, "cmp_edi_rsp") || asm_same(op, "load_esi_rsp") || asm_same(op, "store_esi_rsp")
+        offset = asm_uint(arg)
+        asm_need(offset <= 28 && offset % 4 == 0)
+        if asm_same(op, "load_edi_rsp")
+            out = "8b7c24" * hex_byte(offset)
+        elseif asm_same(op, "load_esi_rsp")
+            out = "8b7424" * hex_byte(offset)
+        elseif asm_same(op, "store_esi_rsp")
+            out = "897424" * hex_byte(offset)
+        elseif asm_same(op, "store_edi_rsp")
+            out = "897c24" * hex_byte(offset)
+        elseif asm_same(op, "add_edi_rsp")
+            out = "037c24" * hex_byte(offset)
+        elseif asm_same(op, "sub_edi_rsp")
+            out = "2b7c24" * hex_byte(offset)
+        else
+            out = "3b7c24" * hex_byte(offset)
+        end
+    elseif asm_same(op, "sub_rsp")
+        out = "4881ec" * little(asm_uint(arg), 4)
+    elseif asm_same(op, "add_rsp")
+        out = "4881c4" * little(asm_uint(arg), 4)
+    elseif asm_is_target(op)
+        target = asm_label_at(symbols, arg)
+        asm_need(target >= 0)
+        displacement = target - (here + asm_size(op))
+        encoded = asm_rel32(displacement)
+        if asm_same(op, "jmp")
+            out = "e9" * encoded
+        elseif asm_same(op, "call")
+            out = "e8" * encoded
+        elseif asm_same(op, "jz")
+            out = "0f84" * encoded
+        elseif asm_same(op, "jnz")
+            out = "0f85" * encoded
+        elseif asm_same(op, "lea_rsi")
+            out = "488d35" * encoded
+        end
+    end
+    asm_need(strlen(out) == 2 * asm_size(op))
+    out
+end
+
+# Standard ELF64 ET_EXEC with a single RX PT_LOAD and entry offset 120.
+# This function alone owns ELF layout; no host-side linker/assembler.
+function asm_elf_image(code, code_bytes)
+    asm_need(code_bytes > 0 && code_bytes <= 4096)
+    asm_need(strlen(code) == code_bytes * 2)
+    file_bytes = 120 + code_bytes
+    out = ""
+    out = out * hex_byte(127) * hex_byte(69) * hex_byte(76) * hex_byte(70)
+    out = out * hex_byte(2) * hex_byte(1) * hex_byte(1) * zeros(9)
+    out = out * little(2, 2) * little(62, 2) * little(1, 4)
+    out = out * hex_byte(120) * hex_byte(0) * hex_byte(64) * zeros(5)
+    out = out * little(64, 8) * zeros(8) * little(0, 4)
+    out = out * little(64, 2) * little(56, 2) * little(1, 2)
+    out = out * little(0, 2) * little(0, 2) * little(0, 2)
+    out = out * little(1, 4) * little(5, 4) * little(0, 8)
+    out = out * hex_byte(0) * hex_byte(0) * hex_byte(64) * zeros(5)
+    out = out * hex_byte(0) * hex_byte(0) * hex_byte(64) * zeros(5)
+    out = out * little(file_bytes, 8) * little(file_bytes, 8) * little(4096, 8)
+    out * code
+end
+
+# Two passes: validate instructions and map label offsets, then emit code.
+# A label resolves to an offset within the payload, not to a host pointer.
+function assemble_text(src)
+    words = asm_tokens(src)
+    symbols = []
+    here = 0
+    index = 1
+    statements = 0
+    while index <= length(words)
+        op = words[index]
+        if asm_same(op, "@")
+            index += 1
+        else
+            size = asm_size(op)
+            asm_need(size >= 0)
+            takes = asm_has_arg(op)
+            arg = ""
+            step = 2
+            if takes
+                asm_need(index + 2 <= length(words))
+                arg = words[index + 1]
+                asm_need(!asm_same(arg, "@"))
+                asm_need(asm_same(words[index + 2], "@"))
+                step = 3
+            else
+                asm_need(index + 1 <= length(words))
+                asm_need(asm_same(words[index + 1], "@"))
+            end
+            if asm_same(op, "label")
+                asm_need(asm_name_ok(arg))
+                asm_need(asm_label_at(symbols, arg) < 0)
+                push!(symbols, arg)
+                push!(symbols, here)
+            elseif asm_is_target(op)
+                asm_need(asm_name_ok(arg))
+            elseif takes
+                value = asm_uint(arg)
+                if asm_same(op, "byte")
+                    asm_need(value <= 255)
+                end
+            end
+            here += size
+            statements += 1
+            asm_need(here <= 4096 && statements <= 1024)
+            index += step
+        end
+    end
+    asm_need(here > 0)
+    # Pass two emits opcodes, data and signed PC-relative fixups.
+    total = here
+    index = 1
+    here = 0
+    code = ""
+    while index <= length(words)
+        op = words[index]
+        if asm_same(op, "@")
+            index += 1
+        else
+            size = asm_size(op)
+            arg = ""
+            step = 2
+            if asm_has_arg(op)
+                arg = words[index + 1]
+                step = 3
+            end
+            if size > 0
+                code = code * asm_encode(op, arg, here, symbols)
+            end
+            here += size
+            index += step
+        end
+    end
+    asm_need(here == total)
+    asm_elf_image(code, total)
+end

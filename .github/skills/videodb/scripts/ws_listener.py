@@ -68,10 +68,9 @@ def default_output_dir() -> Path:
 def ensure_private_dir(path: Path) -> Path:
     """Create the listener state directory with private permissions."""
     path.mkdir(parents=True, exist_ok=True, mode=0o700)
-    try:
+    # Best-effort: not every platform implements POSIX permission bits.
+    with contextlib.suppress(OSError):
         path.chmod(0o700)
-    except OSError:
-        pass
     return path
 
 
@@ -240,8 +239,10 @@ async def main_async():
     
     # Register signal handlers
     for sig in (signal.SIGINT, signal.SIGTERM):
-        with contextlib.suppress(NotImplementedError):
+        try:
             loop.add_signal_handler(sig, handle_signal)
+        except NotImplementedError:
+            pass  # Event loop does not support signal handlers on this platform.
     
     # Run listener with cancellation support
     listen_task = asyncio.create_task(listen_with_retry())
@@ -253,19 +254,23 @@ async def main_async():
     )
 
     if listen_task.done():
-        await listen_task
+        # Re-raise a listener failure instead of exiting with it swallowed.
+        listen_task.result()
     
-    # Cancel remaining tasks
+    # Cancel remaining tasks and wait for the cancellations to complete.
     for task in pending:
         task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
+    for result in await asyncio.gather(*pending, return_exceptions=True):
+        if isinstance(result, asyncio.CancelledError):
+            continue  # expected: the task was cancelled above
+        if isinstance(result, BaseException):
+            raise result  # a real failure must not be swallowed at shutdown
 
     for sig in (signal.SIGINT, signal.SIGTERM):
-        with contextlib.suppress(NotImplementedError):
+        try:
             loop.remove_signal_handler(sig)
+        except NotImplementedError:
+            pass  # Event loop does not support signal handlers on this platform.
     
     log("Shutdown complete")
 

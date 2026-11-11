@@ -6,8 +6,8 @@
     "organization": "GPuntobit",
     "repositoryId": "917582",
     "repositoryName": "triad2.0",
-    "createdAt": "2026-11-11T17:23:28.552Z",
-    "updatedAt": "2026-11-11T17:23:28.552Z",
+    "createdAt": "2026-11-11T17:42:43.576Z",
+    "updatedAt": "2026-11-11T17:42:43.576Z",
     "languages": [
       "CSharp",
       "CSS",
@@ -8278,6 +8278,8 @@
     ".github/skills/webcmd-browser/SKILL.md",
     ".github/skills/windows-desktop-e2e/SKILL.md",
     ".github/skills/workspace-surface-audit/SKILL.md",
-    ".github/skills/x-api/SKILL.md"
+    ".github/skills/x-api/SKILL.md",
+    "obsidian-triad/.obsidian/plugins/**",
+    ".github/skills/**"
   ]
 }

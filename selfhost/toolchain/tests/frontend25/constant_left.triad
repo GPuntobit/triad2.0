@@ -1,0 +1,7 @@
+function plus(value)
+    result = 3 + value
+    result
+end
+a = 4
+answer = plus(a)
+exit(answer)

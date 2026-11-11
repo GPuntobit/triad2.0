@@ -1,0 +1,5 @@
+# Independent native S1 proof/revocation queries.
+println([s.sources for s in solve proof_path(:trid, :deep5, [:trid], ?sources)])
+println([s.sources for s in solve retained_path(:trid, :deep5, [:trid], ?sources)])
+println([s.sources for s in solve suspended_path(:trid, :deep5, [:trid], ?sources)])
+println([s.state for s in solve rule_state(:path_generalization, ?state)])

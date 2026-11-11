@@ -1,0 +1,26 @@
+start
+i32_frame 32
+i32_const 1
+i32_store 0
+i32_load 0
+i32_call keep
+i32_store 4
+i32_load 4
+i32_test_zero
+br_zero elsepath
+i32_const 7
+i32_store 8
+jump join
+label elsepath
+i32_const 9
+i32_store 12
+label join
+i32_load 8
+exit
+label keep
+i32_enter 40
+i32_store 0
+i32_load 0
+i32_result
+i32_leave 40
+return

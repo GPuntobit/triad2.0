@@ -1,0 +1,22 @@
+name: Triad Native Toolchain S2.0
+on:
+  push:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2.yml'
+  pull_request:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2.yml'
+permissions:
+  contents: read
+jobs:
+  native-elf-emitter:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Native ELF code generation using Triad-Core
+        run: sh selfhost/toolchain/tests/run.sh
+      - name: Ensure zero JavaScript and current Triad conformance
+        run: sh verify.sh

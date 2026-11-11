@@ -1,0 +1,27 @@
+{
+  "edges": [
+    {"domain":"family","relation":"parent","from":"mario","to":"luca","source":"book_01"},
+    {"domain":"family","relation":"parent","from":"luca","to":"antonio","source":"book_02"},
+    {"domain":"family","relation":"parent","from":"luca","to":"antonella","source":"book_02"},
+    {"domain":"family","relation":"parent","from":"sara","to":"leo","source":"book_03"},
+    {"domain":"family","relation":"parent","from":"leo","to":"nina","source":"book_04"},
+    {"domain":"family","relation":"parent","from":"marta","to":"paolo","source":"book_05"},
+    {"domain":"family","relation":"parent","from":"marta","to":"giulia","source":"book_05"}
+  ],
+  "targets": [
+    {
+      "domain":"family","name":"grandparent","relation":"parent",
+      "train_positive":[["mario","antonio","review_01"],["mario","antonella","review_02"]],
+      "train_negative":[["antonio","mario","review_03"],["luca","antonella","review_04"]],
+      "test_positive":[["sara","nina","review_05"]],
+      "test_negative":[["nina","sara","review_06"],["marta","paolo","review_07"]]
+    },
+    {
+      "domain":"family","name":"sibling","relation":"parent",
+      "train_positive":[["antonio","antonella","review_08"],["antonella","antonio","review_09"]],
+      "train_negative":[["mario","luca","review_10"],["mario","antonio","review_11"]],
+      "test_positive":[["paolo","giulia","review_12"]],
+      "test_negative":[["sara","leo","review_13"]]
+    }
+  ]
+}

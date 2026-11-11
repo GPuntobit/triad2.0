@@ -33,8 +33,6 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from . import grade as grade_mod
-
 
 def _lab(rgb: np.ndarray) -> np.ndarray:
     return cv2.cvtColor(np.ascontiguousarray(rgb, np.float32), cv2.COLOR_RGB2LAB)

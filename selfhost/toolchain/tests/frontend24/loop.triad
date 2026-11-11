@@ -1,0 +1,8 @@
+counter = 4
+step = 3
+total = 0
+while counter != 0
+    total += step
+    counter -= 1
+end
+exit(total)

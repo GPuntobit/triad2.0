@@ -1,23 +1,23 @@
 # `ai/jev_audit.mjs`
 
-File sorgente: [`ai/jev_audit.mjs`](../ai/jev_audit.mjs) · [cartella `ai/`](../ai/)
+Source file: [`ai/jev_audit.mjs`](../ai/jev_audit.mjs) · [project folder `ai/`](../ai/)
 
-## Ruolo nel progetto
+## Role in the project
 
-Script di audit dei file versionati: individua i file, raccoglie fatti di contesto, costruisce lo stato da analizzare e produce un report. Graphify ha riportato 20 simboli.
+Audit script for the versioned files: it locates the files, collects contextual facts, builds the state to analyse and produces a report. Graphify reported 20 symbols.
 
-## Chiamate verificate
+## Verified calls
 
-La funzione [`sweep()`](../ai/jev_audit.mjs#L281) chiama:
+The function [`sweep()`](../ai/jev_audit.mjs#L281) calls:
 
-- [`trackedFiles()`](../ai/jev_audit.mjs#L67) per ottenere i file;
-- [`knownFacts()`](../ai/jev_audit.mjs#L142) e [`buildState()`](../ai/jev_audit.mjs#L245) per preparare il contesto;
-- [`callSystemOne()`](../ai/jev_audit.mjs#L261) per l’analisi;
-- [`writeReport()`](../ai/jev_audit.mjs#L334) per il report.
+- [`trackedFiles()`](../ai/jev_audit.mjs#L67) to obtain the files;
+- [`knownFacts()`](../ai/jev_audit.mjs#L142) and [`buildState()`](../ai/jev_audit.mjs#L245) to prepare the context;
+- [`callSystemOne()`](../ai/jev_audit.mjs#L261) for the analysis;
+- [`writeReport()`](../ai/jev_audit.mjs#L334) for the report.
 
-Graphify collega inoltre `sweep()` al punto d’ingresso del file (call site a L448). Le chiamate sopra sono archi `calls` restituiti con risoluzione stretta.
+Graphify also links `sweep()` to the file entry point (call site at L448). The calls above are `calls` edges returned with strict resolution.
 
-## Collegamenti
+## Links
 
-- [[Grafo Graphify]]
-- [Cartella `ai/`](../ai/)
+- [[Grafo Graphify|Graphify graph]]
+- [`ai/` folder](../ai/)

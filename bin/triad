@@ -2,18 +2,22 @@
 # =====================================================================
 #  triad — launcher POSIX per il linguaggio Triad
 #
-#  Cerca un runtime Triad in questo ordine:
-#    1. bin/triad-native  (eseguibile standalone per il sistema corrente)
-#    2. seed/<piattaforma>/seed  (interprete Triad-Core in codice macchina)
+#  Esegue SEMPRE il seed in codice macchina (exec-sempre-il-seed):
+#  nessun ramo JS, nessuna soglia stub, nessun flag --jsref, nessun
+#  artefatto opzionale devia il runtime — come da decisione
+#  "CLI e toolchain senza Node" (N18,
+#  .scratch/seed-linux-nativo/issues/09-cli-toolchain-senza-node.md,
+#  Q2) e "Installazione e launcher" (07, Q9: la logica di stub esce).
 #
-#  Does not depend on Julia or other host languages: execution of
-#  codice .triad avviene tramite il seed in codice macchina.
+#  Uso:  triad programma.td [argomenti...]
 #
-#  Uso:  triad [opzioni] [file.td [argomenti...]]
-#        triad --help          tutte le opzioni
+#  Runtime: seed/<piattaforma>/seed (interprete Triad-Core in codice
+#  macchina). TRIAD_SEED consente di forzare un seed specifico (usato
+#  anche dalla CI e dagli harness). Nessuna dipendenza da Node, Julia o
+#  altri host language.
 #
-#  Per usarlo da ovunque: aggiungere questa cartella al PATH, oppure
-#  creare un link simbolico in ~/.local/bin/triad.
+#  Per usarlo da ovunque: ./install.sh (wrapper in ~/.local/bin), oppure
+#  aggiungere questa cartella al PATH.
 #
 #  I file .td possono essere resi eseguibili direttamente:
 #    chmod +x programma.td
@@ -23,10 +27,10 @@
 
 set -e
 
-# --- Risoluzione del path reale dello script (segue i symlink) --------
+# --- Risoluzione del path reale dello script (segue i symlink, best-effort) ---
 self="$0"
 while [ -L "$self" ]; do
-    link=$(readlink "$self")
+    link=$(readlink "$self" 2>/dev/null) || break
     case $link in
         /*) self="$link" ;;
         *)  self="$(dirname "$self")/$link" ;;
@@ -34,77 +38,34 @@ while [ -L "$self" ]; do
 done
 TRIAD_HOME="$(cd "$(dirname "$self")/.." && pwd)"
 
-# --- Mode --build (no longer supported) -----------------------------
-if [ "${1:-}" = "--build" ]; then
+# Explicit S1 logic profile; the regular Core path remains native S0.
+if [ "${1:-}" = "--logic" ]; then
     shift
-    echo "triad --build: non disponibile (nessuna dipendenza da Julia)." >&2
-    echo "Usa il seed in codice macchina (bin/triad / seed/<piattaforma>/seed)." >&2
-    exit 2
+    exec sh "$TRIAD_HOME/scripts/run-logic.sh" "$@"
 fi
 
-# --- Ricerca del runtime ----------------------------------------------
-RUNTIME=""
-SEED=""
-
+# --- Ricerca del seed (unico runtime ammesso) -----------------------
 # TRIAD_SEED permette di forzare un seed specifico (usato anche dalla CI).
-if [ -n "${TRIAD_SEED:-}" ] && [ -x "${TRIAD_SEED:-}" ]; then
+if [ -n "${TRIAD_SEED:-}" ]; then
     SEED="$TRIAD_SEED"
-    RUNTIME="seed"
-fi
-
-# 1. Eseguibile standalone (nessuna dipendenza)
-if [ -z "$RUNTIME" ] && [ -x "$TRIAD_HOME/bin/triad-native" ]; then
-    RUNTIME="standalone"
-fi
-
-# 2. Seed in codice macchina (interprete Triad-Core)
-if [ -z "$RUNTIME" ]; then
+else
     case "$(uname -s)" in
-        Linux*)  SEED_CAND="$TRIAD_HOME/seed/linux-x86_64/seed" ;;
-        *)       SEED_CAND="" ;;
+        Linux*)  SEED="$TRIAD_HOME/seed/linux-x86_64/seed" ;;
+        *)       SEED="" ;;
     esac
-    if [ -n "$SEED_CAND" ] && [ -x "$SEED_CAND" ]; then
-        # The E0 seed is a stub (prints only "Triad seed Linux OK"): if given
-        # a .td file it cannot execute it. Recognized by
-        # dimensione (< 4 KB) e in quel caso si usa l'interprete JS di
-        # riferimento, come fa conformance/run.mjs. Sostituire il seed con la
-        # versione E2 rimuove automaticamente il fallback.
-        seed_size=$(wc -c < "$SEED_CAND" 2>/dev/null || echo 0)
-        if [ "$seed_size" -gt 4096 ]; then
-            SEED="$SEED_CAND"
-            RUNTIME="seed"
-        elif [ -f "$TRIAD_HOME/seed/dev/triad_core.cjs" ] && command -v node >/dev/null 2>&1; then
-            RUNTIME="jsref"
-        else
-            SEED="$SEED_CAND"   # stays seed: stub will at least print its output
-            RUNTIME="seed"
-        fi
-    fi
 fi
 
-# --- Esecuzione -------------------------------------------------------
-case "$RUNTIME" in
-    standalone)
-        exec "$TRIAD_HOME/bin/triad-native" "$@"
-        ;;
-    jsref)
-        # Interprete JS di riferimento (seed/dev/triad_core.cjs): identico
-        # behavior used by the conformance suite on Linux.
-        exec node "$TRIAD_HOME/seed/dev/triad_core.cjs" "$@"
-        ;;
-    seed)
-        exec "$SEED" "$@"
-        ;;
-    *)
-        echo "triad: runtime non trovato." >&2
-        echo "" >&2
-        echo "Opzioni:" >&2
-        echo "  1. Decodifica il seed in codice macchina:" >&2
-        echo "     Linux:  xxd -r -p seed/linux-x86_64/seed.hex > seed/linux-x86_64/seed && chmod +x seed/linux-x86_64/seed" >&2
-        echo "  2. Usa il seed in codice macchina (nessuna dipendenza da Julia)" >&2
-        echo "" >&2
-        echo "Triad non dipende da Julia per l'esecuzione del codice .triad." >&2
-        exit 1
-        ;;
-esac
+if [ -z "$SEED" ] || [ ! -x "$SEED" ]; then
+    echo "triad: seed in codice macchina non trovato o non eseguibile." >&2
+    if [ -n "$SEED" ]; then
+        echo "  atteso: $SEED" >&2
+    fi
+    echo "" >&2
+    echo "  Esegui ./install.sh dalla radice del repository: decodifica" >&2
+    echo "  seed.hex e installa i launcher. Oppure decodifica manualmente:" >&2
+    echo "    sh install.sh   (vedi seed/linux-x86_64/README.md)" >&2
+    exit 1
+fi
 
+# --- Esecuzione: pura delega al seed --------------------------------
+exec "$SEED" "$@"

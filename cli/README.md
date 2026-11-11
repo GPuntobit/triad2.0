@@ -1,151 +1,146 @@
 # Triad CLI
-Unified CLI for Triad 2.0 project development tools.
-## Installation
+
+La toolchain a riga di comando di Triad 2.0 è divisa in due livelli
+(decisione *CLI e toolchain senza Node*, N18):
+
+- **`bin/triad-cli`** — CLI **POSIX, senza Node**, per il percorso utente:
+  `run` / `test` / `status`, pura delega su `bin/triad` e sugli harness
+  (`conformance/gate.sh`, `conformance/run.sh`, `tests/probes/run_probes.sh`,
+  `verify.sh`).
+- **`cli/triad-cli.mjs`** — CLI **Node di sviluppo**, solo comandi dev:
+  `seed generate`, `ai verify`, `ext check|package`.
+
+## Percorso utente (senza Node)
+
+Installazione (wrapper a percorso assoluto in `~/.local/bin`):
+
+```bash
+./install.sh                      # oppure: ./install.sh --prefix DIR
+```
+
+Comandi (`bin/triad-cli`, invocabile da qualunque directory):
+
+```bash
+triad-cli run <file> [-- args]     # esegue un programma Triad (.triad/.td)
+triad-cli test conformance        # suite Core completa (42 casi, nessuna esclusione)
+triad-cli test conformance --strict   # oracle puro: fallisce su QUALSIASI caso non verde
+triad-cli test conformance --update   # rigenera i golden (uso dev)
+triad-cli test probes              # probe ok_*/test_*/bad_* + golden
+triad-cli test all                 # gate completo (verify.sh)
+triad-cli status                   # stato della toolchain e dell'ambiente
+```
+
+Exit code = quello del comando delegato; exit 2 = errori d'uso.
+
+Esempio di output di `status` (deterministico, senza colori):
+
+```
+ _______  _____  ___   ___  ______
+|__   __||  ___||   \\ /   ||  ____|
+  | |   | |__  | |\\ V /| || |__
+  | |   |  __| | | \\_/ | ||  __|
+  | |   | |___ | |     | || |____
+  |_|   |_____||_|     |_||______|
+Triad toolchain status
+  root: /home/user/triad2.0
+  system: Linux x86_64
+  seed: /home/user/triad2.0/seed/linux-x86_64/seed (eseguibile)
+  install-path: /home/user/.local/bin (nel PATH)
+```
+
+## Comandi di sviluppo (Node.js ≥ 18)
+
+```bash
+cd cli && npm install              # dipendenze della CLI dev
+```
+
+Si invocano come `node cli/triad-cli.mjs <comando>` (oppure, su Windows,
+`bin\triad-cli.cmd`):
+
+```bash
+node ../cli/triad-cli.mjs seed generate windows   # rigenera il dump PE
+node ../cli/triad-cli.mjs seed generate linux     # rigenera il dump ELF
+node ../cli/triad-cli.mjs ai verify               # verifica soluzioni AI
+node ../cli/triad-cli.mjs ext check               # valida l'estensione VS Code
+node ../cli/triad-cli.mjs ext package             # crea triad-<versione>.vsix
+```
+
+`seed generate` opzioni:
+- `-o, --output <path>` — percorso del file hex (default: `seed/<piattaforma>-x86_64/seed.hex`)
+
+`ai verify` opzioni:
+- `-t, --tasks <dir>` — directory dei task (default: `ai/tasks`)
+- `-v, --verbose` — output dettagliato
+
+`ext package` opzioni:
+- `-o, --out <path>` — percorso del `.vsix`
+
+## Esecutabile standalone
+
+`triad-cli.exe` (Windows) e `triad-cli` (Linux) allegati alla beta release
+contengono Node.js e la CLI dev: copiarli nella radice del repository o in
+`bin/` (oppure impostare `TRIAD_HOME`). Per ricompilarli (Node.js ≥ 20):
+
 ```bash
 cd cli
 npm install
+npm run build:exe                         # piattaforma corrente
+node build-exe.mjs path/to/win/node.exe   # triad-cli.exe (anche da Linux)
 ```
 
-To use the CLI from any directory, add `bin/` to the PATH and use launchers
-`bin/triad-cli` (POSIX) or `bin\triad-cli.cmd` (Windows): on first startup they run
-`npm install` in `cli/` if `node_modules` is missing. Alternatively `npm link` (Linux/macOS).
-### Standalone executable
-`triad-cli.exe` (Windows) and `triad-cli` (Linux) are attached to the beta release: they contain
-Node.js and the CLI, so you don't need `npm install`. Copy them to the repository root or
-`bin/` (or set `TRIAD_HOME`): the CLI finds the project by going back from `TRIAD_HOME`,
-from the location of the executable and the current folder. `test`, `seed generate`
-they still require `node` in the PATH, because they run `conformance/run.mjs` and `seed/dev/*.js`.
-To rebuild them (Node.js >= 20; the Node binary passed decides the platform):
-```bash
-cd cli
-npm install
-npm run build:exe                         # eseguibile per la piattaforma corrente
-node build-exe.mjs path/to/win/node.exe   # triad-cli.exe per Windows (anche da Linux)
-```
+## Interfaccia desktop Windows
 
-### Windows desktop interface
-`TriadDesktop.exe` opens a graphical window with the Triad icon and launches commands
-`status`, `test run`, `test conformance` and `ai verify`. Requires
-`triad-cli.exe` in the `cli\dist`, `bin` or repository root,
-as well as the Triad project folder. Commands are started without shell and
-only with predefined arguments; the results are shown in the window.
-To compile the GUI on Windows with the .NET Framework compiler:
+`TriadDesktop.exe` apre una finestra grafica e invoca i comandi della CLI
+(`triad-cli.exe` in `cli\dist`, `bin` o radice del progetto). Per compilarla
+con il compilatore .NET Framework:
+
 ```powershell
 .\cli\windows-gui\build.ps1
 ```
 
-The file is created in `cli\dist\TriadDesktop.exe`. For unit tests,
-conformance and AI verify Node.js is also needed in the `PATH`.
-## Commands
-### Status
-Show project status and environment information:
-```bash
-triad-cli status
+## Requisiti
+
+- **Percorso utente**: nessuna dipendenza oltre a una shell POSIX e il seed
+  in codice macchina (promessa zero-install, `./install.sh`).
+- **Comandi dev**: **Node.js** ≥ 18 (fuori dalla promessa zero-install).
+
+## Architettura
+
 ```
-
-Example output:
-```
-Triad 2.0 CLI Status
-
-Environment:
-  Node.js: v24.22.0
-  Platform: win32
-  Seed: C:\Users\xbos\Documents\progetti\triad2.0\seed\windows-x86_64\seed.exe
-
-Project:
-  Root: C:\Users\xbos\Documents\progetti\triad2.0
-```
-
-### Seed Generation
-Generate binary seeds for Windows or Linux:
-```bash
-triad-cli seed generate windows    # Genera seed Windows
-triad-cli seed generate linux      # Genera seed Linux
-```
-
-Options:
-- `-o, --output <path>` - Output path of the hex file (default: `seed/<platform>-x86_64/seed.hex`)
-### AI Verification
-Test solutions generated by LLM against golden tests:
-```bash
-triad-cli ai verify
-```
-
-Options:
-- `-t, --tasks <dir>` - Task directory (default: `ai/tasks`)
-- `-v, --verbose` - Verbose output
-### Standalone build
-Compile the standalone Triad executable:
-```bash
-triad-cli build standalone
-```
-
-### Run
-Run a Triad program (`.triad`/`.td`) with the runtime:
-```bash
-triad-cli run test_simple.td
-triad-cli run prog.triad -- arg1 arg2     # argomenti al programma Triad
-```
-
-Options:
-- `-v, --verbose` - Verbose output on error
-- `-n, --native` - Force seed into machine code (skip JS fallback)
-Note: on Windows use the seed (`seed/windows-x86_64/seed.exe` or `bin/triad-native.exe`);
-on Linux/Mac, as long as the seed is a stub (E0), use the reference JS interpreter
-`seed/dev/triad_core.cjs`, as does `conformance/run.mjs`.
-### VS Code extension
-Check extension structure in `editors/vscode` (package.json, grammar,
-language-configuration) and packages it in a `.vsix`:
-```bash
-triad-cli ext check      # validazione struttura
-triad-cli ext package    # crea triad-<versione>.vsix via vsce (o npx @vscode/vsce)
-```
-
-`ext package` options:
-- `-o, --out <path>` - Output path of the `.vsix`
-Installing package: `code --install-extension triad-0.2.0.vsix`
-
-### Tests
-Performs unit tests:
-```bash
-triad-cli test run
-```
-
-Options:
-- `-v, --verbose` - Verbose output
-Runs the conformance suite:
-```bash
-triad-cli test conformance
-```
-
-Options:
-- `-u, --update` - Update golden outputs (development only)
-- `-c, --cases <path>` - Case-specific directory
-## Requirements
-- **Node.js** ≥ 18.0.0
-- **Seed** in machine code (default runtime for `.triad`)
-## Architecture
-The CLI is structured in modules:
-```
+bin/
+├── triad                  # launcher POSIX: exec sempre del seed
+├── triad-cli              # CLI POSIX senza Node (run/test/status)
+├── triad.cmd              # launcher Windows (invariato)
+└── triad-cli.cmd          # CLI dev Windows (invariato)
 cli/
-├── triad-cli.mjs           # Entry point principale
-├── package.json            # Dipendenze Node.js
+├── triad-cli.mjs          # CLI Node di sviluppo (seed/ai/ext)
+├── package.json           # dipendenze Node.js
 ├── lib/
-│   ├── utils.mjs           # Funzioni utility (trova seed, esegui script)
+│   ├── utils.mjs          # utility (projectPath, runNode, fileExists)
 │   └── commands/
-│       ├── seed.mjs        # Generazione seed
-│       ├── ai.mjs          # Verifica AI
-│       ├── build.mjs       # Build standalone
-│       ├── run.mjs         # Esecuzione programmi .triad/.td
-│       ├── ext.mjs         # Estensione VS Code (check, package .vsix)
-│       └── test.mjs        # Test e conformance
-└── README.md               # Questa documentazione
+│       ├── seed.mjs       # generazione seed (dev)
+│       ├── ai.mjs         # verifica AI (dev)
+│       └── ext.mjs        # estensione VS Code: check, package .vsix (dev)
+└── README.md              # questa documentazione
 ```
 
-## Advantages
-- **Unified interface:** A single command for all development operations
-- **Cross-platform:** Node.js handles Windows/Linux/macOS differences
-- **Extensible:** Easy to add new commands
-- **Non-invasive:** Does not modify existing tools, only wraps them
-## Notes
-- The runtime for running Triad programs is the seed in machine code (or `bin/triad-native`); use `triad`/`triad.cmd` or `triad-cli` for development operations
+## Note
+
+- Il runtime per eseguire programmi Triad è il **seed in codice macchina**
+  (`seed/linux-x86_64/seed` su Linux, `seed/windows-x86_64/seed.exe` su
+  Windows): `bin/triad` lo esegue sempre, senza fallback JS né logica di
+  stub. Il riferimento JS (`seed/dev/triad_core.cjs`) resta solo nel
+  tooling di sviluppo.
+
+## Test di sviluppo Node
+
+`npm test --prefix cli` esegue i test del riferimento (output su pipe e codici
+di uscita) e del tool di audit AI. Il vecchio comando `test run` della CLI
+Node è stato rimosso: i test utente completi restano `triad-cli test all`.
+
+## Motore logico S1
+
+`triad --logic programma.triad` esegue il profilo logico S1 sul seed
+nativo, senza Node/Julia. `triad --logic -` legge da stdin. Sintassi
+supportata, esempio completo e limiti: [selfhost/logic](../selfhost/logic/README.md).
+La suite logica è inclusa in `triad-cli test all`.

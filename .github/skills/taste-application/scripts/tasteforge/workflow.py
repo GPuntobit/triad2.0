@@ -7,6 +7,7 @@ never imports or calls a provider SDK.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import math
@@ -228,7 +229,10 @@ class _SafeOutput:
         opened: list[int] = []
         try:
             for directory in directories:
-                opened.append(self._open_dir((directory,), create=True))
+                fd = self._open_dir((directory,), create=True)
+                # Close each descriptor as soon as it is validated so a failure
+                # partway through cannot leak the descriptors opened earlier.
+                os.close(fd)
         finally:
             for descriptor in opened:
                 os.close(descriptor)
@@ -268,10 +272,8 @@ class _SafeOutput:
         finally:
             if descriptor >= 0:
                 os.close(descriptor)
-            try:
+            with contextlib.suppress(FileNotFoundError):
                 os.unlink(temporary, dir_fd=parent_fd)
-            except FileNotFoundError:
-                pass
             os.close(parent_fd)
 
     def artifact_paths(self) -> list[str]:
@@ -323,10 +325,8 @@ def parse_feature_output(output: str, *, scene_threshold: float = 0.30) -> dict[
             "lavfi.scene_score": "scene_score",
         }.get(key)
         if mapped:
-            try:
+            with contextlib.suppress(ValueError):
                 current[mapped] = float(value)
-            except ValueError:
-                pass
     if current:
         records.append(current)
 

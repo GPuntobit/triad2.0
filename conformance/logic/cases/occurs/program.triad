@@ -1,0 +1,2 @@
+println(solve ?x = f(?x))
+println(solve ?x = [?x])

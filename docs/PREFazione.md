@@ -12,20 +12,26 @@ This volume translates it into a path: explanations, examples, exercises, profil
 The explanations, examples, and exercises gradually build the mental model of
 the language. The specification remains the normative reference source, not a reading prerequisite.
 
-The ideal reader already knows how to program in another language: knows what a variable is, a
-function, a loop, a recursion. This book does not teach programming in general, it teaches
-Triad. The language's influences (Julia, Prolog, Lisp) are documented in Appendix A of
-the specification: they are informative notes, not definitions. Triad is not a dialect of any of the three.
+This book does not assume that you already know how to program. Those who have written programs
+in another language — and know what a variable, a function, a loop, a recursion is — can skip the
+*Fundamentals* and start with the Manual or the Tutorial. Those who have never programmed will
+find here everything they need: the *Fundamentals: programming from zero with Triad* part teaches
+programming from scratch, using the language itself, and builds one by one the concepts that the
+rest of the book takes for granted. The language's influences (Julia, Prolog, Lisp) are documented
+in Appendix A of the specification: they are informative notes, not definitions. Triad is not a
+dialect of any of the three.
 
-The volume brings together two complementary and independent texts. The *Triad 2.0 Manual* explains the
-language, proposes exercises, and closes with grammar, quick reference cards, error table,
-glossary, and appendices. The *Triad 2.0 Tutorial* is divided into five parts: first steps,
-Triad-Core, Triad-Full, project code, and reference. You can read the Manual in full
-without the Tutorial, and the Tutorial in full without the Manual: each explains what it needs.
-The index that follows collects the chapters of both texts, so they can be found in one place.
+The volume brings together three complementary and independent texts. The *Fundamentals* introduce
+programming to those starting from zero. The *Triad 2.0 Manual* explains the language, proposes
+exercises, and closes with grammar, quick reference cards, error table, glossary, and appendices.
+The *Triad 2.0 Tutorial* is divided into five parts: first steps, Triad-Core, Triad-Full, project
+code, and reference. You can read each text in full without the others: each explains what it
+needs. The index that follows collects the chapters of all three texts, so they can be found in
+one place.
 
-If you want to write executable programs today, start with the Tutorial, parts I and II; use the Manual
-to deepen concepts and do exercises. To study the complete standard, continue with
+If you have never programmed, start with the Fundamentals and continue with the Tutorial, parts I
+and II. If you want to write executable programs today and already know how to program, start
+directly with the Tutorial, parts I and II; use the Manual to deepen concepts and do exercises. To study the complete standard, continue with
 part III of the Tutorial and the corresponding chapters of the Manual. Part IV is for those who
 want to explore or modify the repository.
 

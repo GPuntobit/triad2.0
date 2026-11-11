@@ -45,6 +45,10 @@ node_modules/
 !conformance/**/expected.out
 !conformance/**/expected.code
 !ai/**/expected.out
+# Probe e golden S1 (devono essere versionati: senza di loro la CI
+# fallisce con "golden mancante" su ogni probe)
+!tests/probes/*.expected.out
+!selfhost/*.expected.out
 
 # Python virtualenv
 .venv/
@@ -73,9 +77,30 @@ graphify.skill
 # Agent/IDE local state
 .kiro/settings/*.lock
 
+# Local Markdown issue tracker and research notes
+.scratch/
+
 
 #Ignore vscode AI rules
 .github\instructions\codacy.instructions.md
 
+# Git credentials (token GitHub) - NON committare
+.git-credentials
+
 # Pacchetti estensione editor
 *.vsix
+
+# Bundle browser del playground, generato da scripts/docs/sync-playground-core.mjs
+docs/pages/triad-core.js
+
+# Bundle browser dell'interprete, generato da scripts/docs/build-triad-core.mjs
+docs/assets/js/triad-core.js
+
+# Libro: tutti i file di produzione del libro (pdf/epub/mobi/docx/html, script e temp)
+# libro/ contiene i sorgenti e gli strumenti locali del libro
+/libro/
+# docs/libro è un repo separato (ha il proprio .git) per la pubblicazione del libro
+/docs/libro/
+
+# Installer smoke golden
+!tests/probes/test_simple.expected.out

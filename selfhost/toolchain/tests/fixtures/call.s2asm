@@ -1,0 +1,6 @@
+call body
+mov_eax 60
+syscall
+label body
+mov_edi 17
+ret

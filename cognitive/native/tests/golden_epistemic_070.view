@@ -1,0 +1,11 @@
+evidence|suspended|v1|fact|fact_a|s0_memory|src_a|asserted_conditional|1|src_a|none|event_a|none|family_relation
+proofs|suspended|v1|proof_node|path_a|s0_memory|src_a|demonstrated_conditional|1|src_a|src_a|event_b|none|witness_a
+proofs|demonstrated_conditional|v1|proof_node|path_b|s0_memory|src_b|demonstrated_conditional|1|src_b|src_b|event_c|none|witness_b
+proofs|suspended|v1|proof_node|correlated_a|s0_memory|src_c|demonstrated_conditional|1|src_c|src_c|event_d|none|witness_common
+proofs|suspended|v1|proof_node|correlated_b|s0_memory|src_c|demonstrated_conditional|1|src_c|src_c|event_e|none|witness_common
+activation|active|v1|activation_pulse|pulse_a|s0_memory|none|active|1|none|path_a|event_f|none|fuel_2
+hypotheses|experimental|v1|rule_candidate|candidate_a|s0_memory|none|experimental|1|none|none|event_g|none|unapproved_rule
+evidence|asserted_conditional|v1|fact|fact_s1|s1_graph|src_a|asserted_conditional|1|src_a|none|event_h|none|s1_relation
+evidence|unknown|v1|evidence|missing_a|s0_memory|src_missing|unknown|1|src_missing|none|event_k|none|source_not_observed
+revocations|revoked|v1|revocation|revoke_a|s0_memory|src_a|revoked|1|none|none|event_i|none|revoked_source
+revocations|revoked|v1|revocation|revoke_c|s0_memory|src_c|revoked|1|none|none|event_j|none|duplicate_source

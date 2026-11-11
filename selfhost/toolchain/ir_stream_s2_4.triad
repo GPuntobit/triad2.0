@@ -1,0 +1,85 @@
+# S2.4 native streaming IR lowerer.
+# Tokens are bounded to ONE line, not the full IR file. This avoids the
+# S0 seed's small temporary List capacity for long real programs.
+# All type/frame/branch checks remain in Triad; the shell is only transport.
+
+function ir_append24(text, piece)
+    result = piece
+    if strlen(text) > 0
+        newline = "
+"
+        result = text * newline * piece
+    end
+    result
+end
+
+function lower_ir_stream24(src)
+    asm_need(strlen(src) > 0 && strlen(src) <= 12000)
+    out = ""
+    pos = 1
+    statement_count = 0
+    saw_exit = false
+    frame_seen = false
+    flags_ready = false
+    while pos <= strlen(src)
+        line_end = pos
+        while line_end <= strlen(src) && strbyte(src, line_end) != 10
+            line_end += 1
+        end
+        if line_end > pos
+            raw_line = strsub(src, pos, line_end - 1)
+            words = asm_tokens(raw_line)
+            op = words[1]
+            if !asm_same(op, "@")
+                arg = ""
+                takes = ir_has_arg(op)
+                if takes
+                    asm_need(length(words) == 3 && asm_same(words[3], "@"))
+                    arg = words[2]
+                    asm_need(!asm_same(arg, "@"))
+                else
+                    asm_need(length(words) == 2 && asm_same(words[2], "@"))
+                end
+                if statement_count == 0
+                    asm_need(asm_same(op, "start"))
+                else
+                    asm_need(!asm_same(op, "start"))
+                end
+                if asm_same(op, "i32_frame")
+                    asm_need(statement_count == 1 && !frame_seen)
+                    asm_need(asm_uint(arg) == 32)
+                    frame_seen = true
+                elseif asm_same(op, "i32_load") || asm_same(op, "i32_store") || asm_same(op, "i32_add_slot") || asm_same(op, "i32_sub_slot") || asm_same(op, "i32_compare_slot")
+                    asm_need(frame_seen)
+                    offset = asm_uint(arg)
+                    asm_need(offset <= 28 && offset % 4 == 0)
+                end
+                if asm_same(op, "label") || asm_same(op, "jump") || asm_same(op, "br_zero") || asm_same(op, "br_nonzero") || asm_same(op, "call")
+                    asm_need(asm_name_ok(arg))
+                elseif takes
+                    asm_uint(arg)
+                end
+                if asm_same(op, "br_zero") || asm_same(op, "br_nonzero")
+                    asm_need(flags_ready)
+                end
+                piece = ir_piece(op, arg)
+                if strlen(piece) > 0
+                    out = ir_append24(out, piece)
+                end
+                if asm_same(op, "i32_compare") || asm_same(op, "i32_compare_slot") || asm_same(op, "i32_test_zero")
+                    flags_ready = true
+                else
+                    flags_ready = false
+                end
+                if asm_same(op, "exit")
+                    saw_exit = true
+                end
+                statement_count += 1
+                asm_need(statement_count <= 512 && strlen(out) <= 12000)
+            end
+        end
+        pos = line_end + 1
+    end
+    asm_need(statement_count >= 2 && saw_exit)
+    out
+end

@@ -1,0 +1,34 @@
+name: Triad Native Multi-Function S2.6
+on:
+  push:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-6.yml'
+  pull_request:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-6.yml'
+permissions:
+  contents: read
+jobs:
+  multi-function-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: S2.6 native multi-function AST, CFG isolation and ELF execution
+        run: sh selfhost/toolchain/tests/run_s2_6.sh
+      - name: S2.5 native typed function and CFG regressions
+        run: sh selfhost/toolchain/tests/run_s2_5.sh
+      - name: S2.4 multi-variable stack and CFG regressions
+        run: sh selfhost/toolchain/tests/run_s2_4.sh
+      - name: S2.3 source frontend regressions
+        run: sh selfhost/toolchain/tests/run_s2_3.sh
+      - name: S2.2 native IR and S0 fragment regressions
+        run: sh selfhost/toolchain/tests/run_s2_2.sh
+      - name: S2.1 native assembler regressions
+        run: sh selfhost/toolchain/tests/run_s2_1.sh
+      - name: S2.0 native ELF emitter regressions
+        run: sh selfhost/toolchain/tests/run.sh
+      - name: Native conformance and no JavaScript policy
+        run: sh verify.sh

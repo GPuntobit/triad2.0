@@ -1,7 +1,16 @@
-# Triad without guest languages ​​— bootstrap plan
+# Triad without guest languages — bootstrap plan
 Status: **phase 0** (compliance contract + plan). Objective: Triad that does not depend on
 Julia nor by any other programming language, at any stage (runtime,
 bootstrap, build).
+## S1 logic milestone (2026-11-08)
+
+`bin/triad --logic FILE` executes the first logic profile implemented in
+Triad-Core (`selfhost/logic/`). The shell launcher transports bytes; the
+native seed executes the lexer, parser and iterative solver. The dedicated
+logic suite runs on both native S0 and the development oracle. This is a
+working S1 milestone, not completion of the Full evaluator or S2 compiler.
+See `selfhost/logic/README.md` for supported constructs and finite bounds.
+
 ## 0. Requirement and consequence
 The "no other languages" requirement excludes obvious shortcuts:
 | Shortcut | Why it is excluded |
@@ -66,6 +75,12 @@ Defined normatively in [`SPEC-CORE.md`](SPEC-CORE.md). Synthesis:
 The seed implements **only** Triad-Core; S1 uses Triad-Core to implement the rest
 (Prolog, dispatch, macros, contracts, effects, budgets, tracks, REPL). The cases
 `conformance/core/` only use the subset shared with Triad-Full.
+- **integer range**: `SPEC-CORE.md` §5 asks for 64-bit signed `Int` with wrap. The seed's
+  tagged word spends 2 bits on the tag, so its payload is a 62-bit signed integer
+  (`[-2^61, 2^61-1]`): the seed **refuses** (exit 1) a literal or an arithmetic result
+  outside that range instead of producing a wrong value. S1 runs *on* the seed, so it must
+  implement the 64-bit semantics itself (e.g. `Int` as two 31-bit words) rather than
+  inherit the host's range: `docs/adr/0003-range-interi-del-seed.md`.
 ## 4. Representation, memory, code generation
 - Values: 64-bit tagged word (tagged in low bits), block heap with header; lists like
   dynamic vectors; strings like (ptr,len) immutable.
@@ -73,15 +88,21 @@ The seed implements **only** Triad-Core; S1 uses Triad-Core to implement the res
 - GC: initially **no GC** (growing arena; bootstrap programs are short),
   then mark-sweep to run S1 and the suite.
 - Code: x86-64. The seed is **a native function** with code and data in a single PE file
-  for Windows and, later, ELF for Linux. OS calls isolated in 4–5 routines
-  (`os_open`, `os_read`, `os_write`, `os_exit`, `os_alloc`), only point to report.
+  for Windows and, later, ELF for Linux. The whole OS boundary is isolated in `os_*`
+  generator routines — inline emission at each use site, never machine-code `call`
+  subroutines — covering argument acquisition, file open/read, write, alloc and exit.
+  *Clarified 2026-11-04 by the codegen-architecture decision
+  (`.scratch/seed-linux-nativo/issues/02-architettura-codegen.md`): "routines" here means
+  generator functions, not machine-code subroutines; the former "4–5 routines" count and
+  list are superseded — the complete list and signatures are fixed by the `os_*` contract
+  (`.scratch/seed-linux-nativo/issues/03-contratto-os-star.md`).*
 - No libc: on Windows you only import `kernel32` (ReadFile/WriteFile/GetCommandLineA/
   ExitProcess); on Linux direct syscalls are used (`open/read/write/mmap/exit`).
 ## 5. Platforms
 | Platform | Status | Reason |
 |---|---|---|
 | Windows x86-64 (PE) | **before**, testable here | only platform executable in this environment; no compiler installed |
-| Linux x86-64 (ELF) | in progress: **E0 ✅** (minimal ELF tested on CachyOS); E1/E2/E3 after | Linux environment available (native CachyOS) |
+| Linux x86-64 (ELF) | **✅ E0→E3 completi** (2026-11-05): minimal ELF → file runner → interprete Triad-Core con parità byte-exatta col PE → toolchain senza Node (`install.sh`, `bin/triad`/`bin/triad-cli`, CI `seed-linux`) — TASK.md N15–N18 | Linux environment available (native CachyOS) |
 | macOS/ARM | after | depends on the first two |
 The seed logic is largely OS independent: you only change the layer
 `os_*` and the format of the executable. The first goal is Windows; the Linux port is one
@@ -97,21 +118,124 @@ dedicated milestone, not an afterthought.
 | M5 | S2: compilatore nativo in Triad | fill out S1; S1 compilato passa la conformance senza seed |
 | M6 | self-hosting | native compiler compiles itself (fixed point), seed withdrawn |
 | M7 | parity + Linux port | conformance verde su Linux ELF; CLI/REPL; docs |
-## 7. Development tools (outside the product)
-The bootstrap product and chain do not use other languages. To **develop and
-verify** however you need something that runs the tests while the seed does not yet exist:
-- the **current stage0** (Julia kernel) is only used as a one-time golden generator
-  and as a behavioral reference during M0–M4; not part of S0–S4;
-- goldens are committed text files: from M3 onwards no tests require Julia;
-- the final conformance runner is `triad --conformance DIR`, implemented in Triad
-  (S1/M4). Until then, use `conformance/run.jl` as a temporary tool;
-- materializing the seed from committed bytes uses only system tools (hex decoding, `certutil`/`xxd`), not compilers or interpreters; - the conformance runner is `conformance/run.mjs` (Node).
-- the seed generator (`seed/dev/gen_seed.js`, Node) is a **only tool
-  maintenance**: produces the dump, is not required to build/use the seed and is not part of
-  of S0–S4. It is versioned because the machine code would otherwise no longer be extensible
-  (it has already been lost once and rebuilt, checked against the hash).
-Rule: **None of these tools should be required to use Triad or to
-reconstruct the chain S0→S4** when M6 is reached.
+## 7. Native development after JavaScript removal (2026-11-09)
+
+The current checkout no longer contains JavaScript/TypeScript or Node/npm
+tooling. The executable S0 kernel is retained as annotated machine-code dumps
+(`seed/linux-x86_64/seed.hex` and `seed/windows-x86_64/seed.hex`);
+the POSIX CLI runs S0 and S1 directly. The normative Core and logic goldens
+are verified with `sh verify.sh` and the SHA-256 hashes are checked in CI.
+
+**Critical gap:** the prior development seed generator was removed to meet
+the no-JS requirement. Native seed regeneration has **not yet been
+implemented**. The existing dumps can be decoded and checked, but there is no
+source-level maintenance parity until a Triad-native seed generator (or an
+equivalent auditable, non-JS machine-code bootstrap path) is built and
+independently verified. Do not claim full S0–S4 self-hosting.
+
+The web documentation is script-free and its static pages can be generated
+from Triad programs via `sh tools/site-gen/build.sh`. The former browser
+playground and reference interpreter are unavailable.
+
+See `docs/NO_JAVASCRIPT_MIGRATION.md` for the acceptance contract and
+remaining work.
+
+## S2.0 — first Triad-native ELF machine-code emitter (experimental)
+
+`selfhost/toolchain/elf64_exit.triad` is a bounded **Triad-Core**
+assembler/emitter that produces a full 132-byte Linux x86-64 ELF image
+performing `exit(status)` directly via syscall. No JS, Node or C compiler
+is used. `sh selfhost/toolchain/tests/run.sh` compares a byte-exact
+golden and executes the ELF under the Linux kernel.
+
+**Scope boundary:** this is a small machine-code generation milestone, not a
+Triad source-to-native compiler and **not** a regenerated S0 interpreter.
+The existing seed hex dumps still lack a native source regeneration tool.
+See `selfhost/toolchain/README.md` for next milestones.
+
+## S2.1 — assembler Triad a etichette e salti (experimental)
+
+Il prototipo `selfhost/toolchain/assembler_s2_1.triad` esegue due
+passaggi nativi per validare un sottoinsieme x86-64, risolvere nomi
+di etichette e displacement relativi con segno e produrre ELF64
+standalone. Supporta `jmp`, `jz`, `jnz`, `call`, `ret`,
+operazioni su EDI, byte di dati e accessi RIP-relative tramite `lea_rsi`.
+Il test `sh selfhost/toolchain/tests/run_s2_1.sh` confronta i
+byte generati con golden indipendenti ed esegue i binari su Linux.
+
+La compatibilità S2.0 e il controllo zero-JavaScript restano obbligatori.
+**Questa non è una rigenerazione del seed S0 né un compilatore Triad
+generale o self-hosted.** Si veda `selfhost/toolchain/README_S2_1.md`.
+
+## S2.2 — Triad intermediate representation and real S0 fragments
+
+The experimental `selfhost/toolchain/ir_s2_2.triad` lowers a small
+typed accumulator `i32` IR to audited S2.1 assembly, which the native
+Triad assembler converts to Linux x86-64 ELF64. The implementation also
+reproduces two specific *real* S0 byte ranges from readable source:
+the 64-byte ELF header at offset 0 and the 7-byte first native stack
+instruction at offset 120. The test compares both with
+`seed/linux-x86_64/seed.hex`, not merely with a synthetic example.
+
+**This is not the source-to-IR compiler for general Triad programs,
+not complete S0 seed regeneration and not full self-hosting.** See
+`selfhost/toolchain/README_S2_2.md`.
+
+## S2.3 — native frontend for an actual Triad-Core subset
+
+`selfhost/toolchain/frontend_s2_3.triad` implements a restricted
+source-language frontend entirely in Triad-Core. It accepts one integer
+variable `x`, assignment and arithmetic updates, nested
+`while`/`if`/`else` blocks, and terminal `exit(x)`, then
+lowers to the S2.2 IR and the existing S2.1 native ELF assembler.
+
+`sh selfhost/toolchain/tests/run_s2_3.sh` verifies actual source-to-IR
+goldens and executable equivalence against direct S0 interpretation for
+the admitted tests.
+
+**This remains a narrow compiler**, not full Triad-Core or Full language
+compilation, seed regeneration or fixed-point self-hosting. Consult
+`selfhost/toolchain/README_S2_3.md`.
+
+## S2.5 — Native typed AST, function calls and fixed-point CFG
+
+The restricted compiler at `selfhost/toolchain/frontend_s2_5.triad`
+parses typed expression nodes and native function parameters. The
+generated ELF uses `EDI`/`ESI` for the first two `i32` arguments,
+`EAX` for the return value, and a separate 40-byte callee stack frame.
+A Triad-native fixed-point verifier checks definite assignment on
+reachable CFG nodes, including backwards edges and branch joins,
+**before** native IR lowering.
+
+`sh selfhost/toolchain/tests/run_s2_5.sh` compares generated IR,
+SysV register opcodes, execution status and output against directly
+interpreted Core examples. The S2.4 native streaming pipeline and all
+S2.0–S2.3 tests remain regression gates.
+
+The limited one-function subset is **not** full Triad-Core, a general
+ABI/runtime implementation, seed S0 regeneration or S3 compiler
+self-hosting. See `selfhost/toolchain/README_S2_5.md`.
+
+## S2.6 — native multiple functions, nested expressions and bounded recursion
+
+`selfhost/toolchain/frontend_s2_6.triad` compiles a small Core subset
+with up to three functions, 1–2 i32 arguments per function, distinct
+function-local stack frames, acyclic calls to prior declarations and one
+right-nested arithmetic AST expression. `cfg_s2_6.triad` independently
+verifies definite assignment via a fixed-point iteration **per function**.
+
+`recursion_s2_6.triad` adds exactly one verified primitive-recursion
+shape: a natural parameter checked against zero and decremented by one
+before each native recursive call, with initial input 0..32 and balanced
+40-byte callee frames. This structurally bounds simultaneous recursion
+depth at 33. Unsafe or non-decreasing recursion is rejected.
+
+The tests execute native ELF64 programs and compare representative
+sources with the S0 interpreter; all earlier toolchain and no-JS tests
+remain regression gates. **No full S0 interpreter regeneration, no
+general recursive compiler, and no S3 self-hosting yet.**
+See `selfhost/toolchain/README_S2_6.md`.
+
 ## 8. Compliance Agreement
 The executable specification is `conformance/`: each case is
 ```
@@ -125,7 +249,7 @@ conformance/cases/<nome>/
 An implementation passes the suite if, running `program.td` as a script with `ARGS` from
 `args.txt`, produces `expected.out` and `expected.code`. The suite is independent from
 implementation language: the seed, S1 and the native compiler will execute it.
-The goldens are generated one-off with stage0 (`conformance/run.mjs --update`) and then committed: from that moment they are the contract and the Node runner is enough to verify them.
+The conformance goldens are committed and checked byte-for-byte with the native POSIX test harness; regenerating goldens must be reviewed deliberately.
 ## 9. Risks
 | Risk | Mitigation |
 |---|---|
@@ -139,7 +263,7 @@ The goldens are generated one-off with stage0 (`conformance/run.mjs --update`) a
 - [x] Plan S0→S4 and milestones.
 - [x] `SPEC-CORE.md` — normative Triad-Core subset (types, shapes, primitives,
   bootstrap primitives, conformity).
-- [x] `conformance/` — 12 Full cases + 29 Core cases, green on stage0.
+- [x] `conformance/` — 12 Full cases + 39 Core cases, green on stage0.
 - [x] **M1** — seed "Triad seed OK" in machine code: Windows x86-64 PE 1024 byte,
   `seed/windows-x86_64/`, built only by decoding a hex dump.
 - [x] **M2** — seed with I/O: reads the file from the first argument and writes its bytes to stdout
@@ -147,5 +271,10 @@ The goldens are generated one-off with stage0 (`conformance/run.mjs --update`) a
 - [ ] **M3** (in progress) — `SPEC-CORE.md` ✅ and `conformance/core/` ✅ ready;
   **M3b1** ✅ integers; **M3b2a** ✅ variables; **M3b2b1** ✅ functions; **M3b2b2** ✅
   comparisons/ternary/recursion; **M3b2b3a-e** ✅ Bool, operators, `if`, `while`, lambda;
-  **M3b2b3f** ⚠️ unstable capture. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ multi-statement body; **M3b2b3j** ✅ lexical frames and `let`; **M3b2b3k** ✅ closures; **M3b2b3l** ✅ `begin`/`end` and **CI**; **M3b2b3m** ✅ basic heap strings; **M3b2b3n** ✅ `nothing`; **M3b2b3o/p/q** ✅ concat/symboli/coverage; **M7/E0** ✅ Minimal ELF Linux. Needs AST/bytecode for multi-binding capture, `elseif`, lists; then E1/E2 of the Linux seed.
-  Next: `elseif` (case `control`), lists (cases `lists` and `values`), capture multi-binding; then E1/E2 of the Linux seed.
+  **M3b2b3f** ⚠️ unstable capture. **M3b2b3g** ✅ `!`, `&&`, `||`, `+=`; **M3b2b3h** ✅ `function … end`; **M3b2b3i** ✅ multi-statement body; **M3b2b3j** ✅ lexical frames and `let`; **M3b2b3k** ✅ closures; **M3b2b3l** ✅ `begin`/`end` and **CI**; **M3b2b3m** ✅ basic heap strings; **M3b2b3n** ✅ `nothing`; **M3b2b3o/p/q** ✅ concat/symboli/coverage; **M7/E0** ✅ Minimal ELF Linux. Needs AST/bytecode for multi-binding capture, `elseif`, lists.
+  Next: `elseif` (case `control`), lists (cases `lists` and `values`), capture multi-binding.
+- [x] **M7 — Linux port E1/E2/E3** ✅ (2026-11-05, TASK.md N15–N18): E1 file runner (argv +
+  native I/O), E2 Triad-Core interpreter (9858-byte ELF, same machine as the PE,
+  **byte-exact parity**: conformance 42/42 + probes 47/47 + S1 golden), E3 toolchain
+  without Node (`./install.sh` → `bin/triad`/`bin/triad-cli`, byte-exact smoke test,
+  CI `seed-linux` native without Wine, Node-free harness `verify.sh`).

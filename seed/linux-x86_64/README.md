@@ -1,56 +1,87 @@
-#S0 / Linux x86-64 — ELF seed (E0)
-First step of the Linux port: a static **ELF64** without libc or dynamic linker, which it uses
-Linux syscall and print only:
-```
-Triad seed Linux OK
-```
-
-and exits with `0`. It is not yet the Triad-Core interpreter: it is used to validate ELF headers, entries
-`_start`, syscall and loading on CachyOS/Linux x86-64.
+# S0 / Linux x86-64 — ELF seed (E2: interprete Triad-Core)
+The Linux seed is a static **ELF64** without libc or dynamic linker, which uses Linux
+syscalls only (`openat`/`read`/`write`/`exit`, isolated in the `os_*` routines). **E2**
+carries the same machine-code domain as the Windows PE: Triad-Core integers, variables,
+functions (short form and `function … end`), recursion, Bool, operators, `if`/`elseif`/
+`else`, `while`, `let`, `begin`, lambda/closures, basic strings + `string()`, `nothing`,
+symbols, lists (build, print, `push!`, `get`). Stdout is **byte-identical** to the PE on
+the shared goldens (parity N17, `TASK.md`).
 The hex dump is [`seed.hex`](seed.hex): it is the committed source.
+## Behavior (E2)
+| invocation | stdout | stderr | exit |
+|---|---|---|---|
+| `./seed file.td [ARG…]` | program output, byte-exact | empty | `0` (or the program's exit) |
+| `./seed` (no args) | empty | `usage: seed FILE.td` | `2` |
+| `./seed ""` (empty path) | empty | `usage: seed FILE.td` | `2` |
+| `./seed missing.td` | empty | `seed: cannot open file` | `1` |
+| source ≥ `0x100000` bytes | empty | `seed: read error` | `1` |
+
+Exit codes follow the `os_*` contract (`.scratch/seed-linux-nativo/issues/03`): `2` = usage,
+`1` = open/read failure or source too large (the arena reserves 1 MiB of source since N20,
+the block-stop mask slot is at `+0x100000`, same bound as the PE). The too-large case shares
+the `read_fail` label with the genuine read errors (known limit of the seed: one exit label
+for both, so the diagnostic is `seed: read error`).
+The PE is silent: stderr diagnostics exist **only** on the ELF, outside the parity contract
+(which covers byte-identical stdout only). Runtime errors of a program (e.g. `bad_*` probes)
+exit non-zero with empty stdout, identically to the PE; the known PE limits stay documented
+limits (see [`tests/probes/README.md`](../../tests/probes/README.md)).
 ## Numbers
-- **ELF File:** 173 bytes (`0xAD`)
-- **Machine code:** 33 bytes; message: 20 bytes
+- **ELF file:** 11977 bytes (`0x2ec9`)
 - **Base:** `0x400000`; **entry:** `0x400078`
-- **Program header:** a single `PT_LOAD` R|X, offset 0, filesz/memsz `0xAD`, align `0x1000`
-- **sha256 of `seed.hex`:** `AD4C9F08176D9964D5BE17D44C72230184434025980447395E7A3250F63CA5EA`
-- **sha256 of the decoded ELF:** `6d504451e1d8a39c6e139a8a120bfaf03373131894292be12f0039eb8a7797f9`
+- **Program header:** a single `PT_LOAD` R|X, offset 0, filesz/memsz `0x2ec9`, align `0x1000`
+  (no section headers, like the PE dump: the artifact is pure machine code)
+- **sha256 of `seed.hex`:** `8457051F7D083AB834EC860502605A58F1ECCE4A5ABCA88391A804898315D613`
+- **sha256 of the decoded ELF:** `CDBC3C3D901D534B66C6FE4C0E4248E968AA2F6333F8F9C10B052B5FAD7D6361`
 ## Build and test (Linux)
 ```sh
 cd seed/linux-x86_64
 xxd -r -p seed.hex seed
 chmod +x seed
-./seed
+./seed ../../../tests/probes/test_simple.td   # prints: test
 echo $?          # 0
+sh check_seed.sh # 7 acceptance cases (error/limits contract), byte-exact
 ```
-
-Expected output:
-```
-Triad seed Linux OK
+Full gate from the repository root (conformance 42 + probes + golden S1 + smoke):
+```sh
+sh verify.sh
 ```
 
 Optional checks with binutils:
 ```sh
 readelf -h seed      # ELF64, ET_EXEC, entry 0x400078
 readelf -l seed      # un PT_LOAD R E
-objdump -d seed      # write(1,msg,20); exit(0)
 ```
 
 ## Reproducibility
 ```sh
-node seed/dev/gen_seed_linux.js seed/linux-x86_64/seed.hex
+node seed/dev/gen_seed.js linux seed/linux-x86_64/seed.hex
 ```
-
-The dump is the canonical and reproducible source; the produced ELF can be committed
-along with it (it's no longer in `.gitignore`). The generator is a development tool
-and is not part of the S0→S4 chain.
+(the default output path is already `seed/linux-x86_64/seed.hex`; the explicit form is
+shown for clarity). The dump is the canonical and reproducible source; the ELF binary can
+be committed along with it (it's no longer in `.gitignore`). The generator is a development
+tool and is not part of the S0→S4 chain. The CI `seed-linux` job re-runs the generator and
+requires `cmp` equality (anti-drift), plus `check_seed.sh` and `verify.sh`.
+## Known limits (unchanged from the PE)
+- Path buffer: 256 bytes, unbounded copy (mirrors `GetCommandLineA` parsing in the PE).
+- Source: max `0xFFFFF` bytes (1 MiB − 1, arena N20; `0x100000` is the mask slot); read
+  buffer `0x100000`. A source of `0x100000` bytes or more is rejected (exit 1).
+- The PE's machine-code domain limits (list-literal heap, dynamic scoping, max 4 parameters,
+  multi-line list literals, …) are measured and registered in
+  [`tests/probes/README.md`](../../tests/probes/README.md). All 40 Core cases, including
+  `liste`, are required by the gate without exclusions.
 ## Next steps
-- **E1:** `_start` with argc/argv, `openat`/`read`/`write` to read a file.
-- **E2:** port of the Triad-Core interpreter; target the 26 Core cases supported by the seed
-  Windows.
-- **E3:** Native Linux CI job without Wine.
-Meanwhile the POSIX toolchain is ready: `./install.sh` decodes this seed,
-install `bin/triad` and `bin/triad-cli` in `~/.local/bin` and launchers use
-automatically the reference JS interpreter as long as the seed remains an E0 stub
-(threshold: 4 KB). The `linux-toolchain` CI job covers launcher + install + conformance.
-See [`../dev/README.md`](../dev/README.md) and [`../../BOOTSTRAP.md`](../../BOOTSTRAP.md).
+- **E3 (N18) ✅ chiusa:** toolchain Linux senza Node — `install.sh` → `bin/triad` con questo
+  seed come unico runtime (la logica di stub/fallback è uscita dal launcher), CLI POSIX
+  `bin/triad-cli` (`run`/`test`/`status`), CI `seed-linux` sull'ELF nativo.
+
+> **Task principale dal 2026-11-03:** E1/E2/E3 sono la task principale del progetto
+> (`TASK.md` → «Task principale (2026-11-03): seed Linux nativo — senza Wine», N15–N18)
+> e precedono N03 e le altre sotto-task meccaniche.
+La toolchain POSIX è pronta: `./install.sh` ridecodifica questo seed da `seed.hex`
+(anti-drift), installa `bin/triad` e `bin/triad-cli` come wrapper a percorso assoluto in
+`~/.local/bin` e supera uno **smoke test byte-exatto** (mismatch => installazione
+fallisce). Il launcher esegue sempre il seed: nessun fallback JS nel percorso utente
+(il riferimento `../dev/triad_core.cjs` resta solo nel tooling di sviluppo). Il job CI
+`linux-toolchain` copre launcher + install + gate; `seed-linux` copre check_seed.sh,
+hash PE/ELF, dump riproducibili e `verify.sh`.
+Vedi [`../dev/README.md`](../dev/README.md) e [`../../BOOTSTRAP.md`](../../BOOTSTRAP.md).

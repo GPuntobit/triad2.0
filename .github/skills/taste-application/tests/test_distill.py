@@ -77,10 +77,8 @@ class FailClosedLiveTests(unittest.TestCase):
         import sys as _sys
 
         _sys.modules.pop("fal_client", None)
-        try:
+        with self.assertRaises(distill.ProviderDisabledError):
             distill.distill_live(_profile())
-        except distill.ProviderDisabledError:
-            pass
         self.assertNotIn("fal_client", _sys.modules)
         self.assertNotIn("urllib.request", _sys.modules)
 

@@ -1,44 +1,70 @@
-﻿<!DOCTYPE html>
-<html lang="it">
+<!DOCTYPE html>
+<html lang='en'>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SPEC.md — Triad 2.0</title>
-<link rel="stylesheet" href="../assets/css/style.css" />
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js" integrity="sha384-JEyTNhjM6R1ElGoJns4U2Ln4ofPcqzSsynQkmEc/KGy6336qAZl70tDLufbkla+3" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<meta charset='utf-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1' />
+<title>Spec — Triad 2.0</title>
+<meta name='description' content='SPEC.md, the normative standard of Triad 0.2.0: how it is organised, how to read it and how it relates to SPEC-CORE.md.' />
+<link rel='stylesheet' href='../assets/css/style.css' />
+<link rel='stylesheet' href='../assets/css/triad-generated.css' />
 </head>
 <body>
-<div id="site-header"></div>
-<main class="container">
-  <div class="doc-layout">
-    <aside class="doc-sidebar">
-      <h4>Documentazione</h4>
-      <ul>
-        <li><a href="getting-started.html">Inizia</a></li>
-        <li><a href="language-tour.html">Tour</a></li>
-        <li><a href="spec.html" class="active">Spec</a></li>
-        <li><a href="tutorial.html">Tutorial</a></li>
-        <li><a href="examples.html">Esempi</a></li>
-        <li><a href="conformance.html">Conformance</a></li>
-        <li><a href="bootstrap.html">Bootstrap</a></li>
-        <li><a href="editors.html">Editor</a></li>
-        <li><a href="ai.html">AI</a></li>
-        <li><a href="status.html">Stato</a></li>
-        <li><a href="license.html">Licenza</a></li>
-      </ul>
-    </aside>
-    <article class="doc-content">
-      <h1>SPEC.md — Standard Triad 0.2.0</h1>
-      <div id="doc-content"></div>
-    </article>
-  </div>
+<header class="site-header"><nav class="container" aria-label="Triad navigation"><a href="../index.html"><strong>Triad 2.0</strong></a> · <a href="getting-started.html">Getting started</a> · <a href="spec.html">Specification</a> · <a href="examples.html">Examples</a> · <a href="https://github.com/GPuntobit/triad2.0">GitHub</a></nav></header>
+<main class='container'>
+<div class='doc-layout'>
+<aside class='doc-sidebar'>
+<h4>Documentation</h4>
+<ul>
+<li><a href='getting-started.html'>Get started</a></li>
+<li><a href='language-tour.html'>Tour</a></li>
+<li><a href='spec.html'>Spec</a></li>
+<li><a href='tutorial.html'>Tutorial</a></li>
+<li><a href='apprendimento.html'>Learning</a></li>
+<li><a href='examples.html'>Examples</a></li>
+<li><a href='playground.html'>Playground</a></li>
+<li><a href='conformance.html'>Conformance</a></li>
+<li><a href='bootstrap.html'>Bootstrap</a></li>
+<li><a href='editors.html'>Editor</a></li>
+<li><a href='status.html'>Status</a></li>
+<li><a href='ai.html'>AI</a></li>
+<li><a href='license.html'>License</a></li>
+</ul>
+</aside>
+<div class='doc-content'>
+<h1>The specification</h1>
+<p class='section-sub'>SPEC.md is the normative definition of Triad: an implementation-independent standard, versioned in the VERSION file, with its history in CHANGELOG.md. The current standard is 0.2.0.</p>
+<h2>1. What the standard defines</h2>
+<p>The specification fixes the vocabulary, the grammar, the types and the values, the semantics of functions and dispatch, logic, macros, errors, contracts, budgets, tracks, effects, the builtin set and the command line interface. Everything a conforming implementation must do is written there; the appendix at the end is informative and only lists the claimed influences.</p>
+<ul class='feature-list'>
+<li>§1 Vocabulary, §2 Syntax (EBNF), §3 The uniform tree, §4 Values and types.</li>
+<li>§5 Functions and multiple dispatch, §6 Logic, §7 Macros and code as given.</li>
+<li>§8 Errors as data, §9 Contracts, §10 Budget, §11 Tracks, §12 Effects.</li>
+<li>§13 Builtin, §14 Command line interface, §15 Reference implementation status (informative).</li>
+<li>§16 Compliance and versioning: profiles, verification and versioning rules.</li>
+</ul>
+<h3>The uniform tree</h3>
+<p>Section 3 gives the syntax tree a single shape, the uniform tree, and that is what makes the code as data of section 7 possible: a quoted expression is a value of the language, not a special case of the parser.</p>
+<h2>2. The command line interface</h2>
+<p>Section 14 fixes the shape of the <code>triad</code> command. The conformance suite covers the non-interactive part of it: scripts, arguments and exit codes. The REPL is covered by implementation testing.</p>
+<div class='code-card'>
+triad                     # REPL
+triad FILE [ARG...]        # run FILE; ARGS == [ARG...]
+triad -l FILE              # load FILE and open the REPL
+triad -e CODE              # run CODE
+triad --tree FILE          # print the uniform tree as an S-expression
+triad -                    # read the script from stdin
+</div>
+<h2>3. SPEC.md and SPEC-CORE.md</h2>
+<p>SPEC-CORE.md is a normative profile of the same standard, described in §16.1: the subset that the seed must execute and in which the self-hosted implementation is written. It is not a different language with different rules. A Core program, minus the bootstrap primitives, is also a valid Full program and must behave identically. The primitives <code>readfile</code>, <code>strlen</code>, <code>strbyte</code>, <code>strsub</code> and <code>exit</code> exist only for the self-hosted deployment and do not appear in the Full standard.</p>
+<h2>4. How to read it</h2>
+<p>Read the standard in order if you write a runtime; skim the vocabulary, the syntax and the builtin sections if you only write programs. When a sentence and the golden cases disagree, the cases decide: the suite is the executable part of the standard, and an implementation cannot declare itself compliant without running it.</p>
+<p>The version is written as MAJOR.MINOR.PATCH: MAJOR for incompatible changes, MINOR for compatible extensions, PATCH for corrections that do not change the behaviour. Every regulatory change updates the CHANGELOG.md and, when the behaviour changes, the goldens of the conformance suite.</p>
+<p class='section-sub'>Source: SPEC.md §1-§16, SPEC-CORE.md §1, §2 and §8, VERSION, CHANGELOG.md.</p>
+</div>
+</div>
 </main>
-<div id="site-footer"></div>
-<script src="../assets/js/app.js"></script>
-<script>
-TriadSite.mount('Spec');
-TriadSite.loadMarkdown('doc-content', 'SPEC.md');
-</script>
+<footer class="site-footer"><div class="container">Triad 2.0 · Native language tools · <a href="spec.html">Specification</a></div></footer>
+
+
 </body>
 </html>

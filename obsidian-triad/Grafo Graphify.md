@@ -1,10 +1,12 @@
 # Graphify graph
 ## Snapshots
 - Repository: [GPuntobit/triad2.0](https://github.com/GPuntobit/triad2.0), `main` branch.
-- Indexed commit: `aa1841bf27f50f787964bc8dacb1f4dbec4c4d45`.
-- Generated locally with `graphify update.` (AST extraction, no LLM): October 26, 2026.
-- Statistics: **1245 nodes**, **2272 relationships**, **75 communities**, **101 files** represented.
-- Relationships by type: `calls` 901, `contains` 857, `defines` 252, `references` 105, `imports` 77, `imports_from` 73, `inherits` 4, `dynamic_import` 2, `declares` 1.
+- Current repository commit: `b26ec4e92c191c7d60ad48fa541899f0469cd1d1` (October 30, 2026).
+- Last indexed commit: `729b1e05dc94cfc9784d50256f581b24d21143da` (Graphify remote index).
+- Local snapshot commit: `aa1841bf27f50f787964bc8dacb1f4dbec4c4d45` (October 26, 2026).
+- Local snapshot statistics: **1245 nodes**, **2272 relationships**, **75 communities**, **101 files** represented.
+- Graphify remote index statistics: **5780 nodes** (as of October 30, 2026).
+- Relationships by type (local snapshot): `calls` 901, `contains` 857, `defines` 252, `references` 105, `imports` 77, `imports_from` 73, `inherits` 4, `dynamic_import` 2, `declares` 1.
 Export artifacts, saved in the vault:
 - [[graphify/GRAPH_REPORT|GRAPH_REPORT]] — Graphify report (community, hub, graph freshness).
 - [Interactive graph `graph.html`](<./graphify/graph.html>) — opens in browser.
@@ -42,39 +44,39 @@ Complete list of files in `graph.json`, with the number of nodes and relationshi
 | [`.github/workflows/ci.yml`](<../.github/workflows/ci.yml>) | .github/ | 26 | 31 |  |
 | [`.kilo/agents/data.md`](<../.kilo/agents/data.md>) | .kilo/ | 1 | 0 |  |
 | [`.kiro/settings/mcp.json`](<../.kiro/settings/mcp.json>) | .kiro/ | 1 | 0 |  |
-| [`.webcmd/graphify/README.md`](<../.webcmd/graphify/README.md>) | .webcmd/ | 11 | 10 |  |
-| [`.webcmd/graphify/callees.js`](<../.webcmd/graphify/callees.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/callers.js`](<../.webcmd/graphify/callers.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/expand.js`](<../.webcmd/graphify/expand.js>) | .webcmd/ | 2 | 7 |  |
-| [`.webcmd/graphify/fetch.js`](<../.webcmd/graphify/fetch.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/files.js`](<../.webcmd/graphify/files.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/find.js`](<../.webcmd/graphify/find.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/impact.js`](<../.webcmd/graphify/impact.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/lib/client.js`](<../.webcmd/graphify/lib/client.js>) | .webcmd/ | 19 | 31 |  |
-| [`.webcmd/graphify/memories.js`](<../.webcmd/graphify/memories.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/neighbors.js`](<../.webcmd/graphify/neighbors.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/node.js`](<../.webcmd/graphify/node.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/package.json`](<../.webcmd/graphify/package.json>) | .webcmd/ | 8 | 8 |  |
-| [`.webcmd/graphify/path.js`](<../.webcmd/graphify/path.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/query.js`](<../.webcmd/graphify/query.js>) | .webcmd/ | 2 | 6 |  |
-| [`.webcmd/graphify/recall.js`](<../.webcmd/graphify/recall.js>) | .webcmd/ | 1 | 4 |  |
-| [`.webcmd/graphify/references.js`](<../.webcmd/graphify/references.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/remember.js`](<../.webcmd/graphify/remember.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/repos.js`](<../.webcmd/graphify/repos.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/risk.js`](<../.webcmd/graphify/risk.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/search.js`](<../.webcmd/graphify/search.js>) | .webcmd/ | 1 | 4 |  |
-| [`.webcmd/graphify/stats.js`](<../.webcmd/graphify/stats.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/subgraph.js`](<../.webcmd/graphify/subgraph.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/tests.js`](<../.webcmd/graphify/tests.js>) | .webcmd/ | 1 | 5 |  |
-| [`.webcmd/graphify/tools/expand.js`](<../.webcmd/graphify/tools/expand.js>) | .webcmd/ | 2 | 3 |  |
-| [`.webcmd/graphify/tools/generate.mjs`](<../.webcmd/graphify/tools/generate.mjs>) | .webcmd/ | 6 | 9 |  |
-| [`.webcmd/graphify/tools/lib-client.js`](<../.webcmd/graphify/tools/lib-client.js>) | .webcmd/ | 19 | 31 |  |
-| [`.webcmd/graphify/tools/path.js`](<../.webcmd/graphify/tools/path.js>) | .webcmd/ | 1 | 2 |  |
-| [`.webcmd/graphify/tools/query.js`](<../.webcmd/graphify/tools/query.js>) | .webcmd/ | 2 | 3 |  |
-| [`.webcmd/graphify/tools/recall.js`](<../.webcmd/graphify/tools/recall.js>) | .webcmd/ | 1 | 2 |  |
-| [`.webcmd/graphify/tools/risk.js`](<../.webcmd/graphify/tools/risk.js>) | .webcmd/ | 1 | 2 |  |
-| [`.webcmd/graphify/tools/search.js`](<../.webcmd/graphify/tools/search.js>) | .webcmd/ | 1 | 2 |  |
-| [`.webcmd/graphify/trace.js`](<../.webcmd/graphify/trace.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/README.md`](<../tools/webcmd-graphify/README.md>) | .webcmd/ | 11 | 10 |  |
+| [`.webcmd/graphify/callees.js`](<../tools/webcmd-graphify/callees.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/callers.js`](<../tools/webcmd-graphify/callers.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/expand.js`](<../tools/webcmd-graphify/expand.js>) | .webcmd/ | 2 | 7 |  |
+| [`.webcmd/graphify/fetch.js`](<../tools/webcmd-graphify/fetch.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/files.js`](<../tools/webcmd-graphify/files.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/find.js`](<../tools/webcmd-graphify/find.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/impact.js`](<../tools/webcmd-graphify/impact.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/lib/client.js`](<../tools/webcmd-graphify/lib/client.js>) | .webcmd/ | 19 | 31 |  |
+| [`.webcmd/graphify/memories.js`](<../tools/webcmd-graphify/memories.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/neighbors.js`](<../tools/webcmd-graphify/neighbors.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/node.js`](<../tools/webcmd-graphify/node.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/package.json`](<../tools/webcmd-graphify/package.json>) | .webcmd/ | 8 | 8 |  |
+| [`.webcmd/graphify/path.js`](<../tools/webcmd-graphify/path.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/query.js`](<../tools/webcmd-graphify/query.js>) | .webcmd/ | 2 | 6 |  |
+| [`.webcmd/graphify/recall.js`](<../tools/webcmd-graphify/recall.js>) | .webcmd/ | 1 | 4 |  |
+| [`.webcmd/graphify/references.js`](<../tools/webcmd-graphify/references.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/remember.js`](<../tools/webcmd-graphify/remember.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/repos.js`](<../tools/webcmd-graphify/repos.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/risk.js`](<../tools/webcmd-graphify/risk.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/search.js`](<../tools/webcmd-graphify/search.js>) | .webcmd/ | 1 | 4 |  |
+| [`.webcmd/graphify/stats.js`](<../tools/webcmd-graphify/stats.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/subgraph.js`](<../tools/webcmd-graphify/subgraph.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/tests.js`](<../tools/webcmd-graphify/tests.js>) | .webcmd/ | 1 | 5 |  |
+| [`.webcmd/graphify/tools/expand.js`](<../tools/webcmd-graphify/tools/expand.js>) | .webcmd/ | 2 | 3 |  |
+| [`.webcmd/graphify/tools/generate.mjs`](<../tools/webcmd-graphify/tools/generate.mjs>) | .webcmd/ | 6 | 9 |  |
+| [`.webcmd/graphify/tools/lib-client.js`](<../tools/webcmd-graphify/tools/lib-client.js>) | .webcmd/ | 19 | 31 |  |
+| [`.webcmd/graphify/tools/path.js`](<../tools/webcmd-graphify/tools/path.js>) | .webcmd/ | 1 | 2 |  |
+| [`.webcmd/graphify/tools/query.js`](<../tools/webcmd-graphify/tools/query.js>) | .webcmd/ | 2 | 3 |  |
+| [`.webcmd/graphify/tools/recall.js`](<../tools/webcmd-graphify/tools/recall.js>) | .webcmd/ | 1 | 2 |  |
+| [`.webcmd/graphify/tools/risk.js`](<../tools/webcmd-graphify/tools/risk.js>) | .webcmd/ | 1 | 2 |  |
+| [`.webcmd/graphify/tools/search.js`](<../tools/webcmd-graphify/tools/search.js>) | .webcmd/ | 1 | 2 |  |
+| [`.webcmd/graphify/trace.js`](<../tools/webcmd-graphify/trace.js>) | .webcmd/ | 1 | 5 |  |
 | [`ai/README.md`](<../ai/README.md>) | ai/ | 8 | 7 |  |
 | [`ai/SYSTEM_PROMPT.md`](<../ai/SYSTEM_PROMPT.md>) | ai/ | 5 | 4 |  |
 | [`ai/jev_audit.mjs`](<../ai/jev_audit.mjs>) | ai/ | 20 | 38 | [[File - ai jev_audit.mjs]] |
@@ -89,9 +91,9 @@ Complete list of files in `graph.json`, with the number of nodes and relationshi
 | [`bin/triad`](<../bin/triad>) | bin/ | 3 | 3 |  |
 | [`conformance/README.md`](<../conformance/README.md>) | conformance/ | 6 | 6 |  |
 | [`conformance/core/README.md`](<../conformance/core/README.md>) | conformance/ | 4 | 5 |  |
-| [`conformance/run.jl`](<../conformance/run.jl>) | conformance/ | 6 | 7 |  |
-| [`docs/comparison-languages.md`](<../docs/comparison-languages.md>) | docs/ | 11 | 12 |  |
-| [`docs/extraction-e0.md`](<../docs/extraction-e0.md>) | docs/ | 8 | 8 |  |
+| [`conformance/run.mjs`](<../conformance/run.mjs>) | conformance/ | 6 | 7 |  |
+| [`docs/confronto-linguaggi.md`](<../docs/confronto-linguaggi.md>) | docs/ | 11 | 12 |  |
+| [`docs/estrazione-e0.md`](<../docs/estrazione-e0.md>) | docs/ | 8 | 8 |  |
 | [`editors/README.md`](<../editors/README.md>) | editors/ | 7 | 6 |  |
 | [`editors/linguist/README.md`](<../editors/linguist/README.md>) | editors/ | 5 | 4 |  |
 | [`editors/linguist/languages.yml`](<../editors/linguist/languages.yml>) | editors/ | 9 | 8 |  |
@@ -104,7 +106,7 @@ Complete list of files in `graph.json`, with the number of nodes and relationshi
 | [`obsidian-triad/File - ai verify.jl.md`](<./File - ai verify.jl.md>) | obsidian-triad/ | 5 | 5 |  |
 | [`obsidian-triad/File - triad.jl.md`](<./File - triad.jl.md>) | obsidian-triad/ | 5 | 5 |  |
 | [`obsidian-triad/Grafo Graphify.md`](<./Grafo Graphify.md>) | obsidian-triad/ | 5 | 5 |  |
-| [`obsidian-triad/Index.md`](<./Index.md>) | obsidian-triad/ | 5 | 9 |  |
+| [`obsidian-triad/Indice.md`](<./Indice.md>) | obsidian-triad/ | 5 | 9 |  |
 | [`obsidian-triad/wiki/Welcome to Karpathy LLM Wiki.md`](<./wiki/Welcome to Karpathy LLM Wiki.md>) | obsidian-triad/ | 10 | 9 |  |
 | [`seed/README.md`](<../seed/README.md>) | seed/ | 6 | 8 |  |
 | [`seed/dev/README.md`](<../seed/dev/README.md>) | seed/ | 6 | 5 |  |
@@ -119,5 +121,19 @@ Referenced external modules (no files in repository): `node:child_process`, `nod
 - Unlike the previous snapshot (semantic search via MCP, no enumerable list), `graph.json` allows you to list **all** indexed files: the table above is complete.
 - Graphify skipped 226 files without supported extension (mostly `.td`, `.out`, `.code`): Triad `.td` sources are therefore not represented in the graph.
 - Plugin bundles in `.obsidian/plugins/` are not included in the local extraction; the [[File - KarpathyWiki main.js]] and [[File - Templater main.js]] pages remain from the previous snapshot.
+## Significant changes since last local snapshot
+Between commit `aa1841bf` (October 26, 2026) and `b26ec4e` (October 30, 2026), **1005 files** have changed or been added:
+- Added extensive `.github/skills/` collection (200+ ECC skills)
+- Added `.github/agents/` collection (100+ agent definitions)
+- Added new `cli/` folder with standalone CLI implementation
+- Added new `config/` folder for project configuration
+- Added `probes/` folder for test probes
+- Added `tests/` folder with security tests
+- Updated documentation in `docs/` and `tutorial/`
+- Expanded `conformance/core/cases/` with additional test cases
+- Multiple cleanup files removed (output files, test artifacts)
+- Updated `.github/workflows/` with new CI jobs
+
+**Note**: The local graph file list below reflects the snapshot from October 26, 2026 (101 files). The repository now contains significantly more files. A full regeneration of the local graph is recommended to capture the current state.
 ## Previous snapshot
 October 25, 2026 MCP indexing on commit `929a9269ef08d07088d65217f269c5aeafabd62a`: 3,197 nodes, 7,794 relationships, 206 communities. Counts are not comparable with current ones (different extractor, plugin bundle included).

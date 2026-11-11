@@ -1,0 +1,7 @@
+label entry
+jmp done
+mov_edi 99
+label done
+mov_edi 42
+mov_eax 60
+syscall

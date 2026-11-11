@@ -1,0 +1,7 @@
+/home/votlazam/Documenti/progetti/triad2.0/cli/windows-gui/TriadDesktop.cs
+/home/votlazam/Documenti/progetti/triad2.0/cognitive/tools/discover_03.py
+/home/votlazam/Documenti/progetti/triad2.0/cognitive/tools/proof_04.py
+/home/votlazam/Documenti/progetti/triad2.0/scripts/docs/download_chart.py
+/home/votlazam/Documenti/progetti/triad2.0/scripts/experiments/deepseek-stream.py
+/home/votlazam/Documenti/progetti/triad2.0/scripts/experiments/nvidia-nemotron-stream.py
+/home/votlazam/Documenti/progetti/triad2.0/scripts/experiments/translate_md.py

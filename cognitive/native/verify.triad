@@ -1,0 +1,296 @@
+# TRID Native independent checker and conditional memory projection.
+# Requires common.triad only; no discovery functions or foreign runtime.
+
+function target_for(data, name)
+    result = []
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        if same(r[1], "target") && same(cell(r, 3), name)
+            result = r
+        end
+        i += 1
+    end
+    result
+end
+
+function ground_pair(a, b, shape, pair)
+    x = pair[1]
+    z = pair[2]
+    good = false
+    if !same(x, z)
+        if same(shape, "chain")
+            good = same(a[4], x) && same(a[5], b[4]) && same(b[5], z)
+        elseif same(shape, "reverse_chain")
+            good = same(a[5], x) && same(a[4], b[5]) && same(b[4], z)
+        elseif same(shape, "common_source")
+            good = same(a[5], x) && same(a[4], b[4]) && same(b[5], z)
+        elseif same(shape, "common_target")
+            good = same(a[4], x) && same(a[5], b[5]) && same(b[4], z)
+        end
+    end
+    good
+end
+
+function entails(data, target, shape, pair)
+    found = false
+    i = 1
+    while i <= length(data)
+        a = data[i]
+        if same(a[1], "edge") && same(a[2], target[2]) && same(cell(a, 3), target[4])
+            j = 1
+            while j <= length(data)
+                b = data[j]
+                if same(b[1], "edge") && same(b[2], target[2]) && same(cell(b, 3), target[4])
+                    if ground_pair(a, b, shape, pair)
+                        found = true
+                    end
+                end
+                j += 1
+            end
+        end
+        i += 1
+    end
+    found
+end
+
+function independent_metrics(data, target, shape)
+    tp = 0
+    fp = 0
+    fn = 0
+    ttp = 0
+    tfp = 0
+    tfn = 0
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        if same(r[1], "review") && same(r[2], target[3])
+            observed = entails(data, target, shape, [r[5], r[6]])
+            if same(r[3], "train") && same(r[4], "positive")
+                if observed
+                    tp += 1
+                else
+                    fn += 1
+                end
+            elseif same(r[3], "train") && same(r[4], "negative")
+                if observed
+                    fp += 1
+                end
+            elseif same(r[3], "test") && same(r[4], "positive")
+                if observed
+                    ttp += 1
+                else
+                    tfn += 1
+                end
+            elseif same(r[3], "test") && same(r[4], "negative")
+                if observed
+                    tfp += 1
+                end
+            end
+        end
+        i += 1
+    end
+    score = 3 * tp - 5 * fp - 2 * fn
+    state = "experimental"
+    if fp > 0 || tfp > 0
+        state = "refuted"
+    end
+    result = [tp, fp, fn, ttp, tfp, tfn, score, state]
+    result
+end
+
+function expected_choice(data, target, shape)
+    shapes = ["chain", "common_source", "common_target", "reverse_chain"]
+    best = ""
+    bestscore = -999999
+    besttp = 0
+    bestfp = 0
+    i = 1
+    while i <= length(shapes)
+        scores = independent_metrics(data, target, shapes[i])
+        if scores[7] > bestscore
+            bestscore = scores[7]
+            best = shapes[i]
+            besttp = scores[1]
+            bestfp = scores[2]
+        end
+        i += 1
+    end
+    same(best, shape) && besttp > 0 && bestfp == 0
+end
+
+function evidence_consistent(data, target)
+    good = true
+    i = 1
+    while i <= length(data)
+        a = data[i]
+        if same(a[1], "review") && same(a[2], target[3])
+            j = 1
+            while j <= length(data)
+                b = data[j]
+                if same(b[1], "review") && same(b[2], target[3]) && same(a[5], cell(b, 5)) && same(a[6], cell(b, 6)) && !same(a[4], cell(b, 4))
+                    good = false
+                end
+                j += 1
+            end
+        end
+        i += 1
+    end
+    good
+end
+
+function definition_ref(data, target, shape)
+    ref = ""
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        if same(r[1], "definition") && same(r[2], target[3]) && same(cell(r, 3), target[2]) && same(cell(r, 4), target[4]) && same(cell(r, 5), shape)
+            ref = r[6]
+        end
+        i += 1
+    end
+    ref
+end
+
+function is_approved(data, target, shape)
+    yes = false
+    i = 1
+    while i <= length(data)
+        r = data[i]
+        if same(r[1], "approve") && same(r[2], target[3]) && same(cell(r, 3), shape)
+            yes = true
+        end
+        i += 1
+    end
+    yes
+end
+
+function proven_witness(data, proof, target)
+    shape = proof[5]
+    x = proof[6]
+    z = proof[7]
+    y = proof[8]
+    s1 = proof[9]
+    s2 = proof[10]
+    a = []
+    b = []
+    if same(shape, "chain")
+        a = [x, y, s1]
+        b = [y, z, s2]
+    elseif same(shape, "reverse_chain")
+        a = [y, x, s1]
+        b = [z, y, s2]
+    elseif same(shape, "common_source")
+        a = [y, x, s1]
+        b = [y, z, s2]
+    elseif same(shape, "common_target")
+        a = [x, y, s1]
+        b = [z, y, s2]
+    end
+    good = false
+    if length(a) == 3 && !same(x, z)
+        good = edge_exists(data, target[2], target[4], a) && edge_exists(data, target[2], target[4], b)
+    end
+    good
+end
+
+function find_eval(history, name, shape)
+    item = []
+    i = 1
+    while i <= length(history)
+        r = history[i]
+        if same(r[3], "evaluation") && same(r[4], name) && same(r[5], shape)
+            item = r
+        end
+        i += 1
+    end
+    item
+end
+
+function proof_count(history, name, shape)
+    count = 0
+    i = 1
+    while i <= length(history)
+        r = history[i]
+        if same(r[3], "proof") && same(r[4], name) && same(r[5], shape)
+            count += 1
+        end
+        i += 1
+    end
+    count
+end
+
+function check_history(facts, journal_rows)
+    need(length(journal_rows) > 0, "empty hypothesis journal")
+    i = 1
+    while i <= length(journal_rows)
+        r = journal_rows[i]
+        if same(r[3], "evaluation")
+            need(length(r) == 15, "invalid evaluation event")
+            target = target_for(facts, r[4])
+            need(length(target) == 4, "evaluation target missing")
+            m = independent_metrics(facts, target, r[5])
+            need(same(r[6], m[8]) && same(r[7], m[1]) && same(r[8], m[2]) && same(r[9], m[3]), "evaluation training mismatch")
+            need(same(r[10], m[4]) && same(r[11], m[5]) && same(r[12], m[6]) && same(r[13], m[7]), "evaluation testing mismatch")
+            expected = "no"
+            if expected_choice(facts, target, r[5])
+                expected = "yes"
+            end
+            need(same(r[14], expected), "selected rule mismatch")
+        elseif same(r[3], "proof")
+            need(length(r) == 11, "invalid proof record")
+            target = target_for(facts, r[4])
+            need(length(target) == 4, "proof target missing")
+            ev = find_eval(journal_rows, r[4], r[5])
+            need(length(ev) == 15, "missing proof rule")
+            need(same(ev[14], "yes") && same(ev[6], "experimental"), "proof for invalid candidate")
+            need(proven_witness(facts, r, target), "false ground proof")
+        else
+            need(false, "unknown journal event")
+        end
+        i += 1
+    end
+    true
+end
+
+function memory_projection(data, history)
+    i = 1
+    while i <= length(history)
+        row = history[i]
+        if same(row[3], "evaluation")
+            target = target_for(data, row[4])
+            shape = row[5]
+            ref = definition_ref(data, target, shape)
+            isgood = same(row[14], "yes") && same(row[6], "experimental") && same(row[9], "0") && same(row[12], "0") && !same(row[7], "0") && !same(row[10], "0")
+            gate = isgood && !same(ref, "") && is_approved(data, target, shape) && evidence_consistent(data, target) && proof_count(history, target[3], shape) > 0
+            state = row[6]
+            if gate
+                state = "consolidated_conditional"
+                if is_revoked(data, ref)
+                    state = "suspended_dependency"
+                end
+            end
+            println("rule|" * target[3] * "|" * shape * "|" * state * "|" * row[13] * "|" * ref)
+            if gate
+                j = 1
+                while j <= length(history)
+                    p = history[j]
+                    if same(p[3], "proof") && same(p[4], target[3]) && same(p[5], shape)
+                        stateclaim = "demonstrated_conditional"
+                        if is_revoked(data, p[9]) || is_revoked(data, p[10]) || is_revoked(data, ref)
+                            stateclaim = "suspended"
+                        end
+                        println("claim|" * target[3] * "|" * p[6] * "|" * p[7] * "|" * shape * "|" * p[8] * "|" * p[9] * "|" * p[10] * "|" * ref * "|" * stateclaim)
+                    end
+                    j += 1
+                end
+            end
+        end
+        i += 1
+    end
+    true
+end
+validate_data(data)
+check_journal(history)
+check_history(data, history)
+memory_projection(data, history)

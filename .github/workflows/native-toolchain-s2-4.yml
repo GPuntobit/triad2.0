@@ -1,0 +1,30 @@
+name: Triad Native Multi-Variable CFG S2.4
+on:
+  push:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-4.yml'
+  pull_request:
+    paths:
+      - 'selfhost/toolchain/**'
+      - '.github/workflows/native-toolchain-s2-4.yml'
+permissions:
+  contents: read
+jobs:
+  multi-variable-cfg:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: S2.4 native multi-variable, stack, CFG and S0 differential
+        run: sh selfhost/toolchain/tests/run_s2_4.sh
+      - name: S2.3 frontend regression
+        run: sh selfhost/toolchain/tests/run_s2_3.sh
+      - name: S2.2 IR and seed fragment regression
+        run: sh selfhost/toolchain/tests/run_s2_2.sh
+      - name: S2.1 assembler regression
+        run: sh selfhost/toolchain/tests/run_s2_1.sh
+      - name: S2.0 ELF emitter regression
+        run: sh selfhost/toolchain/tests/run.sh
+      - name: Native and zero-JavaScript conformance
+        run: sh verify.sh

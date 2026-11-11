@@ -40,4 +40,4 @@ node cli/triad-cli.mjs ext check       # valida l'estensione VS Code
 node cli/triad-cli.mjs ext package     # genera il .vsix
 ```
 
-Full changelog: [CHANGELOG.md](./CHANGELOG.md)
+Full changelog: [CHANGELOG.md](../../CHANGELOG.md)

@@ -835,7 +835,7 @@ composer why-not
 
 APP_KEY=base64:abc123...
 DB_PASSWORD=secure_password
-STRIPE_KEY=sk_live_...
+STRIPE_KEY=<stripe-live-key>
 SANCTUM_TOKEN_PREFIX=myapp_
 
 # For production: Use a secret manager

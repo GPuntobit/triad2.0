@@ -1,0 +1,51 @@
+name: TRID cognitive baseline (S0/S1)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'cognitive/**'
+      - 'verify.sh'
+      - 'seed/**'
+      - '.github/workflows/trid-baseline.yml'
+  pull_request:
+    paths:
+      - 'cognitive/**'
+      - 'verify.sh'
+      - 'seed/**'
+      - '.github/workflows/trid-baseline.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cognitive-baseline-linux-x86_64:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Record commit and environment
+        run: |
+          printf 'SHA=%s\n' "$(git rev-parse HEAD)"
+          uname -a
+          printf 'runner=%s arch=%s\n' "$RUNNER_OS" "$(uname -m)"
+      - name: Run all five suites against the same checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          xxd -r -p seed/linux-x86_64/seed.hex seed/linux-x86_64/seed
+          chmod +x seed/linux-x86_64/seed
+          for suite in \
+            cognitive/tests/run.sh \
+            cognitive/native/tests/run.sh \
+            cognitive/native/tests/run_05.sh \
+            cognitive/native/tests/run_06.sh \
+            verify.sh; do
+            echo "BEGIN $suite SHA=$(git rev-parse HEAD)"
+            start=$(date +%s)
+            if sh "$suite"; then
+              echo "PASS $suite exit=0 duration_seconds=$(($(date +%s)-start))"
+            else
+              code=$?
+              echo "FAIL $suite exit=$code duration_seconds=$(($(date +%s)-start))" >&2
+              exit "$code"
+            fi
+          done

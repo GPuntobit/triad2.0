@@ -1,12 +1,12 @@
 # `ai/verify.jl`
 
-File sorgente: [`ai/verify.jl`](../ai/verify.jl) · [cartella `ai/`](../ai/)
+Source file: [`ai/verify.jl`](../ai/verify.jl) · [project folder `ai/`](../ai/)
 
-## Ruolo nel progetto
+## Role in the project
 
-Verifica le soluzioni Triad confrontando codice d’uscita e output osservato con i valori attesi; le soluzioni mancanti vengono conteggiate come skip. Graphify ha riportato 6 nodi per il file e ha elencato le definizioni `parse_opts()`, `run_solution()`, `task_dirs()` e `main()`.
+Checks Triad solutions by comparing the exit code and the observed output against the expected values; missing solutions are counted as skips. Graphify reported 6 nodes for the file and listed the definitions `parse_opts()`, `run_solution()`, `task_dirs()` and `main()`.
 
-## Chiamate verificate
+## Verified calls
 
 ```text
 main()
@@ -15,11 +15,11 @@ main()
 └── run_solution()
 ```
 
-- [`main()`](../ai/verify.jl#L48) interpreta gli argomenti, trova le directory dei task e confronta i risultati.
-- [`parse_opts()`](../ai/verify.jl#L16), [`run_solution()`](../ai/verify.jl#L37) e [`task_dirs()`](../ai/verify.jl#L45) sono i callee restituiti da Graphify.
-- Il file importa `Triad` ([`ai/verify.jl`](../ai/verify.jl#L14)); Graphify non ha esposto un arco import/export corrispondente nella query dedicata.
+- [`main()`](../ai/verify.jl#L48) parses the arguments, locates the task directories and compares the results.
+- [`parse_opts()`](../ai/verify.jl#L16), [`run_solution()`](../ai/verify.jl#L37) and [`task_dirs()`](../ai/verify.jl#L45) are the callees Graphify returned.
+- The file imports `Triad` ([`ai/verify.jl`](../ai/verify.jl#L14)); Graphify did not expose a matching import/export edge in the dedicated query.
 
-## Collegamenti
+## Links
 
-- [[Grafo Graphify]]
-- [Cartella `ai/`](../ai/)
+- [[Grafo Graphify|Graphify graph]]
+- [`ai/` folder](../ai/)

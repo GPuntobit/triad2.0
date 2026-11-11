@@ -1,0 +1,218 @@
+# TRIAD S2.3 — native frontend for a SMALL, documented Triad-Core subset.
+# Requires elf64_exit.triad and assembler_s2_1.triad for asm_need/asm_uint.
+# Source text, lexical analysis, blocks and IR lowering run inside Triad S0.
+# Supported: ONE i32 accumulator variable named x; assignments, +=, -=,
+# x = x +/- N, while/if equality or inequality, else/end, exit(x).
+# Other valid Triad syntax must be rejected, never silently miscompiled.
+
+function front_words(src)
+    asm_need(strlen(src) > 0 && strlen(src) <= 8000)
+    result = []
+    word = ""
+    index = 1
+    while index <= strlen(src)
+        ch = strbyte(src, index)
+        separator = ch == 32 || ch == 10
+        punctuation = ch == 61 || ch == 43 || ch == 45 || ch == 33 || ch == 40 || ch == 41
+        if separator || punctuation
+            if strlen(word) > 0
+                push!(result, word)
+                word = ""
+            end
+            if punctuation
+                push!(result, strsub(src, index, index))
+            elseif ch == 10
+                push!(result, "@")
+            end
+        else
+            allowed = (ch >= 97 && ch <= 122) || (ch >= 48 && ch <= 57) || ch == 95
+            asm_need(allowed)
+            word = word * strsub(src, index, index)
+        end
+        index += 1
+    end
+    if strlen(word) > 0
+        push!(result, word)
+    end
+    push!(result, "@")
+    asm_need(length(result) <= 1400)
+    result
+end
+
+function front_line(text, instruction)
+    result = instruction
+    if strlen(text) > 0
+        newline = "
+"
+        result = text * newline * instruction
+    end
+    result
+end
+
+# Add i32 comparison/test to IR. A following conditional branch consumes
+# the flags immediately; no hidden flags are reused across statements.
+function front_condition(ir, number)
+    value = asm_uint(number)
+    result = ir
+    if value == 0
+        result = front_line(ir, "i32_test_zero")
+    else
+        result = front_line(ir, "i32_compare " * number)
+    end
+    result
+end
+
+# Frames are immutable triples [kind, id, parent_frame] in a flat list.
+# No pop!, list mutation or more-than-four-argument S0 calls are required.
+# An else branch appends a new frame sharing the original parent's pointer.
+function source_to_ir(src)
+    words = front_words(src)
+    ir = "start"
+    initialized = false
+    completed = false
+    frames = []
+    current = 0
+    block_id = 0
+    statements = 0
+    index = 1
+    while index <= length(words)
+        op = words[index]
+        if asm_same(op, "@")
+            index += 1
+        else
+            asm_need(!completed)
+            step = 0
+            if asm_same(op, "x")
+                # x = N ; x = x + N ; x = x - N ; x += N ; x -= N
+                asm_need(index + 3 <= length(words))
+                symbol = words[index + 1]
+                if asm_same(symbol, "=")
+                    if asm_same(words[index + 2], "x")
+                        asm_need(initialized)
+                        asm_need(index + 5 <= length(words))
+                        operation = words[index + 3]
+                        asm_need(asm_same(operation, "+") || asm_same(operation, "-"))
+                        number = words[index + 4]
+                        asm_uint(number)
+                        asm_need(asm_same(words[index + 5], "@"))
+                        if asm_same(operation, "+")
+                            ir = front_line(ir, "i32_add " * number)
+                        else
+                            ir = front_line(ir, "i32_sub " * number)
+                        end
+                        step = 6
+                    else
+                        number = words[index + 2]
+                        value = asm_uint(number)
+                        asm_need(asm_same(words[index + 3], "@"))
+                        if value == 0
+                            ir = front_line(ir, "i32_zero")
+                        else
+                            ir = front_line(ir, "i32_const " * number)
+                        end
+                        initialized = true
+                        step = 4
+                    end
+                elseif asm_same(symbol, "+") || asm_same(symbol, "-")
+                    asm_need(initialized)
+                    asm_need(index + 4 <= length(words))
+                    asm_need(asm_same(words[index + 2], "="))
+                    number = words[index + 3]
+                    asm_uint(number)
+                    asm_need(asm_same(words[index + 4], "@"))
+                    if asm_same(symbol, "+")
+                        ir = front_line(ir, "i32_add " * number)
+                    else
+                        ir = front_line(ir, "i32_sub " * number)
+                    end
+                    step = 5
+                else
+                    asm_need(false)
+                end
+            elseif asm_same(op, "while") || asm_same(op, "if")
+                # while x != N / while x == N; if x == N / if x != N
+                asm_need(initialized)
+                asm_need(index + 5 <= length(words))
+                asm_need(asm_same(words[index + 1], "x"))
+                comparator = words[index + 2]
+                asm_need(asm_same(comparator, "=") || asm_same(comparator, "!"))
+                asm_need(asm_same(words[index + 3], "="))
+                number = words[index + 4]
+                asm_uint(number)
+                asm_need(asm_same(words[index + 5], "@"))
+                block_id += 1
+                asm_need(block_id <= 100)
+                if asm_same(op, "while")
+                    ir = front_line(ir, "label wloop" * string(block_id))
+                end
+                ir = front_condition(ir, number)
+                label = "felse" * string(block_id)
+                if asm_same(op, "while")
+                    label = "wend" * string(block_id)
+                end
+                if asm_same(comparator, "!")
+                    ir = front_line(ir, "br_zero " * label)
+                else
+                    ir = front_line(ir, "br_nonzero " * label)
+                end
+                push!(frames, op)
+                push!(frames, block_id)
+                push!(frames, current)
+                current = length(frames) - 2
+                step = 6
+            elseif asm_same(op, "else")
+                asm_need(index + 1 <= length(words))
+                asm_need(asm_same(words[index + 1], "@"))
+                asm_need(current > 0)
+                asm_need(asm_same(frames[current], "if"))
+                id = frames[current + 1]
+                parent = frames[current + 2]
+                ir = front_line(ir, "jump fend" * string(id))
+                ir = front_line(ir, "label felse" * string(id))
+                push!(frames, "else")
+                push!(frames, id)
+                push!(frames, parent)
+                current = length(frames) - 2
+                step = 2
+            elseif asm_same(op, "end")
+                asm_need(index + 1 <= length(words))
+                asm_need(asm_same(words[index + 1], "@"))
+                asm_need(current > 0)
+                kind = frames[current]
+                id = frames[current + 1]
+                parent = frames[current + 2]
+                if asm_same(kind, "while")
+                    ir = front_line(ir, "jump wloop" * string(id))
+                    ir = front_line(ir, "label wend" * string(id))
+                elseif asm_same(kind, "if")
+                    ir = front_line(ir, "label felse" * string(id))
+                else
+                    asm_need(asm_same(kind, "else"))
+                    ir = front_line(ir, "label fend" * string(id))
+                end
+                current = parent
+                step = 2
+            elseif asm_same(op, "exit")
+                # exit(x) is the native Triad-Core exit primitive.
+                asm_need(initialized && current == 0)
+                asm_need(index + 4 <= length(words))
+                asm_need(asm_same(words[index + 1], "("))
+                asm_need(asm_same(words[index + 2], "x"))
+                asm_need(asm_same(words[index + 3], ")"))
+                asm_need(asm_same(words[index + 4], "@"))
+                ir = front_line(ir, "exit")
+                completed = true
+                step = 5
+            else
+                asm_need(false)
+            end
+            statements += 1
+            asm_need(statements <= 240 && strlen(ir) <= 12000)
+            index += step
+        end
+    end
+    # The final top-level exit(x) is compulsory: no binary may fall through
+    # into unmapped bytes or terminate without an explicit syscall.
+    asm_need(initialized && completed && current == 0)
+    ir
+end

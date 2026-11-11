@@ -1,0 +1,123 @@
+# TRID-013: native logical identity selection for bounded S0/S1 imports.
+# Keys omit row position and recorded epistemic state. SHA-256 of each key
+# is used by Linux transport to form a stable schema-v1-safe ID.
+# No inference, trust assessment or approval occurs here.
+
+function identity_parts(s)
+    parts = []
+    n = strlen(s)
+    start = 1
+    i = 1
+    while i <= n + 1
+        delimiter = i > n
+        if i <= n
+            delimiter = strbyte(s, i) == 44
+        end
+        if delimiter
+            piece = ""
+            if i > start
+                piece = strsub(s, start, i - 1)
+            end
+            push!(parts, piece)
+            start = i + 1
+        end
+        i += 1
+    end
+    parts
+end
+
+function identity_core(r)
+    source = r[10]
+    p = identity_parts(r[12])
+    key = ""
+    if same(source, "legacy_s0_fixture")
+        tag = p[1]
+        if same(tag, "edge")
+            schema_assert(length(p) == 6)
+            key = r[12]
+        elseif same(tag, "review")
+            schema_assert(length(p) == 7)
+            # Human review reference is the stable natural key. Correcting
+            # the polarity revises the same observation, not a new identity.
+            key = "review," * p[2] * "," * p[7]
+        elseif same(tag, "target")
+            schema_assert(length(p) == 4)
+            key = r[12]
+        elseif same(tag, "definition")
+            schema_assert(length(p) == 6)
+            key = "definition," * p[2] * "," * p[6]
+        elseif same(tag, "approve")
+            schema_assert(length(p) == 4)
+            key = r[12]
+        elseif same(tag, "revoke")
+            schema_assert(length(p) == 2)
+            key = r[12]
+        else
+            schema_assert(false)
+        end
+        schema_assert(same(r[4], "legacy_s0"))
+    elseif same(source, "s0_verified_projection")
+        tag = p[1]
+        schema_assert(same(r[4], "s0_memory"))
+        if same(tag, "rule")
+            schema_assert(length(p) == 6)
+            key = "rule," * p[2] * "," * p[3]
+        elseif same(tag, "claim")
+            schema_assert(length(p) == 10)
+            # Path-specific identity includes witness and all source labels.
+            # Changing one dependency creates a different conditional proof.
+            key = "claim"
+            i = 2
+            while i <= 9
+                key = key * "," * p[i]
+                i += 1
+            end
+        else
+            schema_assert(false)
+        end
+    elseif same(source, "s1_graph")
+        tag = p[1]
+        if same(tag, "evidence") || same(tag, "association") || same(tag, "revoked")
+            key = r[12]
+        elseif same(tag, "rule_state")
+            schema_assert(length(p) == 3)
+            key = "rule_state," * p[2]
+        else
+            schema_assert(false)
+        end
+        schema_assert(same(r[4], "s1_graph") || same(r[4], "s1_association"))
+    else
+        # Other domains and activation pulses are independent events and
+        # must be introduced through normal explicit TRID-011 append.
+        schema_assert(false)
+    end
+    r[2] * "|" * r[4] * "|" * key
+end
+
+function identity_check_snapshot(rows)
+    schema_check_ledger(rows)
+    i = 1
+    while i <= length(rows)
+        a = identity_core(rows[i])
+        j = 1
+        while j < i
+            b = identity_core(rows[j])
+            schema_assert(!same(a, b))
+            j += 1
+        end
+        i += 1
+    end
+    true
+end
+
+function identity_emit_snapshot(rows)
+    # Validation before stdout: reject duplicate natural keys, invalid
+    # imported snapshots and unexpected origins atomically.
+    identity_check_snapshot(rows)
+    i = 1
+    while i <= length(rows)
+        println(identity_core(rows[i]))
+        i += 1
+    end
+    true
+end
