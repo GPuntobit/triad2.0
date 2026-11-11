@@ -137,4 +137,4 @@ if ! ( cd "$TMP"; "$ROOT/bin/triad" "$TMP/verify.triad" > "$TMP/new-memory.txt" 
 fi
 validate_memory "$TMP/new-memory.txt"
 store_commit "$TMP/new-journal.log" "$TMP/new-memory.txt"
-printf 'TRID native: memory updated; %s total events\n' "$(wc -l < "$JOURNAL" | tr -d ' ')"
+printf 'TRID native: memory updated; %s total events\n' "$(wc -l < "$JOURNAL" | tr -d ' ')" >&2
