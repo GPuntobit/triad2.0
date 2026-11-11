@@ -1,0 +1,18 @@
+# Triad Core Exercises
+
+## Tool References
+- bin/, sh/
+- cmd triad.cmd, triad-cli.cmd (command line tools)
+
+## Node.js Requirements
+Node.js ≥ 18 for the interpreter/JS runner and compliance testing.
+To seed the environment: decode seed.hex with certutil.
+Git is used to clone the repository.
+
+## GitHub Pages Site
+The project hosts its documentation on GitHub Pages at docs/ in the repo,
+loading static HTML from the site.
+
+## Editor Exercises
+- VS Code grammar (TextMate)
+- Vim syntax files and Linguist voice integration
