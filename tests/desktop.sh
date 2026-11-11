@@ -62,13 +62,18 @@ if grep -q 'Scegli il profilo' "$tmp/open.log"; then
     exit 1
 fi
 grep -q 'Percorso del programma' "$tmp/open.log"
-# Multiple prints, literal arguments, comments, and a path with spaces.
+# Multiple single-argument prints, comments, and a path with spaces.
 multi="$tmp/multi print.td"
-printf '# commento\nprintln("prima", 42)\nprintln("seconda")\n' > "$multi"
+printf '# commento\nprintln("prima")\nprintln(42)\nprintln("seconda")\n' > "$multi"
 printf ':quit\n' | "$root/bin/triad-desktop" "$multi" > "$tmp/multi.log" 2>&1
-grep -Fqx 'prima42' "$tmp/multi.log"
+grep -Fqx 'prima' "$tmp/multi.log"
+grep -Fqx '42' "$tmp/multi.log"
 grep -Fqx 'seconda' "$tmp/multi.log"
 grep -q 'codice 0, profilo core' "$tmp/multi.log"
+# The current S0 seed rejects multi-argument println; do not auto-run it.
+printf 'println("a", "b")\n' > "$tmp/multi-args.triad"
+printf ':quit\n' | "$root/bin/triad-desktop" "$tmp/multi-args.triad" > "$tmp/multi-args.log" 2>&1
+grep -q 'Scegli il profilo' "$tmp/multi-args.log"
 # A single literal print can also be entered at the desktop prompt.
 printf 'println("inline-pass")\n:quit\n' |
     "$root/bin/triad-desktop" > "$tmp/inline.log" 2>&1
