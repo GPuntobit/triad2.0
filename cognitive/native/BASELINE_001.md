@@ -44,7 +44,7 @@ Il seed ricostruito è un artefatto locale ignorato da Git. In CI si usa `action
 ## Limiti dell'evidenza
 
 - È una verifica per **quel commit**, per quei test e per quell'ambiente Ubuntu; un nuovo merge necessita una nuova run.
-- Il test di certificazione reale CachyOS precedente ha prodotto 7/7 PASS su `3a8b64f9b43da935e49360f1d760ae3f04b81adf`, **non** su `7ff41abad93d2c646617d7d620c3bdda1a`.
+- Il test di certificazione reale CachyOS precedente ha prodotto 7/7 PASS su `3a8b64f9b43da935e49360f1d760ae3f04b81adf`, **non** su `7ff41abad93d2c646617d7d620c3bdda1c920a1a`.
 - SIGKILL è un'iniezione di crash di processo, non uno spegnimento elettrico e non una transazione distribuita S0/S1.
 - Il progetto usa deduzioni **condizionali** alle fonti dichiarate, non autentica l'attendibilità del mondo reale.
 - GitHub Pages può fallire separatamente: non è una delle cinque suite di TRID-001; non va nascosto né reinterpretato come errore cognitivo.
