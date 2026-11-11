@@ -3,7 +3,7 @@
 ## Desktop: `println` letterali automatici, Core/Logic espliciti — 2026-11-11
 
 La sessione `bin/triad-desktop` avvia automaticamente in Core soltanto
-file `.triad`/`.td` composti da `println` con argomenti letterali
+file `.triad`/`.td` composti da `println` con un unico argomento letterale
 (stringhe, interi, Bool, `nothing`, simboli), commenti e righe vuote.
 Accetta anche un singolo `println` letterale digitato al prompt;
 non è un REPL generale. Il controllo POSIX awk non esegue codice per
