@@ -26,15 +26,14 @@ elif [ "${1:-}" = "--auto" ]; then
     exit 2
 fi
 
-# Controllo conservativo: solo println di letterali, commenti e righe vuote.
+# Controllo conservativo: solo println con un letterale, commenti e righe vuote.
 # Non eseguiamo un sorgente arbitrario per il solo fatto che contiene "println".
 # POSIX awk: nessuna valutazione o interpretazione da parte della shell.
 is_print_only_source() {
     LC_ALL=C awk '
         BEGIN { seen = 0 }
         /^[[:space:]]*($|#)/ { next }
-        /^[[:space:]]*println\([[:space:]]*\)[[:space:]]*(#.*)?$/ { seen = 1; next }
-        /^[[:space:]]*println\([[:space:]]*("([^"\\]|\\[nt"\\])*"|-?[0-9]+|true|false|nothing|:[A-Za-z_][A-Za-z0-9_]*)([[:space:]]*,[[:space:]]*("([^"\\]|\\[nt"\\])*"|-?[0-9]+|true|false|nothing|:[A-Za-z_][A-Za-z0-9_]*))*[[:space:]]*\)[[:space:]]*(#.*)?$/ { seen = 1; next }
+        /^[[:space:]]*println\([[:space:]]*("([^"\\]|\\[nt"\\])*"|-?[0-9]+|true|false|nothing|:[A-Za-z_][A-Za-z0-9_]*)[[:space:]]*\)[[:space:]]*(#.*)?$/ { seen = 1; next }
         { exit 1 }
         END { if (!seen) exit 1 }
     ' "$1"
@@ -115,7 +114,7 @@ while :; do
         *)
             # Consentiamo anche un singolo println letterale digitato al prompt,
             # senza trasformare la sessione in un REPL o eseguire codice arbitrario.
-            if [ ! -e "$file" ] && printf '%s\n' "$file" | is_print_only_source -; then
+            if [ ! -f "$file" ] && printf '%s\n' "$file" | is_print_only_source -; then
                 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/triad-println.XXXXXXXX") || {
                     printf 'Impossibile creare il file temporaneo.\n' >&2
                     continue
