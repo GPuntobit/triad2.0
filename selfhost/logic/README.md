@@ -95,7 +95,7 @@ payloads remain separate work. Finite S0 heap/vector limits still apply.
 ## Sessione desktop
 
 La sessione desktop esegue automaticamente in Core **soltanto** i file
-`.triad`/`.td` composti da `println(...)` con argomenti letterali, commenti
+`.triad`/`.td` composti da `println(...)` con un solo argomento letterale, commenti
 e righe vuote. Anche un `println("ciao")` letterale digitato al prompt
 viene eseguito senza scegliere un profilo. Questo non è un REPL generale.
 
