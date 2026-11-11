@@ -6,7 +6,10 @@ TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT HUP INT TERM
 cp "$ROOT/cognitive/native/fixture.txt" "$TMP/fixture.txt"
 export TRID_STATE_DIR="$TMP/state"
-sh "$ROOT/cognitive/native/run.sh" "$TMP/fixture.txt"
+# Real native seed: progress stays on stderr; normal stdout is reserved for data.
+sh "$ROOT/cognitive/native/run.sh" "$TMP/fixture.txt" > "$TMP/native.stdout" 2> "$TMP/native.stderr"
+[ ! -s "$TMP/native.stdout" ] || { echo 'TRID-003 native success contaminated stdout' >&2; exit 1; }
+grep -q 'TRID native: memory updated' "$TMP/native.stderr"
 J="$TRID_STATE_DIR/hypotheses.log"
 M="$TRID_STATE_DIR/memory.txt"
 grep -q '^rule|grandparent|chain|consolidated_conditional|6|definition_gp_01$' "$M"
