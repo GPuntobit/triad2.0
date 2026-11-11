@@ -1,5 +1,17 @@
 # Task Triad 2.0
 
+## Desktop: stampa letterale automatica (2026-11-11)
+
+- `bin/triad-desktop`: consentire esecuzione automatica solo di
+  `println(...)` con un unico argomento letterale in file `.triad`/`.td`,
+  senza attivare Core/Logic automaticamente per gli altri file.
+- La scelta `:core`/`:logic` resta manuale e persistente; supportare
+  un `println` letterale digitato al prompt senza rendere il prompt
+  un REPL generale.
+- Validazione: `sh tests/desktop.sh` e `sh verify.sh` (gate CI nella PR).
+  Rifiutare l'automazione se ci sono assegnamenti, chiamate annidate
+  o costrutti logici. Nessuna modifica agli eseguibili seed.
+
 ## Handoff — 2026-11-09 05:10: chiusura delle azioni aperte del ciclo D22 — commit, mirror del wiki e handoff
 
 ### Stato attuale e obiettivo della sessione

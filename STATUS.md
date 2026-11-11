@@ -1,18 +1,22 @@
 # Triad and S0 bootstrap status
 
-## Desktop: scelta esplicita obbligatoria — 2026-11-11
+## Desktop: `println` letterali automatici, Core/Logic espliciti — 2026-11-11
 
-La sessione `bin/triad-desktop` non usa più `:auto` o
-`scripts/detect-profile.sh` per decidere quale runtime eseguire. Quando
-viene aperto un file `.triad`/`.td` senza profilo scelto, chiede
-`:core` (seed S0) o `:logic` (S1) **prima** di avviare il file; un
-annullamento o EOF non avvia nulla. I profili scelti restano persistenti
-nella sessione; `--core FILE` e `--logic FILE` sono override espliciti.
-`:auto` e `--auto` non eseguono più rilevamento implicito.
+La sessione `bin/triad-desktop` avvia automaticamente in Core soltanto
+file `.triad`/`.td` composti da `println` con un unico argomento letterale
+(stringhe, interi, Bool, `nothing`, simboli), commenti e righe vuote.
+Accetta anche un singolo `println` letterale digitato al prompt;
+non è un REPL generale. Il controllo POSIX awk non esegue codice per
+riconoscere il caso semplice e rifiuta espressioni/chiamate annidate,
+assegnamenti e costrutti logici.
 
-Non cambia `bin/triad FILE`, che resta Core nativo. La scelta del profilo
-non rende disponibili le funzionalità Core assenti dal seed (es. `typeof`,
-divergenza D14). Test di regressione desktop aggiornati; verifiche CI in PR.
+In tutti gli altri casi il file non si avvia prima della scelta esplicita
+`:core` (seed S0) o `:logic` (S1). Annullamento ed EOF non eseguono
+il file; l'override manuale è persistente per la sessione, e
+`--core FILE`/`--logic FILE` restano validi. `:auto`/`--auto`
+rimangono disabilitati: nessun rilevamento automatico del profilo Full/S1.
+`bin/triad FILE` non cambia (Core nativo); nessun seed o costrutto del
+linguaggio viene modificato. Test desktop aggiornati.
 
 ## D22 risolta: le parole chiave sono token *esatti* nel seed — 2026-11-09
 

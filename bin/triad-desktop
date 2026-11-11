@@ -1,6 +1,7 @@
 #!/bin/sh
 # Sessione desktop POSIX: il seed richiede un file e non offre ancora un REPL.
-# La scelta Core/S1 e' esplicita: nessun rilevamento automatico dal sorgente.
+# Solo i programmi composti da println di valori letterali partono in automatico.
+# Ogni altro programma richiede :core o :logic; nessuna scelta automatica Full/S1.
 # Separata da bin/triad per preservare exit code e delega diretta del launcher.
 set -u
 self=$0
@@ -25,6 +26,27 @@ elif [ "${1:-}" = "--auto" ]; then
     exit 2
 fi
 
+# Controllo conservativo: solo println con un letterale, commenti e righe vuote.
+# Non eseguiamo un sorgente arbitrario per il solo fatto che contiene "println".
+# POSIX awk: nessuna valutazione o interpretazione da parte della shell.
+is_print_only_source() {
+    LC_ALL=C awk '
+        BEGIN { seen = 0 }
+        /^[[:space:]]*($|#)/ { next }
+        /^[[:space:]]*println\([[:space:]]*("([^"\\]|\\[nt"\\])*"|-?[0-9]+|true|false|nothing|:[A-Za-z_][A-Za-z0-9_]*)[[:space:]]*\)[[:space:]]*(#.*)?$/ { seen = 1; next }
+        { exit 1 }
+        END { if (!seen) exit 1 }
+    ' "$1"
+}
+
+is_print_only_file() {
+    case $1 in
+        *.triad|*.td) ;;
+        *) return 1 ;;
+    esac
+    [ -f "$1" ] && [ -r "$1" ] && is_print_only_source "$1"
+}
+
 choose_profile() {
     while [ -z "$profile" ]; do
         printf '\nScegli il profilo per %s:\n' "$1"
@@ -48,9 +70,16 @@ choose_profile() {
 
 run_file() {
     if [ -z "$profile" ]; then
-        choose_profile "$1" || return 0
+        if [ "$#" -eq 1 ] && is_print_only_file "$1"; then
+            selected=core
+            printf 'Solo println di letterali: esecuzione automatica in Core.\n'
+        else
+            choose_profile "$1" || return 0
+            selected=$profile
+        fi
+    else
+        selected=$profile
     fi
-    selected=$profile
     printf 'Profilo selezionato: %s\n' "$selected"
     if [ "$selected" = logic ]; then
         "$ROOT/bin/triad" --logic "$@"
@@ -66,7 +95,7 @@ run_file() {
 
 printf 'Triad — sessione desktop\n'
 printf 'Esecuzione di file .triad/.td; questa sessione non è un REPL.\n'
-printf 'Profili: :core usa S0, :logic usa S1; nessun profilo selezionato automaticamente.\n'
+printf 'Profili: :core usa S0, :logic usa S1; solo i println di letterali sono automatici.\n'
 if [ -n "$profile" ]; then
     printf 'Profilo iniziale selezionato esplicitamente: %s.\n' "$profile"
 fi
@@ -82,6 +111,21 @@ while :; do
         :logic) profile=logic; printf 'Profilo logico S1 selezionato.\n' ;;
         :core) profile=core; printf 'Profilo Core selezionato.\n' ;;
         '') continue ;;
-        *) run_file "$file" ;;
+        *)
+            # Consentiamo anche un singolo println letterale digitato al prompt,
+            # senza trasformare la sessione in un REPL o eseguire codice arbitrario.
+            if [ ! -f "$file" ] && printf '%s\n' "$file" | is_print_only_source -; then
+                tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/triad-println.XXXXXXXX") || {
+                    printf 'Impossibile creare il file temporaneo.\n' >&2
+                    continue
+                }
+                printf '%s\n' "$file" > "$tmpdir/inline.triad"
+                run_file "$tmpdir/inline.triad"
+                rm -f "$tmpdir/inline.triad"
+                rmdir "$tmpdir"
+            else
+                run_file "$file"
+            fi
+            ;;
     esac
 done
