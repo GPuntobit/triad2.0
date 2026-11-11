@@ -50,8 +50,9 @@ if grep -q 'Scegli il profilo' "$tmp/open.log"; then
 fi
 grep -q 'Percorso del programma' "$tmp/open.log"
 # Multiple prints, literal arguments, comments, and a path with spaces.
-printf '# commento\nprintln("prima", 42)\nprintln("seconda")\n' > "$program"
-printf ':quit\n' | "$root/bin/triad-desktop" "$program" > "$tmp/multi.log" 2>&1
+multi="$tmp/multi print.td"
+printf '# commento\nprintln("prima", 42)\nprintln("seconda")\n' > "$multi"
+printf ':quit\n' | "$root/bin/triad-desktop" "$multi" > "$tmp/multi.log" 2>&1
 grep -Fqx 'prima42' "$tmp/multi.log"
 grep -Fqx 'seconda' "$tmp/multi.log"
 grep -q 'codice 0, profilo core' "$tmp/multi.log"
