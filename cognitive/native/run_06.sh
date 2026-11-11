@@ -68,6 +68,6 @@ for queries in "$ROOT/cognitive/native/queries_proof_06.triad" "$ROOT/cognitive/
     done < "$queries"
 done
 if [ "${TRID_TEST_GRAPH_CRASH_AT:-}" = before_output ]; then
-    kill -KILL "$"
+    kill -KILL "$$"
 fi
 cat "$WORK/query.out"

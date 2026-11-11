@@ -3,8 +3,28 @@
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 W=$(mktemp -d)
-trap 'rm -rf -- "$W"' EXIT
+stage=setup
+cleanup_071() {
+  code=$?
+  trap - EXIT
+  if [ "$code" -ne 0 ]; then
+    printf 'TRID-071: FAIL stage=%s exit=%s\n' "$stage" "$code" >&2
+    for log in "$W"/*.err; do
+      [ -f "$log" ] && [ -s "$log" ] || continue
+      printf '%s\n' "TRID-071: stderr from ${log##*/}" >&2
+      tail -n 8 "$log" >&2
+    done
+  fi
+  if [ "$code" -ne 0 ] && [ "${TRID_071_KEEP_FAILED:-0}" = 1 ]; then
+    printf 'TRID-071: preserved failed test state at %s\n' "$W" >&2
+  else
+    rm -rf -- "$W"
+  fi
+  exit "$code"
+}
+trap cleanup_071 EXIT
 export TRID_STATE_DIR="$W/s0" TRID_GRAPH_STATE_DIR="$W/s1" TRID_EVENT_STATE_DIR="$W/events"
+stage=initial_sources
 S0="$ROOT/cognitive/native/run.sh"
 S1="$ROOT/cognitive/native/run_06.sh"
 J="$ROOT/cognitive/native/journal_v1.sh"
@@ -24,6 +44,7 @@ sh "$U" --project-current "$W/first.events" > "$W/projection"
 grep -q '^proofs|' "$W/projection"
 grep -q '^activation_network|' "$W/projection"
 ptr=$(readlink "$TRID_EVENT_STATE_DIR/.current")
+stage=restart_idempotence
 # Byte-exact restart and idempotence of the multi-source importer.
 sh "$S0" "$ROOT/cognitive/native/fixture.txt" > "$W/s0.second" 2> "$W/s0.second.err"
 sh "$S1" > "$W/s1.second" 2> "$W/s1.second.err"
@@ -35,6 +56,7 @@ sh "$U" --reconcile "$ROOT/cognitive/native/fixture.txt" \
   "$TRID_STATE_DIR/.current/memory.txt" "$TRID_GRAPH_STATE_DIR/graph.facts" > "$W/noop.out" 2> "$W/noop.err"
 grep -q 'no changes' "$W/noop.err"
 [ "$ptr" = "$(readlink "$TRID_EVENT_STATE_DIR/.current")" ]
+stage=exclusive_locks
 # Fail-closed concurrent state access for each of the three stores.
 (
  exec 8>> "$TRID_STATE_DIR/.mutex"; flock -n 8
@@ -57,17 +79,25 @@ grep -q 'no changes' "$W/noop.err"
  fi
  grep -q 'state locked' "$W/lock.j.err"; flock -u 8
 )
+stage=s1_sigkill
 # S1 SIGKILL at two deterministic points must not leave a stale lock or
 # publish partial output; graph facts remain byte-exact after restart.
 for point in after_lock before_output; do
- if TRID_TEST_GRAPH_CRASH_AT="$point" sh "$S1" > "$W/kill.$point.out" 2> "$W/kill.$point.err"; then
-   echo "TRID-071 S1 crash $point succeeded unexpectedly" >&2; exit 1
+ stage="s1_sigkill_$point"
+ # Require the actual Linux 128+SIGKILL exit code (137). A merely failing
+ # command, for example an invalid kill argument, is NOT a successful test.
+ rc=0
+ TRID_TEST_GRAPH_CRASH_AT="$point" sh "$S1" > "$W/kill.$point.out" 2> "$W/kill.$point.err" || rc=$?
+ if [ "$rc" -ne 137 ]; then
+   echo "TRID-071: expected SIGKILL exit=137 at $point; observed exit=$rc" >&2
+   exit 1
  fi
  [ ! -s "$W/kill.$point.out" ]
  cmp "$W/s1.graph" "$TRID_GRAPH_STATE_DIR/graph.facts"
  sh "$S1" > "$W/restart.$point.out" 2> "$W/restart.$point.err"
  cmp "$W/s1.first" "$W/restart.$point.out"
 done
+stage=s0_sigkill_revocation
 # Valid S0 revocation: pre-pointer SIGKILL preserves both old files,
 # then successful restart suspends ONLY the dependent conditional proof.
 cp "$ROOT/cognitive/native/fixture.txt" "$W/revoked.fixture"
@@ -90,12 +120,14 @@ sh "$J" --replay > "$W/revoked.events"
 [ "$(wc -l < "$W/revoked.events")" -gt "$(wc -l < "$W/first.events")" ]
 sh "$U" --project-current "$W/revoked.events" > "$W/revoked.projection"
 grep -q '^proofs|suspended|' "$W/revoked.projection"
+stage=historical_archive
 # Restore an already existing complete journal archive in another directory.
 mkdir "$W/archive"
 cp -a "$TRID_EVENT_STATE_DIR/." "$W/archive/"
 TRID_EVENT_STATE_DIR="$W/archive" sh "$J" --recover > "$W/archive.out" 2> "$W/archive.err"
 TRID_EVENT_STATE_DIR="$W/archive" sh "$J" --replay > "$W/archive.events"
 cmp "$W/revoked.events" "$W/archive.events"
+stage=invalid_version_injection
 # Incompatible v2 and malicious S1 data fail, without changing a commit pointer.
 printf 'v2|fact|bad|family|none|declared|1|none|none|unsafe|none|wrong_version\n' > "$W/v2"
 before=$(readlink "$TRID_EVENT_STATE_DIR/.current")
@@ -111,6 +143,7 @@ fi
 [ ! -s "$W/injected.out" ]
 grep -q 'invalid graph record' "$W/injected.err"
 [ "$before" = "$(readlink "$TRID_EVENT_STATE_DIR/.current")" ]
+stage=symlink_security
 # A graph symlink and an aliased state path are not acceptable inputs.
 mkdir "$W/s1-symlink-graph"
 ln -s "$W/s1.graph" "$W/s1-symlink-graph/graph.facts"
@@ -130,6 +163,7 @@ if TRID_GRAPH_STATE_DIR="$W/state-alias" sh "$S1" > "$W/state-alias.out" 2> "$W/
   echo 'TRID-071: accepted symlink state directory' >&2; exit 1
 fi
 grep -q 'unsafe state symlink' "$W/state-alias.err"
+stage=forged_witness_native_recheck
 # Rebuild the old S0 polynomial chain with native Triad after changing the
 # first proof witness. This bypasses a mere checksum mismatch but MUST fail
 # independent proof-grounding; no new state publication is permitted.
