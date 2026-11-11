@@ -1,0 +1,27 @@
+patterns:
+    Lizard_ccn-critical:
+        category: Complexity
+        description: Reports a Critical issue when a function's cyclomatic complexity (the number of independent decision paths through it) reaches the configured threshold, which defaults to 20. Complexity this high makes the function very difficult to test exhaustively and to change without introducing defects.
+        explanation: |-
+            # Critical Cyclomatic Complexity control
+
+            Check the Cyclomatic Complexity value of a function or logic block. If the threshold is exceeded, raise a Critical issue. The default threshold is 20.
+        id: Lizard_ccn-critical
+        level: Error
+        severityLevel: Error
+        threshold: 30
+        timeToFix: 15
+        title: Limit Function Cyclomatic Complexity (Critical)
+    Lizard_ccn-medium:
+        category: Complexity
+        description: Reports a Medium issue when a function's cyclomatic complexity (the number of independent decision paths through it) reaches the configured threshold, which defaults to 15. At this level the function has substantially more branching than is comfortable to test and maintain.
+        explanation: |-
+            # Medium Cyclomatic Complexity control
+
+            Check the Cyclomatic Complexity value of a function or logic block. If the threshold is exceeded, raise a Medium issue. The default threshold is 15.
+        id: Lizard_ccn-medium
+        level: Warning
+        severityLevel: Warning
+        threshold: 20
+        timeToFix: 10
+        title: Limit Function Cyclomatic Complexity (Medium)

@@ -1,0 +1,4 @@
+mode: remote
+provider: gh
+organization: GPuntobit
+repository: triad2.0

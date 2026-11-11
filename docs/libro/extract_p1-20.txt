@@ -1,0 +1,400 @@
+
+===== PAGE 1 =====
+
+===== PAGE 2 =====
+Indice
+1. - Indice -
+2. Prefazione
+3. Sommario
+4. Manuale di Triad 2.0
+5. Tutorial di Triad 2.0
+6. Quarta di copertina
+
+===== PAGE 3 =====
+Prefazione
+Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e
+tipi dichiarati, multiple dispatch, programmazione logica integrata, codice
+come dato. La sua definizione è una specifica normativa indipendente
+dall'implementazione, accompagnata da una specifica eseguibile e da una
+suite di conformità con golden verificabili. Questo libro ne è il percorso di
+studio.
+Il libro nasce da un'esigenza semplice: imparare Triad non significa solo
+leggere la specifica, ma costruire un modello mentale del linguaggio, dei
+suoi costrutti e del suo runtime. La specifica è normativa e precisa, ma è
+scritta per essere implementata, non per essere letta come un romanzo.
+Questo volume la traduce in un percorso: spiegazioni, esempi, esercizi,
+marcatori di profilo. Le spiegazioni, gli esempi e gli esercizi costruiscono
+passo dopo passo il modello mentale del linguaggio. La specifica resta la
+fonte normativa di riferimento, non un prerequisito di lettura.
+Il lettore ideale sa già programmare in un altro linguaggio: sa cosa sono una
+variabile, una funzione, un ciclo, una ricorsione. Questo libro non insegna
+la programmazione in generale, insegna Triad. Le influenze del linguaggio
+(Julia, Prolog, Lisp) sono documentate nell'Appendice A della specifica:
+sono note informative, non definizioni. Triad non è un dialetto di nessuno
+dei tre.
+Il volume riunisce due testi complementari e indipendenti. Il Manuale di
+Triad 2.0 spiega il linguaggio, propone esercizi e chiude con grammatica,
+
+===== PAGE 4 =====
+schede rapide, tabella degli errori, glossario e appendici. Il Tutorial di Triad
+2.0 è diviso in cinque parti: primi passi, Triad-Core, Triad-Full, codice del
+progetto e riferimento. Si può leggere il Manuale per intero senza il
+Tutorial, e il Tutorial per intero senza il Manuale: ciascuno spiega ciò che
+gli serve. L'indice che segue raccoglie i capitoli di entrambi i testi, così da
+ritrovarli in un unico posto.
+Se vuoi scrivere programmi eseguibili oggi, comincia dal Tutorial, parti I e
+II; usa il Manuale per approfondire i concetti e fare gli esercizi. Per studiare
+lo standard completo, prosegui con la parte III del Tutorial e i capitoli
+corrispondenti del Manuale. La parte IV è pensata per chi vuole esplorare o
+modificare il repository.
+Le appendici del Manuale orientano tra le influenze del linguaggio e le fonti
+del progetto. I testi normativi integrali non sono riprodotti nel volume: chi
+vuole il dettaglio formale li trova nei file 
+SPEC.md e 
+SPEC-CORE.md del
+repository, che restano le fonti definitive in caso di divergenza. Il volume
+contiene comunque le regole necessarie a capire e usare il linguaggio: il
+rinvio alla specifica è un approfondimento, non una dipendenza.
+Due profili di conformità attraversano tutto il libro. Triad-Core è il
+sottoinsieme di bootstrap: valori, funzioni, chiusure, controllo di flusso,
+liste, stringhe, I/O. Triad-Full è lo standard completo. Ogni programma
+Core è anche un programma Full valido e deve comportarsi allo stesso
+modo. I marcatori [Core] e [Full] indicano in quale profilo esiste ciascun
+costrutto; i blocchi di codice sono marcati triad per il codice Core e triad-
+full per il codice definito dallo standard Full, non ancora eseguibile dal
+runtime corrente. Gli esempi Core si possono provare con l'interprete
+
+===== PAGE 5 =====
+JavaScript di riferimento ( node seed/dev/triad_core.cjs ); i frammenti indicati
+come specifici del seed fanno eccezione.
+Il seed S0 è un interprete Triad-Core scritto direttamente in codice
+macchina x86-64, senza un linguaggio ospite; oggi il seed eseguibile è
+quello per Windows. Non va confuso con l'interprete JavaScript usato per
+eseguire gli esempi Core e verificare la conformance. Il piano di bootstrap
+prevede S1 (un interprete Triad scritto in Triad-Core), S2 (compilatore
+nativo), S3 (self-hosting) e S4 (parità cross-platform). Dove il runtime non
+copre un costrutto, il testo lo dice esplicitamente.
+Buona lettura, e buon codice.
+— GPuntobit
+
+===== PAGE 6 =====
+Sommario
+Elenco completo di tutti i capitoli e le sezioni.
+
+===== PAGE 7 =====
+Manuale di Triad 2.0
+Come leggere questo manuale
+A chi è indirizzato
+Due profili, una sola lingua
+Convenzioni di notazione
+Come eseguire gli esempi
+Parte I — Il linguaggio
+1. Lessico
+1.1 Identificatori
+1.2 Numeri
+1.3 Stringhe
+1.4 Simboli
+1.5 Commenti
+1.6 Separatori e fine-riga
+1.7 La regola dei due punti e del punto interrogativo
+1.8 Parole chiave
+1.9 Identificatori avanzati e convenzioni
+1.10 Escape e stringhe avanzate
+1.11 Esercizi sul lessico
+2. Valori e tipi
+2.1 I tipi
+2.2 Gerarchia dei tipi
+2.3 Struct
+2.4 Conversioni
+2.5 Asserzione di tipo
+
+===== PAGE 8 =====
+2.6 Il vincolo del dichiarato
+2.7 Le condizioni accettano solo `Bool`
+2.8 Come stampa un valore
+3. Variabili e assegnamento
+4. Operatori e precedenza
+4.1 Aritmetica intera
+4.2 Logica e confronti
+5. Controllo di flusso
+5.1 `if` / `elseif` / `else` **[Core]**
+5.2 `while`, `break`, `continue` **[Core]**
+5.3 `let` e `begin` **[Core]**
+5.4 `for` e i range **[Full]**
+5.5 Le comprehension **[Full]**
+5.6 `try` / `catch` **[Full]**
+6. Funzioni
+6.1 Tre forme di definizione **[Core]**
+6.2 `return`, ricorsione, arità
+6.3 Funzioni di ordine superiore
+6.4 L'annotazione di effetto `!io`
+7. Tipi e multiple dispatch
+7.1 Il tipo di ritorno
+7.2 Funzioni locali
+8. Lambda, chiusure e scope
+8.1 Lambda **[Core]**
+8.2 Chiusure
+8.3 Le regole di scope
+9. Liste
+
+===== PAGE 9 =====
+10. Stringhe, simboli e conversioni
+11. Errori come dati
+11.1 La forma `Err`
+11.2 Produrre e propagare
+11.3 Le categorie di errore
+11.4 In Core: errori come liste taggate
+12. Contratti
+13. Budget
+14. Tracce
+Glossario degli eventi di traccia (porte di Byrd)
+15. Effetti dichiarati
+16. Logica
+16.1 Fatti, regole, termini
+16.2 I goal
+16.3 `solve` è un valore
+16.4 Un predicato usato come funzione
+16.5 Esempi
+17. Codice come dato
+17.1 Quote, unquote, eval
+18. Macro
+18.1 Codice che genera codice
+19. Builtin
+20. Riga di comando e REPL
+20.1 Il REPL
+21. Primitivi di bootstrap
+22. Stile e pattern idiomatici
+22.1 Funzioni di ordine superiore scritte in Core
+
+===== PAGE 10 =====
+22.2 Record come liste taggate
+22.3 Ambiente come lista di associazioni
+22.4 Stato mutabile condiviso
+22.5 Costruire stringhe
+22.6 Regole di stile
+Parte II — Esercizi
+23. Esercizi guidati (Triad-Core)
+Esercizio 1 — Potenza e somme
+Esercizio 2 — Numeri primi
+Esercizio 3 — Inverti una lista
+Esercizio 4 — Ordinamento per inserzione
+Esercizio 5 — Contatore di parole
+Esercizio 6 — Un mini-analizzatore lessicale
+Esercizio 7 — Valutare un'espressione
+Esercizio 8 — Un ambiente a dizionario
+24. Esercizi su Triad-Full
+Esercizio 9 — Dispatch su struct
+Esercizio 10 — Una base di conoscenza
+Esercizio 11 — Contratti in pratica
+Esercizio 12 — Una macro che misura
+Parte III — Riferimento
+25. Grammatica
+25.1 Triad-Core (EBNF normativa)
+25.2 Triad-Full (EBNF normativa)
+26. Schede rapide
+26.1 Valori
+26.2 Controllo di flusso
+
+===== PAGE 11 =====
+26.3 Funzioni
+27. Tabella degli errori
+27.1 In Core
+27.2 In Triad-Full
+28. Glossario
+29. Cosa gira oggi
+Appendice A — Influenze dichiarate
+Appendice B — Dove guardare
+
+===== PAGE 12 =====
+Tutorial di Triad 2.0
+Che cosa impari e come è organizzato
+Come usare questo tutorial
+Parte I — Primi passi
+1. Cos'è Triad
+1.1 Due profili: Core e Full
+1.2 La catena di bootstrap
+2. Installare ed eseguire
+2.1 Requisiti
+2.2 Eseguire un file
+2.3 Materializzare il seed
+2.4 Launcher `bin/triad` e `bin/triad.cmd`
+2.5 Codici di uscita
+2.6 La CLI di sviluppo in breve
+3. Il primo programma
+3.1 Argomenti da riga di comando
+3.2 Il ciclo di lavoro consigliato
+Parte II — Triad-Core passo per passo (eseguibile oggi)
+4. Lessico
+5. Valori, tipi e stampa
+5.1 Regole di stampa di `print`/`println`
+5.2 Uguaglianza
+6. Variabili e assegnamento
+7. Operatori ed espressioni
+7.1 Precedenza (dalla più bassa alla più alta)
+
+===== PAGE 13 =====
+7.2 Aritmetica intera
+7.3 Logica e condizioni
+8. Controllo di flusso
+8.1 `if` / `elseif` / `else`
+8.2 `while`, `break`, `continue`
+8.3 `let` e `begin`
+9. Funzioni
+9.1 Tre modi di definire una funzione
+9.2 `return`, ricorsione, arità
+9.3 Annotazione di effetto `!io`
+10. Lambda, chiusure e scope
+10.1 Lambda
+10.2 Chiusure
+10.3 Regole di scope
+11. Liste
+12. Stringhe, simboli e conversioni
+13. Primitivi di bootstrap
+14. Errori di esecuzione
+14.1 Errori come valori, in Core
+15. Interprete JS e seed Windows: differenze
+16. Pattern idiomatici Triad-Core
+16.1 Funzioni di ordine superiore scritte in Core
+16.2 Record come liste taggate
+16.3 Ambiente come lista di associazioni
+16.4 Stato mutabile condiviso
+16.5 Costruire stringhe
+16.6 Stile
+
+===== PAGE 14 =====
+17. Esercizi guidati
+Esercizio 1 — Potenza e somme
+Esercizio 2 — Numeri primi
+Esercizio 3 — Inverti una lista
+Esercizio 4 — Ordinamento per inserzione
+Esercizio 5 — Contatore di parole
+Esercizio 6 — Un mini-tokenizer
+Esercizio 7 — Valutare un'espressione
+Parte III — Triad-Full (lo standard completo)
+18. Lessico e tipi Full (SPEC §1, §4)
+19. Funzioni tipate e multiple dispatch (SPEC §5)
+20. Struct (SPEC §4)
+21. Controllo di flusso Full: `for`, range, comprehension, `try` (SPEC
+§2)
+22. Logica: fatti, regole, `solve` (SPEC §6)
+23. Destrutturazione (SPEC §2)
+24. Errori come dati (SPEC §8)
+25. Contratti (SPEC §9)
+26. Budget (SPEC §10)
+27. Tracce (SPEC §11)
+28. Effetti dichiarati (SPEC §12)
+29. Codice come dato, albero uniforme e macro (SPEC §3, §7)
+29.1 L'albero uniforme
+29.2 Quote, unquote, eval
+29.3 Macro
+29.4 Codice che genera codice
+30. Builtin Full (SPEC §13)
+
+===== PAGE 15 =====
+31. Riga di comando e REPL (SPEC §14)
+32. Esempi Full con output golden
+32.5 Contratti e budget insieme
+Parte IV — Il codice del progetto
+33. Mappa del repository
+34. L'interprete di riferimento JS (`seed/dev/triad_core.cjs`)
+34.1 Architettura
+34.2 Esempio: aggiungere un builtin
+34.3 Esempio: aggiungere sintassi
+35. Il seed S0 Windows e il suo generatore
+35.1 Cos'è
+35.2 Convenzioni interne
+35.3 Il generatore `seed/dev/gen_seed.js`
+35.4 Flusso per modificare il seed
+36. Il seed Linux (E0)
+37. Self-hosting: S1 in `selfhost/`
+37.1 Come si scrive codice S1 oggi
+37.2 Dove va S1
+38. Conformance: leggere, scrivere e verificare casi
+38.1 Formato
+38.2 Il runner `conformance/run.mjs`
+38.3 Aggiungere un caso Core
+39. La CLI di sviluppo `triad-cli`
+39.1 Uso
+39.2 Struttura del codice
+39.3 Aggiungere un comando
+39.4 Eseguibile standalone
+
+===== PAGE 16 =====
+40. Benchmark AI (`ai/`)
+41. Editor, launcher e sito
+42. Integrazione continua
+43. Flusso di contributo
+Parte V — Riferimento
+44. Grammatica Triad-Core (EBNF)
+45. Schede rapide Core e Full
+46. Debug e problemi comuni
+47. Glossario
+48. Stato, limiti noti e fix storici
+49. FAQ
+
+===== PAGE 17 =====
+Manuale di Triad 2.0
+Il manuale completo del linguaggio: lessico, valori, controllo di flusso,
+funzioni, dispatch, logica, codice come dato, errori, contratti, budget,
+tracce, effetti, esercizi e riferimento.
+Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e
+tipi dichiarati, multiple dispatch, programmazione logica integrata e codice
+come dato, in una sola sintassi. La sua definizione è una specifica
+normativa indipendente da qualsiasi implementazione ( SPEC.md , standard
+0.2.0 ), accompagnata da una specifica eseguibile ( SPEC-CORE.md ) e da una
+suite di conformità con golden verificabili ( conformance/ ).
+Questo manuale insegna il linguaggio per come è definito dallo standard.
+Non è un riassunto della specifica: è un percorso di studio, con spiegazioni,
+esempi ed esercizi. Puoi leggerlo dall'inizio alla fine senza altro materiale:
+ogni concetto che serve per capire un capitolo è spiegato prima o in quel
+capitolo, e i rimandi esterni sono approfondimenti facoltativi. Non è una
+raccolta di pagine da consultare a caso: è un libro, e l'ordine dei capitoli
+costruisce il modello mentale del linguaggio un pezzo alla volta.
+
+===== PAGE 18 =====
+Come leggere questo manuale
+
+===== PAGE 19 =====
+A chi è indirizzato
+Sai programmare, in qualunque linguaggio: sai cosa sono una variabile, una
+funzione, un ciclo, una ricorsione. Questo manuale non spiega la
+programmazione in generale, spiega Triad.
+Il manuale non presume che tu abbia letto nient'altro: ogni concetto è
+spiegato dove serve. I documenti normativi del progetto — SPEC.md , SPEC-
+CORE.md — e la suite di conformità in conformance/ sono i testi e le prove a cui
+puoi risalire per approfondire o per controllare un caso limite, ma non sono
+prerequisiti: sono il riferimento di chi vuole verificare, non il manuale di chi
+vuole imparare. Per questo il testo distingue sempre ciò che è regola del
+linguaggio da ciò che è comportamento di una particolare implementazione.
+
+===== PAGE 20 =====
+Due profili, una sola lingua
+Lo standard definisce due profili di conformità, ed è utile saperli distinguere
+prima di cominciare:
+profilo
+che cosa contiene
+dove è
+definito
+Triad-
+Core
+valori, funzioni, chiusure, controllo di flusso,
+liste, stringhe, I/O
+SPEC-CORE.md
+Triad-
+Full
+tutto: tipi dichiarati, dispatch, logica, macro,
+contratti, budget, tracce, effetti
+SPEC.md
+Triad-Core è un sottoinsieme di Triad-Full: ogni programma Core è anche
+un programma Full valido e deve comportarsi allo stesso modo. Il manuale
+presenta i due profili sullo stesso piano, per costruzione logica: ogni
+capitolo introduce un costrutto e dice in quale profilo esiste. Non perché
+Full sia "più avanti", ma perché sono due facce della stessa specifica.
+Il profilo Core non è una versione semplificata per comodità didattica: è il
+sottoinsieme scelto perché un interprete di bootstrap, scritto in poche
+migliaia di righe, possa eseguirlo, e perché lo stesso linguaggio possa
+descrivere se stesso. Full aggiunge i costrutti che richiedono un motore più
+ricco — dispatch multiplo, unificazione, espansione di macro — ma non
+cambia il significato di quelli che Core ha già. Imparare Core, quindi, non è
+tempo speso per un linguaggio diverso.
+Dove la differenza conta, trovi due marcatori:

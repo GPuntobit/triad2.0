@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Il libro di Triad</title>
+<style>
+  @page { size: 152.4mm 228.6mm; margin: 19.05mm; @bottom-center { content: counter(page); font-family: 'Liberation Serif', 'Times New Roman', Georgia, serif; font-size: 9pt; color: #666; padding-bottom: 4mm; } }
+  @page :first { margin: 0; @bottom-center { content: none; } }
+  html, body { font-family: 'Liberation Serif', 'Times New Roman', 'DejaVu Serif', Georgia, serif; font-size: 10.5pt; line-height: 1.6; color: #1a1a1a; }
+  h1, h2, h3, h4 { font-family: 'Liberation Sans', 'Helvetica Neue', Arial, sans-serif; color: #0d0a0f; page-break-after: avoid; margin-top: 18pt; margin-bottom: 6pt; }
+  h1 { font-size: 18pt; margin-top: 24pt; border-bottom: 1.2pt solid #7d5157; padding-bottom: 4pt; }
+  h2 { font-size: 13.5pt; margin-top: 16pt; color: #2a1a1f; }
+  h3 { font-size: 11.5pt; margin-top: 12pt; color: #3a2a2f; }
+  p { margin: 6pt 0 8pt 0; text-align: justify; orphans: 3; widows: 3; text-indent: 0; }
+  p + p { text-indent: 1.2em; margin-top: 0; }
+  a { color: #d0405a; text-decoration: none; }
+  code { font-family: 'JetBrains Mono', 'DejaVu Sans Mono', Consolas, monospace; font-size: 9pt; background: #f3f1f4; padding: 1pt 3pt; border-radius: 2pt; overflow-wrap: anywhere; }
+  pre { background: #f3f1f4; color: #1a1a1a; padding: 10pt 12pt; border-radius: 4pt; overflow-x: auto; margin: 8pt 0; border-left: 3pt solid #d0405a; }
+  pre code { background: none; color: inherit; padding: 0; font-size: 8.5pt; line-height: 1.4; }
+  table { border-collapse: collapse; width: 100%; margin: 10pt 0; font-size: 9.5pt; }
+  th, td { border: 0.5pt solid #b8b0aa; padding: 4pt 6pt; overflow-wrap: anywhere; }
+  th { background: #ece8e4; font-weight: bold; }
+  tr:nth-child(even) td { background: #f7f5f3; }
+  img { max-width: 100%; }
+  blockquote { border-left: 2pt solid #7d5157; margin: 8pt 0; padding: 4pt 10pt; color: #444; font-style: italic; background: #f9f7f5; }
+  hr { border: none; border-top: 0.5pt solid #7d5157; margin: 14pt 0; }
+  .cover { page-break-after: always; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0; text-align: center; }
+  .cover img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; margin: auto; }
+  .index-page { page-break-after: always; }
+  .sommario-list { list-style: none; padding-left: 0; }
+  .sommario-list .sl1 { font-weight: bold; margin-top: 8pt; }
+  .sommario-list .sl2 { padding-left: 14pt; font-size: 10pt; }
+  .sommario-list .sl3 { padding-left: 28pt; font-size: 9pt; }
+  .sommario-intro { font-style: italic; color: #555; font-size: 10pt; }
+  .preface-page { page-break-after: always; }
+  .backcover-page { page-break-before: always; }
+  .backcover { background: #0d0a0f; color: #f5f5f4; padding: 24pt 18pt; min-height: 100%; }
+  .backcover h1 { color: #f5f5f4; border-color: #7d5157; }
+  .backcover p { text-align: justify; font-size: 10.5pt; line-height: 1.6; }
+  .backcover code { background: #1a1520; color: #f5f5f4; }
+  .toc { page-break-after: always; }
+  .toc-list { list-style: none; padding-left: 0; }
+  .toc-list li { margin: 2pt 0; font-size: 10pt; }
+  .toc-list .toc-l1 { font-weight: bold; margin-top: 8pt; }
+  .toc-list .toc-l2 { padding-left: 14pt; }
+  .toc-list .toc-l3 { padding-left: 28pt; font-size: 9pt; }
+  .part { page-break-before: always; }
+  ul, ol { margin: 6pt 0 8pt 18pt; }
+  li { margin: 3pt 0; }
+  strong { color: #0d0a0f; }
+</style>
+</head>
+<body>
+  <div class="cover" style="text-align:center"><img src="frontespizio.png" alt="Frontespizio — Il libro di Triad" /></div>
+  <div class="preface-page">
+    <h1>Prefazione</h1>
+<p>Triad è un linguaggio di programmazione autonomo: sintassi a blocchi e tipi dichiarati, multiple
+dispatch, programmazione logica integrata, codice come dato. La sua definizione è una specifica
+normativa indipendente dall&#39;implementazione, accompagnata da una specifica eseguibile e da una
+suite di conformità con golden verificabili. Questo libro ne è il percorso di studio.</p>
+<p>Il libro nasce da un&#39;esigenza semplice: imparare Triad non significa solo leggere la specifica,
+ma costruire un modello mentale del linguaggio, dei suoi costrutti e del suo runtime. La specifica
+è normativa e precisa, ma è scritta per essere implementata, non per essere letta come un romanzo.
+Questo volume la traduce in un percorso: spiegazioni, esempi, esercizi, marcatori di profilo.
+Le spiegazioni, gli esempi e gli esercizi costruiscono passo dopo passo il modello mentale del
+linguaggio. La specifica resta la fonte normativa di riferimento, non un prerequisito di lettura.</p>
+<p>Il lettore ideale sa già programmare in un altro linguaggio: sa cosa sono una variabile, una
+funzione, un ciclo, una ricorsione. Questo libro non insegna la programmazione in generale, insegna
+Triad. Le influenze del linguaggio (Julia, Prolog, Lisp) sono documentate nell&#39;Appendice A della
+specifica: sono note informative, non definizioni. Triad non è un dialetto di nessuno dei tre.</p>
+<p>Il volume riunisce due testi complementari e indipendenti. Il <em>Manuale di Triad 2.0</em> spiega il
+linguaggio, propone esercizi e chiude con grammatica, schede rapide, tabella degli errori,
+glossario e appendici. Il <em>Tutorial di Triad 2.0</em> è diviso in cinque parti: primi passi,
+Triad-Core, Triad-Full, codice del progetto e riferimento. Si può leggere il Manuale per intero
+senza il Tutorial, e il Tutorial per intero senza il Manuale: ciascuno spiega ciò che gli serve.
+L&#39;indice che segue raccoglie i capitoli di entrambi i testi, così da ritrovarli in un unico posto.</p>
+<p>Se vuoi scrivere programmi eseguibili oggi, comincia dal Tutorial, parti I e II; usa il Manuale
+per approfondire i concetti e fare gli esercizi. Per studiare lo standard completo, prosegui con
+la parte III del Tutorial e i capitoli corrispondenti del Manuale. La parte IV è pensata per chi
+vuole esplorare o modificare il repository.</p>
+<p>Le appendici del Manuale orientano tra le influenze del linguaggio e le fonti del progetto. I
+testi normativi integrali non sono riprodotti nel volume: chi vuole il dettaglio formale li trova
+nei file <code>SPEC.md</code> e <code>SPEC-CORE.md</code> del repository, che restano le fonti definitive in caso di
+divergenza. Il volume contiene comunque le regole necessarie a capire e usare il linguaggio: il
+rinvio alla specifica è un approfondimento, non una dipendenza.</p>
+<p>Due profili di conformità attraversano tutto il libro. Triad-Core è il sottoinsieme di bootstrap:
+valori, funzioni, chiusure, controllo di flusso, liste, stringhe, I/O. Triad-Full è lo standard
+completo. Ogni programma Core è anche un programma Full valido e deve comportarsi allo stesso modo.
+I marcatori <strong>[Core]</strong> e <strong>[Full]</strong> indicano in quale profilo esiste ciascun costrutto; i blocchi
+di codice sono marcati <code>triad</code> per il codice Core e <code>triad-full</code> per il codice definito dallo
+standard Full, non ancora eseguibile dal runtime corrente. Gli esempi Core si possono provare
+con l&#39;interprete JavaScript di riferimento (<code>node seed/dev/triad_core.cjs</code>); i frammenti indicati
+come specifici del seed fanno eccezione.</p>
+<p>Il seed S0 è un interprete Triad-Core scritto direttamente in codice macchina x86-64, senza un
+linguaggio ospite; oggi il seed eseguibile è quello per Windows. Non va confuso con l&#39;interprete
+JavaScript usato per eseguire gli esempi Core e verificare la conformance. Il piano di bootstrap
+prevede S1 (un interprete Triad scritto in Triad-Core), S2 (compilatore nativo), S3 (self-hosting)
+e S4 (parità cross-platform). Dove il runtime non copre un costrutto, il testo lo dice
+esplicitamente.</p>
+<p>Buona lettura, e buon codice.</p>
+<p>— GPuntobit</p>
+
+  </div>
+  <div class="index-page">
+    <h1>Indice</h1>
+<h2>Manuale di Triad 2.0</h2>
+<ul class="toc-list">
+<li class="toc-l2"><a href="#man-come-leggere-questo-manuale">Come leggere questo manuale</a></li>
+<li class="toc-l3"><a href="#man-a-chi-e-indirizzato">A chi è indirizzato</a></li>
+<li class="toc-l3"><a href="#man-due-profili-una-sola-lingua">Due profili, una sola lingua</a></li>
+<li class="toc-l3"><a href="#man-convenzioni-di-notazione">Convenzioni di notazione</a></li>
+<li class="toc-l3"><a href="#man-come-eseguire-gli-esempi">Come eseguire gli esempi</a></li>
+<li class="toc-l1"><a href="#man-parte-i-il-linguaggio">Parte I — Il linguaggio</a></li>
+<li class="toc-l2"><a href="#man-1-lessico">1. Lessico</a></li>
+<li class="toc-l3"><a href="#man-1-1-identificatori">1.1 Identificatori</a></li>
+<li class="toc-l3"><a href="#man-1-2-numeri">1.2 Numeri</a></li>
+<li class="toc-l3"><a href="#man-1-3-stringhe">1.3 Stringhe</a></li>
+<li class="toc-l3"><a href="#man-1-4-simboli">1.4 Simboli</a></li>
+<li class="toc-l3"><a href="#man-1-5-commenti">1.5 Commenti</a></li>
+<li class="toc-l3"><a href="#man-1-6-separatori-e-fine-riga">1.6 Separatori e fine-riga</a></li>
+<li class="toc-l3"><a href="#man-1-7-la-regola-dei-due-punti-e-del-punto-interrogativo">1.7 La regola dei due punti e del punto interrogativo</a></li>
+<li class="toc-l3"><a href="#man-1-8-parole-chiave">1.8 Parole chiave</a></li>
+<li class="toc-l3"><a href="#man-1-9-identificatori-avanzati-e-convenzioni">1.9 Identificatori avanzati e convenzioni</a></li>
+<li class="toc-l3"><a href="#man-1-10-escape-e-stringhe-avanzate">1.10 Escape e stringhe avanzate</a></li>
+<li class="toc-l3"><a href="#man-1-11-esercizi-sul-lessico">1.11 Esercizi sul lessico</a></li>
+<li class="toc-l2"><a href="#man-2-valori-e-tipi">2. Valori e tipi</a></li>
+<li class="toc-l3"><a href="#man-2-1-i-tipi">2.1 I tipi</a></li>
+<li class="toc-l3"><a href="#man-2-2-gerarchia-dei-tipi">2.2 Gerarchia dei tipi</a></li>
+<li class="toc-l3"><a href="#man-2-3-struct">2.3 Struct</a></li>
+<li class="toc-l3"><a href="#man-2-4-conversioni">2.4 Conversioni</a></li>
+<li class="toc-l3"><a href="#man-2-5-asserzione-di-tipo">2.5 Asserzione di tipo</a></li>
+<li class="toc-l3"><a href="#man-2-6-il-vincolo-del-dichiarato">2.6 Il vincolo del dichiarato</a></li>
+<li class="toc-l3"><a href="#man-2-7-le-condizioni-accettano-solo-bool">2.7 Le condizioni accettano solo Bool</a></li>
+<li class="toc-l3"><a href="#man-2-8-come-stampa-un-valore">2.8 Come stampa un valore</a></li>
+<li class="toc-l2"><a href="#man-3-variabili-e-assegnamento">3. Variabili e assegnamento</a></li>
+<li class="toc-l2"><a href="#man-4-operatori-e-precedenza">4. Operatori e precedenza</a></li>
+<li class="toc-l3"><a href="#man-4-1-aritmetica-intera">4.1 Aritmetica intera</a></li>
+<li class="toc-l3"><a href="#man-4-2-logica-e-confronti">4.2 Logica e confronti</a></li>
+<li class="toc-l2"><a href="#man-5-controllo-di-flusso">5. Controllo di flusso</a></li>
+<li class="toc-l3"><a href="#man-5-1-if-elseif-else-core">5.1 if / elseif / else [Core]</a></li>
+<li class="toc-l3"><a href="#man-5-2-while-break-continue-core">5.2 while, break, continue [Core]</a></li>
+<li class="toc-l3"><a href="#man-5-3-let-e-begin-core">5.3 let e begin [Core]</a></li>
+<li class="toc-l3"><a href="#man-5-4-for-e-i-range-full">5.4 for e i range [Full]</a></li>
+<li class="toc-l3"><a href="#man-5-5-le-comprehension-full">5.5 Le comprehension [Full]</a></li>
+<li class="toc-l3"><a href="#man-5-6-try-catch-full">5.6 try / catch [Full]</a></li>
+<li class="toc-l2"><a href="#man-6-funzioni">6. Funzioni</a></li>
+<li class="toc-l3"><a href="#man-6-1-tre-forme-di-definizione-core">6.1 Tre forme di definizione [Core]</a></li>
+<li class="toc-l3"><a href="#man-6-2-return-ricorsione-arita">6.2 return, ricorsione, arità</a></li>
+<li class="toc-l3"><a href="#man-6-3-funzioni-di-ordine-superiore">6.3 Funzioni di ordine superiore</a></li>
+<li class="toc-l3"><a href="#man-6-4-l-39-annotazione-di-effetto-io">6.4 L&#39;annotazione di effetto !io</a></li>
+<li class="toc-l2"><a href="#man-7-tipi-e-multiple-dispatch">7. Tipi e multiple dispatch</a></li>
+<li class="toc-l3"><a href="#man-7-1-il-tipo-di-ritorno">7.1 Il tipo di ritorno</a></li>
+<li class="toc-l3"><a href="#man-7-2-funzioni-locali">7.2 Funzioni locali</a></li>
+<li class="toc-l2"><a href="#man-8-lambda-chiusure-e-scope">8. Lambda, chiusure e scope</a></li>
+<li class="toc-l3"><a href="#man-8-1-lambda-core">8.1 Lambda [Core]</a></li>
+<li class="toc-l3"><a href="#man-8-2-chiusure">8.2 Chiusure</a></li>
+<li class="toc-l3"><a href="#man-8-3-le-regole-di-scope">8.3 Le regole di scope</a></li>
+<li class="toc-l2"><a href="#man-9-liste">9. Liste</a></li>
+<li class="toc-l2"><a href="#man-10-stringhe-simboli-e-conversioni">10. Stringhe, simboli e conversioni</a></li>
+<li class="toc-l2"><a href="#man-11-errori-come-dati">11. Errori come dati</a></li>
+<li class="toc-l3"><a href="#man-11-1-la-forma-err">11.1 La forma Err</a></li>
+<li class="toc-l3"><a href="#man-11-2-produrre-e-propagare">11.2 Produrre e propagare</a></li>
+<li class="toc-l3"><a href="#man-11-3-le-categorie-di-errore">11.3 Le categorie di errore</a></li>
+<li class="toc-l3"><a href="#man-11-4-in-core-errori-come-liste-taggate">11.4 In Core: errori come liste taggate</a></li>
+<li class="toc-l2"><a href="#man-12-contratti">12. Contratti</a></li>
+<li class="toc-l2"><a href="#man-13-budget">13. Budget</a></li>
+<li class="toc-l2"><a href="#man-14-tracce">14. Tracce</a></li>
+<li class="toc-l3"><a href="#man-glossario-degli-eventi-di-traccia-porte-di-byrd">Glossario degli eventi di traccia (porte di Byrd)</a></li>
+<li class="toc-l2"><a href="#man-15-effetti-dichiarati">15. Effetti dichiarati</a></li>
+<li class="toc-l2"><a href="#man-16-logica">16. Logica</a></li>
+<li class="toc-l3"><a href="#man-16-1-fatti-regole-termini">16.1 Fatti, regole, termini</a></li>
+<li class="toc-l3"><a href="#man-16-2-i-goal">16.2 I goal</a></li>
+<li class="toc-l3"><a href="#man-16-3-solve-e-un-valore">16.3 solve è un valore</a></li>
+<li class="toc-l3"><a href="#man-16-4-un-predicato-usato-come-funzione">16.4 Un predicato usato come funzione</a></li>
+<li class="toc-l3"><a href="#man-16-5-esempi">16.5 Esempi</a></li>
+<li class="toc-l2"><a href="#man-17-codice-come-dato">17. Codice come dato</a></li>
+<li class="toc-l3"><a href="#man-17-1-quote-unquote-eval">17.1 Quote, unquote, eval</a></li>
+<li class="toc-l2"><a href="#man-18-macro">18. Macro</a></li>
+<li class="toc-l3"><a href="#man-18-1-codice-che-genera-codice">18.1 Codice che genera codice</a></li>
+<li class="toc-l2"><a href="#man-19-builtin">19. Builtin</a></li>
+<li class="toc-l2"><a href="#man-20-riga-di-comando-e-repl">20. Riga di comando e REPL</a></li>
+<li class="toc-l3"><a href="#man-20-1-il-repl">20.1 Il REPL</a></li>
+<li class="toc-l2"><a href="#man-21-primitivi-di-bootstrap">21. Primitivi di bootstrap</a></li>
+<li class="toc-l2"><a href="#man-22-stile-e-pattern-idiomatici">22. Stile e pattern idiomatici</a></li>
+<li class="toc-l3"><a href="#man-22-1-funzioni-di-ordine-superiore-scritte-in-core">22.1 Funzioni di ordine superiore scritte in Core</a></li>
+<li class="toc-l3"><a href="#man-22-2-record-come-liste-taggate">22.2 Record come liste taggate</a></li>
+<li class="toc-l3"><a href="#man-22-3-ambiente-come-lista-di-associazioni">22.3 Ambiente come lista di associazioni</a></li>
+<li class="toc-l3"><a href="#man-22-4-stato-mutabile-condiviso">22.4 Stato mutabile condiviso</a></li>
+<li class="toc-l3"><a href="#man-22-5-costruire-stringhe">22.5 Costruire stringhe</a></li>
+<li class="toc-l3"><a href="#man-22-6-regole-di-stile">22.6 Regole di stile</a></li>
+<li class="toc-l1"><a href="#man-parte-ii-esercizi">Parte II — Esercizi</a></li>
+<li class="toc-l2"><a href="#man-23-esercizi-guidati-triad-core">23. Esercizi guidati (Triad-Core)</a></li>
+<li class="toc-l3"><a href="#man-esercizio-1-potenza-e-somme">Esercizio 1 — Potenza e somme</a></li>
+<li class="toc-l3"><a href="#man-esercizio-2-numeri-primi">Esercizio 2 — Numeri primi</a></li>
+<li class="toc-l3"><a href="#man-esercizio-3-inverti-una-lista">Esercizio 3 — Inverti una lista</a></li>
+<li class="toc-l3"><a href="#man-esercizio-4-ordinamento-per-inserzione">Esercizio 4 — Ordinamento per inserzione</a></li>
+<li class="toc-l3"><a href="#man-esercizio-5-contatore-di-parole">Esercizio 5 — Contatore di parole</a></li>
+<li class="toc-l3"><a href="#man-esercizio-6-un-mini-analizzatore-lessicale">Esercizio 6 — Un mini-analizzatore lessicale</a></li>
+<li class="toc-l3"><a href="#man-esercizio-7-valutare-un-39-espressione">Esercizio 7 — Valutare un&#39;espressione</a></li>
+<li class="toc-l3"><a href="#man-esercizio-8-un-ambiente-a-dizionario">Esercizio 8 — Un ambiente a dizionario</a></li>
+<li class="toc-l2"><a href="#man-24-esercizi-su-triad-full">24. Esercizi su Triad-Full</a></li>
+<li class="toc-l3"><a href="#man-esercizio-9-dispatch-su-struct">Esercizio 9 — Dispatch su struct</a></li>
+<li class="toc-l3"><a href="#man-esercizio-10-una-base-di-conoscenza">Esercizio 10 — Una base di conoscenza</a></li>
+<li class="toc-l3"><a href="#man-esercizio-11-contratti-in-pratica">Esercizio 11 — Contratti in pratica</a></li>
+<li class="toc-l3"><a href="#man-esercizio-12-una-macro-che-misura">Esercizio 12 — Una macro che misura</a></li>
+<li class="toc-l1"><a href="#man-parte-iii-riferimento">Parte III — Riferimento</a></li>
+<li class="toc-l2"><a href="#man-25-grammatica">25. Grammatica</a></li>
+<li class="toc-l3"><a href="#man-25-1-triad-core-ebnf-normativa">25.1 Triad-Core (EBNF normativa)</a></li>
+<li class="toc-l3"><a href="#man-25-2-triad-full-ebnf-normativa">25.2 Triad-Full (EBNF normativa)</a></li>
+<li class="toc-l2"><a href="#man-26-schede-rapide">26. Schede rapide</a></li>
+<li class="toc-l3"><a href="#man-26-1-valori">26.1 Valori</a></li>
+<li class="toc-l3"><a href="#man-26-2-controllo-di-flusso">26.2 Controllo di flusso</a></li>
+<li class="toc-l3"><a href="#man-26-3-funzioni">26.3 Funzioni</a></li>
+<li class="toc-l2"><a href="#man-27-tabella-degli-errori">27. Tabella degli errori</a></li>
+<li class="toc-l3"><a href="#man-27-1-in-core">27.1 In Core</a></li>
+<li class="toc-l3"><a href="#man-27-2-in-triad-full">27.2 In Triad-Full</a></li>
+<li class="toc-l2"><a href="#man-28-glossario">28. Glossario</a></li>
+<li class="toc-l2"><a href="#man-29-cosa-gira-oggi">29. Cosa gira oggi</a></li>
+<li class="toc-l1"><a href="#man-appendice-a-influenze-dichiarate">Appendice A — Influenze dichiarate</a></li>
+<li class="toc-l1"><a href="#man-appendice-b-dove-guardare">Appendice B — Dove guardare</a></li>
+</ul>
