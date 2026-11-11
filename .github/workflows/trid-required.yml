@@ -96,6 +96,7 @@ jobs:
           ulimit -v 2097152
           timeout -k 10s 900s sh verify.sh
           sh cognitive/native/tests/run_gate_policy_074.sh
+          python3 scripts/tests/test_ruleset_074.py
 
   trid-merge-gate:
     name: TRID / Merge Gate
