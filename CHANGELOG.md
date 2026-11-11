@@ -1,5 +1,15 @@
 # Changelog — standard Triad
 
+## Desktop: profilo scelto dall'utente — 2026-11-11
+
+Il launcher `bin/triad-desktop` non seleziona più il profilo in automatico.
+All'apertura di un file senza override chiede esplicitamente `:core` o
+`:logic` prima dell'esecuzione. `:auto`/`--auto` sono disabilitati;
+annullamento ed EOF non avviano il programma. I profili espliciti continuano
+a essere validi per la sessione o tramite flag CLI. Aggiornati i test desktop
+per scelta, annullamento e apertura da file manager. Nessuna modifica al
+seed nativo o alla semantica del linguaggio.
+
 ## D22 risolta: le parole chiave sono token *esatti* nel seed — 2026-11-09
 
 Il seed riconosceva le parole chiave confrontando i **byte grezzi** del
