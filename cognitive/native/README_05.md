@@ -5,9 +5,13 @@ This is a **bounded, genuinely native Triad S1 logic experiment**, running via
 these deductions or the activation steps.
 
 It does **not** replace the separately tested persistent S0 pipeline of 0.4.
-The historical S0 verifier failure was addressed by merged PR #99, but the
-candidate commit still needs its own same-SHA CI evidence. The 0.5 gate is a
-separate, bounded S1 experiment.
+The historical verifier defect was fixed by merged
+[PR #99](https://github.com/GPuntobit/triad2.0/pull/99). On
+`main` commit `7ff41abad93d2c646617d7d620c3bdda1c920a1a`, both
+the S0 and S1 jobs, including this 0.5 golden fixture, passed in
+[TRID Required](https://github.com/GPuntobit/triad2.0/actions/runs/43021172705).
+This is same-SHA CI evidence, not a claim that the old 0.5 experiment became
+a generalized reasoning engine.
 
 ## Run
 
@@ -72,10 +76,15 @@ this experiment does not learn rule shapes or change metadata automatically.
 - No automatically learned edge-strength weights, decay, or relevance ranking.
 - S1 remains bounded by the underlying seed limits (65,535 source bytes,
   finite memory/step budget).
-- The 0.4 S0 journal transport requires a passing gate on the same candidate
-  SHA before any claim of complete 0.1–0.5 migration.
+- A future candidate still requires its own passing S0 and S1 CI checks
+  before claiming regression safety; historical green runs are not transferable.
+- The 65,535-byte ceiling is on a single S1 source input; this is
+  asserted by `tests/run_contract.sh`, not a limit on the total event-ledger
+  history added in later TRID-011/013 research paths.
 
-Next prioritize a native Triad source-backed graph with durable facts and a
-proof witness representation, then an independent revocation audit and
-bounded activation scheduler with deduplication/limits. Keep experimental
-hypotheses separate from accepted facts.
+**What came later:** the [0.6 S1 graph](README_06.md) now accepts a
+restricted source-backed fact file, persists it via POSIX, resolves finite
+recursive proof paths and rejects malicious Triad source injection.
+[TRID-070/071](QA_070_071_074.md) add separate epistemic and recovery
+regression suites. Those developments do **not** retroactively upgrade the
+fixed-depth 0.5 example to a complete dependency engine.
