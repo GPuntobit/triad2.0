@@ -94,19 +94,23 @@ payloads remain separate work. Finite S0 heap/vector limits still apply.
 
 ## Sessione desktop
 
-La sessione desktop parte in `auto`: rileva fact/rule/solve/struct nel
-codice, ignorando commenti e stringhe, e seleziona S1 oppure Core per ogni
-file. `:logic` forza S1 e `:core` forza Core; `:auto` ripristina la scelta
-automatica. Inserisci il percorso del file senza virgolette. `:core` torna al profilo Core;
-`:quit` chiude la sessione. Il profilo rimane selezionato anche dopo un errore.
-Per aprire direttamente un file logico: `bin/triad-desktop --logic FILE`.
-La selezione del profilo non abilita un REPL e non amplia la sintassi S1.
+La sessione desktop esegue automaticamente in Core **soltanto** i file
+`.triad`/`.td` composti da `println(...)` con argomenti letterali, commenti
+e righe vuote. Anche un `println("ciao")` letterale digitato al prompt
+viene eseguito senza scegliere un profilo. Questo non è un REPL generale.
 
-La selezione è lessicale, non una prova di conformità Full. Un uso ambiguo
-di una parola chiave come nome di funzione può richiedere `:core`. Il file
-viene eseguito una sola volta: non si passa a un altro runtime dopo un errore.
-L'automatismo riguarda il desktop; `triad FILE` mantiene il percorso Core e
-`triad --logic FILE` seleziona S1 esplicitamente da terminale.
+Per tutti gli altri file, inclusi quelli con `fact`/`rule`/`solve` e
+quelli con `println` insieme ad altre istruzioni, occorre scegliere
+esplicitamente `:core` (S0) oppure `:logic` (S1) prima dell'esecuzione.
+La selezione rimane attiva per la sessione e non cambia automaticamente
+dopo un errore. `:auto` e `--auto` non sono supportati; `:quit`
+annulla o chiude la sessione. Per aprire direttamente un file logico:
+`bin/triad-desktop --logic FILE`.
+
+L'automatismo è limitato al launcher desktop: `triad FILE` resta Core
+e `triad --logic FILE` seleziona S1 da terminale. Non viene ampliata
+la sintassi supportata da S1 e non avviene alcun fallback su un altro
+runtime dopo un errore.
 
 ## Typed methods and Float data
 
