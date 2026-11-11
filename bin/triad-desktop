@@ -1,5 +1,6 @@
 #!/bin/sh
 # Sessione desktop POSIX: il seed richiede un file e non offre ancora un REPL.
+# La scelta Core/S1 e' esplicita: nessun rilevamento automatico dal sorgente.
 # Separata da bin/triad per preservare exit code e delega diretta del launcher.
 set -u
 self=$0
@@ -12,22 +13,44 @@ while [ -L "$self" ]; do
 done
 ROOT=$(CDPATH= cd -- "$(dirname -- "$self")/.." && pwd -P) || exit 1
 
-profile=auto
+profile=
 if [ "${1:-}" = "--logic" ]; then
     profile=logic
-    shift
-elif [ "${1:-}" = "--auto" ]; then
     shift
 elif [ "${1:-}" = "--core" ]; then
     profile=core
     shift
+elif [ "${1:-}" = "--auto" ]; then
+    printf 'Profilo automatico non disponibile: usa --core oppure --logic.\n' >&2
+    exit 2
 fi
 
+choose_profile() {
+    while [ -z "$profile" ]; do
+        printf '\nScegli il profilo per %s:\n' "$1"
+        printf '  :core  - interprete nativo S0 (sottoinsieme Core)\n'
+        printf '  :logic - motore logico S1 (fact/rule/solve)\n'
+        printf '  :quit  - annulla senza eseguire\n'
+        printf 'Scelta: '
+        IFS= read -r choice || {
+            printf '\nNessun profilo selezionato: file non eseguito.\n'
+            return 1
+        }
+        case $choice in
+            :core|core|1) profile=core ;;
+            :logic|logic|2) profile=logic ;;
+            :quit|quit) printf 'Esecuzione annullata.\n'; return 1 ;;
+            *) printf 'Scelta non valida: digita :core o :logic.\n' ;;
+        esac
+    done
+    printf 'Profilo %s selezionato per questa sessione.\n' "$profile"
+}
+
 run_file() {
-    selected=$profile
-    if [ "$selected" = auto ]; then
-        selected=$(sh "$ROOT/scripts/detect-profile.sh" "$1") || selected=core
+    if [ -z "$profile" ]; then
+        choose_profile "$1" || return 0
     fi
+    selected=$profile
     printf 'Profilo selezionato: %s\n' "$selected"
     if [ "$selected" = logic ]; then
         "$ROOT/bin/triad" --logic "$@"
@@ -43,16 +66,19 @@ run_file() {
 
 printf 'Triad — sessione desktop\n'
 printf 'Esecuzione di file .triad/.td; questa sessione non è un REPL.\n'
-printf 'Profili: :auto rileva dal codice, :core forza Core, :logic forza S1. Profilo attuale: %s.\n' "$profile"
+printf 'Profili: :core usa S0, :logic usa S1; nessun profilo selezionato automaticamente.\n'
+if [ -n "$profile" ]; then
+    printf 'Profilo iniziale selezionato esplicitamente: %s.\n' "$profile"
+fi
 if [ "$#" -gt 0 ]; then
     run_file "$@"
 fi
 while :; do
-    printf '\nPercorso del programma (senza virgolette), oppure :quit per uscire: '
+    printf '\nPercorso del programma (senza virgolette), :core, :logic oppure :quit: '
     IFS= read -r file || { printf '\n'; break; }
     case $file in
         :quit) break ;;
-        :auto) profile=auto; printf 'Profilo automatico selezionato.\n' ;;
+        :auto) printf 'Profilo automatico non disponibile: digita :core o :logic.\n' ;;
         :logic) profile=logic; printf 'Profilo logico S1 selezionato.\n' ;;
         :core) profile=core; printf 'Profilo Core selezionato.\n' ;;
         '') continue ;;
