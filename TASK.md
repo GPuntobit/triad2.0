@@ -3,7 +3,7 @@
 ## Desktop: stampa letterale automatica (2026-11-11)
 
 - `bin/triad-desktop`: consentire esecuzione automatica solo di
-  `println(...)` con argomenti letterali in file `.triad`/`.td`,
+  `println(...)` con un unico argomento letterale in file `.triad`/`.td`,
   senza attivare Core/Logic automaticamente per gli altri file.
 - La scelta `:core`/`:logic` resta manuale e persistente; supportare
   un `println` letterale digitato al prompt senza rendere il prompt
