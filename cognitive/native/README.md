@@ -1,4 +1,4 @@
-# TRID Native Core — 0.1–0.4 migration experiment
+# TRID Native Core — bounded S0 migration (0.1–0.4) and later opt-in components
 
 **Language:** Triad-Core only (executed on the existing native S0 machine-code
 seed). **Cognitive runtime dependencies:** no Python, Node.js, LLM, or
@@ -43,8 +43,12 @@ TRID_STATE_DIR="$HOME/my-trid-lab" sh cognitive/native/run.sh \
   cognitive/native/fixture.txt
 ```
 
-The state directory contains `hypotheses.log` (history) and
-`memory.txt` (derived view). Do not commit personal lab files.
+The active S0 revision is selected by `$TRID_STATE_DIR/.current`; the
+root-level `hypotheses.log` and `memory.txt` names are **compatibility
+symlinks** to the selected immutable revision. Read the matching pair from
+the same revision directory (or while holding the state lock): two separately
+opened top-level links can cross a concurrent pointer switch. See
+[STATE_STORE.md](STATE_STORE.md). Do not commit personal lab files.
 
 ## Model / epistemology
 
@@ -88,24 +92,44 @@ The state directory contains `hypotheses.log` (history) and
    demonstration is intentionally small. It doesn't ingest free-form books,
    initiate dialogue, manage long-term curiosity, prove source truth, perform
    multi-level defeasible reasoning or implement all 20 decisions.
-7. **Native runtime validation is required before claiming parity**. Run the
-   conformance and native regression test on the user's Linux environment or
-   GitHub Actions. No host Python is needed for this native smoke test.
+7. **Native runtime validation is required before claiming parity**.
+   The five cognitive baseline suites passed on Ubuntu x86_64 for
+   `main` commit `7ff41abad93d2c646617d7d620c3bdda1c920a1a`
+   in the [required CI run](https://github.com/GPuntobit/triad2.0/actions/runs/43021172705).
+   This is an observed result for one SHA, not a timeless guarantee or proof
+   of parity for inputs outside the test fixtures.
 
 ## Design note
 
-There is no modification to S0, S1, `SPEC.md` or their conformance files.
-Once the experimental features pass native tests, improving the S0/S1 I/O
-interface and the type-safe representation of proof DAGs should be handled
-as separately reviewed language/runtime milestones.
+The original S0 migration did not require modifying the normative S0/S1
+semantics. Later TRID releases can evolve independently; changes to the
+language/runtime interface and proof-DAG representation remain separately
+reviewed milestones. No claim of native transactional persistence or
+general autonomous reasoning is made here.
 
 ## CI status and verification boundary
 
-The historical S0 verifier failure was addressed in merged PR #99.
-A [green TRID Native Core run](https://github.com/GPuntobit/triad2.0/actions/runs/42621287537)
-exists on an **older commit**: it must not be cited as proof that current `main`
-passes. The new [combined baseline workflow](../../.github/workflows/trid-baseline.yml)
-runs all five required suites on one checkout and records its SHA.
+The historical S0 verifier failure was addressed in merged
+[PR #99](https://github.com/GPuntobit/triad2.0/pull/99). On
+`main` SHA `7ff41abad93d2c646617d7d620c3bdda1c920a1a`, all
+five baseline suites passed as independent jobs of the same
+[TRID Required workflow](https://github.com/GPuntobit/triad2.0/actions/runs/43021172705).
+See the [TRID-001 evidence matrix](BASELINE_001.md) for the exact mapping,
+reproduction commands, limits and timestamp. The separate
+[combined baseline workflow](../../.github/workflows/trid-baseline.yml)
+also prints each suite's elapsed seconds and exit code when triggered.
+It has path filters; the **mandatory**
+[TRID Required workflow](../../.github/workflows/trid-required.yml)
+has no path filter and protects every PR.
+
+For the subsequent TRID-071 integration tests, Ubuntu CI and a local
+CachyOS x86_64 run both passed, but at **different recorded SHAs**.
+The local CachyOS 7/7 result was reported for
+`3a8b64f9b43da935e49360f1d760ae3f04b81adf`.
+The [active main ruleset](https://github.com/GPuntobit/triad2.0/rules/26023880)
+requires six GitHub Actions contexts and was checked using a deliberately
+failing, [closed and never merged PR #129](https://github.com/GPuntobit/triad2.0/pull/129).
+See [QA_070_071_074.md](QA_070_071_074.md) for the exact verification boundary.
 
 The launcher rejects unexpected discovery stdout and malformed verifier
 projections before publishing them. A native verifier debug print has been
