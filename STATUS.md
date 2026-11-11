@@ -1,5 +1,19 @@
 # Triad and S0 bootstrap status
 
+## Desktop: scelta esplicita obbligatoria — 2026-11-11
+
+La sessione `bin/triad-desktop` non usa più `:auto` o
+`scripts/detect-profile.sh` per decidere quale runtime eseguire. Quando
+viene aperto un file `.triad`/`.td` senza profilo scelto, chiede
+`:core` (seed S0) o `:logic` (S1) **prima** di avviare il file; un
+annullamento o EOF non avvia nulla. I profili scelti restano persistenti
+nella sessione; `--core FILE` e `--logic FILE` sono override espliciti.
+`:auto` e `--auto` non eseguono più rilevamento implicito.
+
+Non cambia `bin/triad FILE`, che resta Core nativo. La scelta del profilo
+non rende disponibili le funzionalità Core assenti dal seed (es. `typeof`,
+divergenza D14). Test di regressione desktop aggiornati; verifiche CI in PR.
+
 ## D22 risolta: le parole chiave sono token *esatti* nel seed — 2026-11-09
 
 Il seed confrontava le parole chiave con i **byte grezzi** del sorgente. Ne
