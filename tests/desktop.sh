@@ -3,7 +3,20 @@
 set -eu
 root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)
 tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT HUP INT TERM
+# On failure, surface captured desktop output before deleting the fixtures.
+cleanup() {
+    rc=$?
+    if [ "$rc" -ne 0 ]; then
+        printf 'desktop: integration failed (exit %s)\n' "$rc" >&2
+        for log in "$tmp"/*.log; do
+            [ -f "$log" ] || continue
+            printf '\n--- %s ---\n' "$log" >&2
+            tail -n 14 "$log" >&2
+        done
+    fi
+    rm -rf "$tmp"
+}
+trap cleanup EXIT
 # Isolate both MIME data and default-app configuration from the real desktop.
 XDG_DATA_HOME="$tmp/data"
 XDG_CONFIG_HOME="$tmp/config"
