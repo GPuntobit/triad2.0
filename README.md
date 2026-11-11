@@ -97,9 +97,13 @@ This also registers the `.triad`/`.td` MIME type and selects Triad Program as it
 default application for double-click opening (using `update-mime-database` and
 `xdg-mime` when available).
 The menu opens a persistent terminal session: enter a `.triad`/`.td` file path
-without quotes, or `:quit` to close it. Opening an associated file runs it and
-keeps results and errors visible. The seed currently requires a file; the REPL
-specified in SPEC.md §14 remains unimplemented.
+without quotes, or `:quit` to close it. **No file is executed automatically
+when opened from the file manager:** the desktop session first asks the user
+to choose `:core` (native S0) or `:logic` (S1). The choice persists within
+that session and can be changed with `:core`/`:logic`; `:auto` is not
+supported. For an explicitly selected noninteractive launch, use
+`bin/triad-desktop --core FILE` or `--logic FILE`. The seed currently
+requires a file; the REPL specified in SPEC.md §14 remains unimplemented.
 
 ### 2. CLI
 
