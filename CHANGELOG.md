@@ -1,5 +1,17 @@
 # Changelog — standard Triad
 
+## Desktop: avvio automatico dei soli `println` letterali — 2026-11-11
+
+Il launcher `bin/triad-desktop` avvia automaticamente con S0 i file
+`.triad`/`.td` che contengono solo chiamate `println` con un unico argomento letterale,
+commenti e righe vuote. Una singola chiamata letterale può essere digitata
+anche nella sessione desktop. File con altri costrutti richiedono ancora
+`:core` o `:logic`; la scelta manuale è persistente e non c'è
+auto-detection del profilo logico. `:auto`/`--auto` rimangono disabilitati.
+Aggiunti controlli di regressione (stampe automatiche, chiamate non letterali,
+file complessi, annullamento, EOF, selezione esplicita). Nessuna modifica
+alla semantica di Triad o ai seed nativi.
+
 ## Desktop: profilo scelto dall'utente — 2026-11-11
 
 Il launcher `bin/triad-desktop` non seleziona più il profilo in automatico.
