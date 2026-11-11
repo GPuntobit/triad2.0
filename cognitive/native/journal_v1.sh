@@ -8,7 +8,9 @@ case "$MODE" in
   --append|--reconcile) [ "$#" -eq 2 ] || { echo 'usage: journal_v1.sh --append|--reconcile FILE' >&2; exit 2; };;
   --verify|--replay|--recover)
     [ "$#" -eq 1 ] || { echo 'usage: journal_v1.sh --verify|--replay|--recover' >&2; exit 2; };;
-  *) echo 'usage: journal_v1.sh --append|--reconcile FILE | --verify | --replay | --recover' >&2; exit 2 ;;
+  --replay-revision)
+    [ "$#" -eq 2 ] || { echo 'usage: journal_v1.sh --replay-revision rNNNNNNNN' >&2; exit 2; };;
+  *) echo 'usage: journal_v1.sh --append|--reconcile FILE | --verify | --replay | --replay-revision rNNNNNNNN | --recover' >&2; exit 2 ;;
 esac
 STATE=${TRID_EVENT_STATE_DIR:-"$HOME/.local/state/trid-events"}
 umask 077
@@ -49,6 +51,31 @@ if [ -n "$ACTIVE" ]; then
   [ "$expected" = "$recorded" ] || die 'committed checksum mismatch'
   SOURCE="$DIR/events.log"
 fi
+# Historical replay uses a retained generation, never a mutable working
+# directory. Verify its manifest and that its exact chain is a prefix of the
+# currently committed head. This excludes divergent/orphan staged revisions.
+if [ "$MODE" = --replay-revision ]; then
+  id_ok "$INPUT" || die 'invalid historical revision id'
+  [ -n "$ACTIVE" ] || die 'no committed history'
+  requested_num=$(printf '%s\n' "$INPUT" | sed 's/^r0*//')
+  current_num=$(printf '%s\n' "$ACTIVE" | sed 's/^r0*//')
+  [ -n "$requested_num" ] || requested_num=0
+  [ -n "$current_num" ] || current_num=0
+  [ "$requested_num" -le "$current_num" ] || die 'historical revision is ahead of current'
+  HIST_DIR="$STATE/.revisions/$INPUT"
+  [ -d "$HIST_DIR" ] && [ ! -L "$HIST_DIR" ] || die 'missing historical revision'
+  [ -f "$HIST_DIR/events.log" ] && [ ! -L "$HIST_DIR/events.log" ] || die 'invalid historical events file'
+  [ -f "$HIST_DIR/checksums.sha256" ] && [ ! -L "$HIST_DIR/checksums.sha256" ] || die 'invalid historical checksum file'
+  expected=$(cd "$HIST_DIR" && sha256sum events.log)
+  recorded=$(cat "$HIST_DIR/checksums.sha256")
+  [ "$expected" = "$recorded" ] || die 'historical checksum mismatch'
+  historic_size=$(wc -c < "$HIST_DIR/events.log")
+  active_size=$(wc -c < "$SOURCE")
+  [ "$historic_size" -le "$active_size" ] || die 'historical revision is not a committed prefix'
+  cmp -n "$historic_size" "$HIST_DIR/events.log" "$SOURCE" >/dev/null 2>&1 ||
+    die 'historical revision is not a committed prefix'
+  SOURCE="$HIST_DIR/events.log"
+fi
 # Reconstruct the logical stream and verify sequence, predecessors, and digests.
 : > "$TMP/rows.v1"
 n=0
@@ -84,7 +111,7 @@ if [ -s "$TMP/rows.v1" ]; then
 fi
 case "$MODE" in
   --verify) printf 'TRID ledger: verified %s events\n' "$n" >&2; exit 0 ;;
-  --replay) cat "$TMP/rows.v1"; exit 0 ;;
+  --replay|--replay-revision) cat "$TMP/rows.v1"; exit 0 ;;
   --recover)
     # Keep orphan committed-generation candidates for forensic inspection.
     find "$STATE" -mindepth 1 -maxdepth 1 -type d -name '.work.*' \
