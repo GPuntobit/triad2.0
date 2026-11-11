@@ -18,6 +18,14 @@ write-to-disk API. The POSIX wrapper performs restricted record validation and
 concatenates facts with the Triad logic program; **all graph reasoning runs in
 Triad S1**.
 
+The wrapper uses a permanent `flock` mutex at
+`$TRID_GRAPH_STATE_DIR/.mutex`; a SIGKILL releases its kernel lock.
+Each execution builds output in a private work directory and publishes stdout
+only after all queries finish. Unsafe state-directory symlinks, symlinked
+`graph.facts` (including dangling links), malformed records and oversized
+graphs are rejected. This is a **single graph file**, not an atomic
+multi-store snapshot with S0 and the event ledger.
+
 The wrapper executes each recursive proof/activation query in a separate S1 process to reset the seed's finite bump-heap budget; it concatenates the outputs in a deterministic order. Byte-exact golden files cover retained and suspended alternative proofs, activated nodes, and the changed status after revoking a second source.
 
 The wrapper accepts only `fact evidence`, `fact association`, `fact revoked`
@@ -54,14 +62,30 @@ restart. This is not an append-only tamper-evident audit journal.
 - A "retained" proof is one for which **no explicit revocation is known**;
   this does not prove the source is trustworthy. Rule schemas remain
   prewritten rather than learned.
-- The persisted graph does not yet include timestamps, versions, append-only
-  history, per-event signed provenance or automatic reconciliation with the
-  older S0 journal.
+- This 0.6 `graph.facts` file itself has no timestamps, versioned commits,
+  signed provenance or automatic reconciliation with S0. Newer **opt-in**
+  [TRID-011/012/013](README.md) event-ledger and source-backed reconciliation
+  tools add a separate, versioned history. They do not magically make
+  `graph.facts` transactional or authenticate source truth.
 - No continuous scheduler, weighted pulses, autonomous goals, natural-language
   learning or arbitrary metacognitive planning.
-- The S0 journal gate is independent; past failures were addressed in PR #99,
-  but end-to-end parity requires a green run on the candidate SHA.
+- S0 and S1 gates are independent. Both passed on
+  `main` SHA `7ff41abad93d2c646617d7d620c3bdda1c920a1a` in
+  [TRID Required](https://github.com/GPuntobit/triad2.0/actions/runs/43021172705).
+  For another candidate SHA, the checks must be rerun.
+- `TRID_TEST_GRAPH_CRASH_AT=after_lock|before_output` intentionally sends
+  **actual SIGKILL** to the S1 runner. The regression checks Linux exit 137,
+  empty partial stdout, exact graph bytes and a successful restart. This is
+  not a physical power-failure test.
 
-Further work should add verified source-to-file persistence of the proof graph,
-a committed revision/event schema, negative evidence and independent proof
-checking for recursive witnesses, then weighted activation and scheduling.
+**Existing additional checks:** run
+`sh cognitive/native/tests/run_integration_071.sh` and
+`sh cognitive/native/tests/run_epistemic_070.sh` for independent
+restart/recovery and epistemic checks, respectively. Their
+[scope and limitations](QA_070_071_074.md) are documented separately.
+
+**Still open beyond 0.6:** native proof persistence and general
+write-to-disk I/O, explicit negative-evidence semantics for general recursive
+rules, verification of arbitrarily generated proofs, source reliability,
+weighted activation and scheduling. These are separate milestones, not
+features of the bounded 0.6 demonstration.
