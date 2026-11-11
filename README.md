@@ -97,9 +97,9 @@ This also registers the `.triad`/`.td` MIME type and selects Triad Program as it
 default application for double-click opening (using `update-mime-database` and
 `xdg-mime` when available).
 The menu opens a persistent terminal session: enter a `.triad`/`.td` file path
-without quotes, or `:quit` to close it. **Files containing only literal
+without quotes, or `:quit` to close it. **Files containing only single-argument literal
 `println(...)` statements** (plus blank lines or comments) run automatically
-with native Core: e.g. `println("Hello", 42)`. A single literal
+with native Core: e.g. `println("Hello")`. A single literal
 `println("Hello")` can also be entered directly at the desktop prompt.
 Other files — including files that contain `println` plus assignments, function
 calls or logical constructs — **do not run until you explicitly choose**
